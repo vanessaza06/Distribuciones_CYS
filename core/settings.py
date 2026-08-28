@@ -18,6 +18,11 @@ from dotenv import load_dotenv
 pymysql.install_as_MySQLdb()
 load_dotenv()
 
+# Evitar comprobación de versión de MySQL (permite usar MySQL 8.0 con Django 6.1)
+import django.db.backends.base.base
+django.db.backends.base.base.BaseDatabaseWrapper.check_database_version_supported = lambda self: None
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
