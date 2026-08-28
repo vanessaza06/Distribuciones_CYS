@@ -1,0 +1,70 @@
+# ==========================
+# DJANGO
+# ==========================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ==========================
+# MIGRACIONES
+# ==========================
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# ==========================
+# PYTHON
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ==========================
+# ENTORNOS VIRTUALES
+# ==========================
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================
+# NODE
+# ==========================
+node_modules/
+
+# ==========================
+# VSCODE
+# ==========================
+.vscode/
+
+# ==========================
+# PYCHARM
+# ==========================
+.idea/
+
+# ==========================
+# ARCHIVOS DEL SISTEMA
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# ARCHIVOS TEMPORALES
+# ==========================
+*.tmp
+*.temp
+/inventario/migrations
+/productos/migrations
+productos/migrations/
+.env
+db.sqlite3
+__pycache__/
+*.pyc
+media/
