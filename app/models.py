@@ -79,9 +79,10 @@ class Bodega(models.Model):
 class Categoria(models.Model):
     codigo_categoria = models.AutoField(primary_key=True, db_column='codigo_categoria')
     nombre = models.CharField(max_length=100, db_column='nombre')
-    descripcion = models.TextField(db_column='descripcion')
+    descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
     subcategoria = models.CharField(max_length=100, db_column='subcategoria')
     padre = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='padre_id', related_name='subcategorias')
+    activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
         db_table = 'categoria'
@@ -96,6 +97,7 @@ class Producto(models.Model):
     descripcion = models.TextField(db_column='descripcion')
     fecha_vencimiento = models.DateField(db_column='fecha_vencimiento')
     categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True, blank=True, db_column='codigo_categoria', related_name='productos')
+    activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
         db_table = 'producto'
