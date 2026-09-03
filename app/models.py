@@ -108,7 +108,7 @@ class Producto(models.Model):
 # ── 5. PRESENTACION PRODUCTO ──
 class PresentacionProducto(models.Model):
     codigo_presentacion = models.AutoField(primary_key=True, db_column='codigo_presentacion')
-    nombre = models.CharField(max_length=50, db_column='nombre')
+    nombre = models.CharField(max_length=100, default='')
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, db_column='precio_venta')
     cantidad = models.PositiveIntegerField(db_column='cantidad')
     observaciones = models.TextField(blank=True, null=True, db_column='observaciones')
@@ -125,8 +125,8 @@ class Lote(models.Model):
     codigo_lote = models.AutoField(primary_key=True, db_column='codigo_lote')
     costo_unitario = models.DecimalField(max_digits=12, decimal_places=2, db_column='costo_unitario')
     costo_total = models.DecimalField(max_digits=12, decimal_places=2, db_column='costo_total')
-    cantidad_inicial = models.PositiveIntegerField(db_column='cantidad_inicial')
-    stock_actual = models.PositiveIntegerField(db_column='stock_actual')
+    cantidad_inicial = models.PositiveIntegerField(default=0)
+    stock_actual = models.PositiveIntegerField(default=0)
     fecha_registro = models.DateTimeField(default=timezone.now, db_column='fecha_registro')
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto', related_name='lotes')
     presentacion = models.ForeignKey('PresentacionProducto', on_delete=models.CASCADE, db_column='codigo_presentacion', related_name='lotes')
