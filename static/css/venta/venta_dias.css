@@ -1,0 +1,588 @@
+/* ==========================================================================
+   VENTA_DIAS.CSS - CYS LTDA
+   Paleta: FFFFFF · 0A2A52 · 011936 · CF9C48 (dorado, solo peligro/faltante)
+   El verde (#2ecc71) se reserva EXCLUSIVAMENTE para mensajes de dinero/éxito
+   (ingresos, "Pagado", cifras positivas). Todo lo demás (gráficos, barras,
+   iconos, textos) usa el color de texto del tema en distintas opacidades.
+   ========================================================================== */
+
+:root {
+  --cys-bg-card:      var(--fondo-card);
+  --cys-surface:      var(--fondo);
+  --cys-borde:        var(--azul-borde);
+  --cys-texto-muted:  var(--texto-muted);
+  --cys-acento:       var(--azul-claro);
+  --cys-verde:        var(--verde);
+  --cys-rojo:         var(--rojo);
+}
+
+
+/* Contenedor Principal */
+.cys-page-wrapper {
+    background-color: var(--cys-surface) !important;
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--texto);
+}
+
+/* Barra Superior (Topbar) */
+.cys-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cys-topbar-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin: 0;
+}
+
+.cys-topbar-sub {
+    font-size: 0.9rem;
+    color: var(--cys-texto-muted);
+    margin-top: 4px;
+}
+
+/* BOTONES OVALADOS — acción normal del módulo (blanco, no dorado:
+   el dorado queda reservado para peligro/faltante) */
+.cys-btn-oval-cyan {
+    background-color: #FFFFFF !important;
+    color: #001f38 !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 8px 24px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background-color 0.2s ease, transform 0.1s ease !important;
+    cursor: pointer;
+}
+
+.cys-btn-oval-cyan:hover {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    color: #001f38 !important;
+    transform: scale(1.02);
+}
+
+/* Tarjetas de Indicadores (KPIs) */
+.cys-kpi-card {
+    background-color: var(--cys-bg-card) !important;
+    border: 1px solid var(--cys-borde) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    height: 100%;
+}
+
+.cys-kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--texto);
+    margin-bottom: 6px;
+}
+
+.cys-kpi-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.cys-kpi-sub {
+    font-size: 0.78rem;
+    color: var(--cys-texto-muted);
+}
+
+/* ── Tarjeta de Meta del Día ──
+   Borde izquierdo dorado, para combinar con el resto de tarjetas
+   del módulo (estado de caja, etc.) */
+.cys-meta-card {
+    background-color: var(--cys-bg-card) !important;
+    border: 1px solid var(--cys-borde) !important;
+    border-left: 3px solid #CF9C48 !important;
+    border-radius: 14px !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+.cys-meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cys-meta-titulo {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--texto);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.cys-meta-titulo i {
+    color: var(--cys-acento);
+    margin-right: 6px;
+}
+
+.cys-meta-cifras {
+    font-size: 0.85rem;
+    color: var(--cys-texto-muted);
+}
+
+.cys-meta-cifras strong {
+    color: var(--texto);
+}
+
+.cys-meta-porcentaje {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--texto);
+    display: block;
+}
+
+/* Mensaje de meta cumplida: único caso decorativo con verde permitido
+   además de las cifras de dinero, porque es un mensaje de éxito */
+.cys-meta-porcentaje--completa {
+    color: var(--cys-verde);
+}
+
+.cys-meta-vacio {
+    color: var(--cys-texto-muted);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* ── Ranking de productos más vendidos (barras) ──
+   Siguen el color de texto del tema en distintas opacidades: no son
+   mensajes de éxito, son datos, así que no llevan verde ni otros tonos. */
+.cys-rank-item {
+    margin-bottom: 14px;
+}
+
+.cys-rank-item:last-child {
+    margin-bottom: 0;
+}
+
+.cys-rank-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.cys-rank-nombre {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.cys-rank-valor {
+    font-size: 0.85rem;
+    color: var(--texto);
+    font-weight: 700;
+}
+
+/* Porcentaje que acompaña a las unidades vendidas en el ranking */
+.cys-rank-porcentaje {
+    color: var(--cys-texto-muted);
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.cys-rank-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.cys-rank-fill {
+    height: 100%;
+    border-radius: 50px;
+    min-width: 4px; /* para que incluso porcentajes muy bajos se alcancen a ver */
+    transition: width 0.3s ease;
+}
+
+/* Rotación de opacidades siguiendo el color de texto del tema, para
+   que las barras no desaparezcan en el tema claro sobre fondo blanco */
+.cys-rank-fill--c1 { background: var(--texto); }
+.cys-rank-fill--c2 { background: color-mix(in srgb, var(--texto) 80%, transparent); }
+.cys-rank-fill--c3 { background: color-mix(in srgb, var(--texto) 62%, transparent); }
+.cys-rank-fill--c4 { background: color-mix(in srgb, var(--texto) 46%, transparent); }
+.cys-rank-fill--c5 { background: color-mix(in srgb, var(--texto) 32%, transparent); }
+.cys-rank-fill--c6 { background: color-mix(in srgb, var(--texto) 20%, transparent); }
+
+/* ── Ventas tope del día (diseño circular) ── */
+.cys-circular-wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.cys-circular-svg {
+    flex-shrink: 0;
+}
+
+.cys-circular-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cys-circular-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cys-circular-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.cys-circular-dot--a {
+    background: var(--texto);
+}
+
+.cys-circular-dot--b {
+    background: color-mix(in srgb, var(--texto) 50%, transparent);
+}
+
+.cys-circular-label {
+    font-size: 0.75rem;
+    color: var(--cys-texto-muted);
+    margin: 0;
+}
+
+.cys-circular-value {
+    font-size: 0.9rem;
+    color: var(--texto);
+    font-weight: 700;
+    margin: 0;
+}
+
+.cys-circular-nota {
+    font-size: 0.75rem;
+    color: var(--cys-texto-muted);
+    margin: 10px 0 0;
+}
+
+/* Contenedor del Historial (Panel de Tabla) */
+.cys-panel-container {
+    background-color: var(--cys-surface) !important;
+    border: 1px solid var(--cys-borde) !important;
+    border-radius: 12px !important;
+    margin-top: 24px;
+    overflow: hidden;
+}
+
+.cys-panel-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--cys-borde);
+    color: var(--texto);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+}
+
+.cys-panel-title { color: var(--texto); }
+
+/* Barra de Filtros */
+.cys-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--cys-borde);
+}
+
+.cys-input-date {
+    background-color: var(--cys-surface);
+    border: 1px solid var(--cys-borde);
+    color: var(--texto);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.88rem;
+}
+
+/* Tabla de Datos */
+.cys-main-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+}
+
+.cys-main-table th {
+    background-color: var(--fondo-card2) !important;
+    color: var(--texto) !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 14px 20px !important;
+    border-bottom: 2px solid var(--cys-borde) !important;
+}
+
+.cys-main-table td {
+    padding: 14px 20px !important;
+    color: var(--texto-muted) !important;
+    border-bottom: 1px solid var(--azul-borde) !important;
+}
+
+/* Estilos de Celdas Dinámicas — el badge de producto es informativo, no
+   un mensaje de éxito, así que usa las variables de tema */
+.cys-badge-product {
+    background-color: var(--azul-borde);
+    color: var(--texto);
+    border: 1px solid var(--azul-borde);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+}
+
+/* El badge de estado "Pagado" SÍ es un mensaje de éxito: mantiene el verde */
+.cys-badge-status {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--cys-verde);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Footer del Panel */
+.cys-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid var(--cys-borde);
+}
+
+/* ══ TABLA HISTORIAL ESTILO INVENTARIO ══ */
+.cys-hist-search-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--cys-borde);
+}
+.cys-hist-search-wrap { position: relative; flex: 1 1 280px; min-width: 220px; }
+.cys-hist-search-wrap i {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--cys-texto-muted); font-size: .9rem;
+}
+.cys-hist-search-input {
+  width: 100%;
+  background: var(--cys-bg-card);
+  border: 1px solid var(--cys-borde);
+  border-radius: 10px;
+  color: #fff;
+  padding: 9px 14px 9px 38px;
+  font-size: .85rem;
+}
+.cys-hist-search-input:focus { outline: none; border-color: var(--cys-acento); }
+.cys-hist-search-input::placeholder { color: var(--cys-texto-muted); }
+
+.cys-hist-table { width: 100%; border-collapse: collapse; }
+.cys-hist-table thead th {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cys-acento);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--cys-borde);
+  white-space: nowrap;
+  user-select: none;
+}
+.cys-hist-table th.sortable { cursor: pointer; }
+.cys-hist-table th.sortable .bi {
+  font-size: .7rem; margin-left: 4px; opacity: .35;
+  transition: opacity .15s, transform .15s;
+}
+.cys-hist-table th.sortable.activo .bi { opacity: 1; color: var(--cys-acento); }
+.cys-hist-table th.sortable.desc .bi { transform: rotate(180deg); }
+
+.cys-hist-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.08); transition: background .15s; }
+.cys-hist-table tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+.cys-hist-table td { padding: 14px 16px; color: rgba(255, 255, 255, 0.85); font-size: .85rem; vertical-align: middle; }
+
+.cys-hist-id { color: var(--cys-texto-muted); font-weight: 700; }
+.cys-hist-cliente { color: var(--texto); font-weight: 700; }
+.cys-hist-total { color: var(--cys-verde); font-weight: 700; text-align: right; } /* cifra de dinero: verde permitido */
+.cys-hist-fecha { color: var(--texto); font-weight: 500; display: block; }
+.cys-hist-hora { color: var(--cys-texto-muted); font-size: .72rem; display: block; }
+
+.cys-hist-sin-resultados { text-align: center; padding: 3rem 1rem; color: var(--cys-texto-muted); }
+
+/* ── Toolbar de búsqueda + orden (Historial de Ventas) ── */
+.cys-hist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1.5rem;
+  background: var(--cys-surface);
+  border-bottom: 1px solid var(--cys-borde);
+}
+.cys-hist-search-wrap {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+.cys-hist-search-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cys-acento);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+.cys-hist-search-input {
+  width: 100%;
+  background: var(--cys-bg-card);
+  border: 1px solid var(--cys-borde);
+  color: #fff;
+  border-radius: 50px;
+  padding: 9px 16px 9px 38px;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cys-hist-search-input:focus { border-color: var(--cys-acento); }
+.cys-hist-search-input::placeholder { color: var(--cys-texto-muted); }
+
+.cys-hist-sort-wrap { position: relative; flex: 0 0 auto; }
+.cys-hist-sort-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cys-acento);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+.cys-hist-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--cys-bg-card);
+  border: 1px solid var(--cys-borde);
+  color: #fff;
+  border-radius: 50px;
+  padding: 9px 34px 9px 38px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  min-width: 170px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+.cys-hist-sort-select:focus { border-color: var(--cys-acento); }
+.cys-hist-sort-select option { background: var(--cys-bg-card); color: #fff; }
+
+/* ══════════════════════════════════════
+   Variantes de color para tarjetas KPI
+══════════════════════════════════════ */
+.cys-kpi-card--info    { border-left: 3px solid var(--cys-acento); }
+.cys-kpi-card--success { border-left: 3px solid var(--cys-verde); }
+
+.cys-kpi-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cys-kpi-icon--info    { background: rgba(255, 255, 255, 0.12); color: var(--cys-acento); }
+.cys-kpi-icon--success { background: rgba(46, 204, 113, 0.12); color: var(--cys-verde); }
+.cys-kpi-icon--info i, .cys-kpi-icon--success i { font-size: 1.1rem; }
+
+.cys-kpi-badge--info {
+    color: var(--cys-acento);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.cys-kpi-badge--success {
+    color: var(--cys-verde);
+    background: rgba(46, 204, 113, 0.1);
+    border-color: rgba(46, 204, 113, 0.3);
+}
+
+/* KPI de ingresos: cifra de dinero, verde permitido */
+.cys-kpi-card--success .cys-kpi-value.text-success { color: var(--cys-verde) !important; }
+
+/* ── Celda cliente (avatar + nombre), toolbar de historial del día ── */
+.cys-cliente-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cys-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--cys-acento);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+.cys-cliente-rol {
+  font-size: 0.72rem;
+  color: var(--cys-texto-muted);
+}
+.cys-producto-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+.cys-estado-pagado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--cys-verde);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.cys-td-total-alineado,
+.cys-hist-total-alineado { text-align: right; }
+.cys-td-total { color: var(--cys-verde); font-weight: 700; }
+.cys-td-precio-muted,
+.cys-hist-precio-muted { color: var(--cys-texto-muted); }
+.cys-td-centro,
+.cys-th-centro { text-align: center; }
+.cys-fecha-dia { display: block; color: var(--texto); font-weight: 600; font-size: 0.82rem; }
+.cys-fecha-hora { display: block; color: var(--cys-texto-muted); font-size: 0.72rem; }
+.cys-tabla-scroll-wrap { overflow-x: auto; }
