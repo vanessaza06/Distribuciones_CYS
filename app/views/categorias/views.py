@@ -6,7 +6,7 @@ from django.urls import reverse
 from app.models import Categoria
 
 
-@login_required
+#@login_required
 def categorias_lista(request):
     categorias = Categoria.objects.prefetch_related(
         'productos', 'subcategorias__productos'
@@ -22,7 +22,7 @@ def categorias_lista(request):
     return render(request, 'categorias/categorias.html', context)
 
 
-@login_required
+#@login_required
 def categoria_crear(request):
     if request.method == 'POST':
         nombre      = request.POST.get('nombre', '').strip()
@@ -46,7 +46,7 @@ def categoria_crear(request):
     return redirect('categorias:lista')
 
 
-@login_required
+#@login_required
 def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -73,7 +73,7 @@ def categoria_editar(request, pk):
     return redirect('categorias:lista')
 
 
-@login_required
+#@login_required
 def categoria_eliminar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
