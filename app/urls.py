@@ -8,4 +8,5 @@ urlpatterns = [
     path('proveedores/', include('app.views.proveedores.urls')),
     path('devoluciones/', include('app.views.devoluciones.urls')),
     path('compra/', include('app.views.compra.urls')),
+    path('categorias/', include('app.views.categorias.urls')),
 ]
