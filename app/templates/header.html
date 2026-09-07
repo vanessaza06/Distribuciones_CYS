@@ -1,0 +1,67 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/cuerpo/header-inline.css' %}">
+<link rel="stylesheet" href="{% static 'css/cuerpo/header.css' %}">
+<header class="cys-header" data-url-stock-status="{% url 'stock_status' %}">
+    <div class="cys-header__brand">
+        <img src="{% static 'img/logo.20.png' %}" alt="Logo CYS" class="cys-header__logo" loading="lazy">
+        <div>
+            <div class="cys-header__title">Tablero de Control</div>
+            <div class="cys-header__sub">
+                <span>Licorera C Y S</span>
+                <span class="cys-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-4">
+
+        <div class="cys-header__clock">
+            <div id="reloj" class="cys-header__clock-time">00:00</div>
+            <div id="fecha" class="cys-header__clock-date">Cargando fecha...</div>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <div class="dropdown">
+            <button id="notif-bell-btn" class="btn p-0 position-relative notif-bell-btn"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside"
+                    aria-expanded="false"
+                    aria-label="Notificaciones"
+                    title="Alertas">
+                <i id="notif-bell-icon" class="bi bi-bell notif-bell-icon"></i>
+                <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill d-none notif-badge">0</span>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-end p-0 notif-dropdown-menu"
+                id="notif-dropdown-menu">
+
+            <div class="d-flex notif-tabs-divider">
+                     <button id="tab-alertas" type="button" onclick="notifTab('alertas')"
+                 class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn">
+                 Alertas
+               </button>
+                    <button id="tab-historial" type="button" onclick="notifTab('historial')"
+                            class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn">
+                        Historial
+                    </button>
+                </div>
+
+                <div id="panel-alertas" class="notif-panel">
+                    <div class="text-center py-3 notif-empty-text">Cargando…</div>
+                </div>
+
+                <div id="panel-historial" class="d-none notif-panel">
+                    <div class="text-center py-3 notif-empty-text">Sin notificaciones aún</div>
+                </div>
+
+                <a class="dropdown-item text-center py-2 notif-footer-link" href="{% url 'inventario:gestion_stock' %}">
+                    Ver stock completo →
+                </a>
+            </div>
+        </div>
+
+    </div>
+</header>
+
+<script src="{% static 'js/cuerpo/header.js' %}" defer></script>
