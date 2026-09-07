@@ -13,9 +13,3 @@ urlpatterns = [
     #path('devoluciones/', include('app.views.devoluciones.urls')),
    # path('compra/', include('app.views.compra.urls')),
     path('categorias/', views.categorias_lista, name='categorias_lista'),
-
-    
-
-  
-
-]
