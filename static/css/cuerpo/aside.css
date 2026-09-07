@@ -1,0 +1,543 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================
+   USUARIO — WRAPPER Y BOTÓN
+   ============================================================ */
+.cys-sb-user-wrap {
+  position: relative;
+  border-radius: 12px;
+}
+
+.cys-sb-user-row {
+  position: relative;
+}
+
+.cys-sb-user-info-btn {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  padding: calc(.75rem * var(--density-scale, 1));
+  background: rgba(77,168,218,.06) !important;
+  border: 1px solid rgba(77,168,218,.18) !important;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, border-radius .22s, padding .25s ease;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  box-shadow: none !important;
+}
+
+.cys-sb-user-info-btn:hover,
+.cys-sb-user-info-btn:focus,
+.cys-sb-user-info-btn:active {
+  background: rgba(77,168,218,.10) !important;
+  border-color: rgba(77,168,218,.28) !important;
+  outline: none;
+  box-shadow: none !important;
+  color: inherit;
+}
+
+.cys-sb-user-wrap:hover .cys-sb-user-info-btn {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+/* ============================================================
+   AVATAR
+   ============================================================ */
+.cys-sb-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a5c, #2a5080);
+  border: 2px solid rgba(77,168,218,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: border-color .25s;
+}
+
+.cys-sb-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+}
+
+.cys-sb-avatar__icon {
+  font-size: 1.2rem;
+  color: var(--azul-claro);
+  display: block;
+  transition: transform .3s cubic-bezier(.25,.8,.25,1);
+}
+
+.cys-sb-user-wrap:hover .cys-sb-avatar {
+  border-color: rgba(77,168,218,.7);
+}
+
+.cys-sb-user-wrap:hover .cys-sb-avatar__icon {
+  transform: rotate(12deg) scale(1.06);
+}
+
+/* ============================================================
+   INFO USUARIO
+   ============================================================ */
+.cys-sb-user-info { flex: 1; min-width: 0; }
+
+.cys-sb-user-name {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cys-sb-user-role {
+  font-size: .68rem;
+  color: var(--azul-claro);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-top: .1rem;
+}
+
+/* ============================================================
+   DROPDOWN HOVER
+   ============================================================ */
+.cys-sb-user-drop {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height .25s ease, opacity .2s ease, transform .2s ease;
+  transform: translateY(-4px);
+  transform-origin: top center;
+  border: 1px solid rgba(77,168,218,.13) !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px;
+  background: rgba(4,14,28,.58) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: relative;
+  z-index: 10;
+}
+
+.cys-sb-user-wrap:hover .cys-sb-user-drop {
+  max-height: 80px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.cys-sb-user-drop-link {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .7rem 1rem;
+  font-size: .82rem;
+  color: rgba(77,168,218,.65);
+  text-decoration: none;
+  transition: background .18s, color .18s, padding-left .18s;
+}
+
+.cys-sb-user-drop-link:hover {
+  background: rgba(77,168,218,.07);
+  color: var(--azul-claro);
+  padding-left: 1.25rem;
+}
+
+/* ============================================================
+   NAV — SECCIÓN Y LABEL
+   ============================================================ */
+.cys-sb-section { margin-top: .25rem; }
+
+.cys-sb-label {
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--texto-muted);
+  margin-bottom: .5rem;
+}
+
+.cys-sb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: calc(.2rem * var(--density-scale, 1));
+  transition: gap .25s ease;
+}
+
+/* ============================================================
+   LINKS NAV
+   ============================================================ */
+.cys-sb-link {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  width: 100%;
+  padding: calc(.7rem * var(--density-scale, 1)) calc(.9rem * var(--density-scale, 1));
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--texto-muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s, padding .25s ease;
+  text-align: left;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.cys-sb-link i {
+  font-size: .95rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.cys-sb-link:hover,
+.cys-sb-link.active {
+  background: rgba(77,168,218,.08);
+  color: var(--azul-claro);
+  border-color: rgba(77,168,218,.2);
+}
+
+/* ============================================================
+   AYUDA / CONFIGURACIÓN / CERRAR SESIÓN — más presencia de color,
+   igual en modo expandido y en modo mini (no dependen de .cys-sb-mini)
+   ============================================================ */
+.cys-sb-link--config {
+  color: var(--azul-claro);
+  border-color: rgba(77,168,218,.35);
+  background: rgba(77,168,218,.10);
+  margin-top: .25rem;
+}
+.cys-sb-link--config i {
+  text-shadow: 0 0 10px rgba(77,168,218,.5);
+}
+.cys-sb-link--config:hover {
+  background: rgba(77,168,218,.22);
+  border-color: rgba(77,168,218,.55);
+  color: var(--azul-claro);
+}
+
+.cys-sb-link--logout {
+  color: #ff8a8a;
+  border-color: rgba(232,112,112,.35);
+  background: rgba(232,112,112,.10);
+  margin-top: .25rem;
+}
+.cys-sb-link--logout i {
+  text-shadow: 0 0 10px rgba(232,112,112,.5);
+}
+.cys-sb-link--logout:hover {
+  background: rgba(232,112,112,.22);
+  border-color: rgba(232,112,112,.55);
+  color: #ff8a8a;
+}
+
+/* ============================================================
+   SUBMENÚ
+   ============================================================ */
+.cys-sb-link--parent { cursor: pointer; user-select: none; }
+
+.cys-chevron {
+  font-size: .7rem;
+  margin-left: auto;
+  transition: transform .25s ease;
+  flex-shrink: 0;
+}
+
+.cys-sb-link.abierto .cys-chevron {
+  transform: rotate(180deg);
+}
+
+.cys-sb-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  max-height: 0;
+  overflow: hidden;
+  padding-left: 1.4rem;
+  margin-top: .1rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: max-height .25s ease, opacity .2s ease, transform .2s ease;
+  position: relative;
+}
+
+.cys-sb-submenu::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--azul-borde);
+  opacity: .3;
+}
+
+.cys-sb-submenu.abierto {
+  max-height: 200px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cys-sb-sublink {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: calc(.55rem * var(--density-scale, 1)) calc(.85rem * var(--density-scale, 1));
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--texto-muted);
+  text-decoration: none;
+  transition: background .2s, color .2s, transform .15s, padding .25s ease;
+  border: 1px solid transparent;
+}
+
+.cys-sb-sublink i {
+  font-size: .82rem;
+  width: 14px;
+  text-align: center;
+}
+
+.cys-sb-sublink:hover,
+.cys-sb-sublink.active {
+  background: rgba(77,168,218,.08);
+  color: var(--azul-claro);
+  border-color: rgba(77,168,218,.15);
+  transform: translateX(3px);
+}
+
+/* ============================================================
+   ESTADÍSTICAS
+   ============================================================ */
+.cys-sb-stats {
+  display: flex;
+  flex-direction: column;
+  gap: calc(.55rem * var(--density-scale, 1));
+  transition: gap .25s ease;
+}
+
+.cys-sb-stat {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: calc(.85rem * var(--density-scale, 1)) calc(1rem * var(--density-scale, 1));
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+  transition: border-color .2s, box-shadow .2s, padding .25s ease;
+}
+
+.cys-sb-stat:hover {
+  border-color: rgba(77,168,218,.4);
+  box-shadow: 0 0 12px rgba(77,168,218,.1);
+}
+
+.cys-sb-stat__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cys-sb-stat__dot--verde    { background: #2ecc71; box-shadow: 0 0 7px rgba(46,204,113,.55); }
+.cys-sb-stat__dot--rojo     { background: #e87070; box-shadow: 0 0 7px rgba(232,112,112,.55); }
+.cys-sb-stat__dot--amarillo { background: #f1c40f; box-shadow: 0 0 7px rgba(241,196,15,.55); }
+
+.cys-sb-stat__body { flex: 1; min-width: 0; }
+
+.cys-sb-stat__label {
+  font-size: .62rem;
+  color: var(--texto-muted);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  line-height: 1;
+}
+
+.cys-sb-stat__val {
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--texto);
+  line-height: 1.05;
+}
+
+.cys-sb-stat__sub {
+  font-size: .65rem;
+  color: var(--texto-muted);
+  margin-top: .1rem;
+}
+
+/* ============================================================
+   DIVIDER Y FOOTER
+   ============================================================ */
+.cys-sb-divider {
+  height: 1px;
+  background: var(--azul-borde);
+  border: none;
+  margin: 0;
+}
+
+.cys-sb-footer {
+  text-align: center;
+  font-size: .6rem;
+  color: var(--texto-muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding-top: .25rem;
+}
+
+/* ============================================================
+   BOTÓN CERRAR (EQUIS) — MODIFICACIONES ESTÉTICAS
+   ============================================================ */
+.cys-sb-close {
+  background: transparent;
+  border: none;
+  color: var(--texto-muted, rgba(255, 255, 255, 0.6));
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+.cys-sb-close:hover {
+  background-color: rgba(232, 112, 112, 0.15) !important;
+  color: #e87070 !important;
+}
+
+.cys-sb-close:active {
+  background-color: rgba(232, 112, 112, 0.3) !important;
+  transform: scale(0.95);
+}
+
+/* ============================================================
+   RESUMEN — VISIBILIDAD (movido desde <style> inline en aside.html)
+   ============================================================ */
+#cys-sb-resumen-wrap {
+  transition: opacity .35s ease, visibility .35s ease;
+  opacity: 1;
+  visibility: visible;
+}
+#cys-sb-resumen-wrap.cys-sb-resumen-oculto {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ============================================================
+   HEADER — ACCIONES (botón modo mini + botón cerrar)
+   ============================================================ */
+.cys-sb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.cys-sb-mini-toggle {
+  background: transparent;
+  border: none;
+  color: var(--texto-muted, rgba(255, 255, 255, 0.6));
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+.cys-sb-mini-toggle:hover {
+  background-color: rgba(77, 168, 218, 0.15) !important;
+  color: var(--azul-claro) !important;
+}
+
+.cys-sb-mini-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ============================================================
+   FOCO DE TECLADO/CLIC — reemplaza el outline cuadrado por defecto
+   del navegador (que ignora el border-radius y se ve "cortado")
+   por un box-shadow que sigue la forma redondeada del botón.
+   ============================================================ */
+.cys-sb-mini-toggle:focus,
+.cys-sb-close:focus {
+  outline: none;
+}
+
+.cys-sb-mini-toggle:focus-visible,
+.cys-sb-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(77,168,218,.35);
+}
+
+/* ============================================================
+   MODO MINI — SOLO ÍCONOS
+   ============================================================ */
+.cys-sb-mini {
+  width: 84px !important;
+}
+
+.cys-sb-mini .cys-sb-brand {
+  justify-content: center;
+}
+
+.cys-sb-mini .cys-sb-brand > div {
+  display: none;
+}
+
+.cys-sb-mini .cys-sb-label,
+.cys-sb-mini .cys-sb-user-info,
+.cys-sb-mini .cys-sb-link span,
+.cys-sb-mini .sb-link-flex-grow span,
+.cys-sb-mini .sb-submenu-toggle,
+.cys-sb-mini .cys-sb-submenu,
+.cys-sb-mini .cys-sb-user-drop,
+.cys-sb-mini #cys-sb-resumen-wrap,
+.cys-sb-mini .cys-sb-footer {
+  display: none !important;
+}
+
+.cys-sb-mini .cys-sb-link,
+.cys-sb-mini .cys-sb-user-info-btn {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.cys-sb-mini .sb-link-flex-grow {
+  justify-content: center !important;
+  padding: calc(.7rem * var(--density-scale, 1)) 0 !important;
+}
+
+.cys-sb-mini .cys-sb-link i,
+.cys-sb-mini .sb-link-flex-grow i {
+  width: auto;
+  font-size: 1.05rem;
+}
+
+.cys-sb-mini .cys-sb-user-row {
+  display: flex;
+  justify-content: center;
+}
+
+.cys-sb-mini .cys-sb-user-info-btn {
+  width: auto;
+  padding: calc(.6rem * var(--density-scale, 1));
+}
