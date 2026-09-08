@@ -1,40 +1,472 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
 
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proveedores</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-    <h1>Proveedores</h1>
-    <button class="btn btn-primary" onclick="window.location.href='{{ url_for('proveedores.crear_proveedor') }}'">Agregar Proveedor</button>
-    
-    <table class="table">
+{% block page_title %}Proveedores{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
+<link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">
+<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script>
+  // Variables globales para los gráficos (datos del servidor)
+  window.gastosLabels = {{ gastos_labels_json|safe }};
+  window.gastosData = {{ gastos_data_json|safe }};
+  window.gastosPorcentajes = {{ gastos_porcentajes_json|safe }};
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Contenedor para notificaciones Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer" style="z-index: 9999;"></div>
+
+<div class="container-fluid p-0">
+  <div class="cys-snap-section px-3 py-4">
+
+
+  <!-- MÉTRICAS RESUMEN -->
+  <div class="kpi-cards-grid mb-4">
+    <!-- Total -->
+    <div class="kpi-card kpi-card-cyan">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box cyan"><i class="bi bi-building"></i></div>
+        <span class="kpi-badge cyan">TOTAL</span>
+      </div>
+      <div class="kpi-value cyan">{{ total_proveedores }}</div>
+      <p class="kpi-title">Proveedores</p>
+      <p class="kpi-sub">Registrados en el sistema</p>
+    </div>
+
+    <!-- Activos -->
+    <div class="kpi-card kpi-card-green">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box green"><i class="bi bi-check-circle"></i></div>
+        <span class="kpi-badge green">ACTIVOS</span>
+      </div>
+      <div class="kpi-value green">{{ proveedores_activos }}</div>
+      <p class="kpi-title">Proveedores Activos</p>
+      <p class="kpi-sub">{{ porcentaje_activos }}% del total</p>
+    </div>
+
+    <!-- Inactivos -->
+    <div class="kpi-card kpi-card-yellow">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box yellow"><i class="bi bi-pause-circle"></i></div>
+        <span class="kpi-badge yellow">INACTIVOS</span>
+      </div>
+      <div class="kpi-value yellow">{{ proveedores_inactivos }}</div>
+      <p class="kpi-title">Proveedores Inactivos</p>
+      <p class="kpi-sub">Desactivados temporalmente</p>
+    </div>
+
+    <!-- Sancionados -->
+    <div class="kpi-card kpi-card-orange">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box orange"><i class="bi bi-exclamation-circle"></i></div>
+        <span class="kpi-badge orange">SANCIONADOS</span>
+      </div>
+      <div class="kpi-value orange">{{ proveedores_sancionados }}</div>
+      <p class="kpi-title">Proveedores Sancionados</p>
+      <p class="kpi-sub">Bajo sanciones activas</p>
+    </div>
+  </div>
+
+  <!-- MENSAJES -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %}-dev mb-4" role="alert">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- TABLA DE PROVEEDORES (ESTILO REPORTES) -->
+  <section class="cys-card mb-4">
+    <div class="cys-card__title">
+      <i class="bi bi-table cys-card__title-icon"></i>Tabla de Proveedores
+    </div>
+
+    <!-- Barra de filtros -->
+    <div class="cys-hv-filters d-flex align-items-center gap-3">
+
+      <!-- Buscador -->
+      <div class="flex-grow-1">
+        <div class="cys-hv-search-wrap">
+          <i class="bi bi-search cys-hv-search-icon"></i>
+          <input type="text" id="buscar-proveedores" class="cys-hv-search-input"
+                 placeholder="Buscar proveedor, NIT, contacto...">
+        </div>
+      </div>
+
+      <!-- Nuevo proveedor -->
+      <button type="button" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor" class="btn-nuevo-prov">
+        <i class="bi bi-plus-circle"></i> Nuevo proveedor
+      </button>
+
+    </div><!-- /cys-hv-filters -->
+
+    <div class="table-responsive mt-3">
+      <table class="cys-inv-table table w-100" id="tablaProveedores">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>NIT</th>
-                <th>Teléfono</th>
-                <th>Acciones</th>
-            </tr>
+          <tr>
+            <th class="cys-col-num">#</th>
+            <th>Empresa</th>
+            <th>NIT</th>
+            <th>Contacto</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Responsable</th>
+            <th>Fecha Registro</th>
+            <th class="text-center">Acciones</th>
+          </tr>
         </thead>
-        <tbody>
-            {% for proveedor in proveedores %}
-            <tr>
-                <td>{{ proveedor.id_proveedor }}</td>
-                <td>{{ proveedor.nombre }}</td>
-                <td>{{ proveedor.nit }}</td>
-                <td>{{ proveedor.telefono }}</td>
-                <td>
-                    <a href="{{ url_for('proveedores.editar_proveedor', id_proveedor=proveedor.id_proveedor) }}" class="btn btn-warning">Editar</a>
-                    <a href="{{ url_for('proveedores.eliminar_proveedor', id_proveedor=proveedor.id_proveedor) }}" class="btn btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
+        <tbody id="cuerpoTabla">
+          {% for p in proveedores %}
+          <tr class="cys-tr fila-proveedor" data-empresa="{{ p.nombre_empresa|lower }}" data-estado="{{ p.estado }}" data-tipo="{{ p.tipo_proveedor }}">
+            <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+            <td class="cys-td cys-td--bold" data-label="Empresa">
+              {{ p.nombre_empresa }}<br>
+              <span class="text-sm text-muted fw-400">{{ p.email }}</span>
+            </td>
+            <td class="cys-td" data-label="NIT">
+              <span class="fw-bold text-monospace">{{ p.nit|default:"—" }}</span>
+            </td>
+            <td class="cys-td" data-label="Teléfono">
+              {{ p.telefono|default:"—" }}<br>
+              <span class="text-sm text-muted">{{ p.get_tipo_proveedor_display }}</span>
+            </td>
+            <td class="cys-td" data-label="Tipo">
+              <span class="cys-tag cys-tag--prov">
+                {{ p.get_tipo_proveedor_display }}
+              </span>
+            </td>
+            <td class="cys-td" data-label="Estado">
+              <span class="cys-badge
+                {% if p.estado == 'activo' %}cys-badge--verde
+                {% elif p.estado == 'inactivo' %}cys-badge--amarillo
+                {% else %}cys-badge--rojo{% endif %}">
+                {{ p.get_estado_display|upper }}
+              </span>
+            </td>
+            <td class="cys-td cys-td--muted" data-label="Responsable">{{ p.registrado_por.email|default:"Admin" }}</td>
+            <td class="cys-td" data-label="Fecha Registro">
+              <div class="fw-bold">{{ p.fecha_registro|date:"d/m/Y" }}</div>
+              <span class="text-sm text-muted">{{ p.fecha_registro|date:"H:i" }}</span>
+            </td>
+            <td class="cys-td text-center" data-label="Acciones">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                  <li>
+                    <a class="dropdown-item" href="/proveedores/detalle/{{ p.id }}/">
+                      <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="/proveedores/editar/{{ p.id }}/">
+                      <i class="bi bi-pencil me-2 text-warning"></i>Editar
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  {% if p.estado == 'activo' %}
+                  <li>
+                    <button type="button" class="dropdown-item btn-desactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                      <i class="bi bi-pause-circle me-2 text-warning"></i>Desactivar
+                    </button>
+                  </li>
+                  {% elif p.estado == 'inactivo' %}
+                  <li>
+                    <button type="button" class="dropdown-item btn-reactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                      <i class="bi bi-play-circle me-2 text-success"></i>Activar
+                    </button>
+                  </li>
+                  {% endif %}
+                  {% if p.estado != 'sancionado' %}
+                  <li>
+                    <button type="button" class="dropdown-item btn-sancionar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                      <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Sancionar
+                    </button>
+                  </li>
+                  {% else %}
+                  <li>
+                    <button type="button" class="dropdown-item btn-levantar-sancion" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                      <i class="bi bi-info-circle me-2 text-info"></i>Levantar sanción
+                    </button>
+                  </li>
+                  {% endif %}
+                </ul>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="9" class="cys-td--empty border-0">
+              <div class="cys-empty-box">
+                <i class="bi bi-truck"></i>
+                No se encontraron proveedores.
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
         </tbody>
-    </table>
-</body>
-</html>
+      </table>
+    </div>
+
+    <!-- Pie DataTables (info + paginación) -->
+    <div class="cys-hv-table-footer">
+      <span class="cys-hv-showing-info" id="cys-dt-info-proveedores"></span>
+      <div class="cys-hv-pagination-wrap" id="cys-dt-pagination-proveedores"></div>
+    </div>
+  </section>
+
+  <!-- GRÁFICA: GASTOS POR PROVEEDOR -->
+  <section class="cys-card mb-4 mt-4">
+    <div class="cys-card__title">
+      <i class="bi bi-pie-chart-fill cys-card__title-icon"></i>Gastos por Proveedor
+    </div>
+    <div class="p-4">
+      <canvas id="chartGastosProveedor" height="250"></canvas>
+    </div>
+  </section>
+  </div>
+
+
+<!-- MODAL NUEVO PROVEEDOR -->
+<div class="modal fade" id="modalNuevoProveedor" tabindex="-1" role="dialog" aria-labelledby="modalNuevoProveedorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header border-0">
+        <div>
+          <h6 class="modal-title" id="modalNuevoProveedorLabel">
+            <i class="bi bi-plus-circle me-2 text-info"></i>Nuevo Proveedor
+          </h6>
+          <small class="text-muted">Completa los datos para registrar un nuevo proveedor</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formNuevoProveedor" method="POST" action="{% url 'crear_proveedor' %}">
+          {% csrf_token %}
+          <div class="row g-3">
+            <!-- Empresa -->
+            <div class="col-12 col-md-6">
+              <label for="id_nombre_empresa" class="form-label prod-label">Empresa <span class="text-danger">*</span></label>
+              <input type="text" name="nombre_empresa" id="id_nombre_empresa" class="form-control prod-input" placeholder="Ej: ABC Distribuciones" required>
+              <div class="invalid-feedback" id="error-nombre_empresa"></div>
+            </div>
+
+            <!-- NIT -->
+            <div class="col-12 col-md-6">
+              <label for="id_nit" class="form-label prod-label">NIT <span class="text-danger">*</span></label>
+              <input type="text" name="nit" id="id_nit" class="form-control prod-input" placeholder="Ej: 123456789-1" required>
+              <div class="invalid-feedback" id="error-nit"></div>
+            </div>
+
+            <!-- Correo -->
+            <div class="col-12 col-md-6">
+              <label for="id_email" class="form-label prod-label">Correo <span class="text-danger">*</span></label>
+              <input type="email" name="email" id="id_email" class="form-control prod-input" placeholder="contacto@empresa.com" required>
+              <div class="invalid-feedback" id="error-email"></div>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="col-12 col-md-6">
+              <label for="id_telefono" class="form-label prod-label">Teléfono <span class="text-danger">*</span></label>
+              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" placeholder="Ej: 3001234567" pattern="\d{7,15}" required>
+              <div class="invalid-feedback" id="error-telefono"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer prod-modal-footer">
+        <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <button type="submit" form="formNuevoProveedor" class="btn prod-btn-primary fw-bold">
+          <i class="bi bi-check-circle me-1"></i>Guardar Proveedor
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DESACTIVAR PROVEEDOR (Mejorado) -->
+<div class="modal fade" id="modalDesactivarGeneral" tabindex="-1" role="dialog" aria-labelledby="modalDesactivarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header border-0">
+        <div>
+          <span class="badge badge-status-inactivo mb-2">
+            <i class="bi bi-pause-circle me-1"></i>DESACTIVAR
+          </span>
+          <h6 class="modal-title" id="modalDesactivarLabel">
+            <i class="bi bi-pause-circle me-2 text-warning"></i>Desactivar proveedor
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="alert alert-warning mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>¿Deseas desactivar este proveedor?</strong><br>
+          <small>Los registros históricos se conservarán.</small>
+        </div>
+        <div>
+          <div class="fw-bold" id="proveedorDesactivarNombre">Nombre del proveedor</div>
+          <div class="prod-label mt-1" id="proveedorDesactivarEmail">Email</div>
+        </div>
+      </div>
+      <div class="modal-footer prod-modal-footer border-0 justify-content-between">
+        <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <form method="POST" id="formDesactivarProveedor" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-warning fw-bold">
+            <i class="bi bi-pause-circle me-1"></i>Desactivar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR PROVEEDOR (Mejorado) -->
+<div class="modal fade" id="modalEliminarGeneral" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header border-0">
+        <div>
+          <span class="badge bg-danger mb-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>ELIMINAR
+          </span>
+          <h6 class="modal-title" id="modalEliminarLabel">
+            <i class="bi bi-trash me-2 text-danger"></i>Eliminar proveedor
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="alert alert-danger-dev mb-3" role="alert">
+          <i class="bi bi-exclamation-octagon me-2"></i>
+          <strong>Esta acción es irreversible</strong><br>
+          <small>Se eliminarán todos los datos asociados al proveedor.</small>
+        </div>
+        <div>
+          <div class="fw-bold" id="proveedorEliminarNombre">Nombre del proveedor</div>
+          <div class="prod-label mt-1" id="proveedorEliminarEmail">Email</div>
+          <div class="mt-2 prod-label" id="proveedorEliminarTelefono">Teléfono</div>
+        </div>
+      </div>
+      <div class="modal-footer prod-modal-footer border-0 justify-content-between">
+        <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <form method="POST" id="formEliminarProveedor" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger fw-bold">
+            <i class="bi bi-trash me-1"></i>Eliminar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SANCIONAR PROVEEDOR (Mejorado) -->
+<div class="modal fade" id="modalSancionarGeneral" tabindex="-1" role="dialog" aria-labelledby="modalSancionarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header border-0">
+        <div>
+          <span class="badge bg-danger mb-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>SANCIONAR
+          </span>
+          <h6 class="modal-title" id="modalSancionarLabel">
+            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Sancionar proveedor
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <div class="fw-bold" id="proveedorSancionarNombre">Nombre del proveedor</div>
+          <div class="prod-label mt-1" id="proveedorSancionarEmail">Email</div>
+        </div>
+        <form id="formSancionar" method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="motivoSancion" class="form-label prod-label">Observaciones <span class="text-danger">*</span></label>
+            <textarea
+              id="motivoSancion"
+              name="observacion"
+              class="form-control prod-input"
+              rows="4"
+              placeholder="Describe el motivo de la sanción..."
+              required></textarea>
+            <div class="prod-label mt-2">Sé específico sobre el motivo de la sanción</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer prod-modal-footer border-0 justify-content-between">
+        <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <button type="submit" form="formSancionar" class="btn btn-danger fw-bold">
+          <i class="bi bi-exclamation-triangle me-1"></i>Sancionar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER SANCIÓN (Mejorado) -->
+<div class="modal fade" id="modalVerSancionGeneral" tabindex="-1" role="dialog" aria-labelledby="modalVerSancionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header border-0">
+        <div>
+          <span class="badge bg-danger mb-2">
+            <i class="bi bi-info-circle me-1"></i>SANCIÓN
+          </span>
+          <h6 class="modal-title" id="modalVerSancionLabel">
+            <i class="bi bi-info-circle me-2 text-info"></i>Causa de sanción
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <div class="fw-bold text-info" id="proveedorVerSancionNombre">Nombre del proveedor</div>
+          <div class="prod-label mt-1" id="proveedorVerSancionEmail">Email</div>
+        </div>
+        <div class="mb-3">
+          <div class="prod-label text-uppercase mb-1">Observaciones</div>
+          <p class="mt-2 mb-0" id="proveedorVerSancionMotivo">Sin observaciones</p>
+        </div>
+        <hr style="border-color: rgba(77,168,218,0.15);">
+        <div class="prod-label">
+          <i class="bi bi-calendar me-1"></i>Registrado: <span id="proveedorVerSancionFecha">--</span><br>
+          <i class="bi bi-building me-1"></i>Tipo: <span id="proveedorVerSancionTipo">--</span>
+        </div>
+      </div>
+      <div class="modal-footer prod-modal-footer border-0">
+        <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i>Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/proveedores/proveedores.js' %}"></script>
+{% endblock %}

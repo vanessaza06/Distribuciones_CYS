@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Comprobante de Devolución — CYS Ltda{% endblock %}
+{% block page_title %}Comprobante de Devolución{% endblock %}
+{% block nav_ventas %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="cys-snap-section px-3 py-4">
+
+    <!-- COMPROBANTE DEVOLUCIÓN -->
+    <div class="comprobante-container">
+      <!-- HEADER -->
+      <div class="comprobante-header">
+        <h1><i class="bi bi-check-circle me-2"></i>Devolución Registrada</h1>
+        <p>Solicitud de devolución procesada exitosamente</p>
+        <div class="comprobante-numero">{{ devolucion.numero }}</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="comprobante-body">
+
+        <!-- INFO PRINCIPAL -->
+        <div class="info-grid">
+          <!-- Venta -->
+          <div class="info-block">
+            <div class="info-block-title"><i class="bi bi-receipt me-1"></i>Venta Original</div>
+            <div class="info-block-value">#{{ devolucion.venta.pk }}</div>
+            <div class="info-block-sub">
+              {{ devolucion.venta.fecha|date:"d/m/Y H:i" }}
+            </div>
+          </div>
+
+          <!-- Cliente -->
+          <div class="info-block">
+            <div class="info-block-title"><i class="bi bi-person-circle me-1"></i>Cliente</div>
+            <div class="info-block-value">{{ devolucion.venta.cliente.nombre }}</div>
+            <div class="info-block-sub">{{ devolucion.venta.cliente.email }}</div>
+          </div>
+
+          <!-- Motivo -->
+          <div class="info-block">
+            <div class="info-block-title"><i class="bi bi-question-circle me-1"></i>Motivo</div>
+            <div class="info-block-value">{{ devolucion.get_motivo_display }}</div>
+          </div>
+
+          <!-- Tipo Reembolso -->
+          <div class="info-block">
+            <div class="info-block-title"><i class="bi bi-arrow-left-right me-1"></i>Tipo Reembolso</div>
+            <div class="info-block-value">{{ devolucion.get_tipo_reembolso_display }}</div>
+          </div>
+        </div>
+
+        <!-- TABLA PRODUCTOS -->
+        {% if devolucion.detalles.all %}
+        <div class="productos-section">
+          <h3 class="productos-title">
+            <i class="bi bi-box-seam me-2"></i>Productos a Devolver
+          </h3>
+          <table class="productos-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Presentación</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th class="precio-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for detalle in devolucion.detalles.all %}
+              <tr>
+                <td>
+                  <div class="producto-nombre">{{ detalle.producto.nombre }}</div>
+                  <div class="producto-presentacion">{{ detalle.producto.marca }}</div>
+                </td>
+                <td>{{ detalle.presentacion|default:"—" }}</td>
+                <td>
+                  <span class="cantidad-badge">{{ detalle.cantidad }}</span>
+                </td>
+                <td>${{ detalle.precio_unitario|floatformat:2 }}</td>
+                <td class="precio-total">${{ detalle.subtotal|floatformat:2 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- OBSERVACIONES -->
+        {% if devolucion.observaciones %}
+        <div class="observaciones-box">
+          <div class="observaciones-title"><i class="bi bi-chat-left-text me-1"></i>Observaciones</div>
+          <div class="observaciones-text">{{ devolucion.observaciones }}</div>
+        </div>
+        {% endif %}
+
+        <!-- FOOTER / RESUMEN -->
+        <div class="comprobante-footer">
+          <div class="resumen-detalles">
+            <div class="resumen-item">
+              <div class="resumen-label">Productos</div>
+              <div class="resumen-valor">{{ devolucion.detalles.count }}</div>
+            </div>
+            <div class="resumen-item">
+              <div class="resumen-label">Cantidad Total</div>
+              <div class="resumen-valor">
+                {% for detalle in devolucion.detalles.all %}{{ detalle.cantidad }}{% if not forloop.last %}+{% endif %}{% endfor %}
+              </div>
+            </div>
+            <div class="resumen-item">
+              <div class="resumen-label">Estado</div>
+              <div class="estado-margin-top">
+                <span class="estado-badge">
+                  <i class="bi bi-check-circle me-1"></i>Registrada
+                </span>
+              </div>
+            </div>
+            <div class="resumen-item">
+              <div class="resumen-label">Total Devuelto</div>
+              <div class="resumen-valor total">${{ devolucion.total_devuelto|floatformat:2 }}</div>
+            </div>
+          </div>
+
+          <!-- BOTONES -->
+          <div class="botones-accion">
+            <button class="btn-print" onclick="window.print()">
+              <i class="bi bi-printer me-2"></i>Imprimir Comprobante
+            </button>
+            <a href="{% url 'ventas:lista_devoluciones' %}" class="btn-volver">
+              <i class="bi bi-arrow-left me-1"></i>Volver a Devoluciones
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
