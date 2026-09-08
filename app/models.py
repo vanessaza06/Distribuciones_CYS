@@ -83,16 +83,25 @@ class Categoria(models.Model):
     codigo = models.CharField(max_length=20, unique=True, db_column='codigo')
     nombre = models.CharField(max_length=100, db_column='nombre')
     descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
-    subcategoria = models.CharField(max_length=100, db_column='subcategoria')
-    padre = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='padre_id', related_name='subcategorias')
+    subcategoria = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        db_column='subcategoria_id',
+        related_name='subcategorias'
+    )
     activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
         db_table = 'categoria'
+        verbose_name = "Categoría"
+        verbose_name_plural = "Categorías"
+        ordering = ["nombre"]
 
     def __str__(self):
+        if self.subcategoria:
+            return f"{self.subcategoria.nombre} → {self.nombre}"
         return self.nombre
-   
 
     
 # ── 4. PRODUCTO ──
