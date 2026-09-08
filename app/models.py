@@ -155,10 +155,10 @@ class Marca(models.Model):
     nombre = models.CharField(max_length=100, db_column='nombre')
     descripcion = models.TextField(db_column='descripcion')
     estado = models.CharField(max_length=20, db_column='estado')
-
+ 
     class Meta:
         db_table = 'marca'
-
+ 
     def __str__(self):
         return self.nombre
 
