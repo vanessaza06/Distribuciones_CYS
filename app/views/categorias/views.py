@@ -10,7 +10,7 @@ from app.models import Categoria
 def categorias_lista(request):
     categorias = Categoria.objects.prefetch_related(
         'productos', 'subcategorias__productos'
-    ).filter(padre__isnull=True)
+    ).filter(subcategoria__isnull=True)
     todas_cats = Categoria.objects.all()
     context = {
         'categorias': categorias,
@@ -25,10 +25,10 @@ def categorias_lista(request):
 #@login_required
 def categoria_crear(request):
     if request.method == 'POST':
-        nombre      = request.POST.get('nombre', '').strip()
-        codigo      = request.POST.get('codigo', '').strip()
-        descripcion = request.POST.get('descripcion', '').strip()
-        padre_id    = request.POST.get('padre') or None
+        nombre        = request.POST.get('nombre', '').strip()
+        codigo        = request.POST.get('codigo', '').strip()
+        descripcion   = request.POST.get('descripcion', '').strip()
+        subcategoria_id = request.POST.get('subcategoria') or None
 
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
@@ -38,9 +38,9 @@ def categoria_crear(request):
             messages.error(request, f'⚠️ Ya existe una categoría con el código "{codigo}".')
             return redirect('categorias:lista')
 
-        padre = get_object_or_404(Categoria, pk=padre_id) if padre_id else None
-        Categoria.objects.create(nombre=nombre, codigo=codigo, descripcion=descripcion, padre=padre)
-        tipo = 'Subcategoría' if padre else 'Categoría'
+        subcategoria = get_object_or_404(Categoria, pk=subcategoria_id) if subcategoria_id else None
+        Categoria.objects.create(nombre=nombre, codigo=codigo, descripcion=descripcion, subcategoria=subcategoria)
+        tipo = 'Subcategoría' if subcategoria else 'Categoría'
         messages.success(request, f'✅ {tipo} "{nombre}" creada.')
 
     return redirect('categorias:lista')
@@ -50,10 +50,10 @@ def categoria_crear(request):
 def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
-        nombre      = request.POST.get('nombre', '').strip()
-        codigo      = request.POST.get('codigo', '').strip()
-        descripcion = request.POST.get('descripcion', '').strip()
-        padre_id    = request.POST.get('padre') or None
+        nombre        = request.POST.get('nombre', '').strip()
+        codigo        = request.POST.get('codigo', '').strip()
+        descripcion   = request.POST.get('descripcion', '').strip()
+        subcategoria_id = request.POST.get('subcategoria') or None
 
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
@@ -63,10 +63,10 @@ def categoria_editar(request, pk):
             messages.error(request, f'⚠️ Ya existe otra categoría con el código "{codigo}".')
             return redirect('categorias:lista')
 
-        categoria.nombre      = nombre
-        categoria.codigo      = codigo
-        categoria.descripcion = descripcion
-        categoria.padre       = get_object_or_404(Categoria, pk=padre_id) if padre_id else None
+        categoria.nombre        = nombre
+        categoria.codigo        = codigo
+        categoria.descripcion   = descripcion
+        categoria.subcategoria  = get_object_or_404(Categoria, pk=subcategoria_id) if subcategoria_id else None
         categoria.save()
         messages.success(request, f'✅ Categoría "{nombre}" actualizada.')
 
