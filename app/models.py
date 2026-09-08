@@ -1,6 +1,9 @@
+from decimal import Decimal
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+
+
 
 # ── MANAGER DE USUARIO ────────────────────────────────────────────────────────
 class UsuarioManager(BaseUserManager):
@@ -74,34 +77,24 @@ class Bodega(models.Model):
 
     def __str__(self):
         return self.nombre
-
 # ── 3. CATEGORIA ──
 class Categoria(models.Model):
     codigo_categoria = models.AutoField(primary_key=True, db_column='codigo_categoria')
     nombre = models.CharField(max_length=100, db_column='nombre')
     descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
-    subcategoria = models.CharField(max_length=100, db_column='subcategoria')
-    padre = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='padre_id', related_name='subcategorias')
+    subcategoria = models.CharField(max_length=100, blank=True, null=True, db_column='subcategoria')
+    padre = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        db_column='padre_id', 
+        related_name='subcategorias'
+    )
     activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
         db_table = 'categoria'
-
-    def __str__(self):
-        return self.nombre
-    class Categoria(models.Model):
-     nombre = models.CharField(max_length=100)
-     descripcion = models.TextField(blank=True, null=True)
-     subcategoria = models.CharField(max_length=100)
-     padre = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='subcategorias'
-    )
-    activo = models.BooleanField(default=True)
-
-    class Meta:
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
         ordering = ["nombre"]
@@ -110,6 +103,7 @@ class Categoria(models.Model):
         if self.padre:
             return f"{self.padre.nombre} → {self.nombre}"
         return self.nombre
+
     
 # ── 4. PRODUCTO ──
 class Producto(models.Model):
@@ -183,45 +177,231 @@ class DetalleProducto(models.Model):
 
 # ── 9. PROVEEDOR ──
 class Proveedor(models.Model):
-    nit_proveedores = models.CharField(max_length=50, primary_key=True, db_column='nit_proveedores')
-    nombre_empresa = models.CharField(max_length=200, db_column='nombre_empresa')
-    telefono = models.CharField(max_length=20, db_column='telefono')
-    correo = models.EmailField(db_column='correo')
-    tipo_proveedor = models.CharField(max_length=50, db_column='tipo_proveedor')
-    estado = models.CharField(max_length=20, db_column='estado')
-    observacion = models.TextField(db_column='observacion')
-    fecha_registro = models.DateTimeField(default=timezone.now, db_column='fecha_registro')
+    ESTADO_CHOICES = [
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+        ('sancionado', 'Sancionado'),
+    ]
+
+    TIPO_CHOICES = [
+        ('distribuidor', 'Distribuidor'),
+        ('fabricante', 'Fabricante'),
+        ('importador', 'Importador'),
+        ('otro', 'Otro'),
+    ]
+
+    nit_proveedores = models.CharField(
+        max_length=50, 
+        primary_key=True, 
+        db_column='nit_proveedores',
+        verbose_name="NIT / Documento"
+    )
+    nombre_empresa = models.CharField(
+        max_length=200, 
+        db_column='nombre_empresa',
+        verbose_name="Nombre de la Empresa"
+    )
+    telefono = models.CharField(
+        max_length=20, 
+        blank=True, 
+        db_column='telefono',
+        verbose_name="Teléfono"
+    )
+    correo = models.EmailField(
+        db_column='correo',
+        verbose_name="Correo Electrónico"
+    )
+    tipo_proveedor = models.CharField(
+        max_length=50, 
+        choices=TIPO_CHOICES,
+        default='distribuidor',
+        db_column='tipo_proveedor',
+        verbose_name="Tipo de Proveedor"
+    )
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='activo',
+        db_column='estado',
+        verbose_name="Estado"
+    )
+    observacion = models.TextField(
+        blank=True, 
+        null=True,
+        db_column='observacion',
+        verbose_name="Observaciones"
+    )
+    fecha_registro = models.DateTimeField(
+        default=timezone.now, 
+        db_column='fecha_registro',
+        verbose_name="Fecha de Registro"
+    )
 
     class Meta:
         db_table = 'proveedor'
+        verbose_name = 'Proveedor'
+        verbose_name_plural = 'Proveedores'
+        ordering = ['-fecha_registro']
 
     def __str__(self):
-        return self.nombre_empresa
+        return f"{self.nombre_empresa} ({self.get_estado_display()})"
+
+    def clean(self):
+        super().clean()
+        if self.estado == 'sancionado' and not (self.observacion and self.observacion.strip()):
+            from django.core.exceptions import ValidationError
+            raise ValidationError({
+                'observacion': 'Debe indicar el motivo de la sanción obligatoriamente.'
+            })
+
 
 # ── 10. COMPRA ──
 class Compra(models.Model):
-    codigo_compra = models.AutoField(primary_key=True, db_column='codigo_compra')
-    fecha = models.DateTimeField(default=timezone.now, db_column='fecha')
-    estado = models.CharField(max_length=20, db_column='estado')
-    valor = models.DecimalField(max_digits=12, decimal_places=2, db_column='valor')
-    saldo = models.DecimalField(max_digits=12, decimal_places=2, db_column='saldo')
-    usuario = models.ForeignKey('Usuario', on_delete=models.PROTECT, db_column='documento_usuario')
-    proveedor = models.ForeignKey('Proveedor', on_delete=models.CASCADE, db_column='codigo_proveedor')
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('confirmada', 'Confirmada'),
+        ('recibida', 'Recibida'),
+        ('cancelada', 'Cancelada'),
+    ]
+
+    codigo_compra = models.AutoField(
+        primary_key=True, 
+        db_column='codigo_compra',
+        verbose_name="Código de Compra"
+    )
+    fecha = models.DateTimeField(
+        default=timezone.now, 
+        db_column='fecha',
+        verbose_name="Fecha de Compra"
+    )
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='pendiente',
+        db_column='estado',
+        verbose_name="Estado"
+    )
+    valor = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        db_column='valor',
+        verbose_name="Valor Total"
+    )
+    saldo = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        db_column='saldo',
+        verbose_name="Saldo Pendiente"
+    )
+    usuario = models.ForeignKey(
+        'Usuario', 
+        on_delete=models.PROTECT, 
+        db_column='documento_usuario',
+        related_name='compras',
+        verbose_name="Usuario"
+    )
+    proveedor = models.ForeignKey(
+        'Proveedor', 
+        on_delete=models.CASCADE, 
+        db_column='codigo_proveedor',
+        related_name='compras',
+        verbose_name="Proveedor"
+    )
 
     class Meta:
         db_table = 'compra'
+        verbose_name = 'Compra'
+        verbose_name_plural = 'Compras'
+        ordering = ['-fecha']
+
+    def __str__(self):
+        return f"Compra #{self.codigo_compra} - {self.proveedor.nombre_empresa}"
+
+    # ── Propiedades dinámicas para templates (compras.html) ──
+    @property
+    def total(self):
+        """Compatibilidad con compras.html."""
+        return self.valor
+
+    @property
+    def fecha_registro(self):
+        """Compatibilidad con compras.html."""
+        return self.fecha
+
+    @property
+    def monto_pagado(self):
+        """Monto cancelado hasta el momento."""
+        return max(Decimal('0.00'), self.valor - self.saldo)
+
+    @property
+    def estado_pago(self):
+        """Calcula el estado de pago dinámicamente."""
+        if self.saldo <= Decimal('0.00'):
+            return 'pagada'
+        elif self.monto_pagado > Decimal('0.00'):
+            return 'parcial'
+        return 'pendiente'
+
 
 # ── 11. DETALLE COMPRA ──
 class DetalleCompra(models.Model):
-    numero_compra = models.AutoField(primary_key=True, db_column='numero_compra')
-    cantidad = models.IntegerField(db_column='cantidad')
-    precio_unitario = models.DecimalField(max_digits=12, decimal_places=2, db_column='precio_unitario')
-    fecha_registro = models.DateTimeField(default=timezone.now, db_column='fecha_registro')
-    subtotal_compra = models.DecimalField(max_digits=12, decimal_places=2, db_column='subtotal_compra')
-    compra = models.ForeignKey('Compra', on_delete=models.CASCADE, db_column='codigo_compra')
+    numero_compra = models.AutoField(
+        primary_key=True, 
+        db_column='numero_compra',
+        verbose_name="N° Detalle"
+    )
+    cantidad = models.IntegerField(
+        default=1,
+        db_column='cantidad',
+        verbose_name="Cantidad"
+    )
+    precio_unitario = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        db_column='precio_unitario',
+        verbose_name="Precio Unitario"
+    )
+    fecha_registro = models.DateTimeField(
+        default=timezone.now, 
+        db_column='fecha_registro',
+        verbose_name="Fecha de Registro"
+    )
+    subtotal_compra = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        db_column='subtotal_compra',
+        verbose_name="Subtotal"
+    )
+    compra = models.ForeignKey(
+        'Compra', 
+        on_delete=models.CASCADE, 
+        db_column='codigo_compra',
+        related_name='detalles',
+        verbose_name="Compra"
+    )
 
     class Meta:
         db_table = 'detalle_compra'
+        verbose_name = 'Detalle de Compra'
+        verbose_name_plural = 'Detalles de Compra'
+
+    def __str__(self):
+        return f"Detalle #{self.numero_compra} - Compra #{self.compra.codigo_compra}"
+
+    @property
+    def subtotal(self):
+        return self.subtotal_compra or (self.cantidad * self.precio_unitario)
+
+    def save(self, *args, **kwargs):
+        # Calcula automáticamente el subtotal si no viene definido
+        if not self.subtotal_compra or self.subtotal_compra == Decimal('0.00'):
+            self.subtotal_compra = self.cantidad * self.precio_unitario
+        super().save(*args, **kwargs)
+
 
 # ── 12. DEVOLUCION PROVEEDORES ──
 class DevolucionProveedores(models.Model):

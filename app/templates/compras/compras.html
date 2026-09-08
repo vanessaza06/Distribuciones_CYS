@@ -1,0 +1,1007 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Compras{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script>
+  // Variables globales para los gráficos (datos del servidor)
+  window.meseslabels = {{ meses_labels_json|safe }};
+  window.mesesa = {{ meses_data_json|safe }};
+  window.productosLabels = {{ productos_labels_json|safe }};
+  window.productosData = {{ productos_data_json|safe }};
+  window.gastosLabels = {{ gastos_labels_json|safe }};
+  window.gastosData = {{ gastos_data_json|safe }};
+  window.gastosPorcentajes = {{ gastos_porcentajes_json|safe }};
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- ====== MENSAJES ====== -->
+  {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success-dev{% elif message.tags == 'error' %}alert-danger-dev{% else %}alert-info-dev{% endif %} alert-dismissible fade show" role="alert">
+          <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- ====== TARJETAS KPI (ESTILO INVENTARIO) ====== -->
+  <div class="kpi-cards-grid mb-4">
+    <!-- Gasto Total -->
+    <div class="kpi-card kpi-card-cyan">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box cyan"><i class="bi bi-receipt"></i></div>
+        <span class="kpi-badge cyan">SUBTOTAL</span>
+      </div>
+      <div class="kpi-value cyan" id="subtotal-principal">$<span class="subtotal-kpi">{{ subtotal_compras|default:0|floatformat:0 }}</span></div>
+      <p class="kpi-title">Subtotal de Compras</p>
+      <p class="kpi-sub">Gasto: ${{ total_gastado|default:0|floatformat:0 }}</p>
+    </div>
+
+    <!-- Compras Mes -->
+    <div class="kpi-card kpi-card-green">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box green"><i class="bi bi-bag"></i></div>
+        <span class="kpi-badge green">MES</span>
+      </div>
+      <div class="kpi-value green">{{ count_mes|default:0 }}</div>
+      <p class="kpi-title">Compras Mes</p>
+      <p class="kpi-sub">${{ total_mes|default:0|floatformat:0 }} total</p>
+    </div>
+
+    <!-- Producto Top -->
+    <div class="kpi-card kpi-card-purple">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box purple"><i class="bi bi-star"></i></div>
+        <span class="kpi-badge purple">TOP</span>
+      </div>
+      <div class="kpi-value purple">{% if producto_top %}{{ producto_top.total_und|floatformat:0 }}{% else %}0{% endif %}</div>
+      <p class="kpi-title">Producto Top</p>
+      <p class="kpi-sub">{% if producto_top %}{{ producto_top.producto__nombre|truncatewords:3 }} unid.{% else %}Sin compras{% endif %}</p>
+    </div>
+
+    <!-- Nueva Compra (Acción → abre modal) -->
+    <div class="kpi-card kpi-card-pink" role="button" tabindex="0" aria-label="Registrar nueva compra" data-bs-toggle="modal" data-bs-target="#modalNuevaCompra">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-box pink"><i class="bi bi-plus-circle"></i></div>
+        <span class="kpi-badge pink">ACCIÓN</span>
+      </div>
+      <div class="kpi-value pink">0</div>
+      <p class="kpi-title">Registrar</p>
+      <p class="kpi-sub">Nueva compra</p>
+    </div>
+  </div>
+  <!-- ====== FIN TARJETAS KPI ====== -->
+
+  <!-- ====== HEADER PROVEEDOR ====== -->
+  <div class="card card-dev card-header-top mb-4 card-proveedor-header">
+    <div class="card-body p-0">
+      {% if proveedor %}
+      <div class="proveedor-container">
+        <div class="proveedor-main">
+          <div class="proveedor-icon">
+            <i class="bi bi-truck"></i>
+          </div>
+          <div class="proveedor-info">
+            <h2 class="proveedor-nombre">{{ proveedor.nombre_empresa }}</h2>
+            <div class="proveedor-details">
+              {% if proveedor.tipo_proveedor %}
+              <span class="detail-badge">{{ proveedor.get_tipo_proveedor_display }}</span>
+              {% endif %}
+              {% if proveedor.email %}
+              <div class="detail-item">
+                <i class="bi bi-envelope-fill"></i>
+                <span>{{ proveedor.email }}</span>
+              </div>
+              {% endif %}
+              {% if proveedor.telefono %}
+              <div class="detail-item">
+                <i class="bi bi-telephone-fill"></i>
+                <span>{{ proveedor.telefono }}</span>
+              </div>
+              {% endif %}
+              <div class="detail-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span class="estado-badge {% if proveedor.estado == 'activo' %}estado-activo{% else %}estado-{{ proveedor.estado }}{% endif %}">{{ proveedor.get_estado_display }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="proveedor-actions">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: black;">
+            <i class="bi bi-arrow-left me-2"></i>Cambiar
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="proveedor-empty">
+        <div class="proveedor-icon-empty">
+          <i class="bi bi-truck"></i>
+        </div>
+        <h3>Registrar Compra</h3>
+        <p>Selecciona un proveedor para comenzar a registrar compras</p>
+      </div>
+      {% endif %}
+
+      <!-- ====== HISTORIAL DE COMPRAS (DESPLEGABLE) ====== -->
+
+        <!-- Header clicable para colapsar -->
+        <div class="card-header border-bottom gradient-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <!-- Parte izquierda (solo información) -->
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon-bg-primary">
+                <i class="bi bi-clock-history icon-primary"></i>
+              </div>
+              <div>
+                <h5 class="mb-0 fw-bold">Historial de Compras</h5>
+                <small class="text-muted">Movimientos para este proveedor</small>
+              </div>
+            </div>
+
+            <!-- Parte derecha (botón + y chevron) -->
+            <div class="d-flex align-items-center gap-2">
+              <button type="button"
+                      class="btn-nueva-compra"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalNuevaCompra"
+                      title="Nueva compra">
+                <i class="bi bi-plus-circle me-2"></i>Nueva compra
+              </button>
+              <span class="badge badge-cyan">{{ compras_count|default:0 }}</span>
+              <!-- Solo el chevron controla el collapse -->
+              <i class="bi bi-chevron-down" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
+                
+                 data-bs-toggle="collapse"
+                 data-bs-target="#collapseHistorial"
+                 aria-expanded="true"
+                 aria-controls="collapseHistorial"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido desplegable -->
+        <div class="collapse show" id="collapseHistorial">
+          <div class="table-responsive table-scroll">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="text-center small header-th">#</th>
+                  <th class="small header-th">Producto</th>
+                  <th class="text-center small header-th">Cant.</th>
+                  <th class="text-end small header-th">Precio</th>
+                  <th class="text-end small header-th">Total</th>
+                  <th class="text-center small header-th">Pago</th>
+                  <th class="text-center small header-th">Estado</th>
+                  <th class="text-center small header-th">Fecha</th>
+                  <th class="text-center small header-th">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for compra in compras %}
+                  <tr>
+                    <td class="text-center small text-muted">{{ forloop.counter }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-box icon-primary"></i>
+                        <div>
+                          <div class="fw-semibold small">{{ compra.producto.nombre }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-cyan">{{ compra.cantidad }}</span>
+                    </td>
+                    <td class="text-end small">
+                      {% if compra.precio_unitario %}
+                        ${{ compra.precio_unitario|floatformat:0 }}
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end small fw-bold text-success">
+                      {% if compra.precio_unitario %}
+                        ${{ compra.total|floatformat:0 }}
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center small">
+                      {% if compra.estado_pago == 'pagada' %}
+                        <span class="badge badge-success-custom">
+                          <i class="bi bi-check-circle me-1"></i>Pagada
+                        </span>
+                      {% elif compra.estado_pago == 'parcial' %}
+                        <span class="badge badge-warning-custom">
+                          <i class="bi bi-dash-circle me-1"></i>Parcial
+                        </span>
+                      {% else %}
+                        <span class="badge badge-pending-custom">
+                          <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center small">
+                      {% if compra.estado == 'confirmada' %}
+                        <span class="badge badge-estado-confirmada">
+                          <i class="bi bi-check-circle me-1"></i>Confirmada
+                        </span>
+                      {% elif compra.estado == 'recibida' %}
+                        <span class="badge badge-estado-recibida">
+                          <i class="bi bi-box-seam me-1"></i>Recibida
+                        </span>
+                      {% elif compra.estado == 'cancelada' %}
+                        <span class="badge badge-estado-cancelada">
+                          <i class="bi bi-x-circle me-1"></i>Cancelada
+                        </span>
+                      {% else %}
+                        <span class="badge badge-estado-pendiente">
+                          <i class="bi bi-clock-history me-1"></i>Pendiente
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center small text-muted">{{ compra.fecha_registro|date:"d/m H:i" }}</td>
+                    <td class="text-center">
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                          <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                          <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#detalleCompra{{ compra.id }}">
+                              <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
+                            </a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            {% if compra.estado_pago == 'pagada' %}
+                              <button type="button" class="dropdown-item text-muted" disabled title="Esta compra ya fue pagada completamente">
+                                <i class="bi bi-check-circle-fill me-2"></i>Pagada
+                              </button>
+                            {% else %}
+                              <button type="button" class="dropdown-item btn-abrir-pago text-success" data-compra-id="{{ compra.id }}" data-compra-total="{{ compra.total }}" data-compra-pagado="{{ compra.monto_pagado }}" data-bs-toggle="modal" data-bs-target="#modalPago">
+                                <i class="bi bi-credit-card me-2"></i>Pago
+                              </button>
+                            {% endif %}
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          {% if compra.estado == 'pendiente' %}
+                            <li>
+                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="estado" value="confirmada">
+                                <button type="submit" class="dropdown-item text-info" title="Cambiar a Confirmada">
+                                  <i class="bi bi-check2-circle me-2"></i>Confirmar
+                                </button>
+                              </form>
+                            </li>
+                          {% elif compra.estado == 'confirmada' %}
+                            <li>
+                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="estado" value="recibida">
+                                <button type="submit" class="dropdown-item text-success" title="Cambiar a Recibida">
+                                  <i class="bi bi-box-seam me-2"></i>Marcar como Recibida
+                                </button>
+                              </form>
+                            </li>
+                          {% endif %}
+
+                          {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
+                            <li>
+                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="estado" value="cancelada">
+                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra">
+                                  <i class="bi bi-x-circle me-2"></i>Cancelar
+                                </button>
+                              </form>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="9" class="text-center py-5">
+                      <div class="d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-clock-history icon-empty"></i>
+                        <p class="fw-semibold mb-1">Sin compras registradas aun</p>
+                        <p class="small mb-0 text-muted">Registra la primera compra desde el botón "Nueva compra".</p>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+              {% if compras %}
+                <tfoot class="tfoot-total">
+                  <tr>
+                    <td colspan="5" class="text-end fw-bold text-uppercase small">
+                      <i class="bi bi-calculator me-1"></i>Subtotal
+                    </td>
+                    <td class="text-end fw-bold text-success" style="white-space: nowrap;">$<span id="subtotal-formatted">{{ subtotal_compras|default:0|floatformat:0 }}</span></td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tfoot>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+        <!-- fin collapse -->
+
+      <!-- ====== FIN HISTORIAL ====== -->
+    </div>
+  </div>
+
+  <!-- ====== GRÁFICOS ====== -->
+  <div class="row g-3 mt-4">
+    <div class="col-12">
+      <div class="card card-dev card-header-top">
+        <div class="card-header border-bottom gradient-header">
+          <h5 class="mb-0 fw-bold">
+            <i class="bi bi-graph-up me-2"></i>Compras por Mes
+          </h5>
+        </div>
+        <div class="card-body p-3">
+          <canvas id="chartComprasMes" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card card-dev card-header-top">
+        <div class="card-header border-bottom gradient-header">
+          <h5 class="mb-0 fw-bold">
+            <i class="bi bi-bar-chart-fill me-2"></i>Productos Más Comprados
+          </h5>
+        </div>
+        <div class="card-body p-3">
+          <canvas id="chartProductosTop" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- ====== FIN GRÁFICOS ====== -->
+
+</div>
+
+<!-- ====== MODALES ====== -->
+
+<!-- MODAL: NUEVA COMPRA -->
+<div class="modal fade" id="modalNuevaCompra" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header gradient-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-clipboard2-plus me-2"></i>Nueva Compra
+          </h5>
+          <small class="text-muted">Completa los datos para registrar</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <form method="POST" action="{% url 'registrar_compra' %}" id="formNuevaCompra">
+          {% csrf_token %}
+
+          <!-- Proveedor -->
+          <div class="mb-4">
+            <label class="dev-form-label">Proveedor Seleccionado</label>
+            <select id="proveedorSeleccionado" name="proveedor_id" class="form-select form-select-lg" required>
+              {% if proveedor %}
+                <option value="{{ proveedor.id }}" selected>{{ proveedor.nombre_empresa }}</option>
+              {% endif %}
+              {% for prov in todos_proveedores %}
+                {% if not proveedor or prov.id != proveedor.id %}
+                  <option value="{{ prov.id }}">{{ prov.nombre_empresa }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Producto (Usando formulario) -->
+          <div class="mb-4">
+            <label for="{{ form.producto.id_for_label }}" class="dev-form-label">{{ form.producto.label }}</label>
+            {{ form.producto }}
+            {% if form.producto.errors %}
+              <div class="alert alert-danger-dev mt-2">
+                {{ form.producto.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Lote (Usando formulario) -->
+          <div class="mb-4">
+            <label for="{{ form.lote.id_for_label }}" class="dev-form-label">{{ form.lote.label }}</label>
+            {{ form.lote }}
+            {% if form.lote.errors %}
+              <div class="alert alert-danger-dev mt-2">
+                {{ form.lote.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Cantidad y Precio -->
+          <div class="row g-3 mb-2">
+            <div class="col-6">
+              <label for="{{ form.cantidad.id_for_label }}" class="dev-form-label">{{ form.cantidad.label }}</label>
+              {{ form.cantidad }}
+              {% if form.cantidad.errors %}
+                <div class="alert alert-danger-dev mt-2">
+                  {{ form.cantidad.errors }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-6">
+              <label for="{{ form.precio_unitario.id_for_label }}" class="dev-form-label">{{ form.precio_unitario.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.precio_unitario }}
+              </div>
+              {% if form.precio_unitario.errors %}
+                <div class="alert alert-danger-dev mt-2">
+                  {{ form.precio_unitario.errors }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer gradient-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formNuevaCompra" class="btn btn-primary fw-bold">
+          <i class="bi bi-bag-check me-2"></i>Registrar compra
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE DE COMPRA -->
+{% for compra in compras %}
+  <div class="modal fade" id="detalleCompra{{ compra.id }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content detalle-compra-modal">
+        <div class="modal-header detalle-compra-header">
+          <div class="detalle-compra-title-wrap">
+            <span class="detalle-compra-id">ID #{{ compra.id }}</span>
+            <h5 class="modal-title detalle-compra-title">
+              <i class="bi bi-receipt-cutoff"></i>Detalle de compra
+            </h5>
+            <small>Resumen del movimiento registrado</small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body detalle-compra-body">
+          <div class="row g-3 detalle-compra-grid">
+            <div class="col-12">
+              <div class="detalle-card detalle-card-producto">
+                <div class="detalle-icon detalle-icon-producto">
+                  <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                  <p class="detalle-label">Producto</p>
+                  <p class="detalle-value detalle-producto-nombre">{{ compra.producto.nombre }}</p>
+                  {% if compra.producto.categoria %}
+                    <small class="detalle-subvalue">{{ compra.producto.categoria.nombre }}</small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="detalle-card h-100">
+                <div class="detalle-icon"><i class="bi bi-stack"></i></div>
+                <p class="detalle-label">Cantidad</p>
+                <p class="detalle-value">{{ compra.cantidad }} und.</p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="detalle-card h-100">
+                <div class="detalle-icon"><i class="bi bi-tags"></i></div>
+                <p class="detalle-label">Lote</p>
+                <p class="detalle-value">{% if compra.numero_lote %}{{ compra.numero_lote }}{% else %}Sin lote{% endif %}</p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="detalle-card h-100">
+                <div class="detalle-icon"><i class="bi bi-calendar2-check"></i></div>
+                <p class="detalle-label">Fecha</p>
+                <p class="detalle-value fecha-text">{{ compra.fecha_registro|date:"d/m H:i" }}</p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="detalle-card h-100">
+                <div class="detalle-icon"><i class="bi bi-cash-coin"></i></div>
+                <p class="detalle-label">Precio Unitario</p>
+                <p class="detalle-value">{% if compra.precio_unitario %}${{ compra.precio_unitario|floatformat:0 }}{% else %}Sin precio{% endif %}</p>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="detalle-card detalle-card-total h-100">
+                <div class="detalle-icon detalle-icon-total"><i class="bi bi-receipt"></i></div>
+                <p class="detalle-label">Total Compra</p>
+                <p class="detalle-value detalle-total">{% if compra.precio_unitario %}${{ compra.total|floatformat:0 }}{% else %}Sin precio{% endif %}</p>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="detalle-card detalle-card-proveedor">
+                <div class="detalle-icon"><i class="bi bi-truck"></i></div>
+                <div>
+                  <p class="detalle-label">Proveedor</p>
+                  <p class="detalle-value">{{ proveedor.nombre_empresa|default:"N/A" }}</p>
+                  <small class="text-muted">{{ proveedor.nombre_contacto|default:"" }}{% if proveedor.telefono %} • {{ proveedor.telefono }}{% endif %}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer detalle-compra-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<!-- MODAL: SELECCIONAR PROVEEDOR -->
+<div class="modal fade" id="modalProveedores" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header gradient-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-truck me-2"></i>Selecciona un Proveedor
+          </h5>
+          <small class="text-muted">Elige proveedor para ver y registrar compras</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="dev-search-wrapper mb-3">
+          <i class="dev-search-icon bi bi-search"></i>
+          <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, contacto...">
+        </div>
+
+        <div id="tablaProveedores" class="table-scroll">
+          {% if todos_proveedores %}
+            {% for prov in todos_proveedores %}
+            <a href="?proveedor={{ prov.id }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none" data-nombre="{{ prov.nombre_empresa|lower }}" data-contacto="{{ prov.nombre_contacto|lower }}" data-telefono="{{ prov.telefono|lower|default:'' }}" data-id="{{ prov.id }}" data-proveedor-name="{{ prov.nombre_empresa }}">
+              <div class="d-flex align-items-start justify-content-between">
+                <div class="d-flex gap-3">
+                  <div class="icon-bg-primary">
+                    <i class="bi bi-truck icon-primary"></i>
+                  </div>
+                  <div>
+                    <p class="mb-1 fw-semibold">{{ prov.nombre_empresa }}</p>
+                    <small class="text-muted d-block">
+                      <i class="bi bi-person me-1"></i>{{ prov.nombre_contacto }}
+                    </small>
+                    {% if prov.telefono %}
+                    <small class="text-muted d-block">
+                      <i class="bi bi-telephone me-1"></i>{{ prov.telefono }}
+                    </small>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if proveedor and prov.id == proveedor.id %}
+                <div class="text-success">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+                {% endif %}
+              </div>
+            </a>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div id="sinResultados" class="text-center py-4 hidden-element">
+          <i class="bi bi-search icon-empty"></i>
+          <p class="small">No se encontraron proveedores</p>
+        </div>
+      </div>
+
+      <div class="modal-footer gradient-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CAMBIAR ESTADO DE COMPRA -->
+<div class="modal fade" id="modalEstadoCompra" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header gradient-header">
+        <div>
+          <h5 class="modal-title fw-bold"><i class="bi bi-arrow-repeat me-2"></i>Cambiar estado</h5>
+          <small class="text-muted">Selecciona el estado de la compra</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formEstadoCompra">
+          {% csrf_token %}
+          <input type="hidden" id="compraEstadoId" name="compra_id">
+
+          <div class="mb-3">
+            <label for="nuevoEstado" class="form-label">Nuevo estado</label>
+            <select id="nuevoEstado" name="estado" class="form-select form-select-lg" required>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="recibida">Recibida</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer gradient-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formEstadoCompra" class="btn btn-primary fw-bold">
+          <i class="bi bi-check2 me-2"></i>Actualizar estado
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCRIPTS ====== -->
+<script src="{% static 'js/proveedores/compras.js' %}"></script>
+
+<!-- MODAL: INFORMACIÓN DE PAGO (COMPRA) -->
+<div class="modal fade" id="modalPago" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">
+                        <i class="bi bi-credit-card"></i> Información de Pago
+                    </h5>
+                    <small>Completa los datos de pago para esta compra</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="formPago" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="compraId" name="compra_id">
+
+                <div class="modal-body modal-custom-body">
+
+                    <!-- Alerta si está pagada -->
+                    <div id="alertaPagada" class="alert alert-success-dev d-none mb-4" role="alert" style="padding: 20px; border-left: 4px solid #27ae60; background-color: rgba(39, 174, 96, 0.15);">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <i class="bi bi-check-circle-fill" style="font-size: 2rem; color: #27ae60;"></i>
+                            <div>
+                                <h5 style="margin: 0 0 5px 0; color: #27ae60; font-weight: 700;">✓ Compra Pagada</h5>
+                                <p style="margin: 0; color: #27ae60; font-size: 0.95rem;">Esta compra ya fue pagada completamente. No se puede agregar más pagos.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Número de Factura -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-file-earmark me-2"></i>Número de Factura
+                        </label>
+                        <input type="text" id="numeroFactura" name="numero_factura" class="form-control form-control-lg"
+                               placeholder="Ej: FAC-2026-001">
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-wallet2 me-2"></i>Método de Pago
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="metodos-pago-container">
+                            <div class="metodos-pago-header" data-bs-toggle="collapse" data-bs-target="#otrosMetodos" role="button">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-three-dots"></i>
+                                    <span>Selecciona método de pago</span>
+                                </div>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="collapse show" id="otrosMetodos">
+                                <div class="metodos-pago-list">
+                                    <label class="metodo-pago-item">
+                                        <input type="radio" name="metodo_pago" value="nequi" class="form-check-input">
+                                        <i class="bi bi-wallet2"></i>
+                                        <span>Nequi</span>
+                                    </label>
+                                    <label class="metodo-pago-item">
+                                        <input type="radio" name="metodo_pago" value="daviplata" class="form-check-input">
+                                        <i class="bi bi-wallet2"></i>
+                                        <span>Daviplata</span>
+                                    </label>
+                                    <label class="metodo-pago-item">
+                                        <input type="radio" name="metodo_pago" value="bancolombia" class="form-check-input">
+                                        <i class="bi bi-bank"></i>
+                                        <span>Bancolombia a la Mano</span>
+                                    </label>
+                                    <label class="metodo-pago-item">
+                                        <input type="radio" name="metodo_pago" value="breb" class="form-check-input">
+                                        <i class="bi bi-lightning"></i>
+                                        <span>Bre-B</span>
+                                    </label>
+                                    <label class="metodo-pago-item">
+                                        <input type="radio" name="metodo_pago" value="efectivo" class="form-check-input">
+                                        <i class="bi bi-cash-coin"></i>
+                                        <span>Efectivo</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monto Total de la Compra -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-receipt me-2"></i>Monto Total de la Compra
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="montoTotal" name="monto_total" class="form-control" readonly style="background-color: rgba(77, 168, 218, 0.1); cursor: not-allowed;">
+                        </div>
+                        <small class="text-muted">Este valor se calcula automáticamente</small>
+                    </div>
+
+                    <!-- Monto Pagado -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-cash me-2"></i>Monto Pagado
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa el monto que pagaste" required>
+                        </div>
+                        <small class="text-muted">Ingresa cuánto dinero enviaste al proveedor</small>
+                    </div>
+
+                    <!-- Saldo Pendiente (calculado automáticamente) -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-hourglass-split me-2"></i>Saldo Pendiente
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="saldoPendiente" name="saldo_pendiente" class="form-control" readonly style="background-color: rgba(231, 76, 60, 0.1); cursor: not-allowed; color: #e74c3c; font-weight: bold;">
+                        </div>
+                        <small class="text-muted">Se calcula automáticamente: Total - Pagado</small>
+                    </div>
+
+                    <!-- Estado de Pago (automático) -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-check-circle me-2"></i>Estado de Pago
+                        </label>
+                        <select id="estadoPago" name="estado_pago" class="form-select form-select-lg" readonly style="background-color: rgba(77, 168, 218, 0.1); cursor: not-allowed;">
+                            <option value="pendiente">Pendiente de Pago</option>
+                            <option value="parcial">Pago Parcial</option>
+                            <option value="pagada">Pagada</option>
+                        </select>
+                        <small class="text-muted">Se actualiza automáticamente según el monto pagado</small>
+                    </div>
+
+                    <!-- Fecha de Pago -->
+                    <div class="mb-0">
+                        <label class="form-label">
+                            <i class="bi bi-calendar me-2"></i>Fecha de Pago
+                        </label>
+                        <input type="datetime-local" id="fechaPago" name="fecha_pago" class="form-control form-control-lg">
+                    </div>
+                </div>
+
+                <div class="modal-footer modal-custom-footer">
+                    <button type="button" class="btn btn-lg btn-modal-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-lg btn-modal-primary">
+                        <i class="bi bi-check-circle me-2"></i>Guardar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Formatear SUBTOTAL en tabla
+  const subtotalEl = document.getElementById('subtotal-formatted');
+  if (subtotalEl) {
+    const num = parseInt(subtotalEl.textContent) || 0;
+    subtotalEl.textContent = num.toLocaleString('es-CO');
+  }
+
+  // Formatear SUBTOTAL en tarjeta KPI
+  const subtotalKpi = document.querySelector('.subtotal-kpi');
+  if (subtotalKpi) {
+    const num = parseInt(subtotalKpi.textContent) || 0;
+    subtotalKpi.textContent = num.toLocaleString('es-CO');
+  }
+
+  // Formatear KPI values
+  document.querySelectorAll('.kpi-formatted').forEach(el => {
+    const num = parseInt(el.getAttribute('data-value')) || 0;
+    el.textContent = '$' + num.toLocaleString('es-CO');
+  });
+
+  // Auto-reload después de registrar compra
+  // ═══════════════════════════════════════════════════════════════
+  // MODAL DE PAGO - CARGA DE DATOS Y CÁLCULOS AUTOMÁTICOS
+  // ═══════════════════════════════════════════════════════════════
+
+  const montoPagadoInput = document.getElementById('montoPagado');
+  const saldoPendienteInput = document.getElementById('saldoPendiente');
+  const estadoPagoSelect = document.getElementById('estadoPago');
+  const montoTotalInput = document.getElementById('montoTotal');
+  const modalPago = document.getElementById('modalPago');
+  const alertaPagada = document.getElementById('alertaPagada');
+  const btnAbrirPago = document.querySelectorAll('.btn-abrir-pago');
+
+  // Función para formatear números
+  // Cuando se hace clic en "Pago", cargar los datos
+  btnAbrirPago.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const compraId = this.getAttribute('data-compra-id');
+      const totalCompra = parseFloat(this.getAttribute('data-compra-total')) || 0;
+      const montoPagadoAnterior = parseFloat(this.getAttribute('data-compra-pagado')) || 0;
+
+      document.getElementById('compraId').value = compraId;
+      montoTotalInput.value = totalCompra;
+      montoPagadoInput.value = '';
+
+      // Mostrar alerta si está pagada
+      if (montoPagadoAnterior >= totalCompra) {
+        alertaPagada.classList.remove('d-none');
+        document.getElementById('formPago').style.display = 'none';
+        // Deshabilitar botón de envío
+        document.getElementById('formPago').querySelector('button[type="submit"]').disabled = true;
+      } else {
+        alertaPagada.classList.add('d-none');
+        document.getElementById('formPago').style.display = 'block';
+        // Habilitar botón de envío
+        document.getElementById('formPago').querySelector('button[type="submit"]').disabled = false;
+      }
+
+      actualizarCalculos();
+    });
+  });
+
+  // También verificar cuando se abre el modal directamente
+  if (modalPago) {
+    modalPago.addEventListener('show.bs.modal', function() {
+      const compraId = document.getElementById('compraId').value;
+      if (compraId) {
+        const btn = document.querySelector(`[data-compra-id="${compraId}"]`);
+        if (btn) {
+          const totalCompra = parseFloat(btn.getAttribute('data-compra-total')) || 0;
+          const montoPagadoAnterior = parseFloat(btn.getAttribute('data-compra-pagado')) || 0;
+
+          if (montoPagadoAnterior >= totalCompra) {
+            alertaPagada.classList.remove('d-none');
+            document.getElementById('formPago').style.display = 'none';
+            document.getElementById('formPago').querySelector('button[type="submit"]').disabled = true;
+          } else {
+            alertaPagada.classList.add('d-none');
+            document.getElementById('formPago').style.display = 'block';
+            document.getElementById('formPago').querySelector('button[type="submit"]').disabled = false;
+          }
+        }
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // CERRAR DROPDOWN AL HACER CLIC EN CUALQUIER ITEM
+  // ═══════════════════════════════════════════════════════════════
+
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      // Cerrar el dropdown más cercano
+      const dropdown = this.closest('.dropdown');
+      if (dropdown) {
+        const toggleBtn = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+        if (toggleBtn) {
+          const dropdownInstance = bootstrap.Dropdown.getInstance(toggleBtn);
+          if (dropdownInstance) {
+            dropdownInstance.hide();
+          }
+        }
+      }
+    });
+  });
+
+  // Calcular saldo pendiente en tiempo real
+  function actualizarCalculos() {
+    const montoTotal = parseFloat(montoTotalInput.value) || 0;
+    const montoPagado = parseFloat(montoPagadoInput.value) || 0;
+    const saldoPendiente = montoTotal - montoPagado;
+
+    // Formatear números con separadores
+    saldoPendienteInput.value = Math.max(0, saldoPendiente).toFixed(2);
+
+    // Actualizar estado automáticamente
+    if (montoPagado === 0) {
+      estadoPagoSelect.value = 'pendiente';
+    } else if (montoPagado >= montoTotal) {
+      estadoPagoSelect.value = 'pagada';
+    } else {
+      estadoPagoSelect.value = 'parcial';
+    }
+  }
+
+  // Formatear monto total al cargar
+  montoPagadoInput.addEventListener('input', actualizarCalculos);
+  montoPagadoInput.addEventListener('change', actualizarCalculos);
+
+  // ═══════════════════════════════════════════════════════════════
+  // DROPDOWN - CERRAR OTROS AL ABRIR UNO
+  // ═══════════════════════════════════════════════════════════════
+
+  document.addEventListener('show.bs.dropdown', function(e) {
+    // Cerrar TODOS los otros dropdowns
+    const allDropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+    allDropdowns.forEach(btn => {
+      if (btn !== e.relatedTarget) {
+        const dropdown = bootstrap.Dropdown.getInstance(btn);
+        if (dropdown) {
+          dropdown.hide();
+        }
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VALIDAR FORMULARIO DE PAGO
+  // ═══════════════════════════════════════════════════════════════
+
+  const formPago = document.getElementById('formPago');
+  if (formPago) {
+    formPago.addEventListener('submit', function(e) {
+      const metodoPago = document.querySelector('input[name="metodo_pago"]:checked');
+      const montoPagado = document.getElementById('montoPagado');
+
+      if (!metodoPago || !metodoPago.value) {
+        e.preventDefault();
+        alert('⚠️ Debe seleccionar un método de pago');
+        return false;
+      }
+
+      if (!montoPagado.value || parseFloat(montoPagado.value) <= 0) {
+        e.preventDefault();
+        alert('⚠️ Debe ingresar un monto válido');
+        return false;
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
