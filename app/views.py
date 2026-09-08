@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+def inicio(request):
+    """Página principal / Tablero de Control."""
+    return render(request, 'partials/base.html')
