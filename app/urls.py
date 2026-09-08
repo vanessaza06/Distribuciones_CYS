@@ -15,6 +15,9 @@ urlpatterns = [
 
     # CATEGORIAS
     path('categorias/', cat_views.categorias_lista, name='categorias_lista'),
+    path('crear/', cat_views.categoria_crear, name='crear'),
+    path('editar/<int:pk>/', cat_views.categoria_editar, name='editar'),
+    path('eliminar/<int:pk>/', cat_views.categoria_eliminar, name='eliminar'),
 
     # PROVEEDORES
     path('proveedores/', prov_views.lista_proveedores, name='lista_proveedores'),
