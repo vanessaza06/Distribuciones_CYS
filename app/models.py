@@ -155,12 +155,16 @@ class Marca(models.Model):
     nombre = models.CharField(max_length=100, db_column='nombre')
     descripcion = models.TextField(db_column='descripcion')
     estado = models.CharField(max_length=20, db_column='estado')
- 
+
     class Meta:
         db_table = 'marca'
- 
+        verbose_name = 'Marca'
+        verbose_name_plural = 'Marcas'
+        ordering = ['nombre']
+
     def __str__(self):
         return self.nombre
+
 
 # ── 8. DETALLE PRODUCTO ──
 class DetalleProducto(models.Model):
@@ -168,7 +172,7 @@ class DetalleProducto(models.Model):
     codigo_barras = models.CharField(max_length=100, db_column='codigo_barras')
     fecha_vencimiento = models.DateField(db_column='fecha_vencimiento')
     descripcion = models.TextField(db_column='descripcion')
-    marca = models.ForeignKey('Marca', on_delete=models.CASCADE, db_column='codigo_marca')
+    marca = models.ForeignKey('Marca', on_delete=models.CASCADE, db_column='codigo_marca', related_name='productos')
     producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto')
 
     class Meta:

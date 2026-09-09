@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside.css' %}">
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside-inline.css' %}">
@@ -96,7 +96,7 @@
 
         <!-- VENTAS -->
         <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
-          <a href="{% url 'ventas:ventas_lista' %}"
+          <a href="#"
              class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
              data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ventas">
             <i class="bi bi-receipt"></i>
@@ -109,16 +109,16 @@
           </button>
         </div>
         <div class="cys-sb-submenu" id="submenuVentas">
-          <a href="{% url 'ventas:metodos_pago_lista' %}" class="cys-sb-sublink">
+          <a href="#" class="cys-sb-sublink">
             <i class="bi bi-wallet2"></i> Métodos de Pago
           </a>
-          <a href="{% url 'reportes' %}" class="cys-sb-sublink">
+          <a href="#" class="cys-sb-sublink">
             <i class="bi bi-bar-chart-fill"></i> Reportes
           </a>
         </div>
 
         <!-- DEVOLUCIONES -->
-        <a href="{% url 'ventas:lista_devoluciones' %}"
+        <a href="#"
            class="cys-sb-link"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Devoluciones">
           <i class="bi bi-arrow-return-left"></i>
@@ -126,7 +126,7 @@
         </a>
 
         <!-- PRODUCTOS -->
-        <a href="{% url 'lista_productos' %}"
+        <a href="#"
            class="cys-sb-link"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
           <i class="bi bi-box-seam-fill"></i>
@@ -134,7 +134,7 @@
         </a>
 
         <!-- CATEGORÍAS -->
-        <a href="{% url 'categorias:lista' %}"
+        <a href="{% url 'categorias_lista' %}"
            class="cys-sb-link"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Categorías">
           <i class="bi bi-tags-fill"></i>
@@ -142,7 +142,7 @@
         </a>
 
         <!-- DETALLE DE PRODUCTO -->
-        <a href="{% url 'detalle_producto:lista' %}"
+        <a href="#"
            class="cys-sb-link"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle de Producto">
           <i class="bi bi-box-seam"></i>
@@ -151,7 +151,7 @@
 
         <!-- INVENTARIO -->
         <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
-          <a href="{% url 'inventario:inventario_home' %}"
+          <a href="#"
              class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
              data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Inventario">
             <i class="bi bi-clipboard-data-fill"></i>
@@ -164,16 +164,16 @@
         </div>
 
         <div class="cys-sb-submenu" id="submenuInventario">
-          <a href="{% url 'inventario:movimiento_create' %}" class="cys-sb-sublink {% block nav_salida %}{% endblock %}">
+          <a href="#" class="cys-sb-sublink {% block nav_salida %}{% endblock %}">
             <i class="bi bi-arrow-left-right"></i> Registrar Movimiento
           </a>
-          <a href="{% url 'inventario:gestion_stock' %}" class="cys-sb-sublink {% block nav_stock %}{% endblock %}">
+          <a href="#" class="cys-sb-sublink {% block nav_stock %}{% endblock %}">
             <i class="bi bi-layers"></i> Stock & Productos
           </a>
         </div>
 
         <!-- BODEGA -->
-        <a href="{% url 'bodega:bodega_home' %}"
+        <a href="#"
            class="cys-sb-link {% block nav_bodega %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Bodega">
           <i class="bi bi-building-fill"></i>
@@ -181,7 +181,7 @@
         </a>
 
         <!-- GESTIÓN DE LOTES -->
-        <a href="{% url 'lotes:lote_list' %}"
+        <a href="#"
            class="cys-sb-link {% block nav_lotes %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Gestión de Lotes">
           <i class="bi bi-tag-fill"></i>
@@ -197,7 +197,7 @@
         </a>
 
         <!-- COMPRAS -->
-        <a href="{% url 'lista_compras' %}"
+        <a href="#"
            class="cys-sb-link"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
           <i class="bi bi-cart-check-fill"></i>
@@ -249,21 +249,21 @@
 
     <hr class="cys-sb-divider">
 
-    <a href="{% url 'ayuda:index' %}"
+    <a href="#"
        class="cys-sb-link cys-sb-link--config"
        data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ayuda">
       <i class="bi bi-question-circle-fill"></i>
       <span>Ayuda</span>
     </a>
 
-    <a href="{% url 'configuracion:index' %}"
+    <a href="#"
        class="cys-sb-link cys-sb-link--config"
        data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Configuración">
       <i class="bi bi-sliders"></i>
       <span>Configuración</span>
     </a>
 
-    <a href="{% url 'cerrar_sesion' %}"
+    <a href="#"
        class="cys-sb-link cys-sb-link--logout"
        data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Cerrar Sesión">
       <i class="bi bi-box-arrow-right"></i>
@@ -276,3 +276,4 @@
 </div>
 
 <script src="{% static 'js/cuerpo/aside.js' %}" defer></script>
+

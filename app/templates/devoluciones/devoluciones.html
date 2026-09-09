@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Devoluciones | CYS Ltda{% endblock %}
@@ -137,7 +137,7 @@
           <span class="badge badge-motivo"><i class="bi bi-arrow-return-left"></i> Proveedores</span>
         </div>
 
-        <form method="post" action="{% url 'crear_devolucion_proveedor' %}" class="dev-form mt-3" novalidate>
+        <form method="post" action="#" class="dev-form mt-3" novalidate>
           {% csrf_token %}
 
           <div class="dev-form__intro">
@@ -265,7 +265,7 @@
                   {% endif %}
                 </td>
                 <td class="text-center">
-                  <a href="{% url 'detalle_devolucion_proveedor' dp.id %}" class="dev-table-action" title="Ver detalle">
+                  <a href="#" class="dev-table-action" title="Ver detalle">
                     <i class="bi bi-eye"></i>
                   </a>
                 </td>
@@ -332,7 +332,7 @@
               <div class="dev-empty"><i class="bi bi-inbox"></i><strong>No hay ventas disponibles</strong><span>Registra una venta antes de crear una devolución.</span></div>
               {% endfor %}
             </div>
-            <div class="dev-actions"><a href="{% url 'ventas:ventas_lista' %}" class="dev-btn dev-btn--ghost">Cancelar</a><button class="dev-btn dev-btn--primary" type="submit">Continuar <i class="bi bi-arrow-right"></i></button></div>
+            <div class="dev-actions"><a href="#" class="dev-btn dev-btn--ghost">Cancelar</a><button class="dev-btn dev-btn--primary" type="submit">Continuar <i class="bi bi-arrow-right"></i></button></div>
 
           {% elif paso == 2 and venta %}
             <div class="dev-sale-summary"><i class="bi bi-person-circle"></i><div><span>Venta #{{ venta.pk }}</span><strong>{{ venta.cliente.nombre }}</strong><small>{{ venta.fecha|date:'d/m/Y, H:i' }} · Total ${{ venta.total_venta|floatformat:0 }}</small></div></div>
@@ -391,7 +391,7 @@
           <div class="table-responsive dev-history-table-wrap">
             <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">
               <thead><tr><th>Número</th><th>Cliente</th><th>Motivo</th><th>Solución</th><th>Total</th><th>Fecha</th><th></th></tr></thead>
-              <tbody>{% for dev in devoluciones %}<tr><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{{ dev.codigo_venta.codigo_cliente.nombre }}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td><a class="dev-table-action" href="{% url 'ventas:comprobante_devolucion' dev.pk %}" title="Ver comprobante"><i class="bi bi-receipt"></i></a></td></tr>{% endfor %}</tbody>
+              <tbody>{% for dev in devoluciones %}<tr><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{{ dev.codigo_venta.codigo_cliente.nombre }}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td><a class="dev-table-action" href="#" title="Ver comprobante"><i class="bi bi-receipt"></i></a></td></tr>{% endfor %}</tbody>
             </table>
           </div>
         </div>
@@ -411,3 +411,4 @@
 <script src="{% static 'js/datatables.js' %}" defer></script>
 <script src="{% static 'js/proveedores/devoluciones.js' %}" defer></script>
 {% endblock %}
+
