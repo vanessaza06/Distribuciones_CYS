@@ -8,6 +8,7 @@ from app.models import Categoria
 from app.models import PresentacionProducto
 from app.models import Producto
 from app.forms import ProductoRegistroForm
+from app.models import Lote
 
 # ===============================
 # LISTA / VISTA PRINCIPAL

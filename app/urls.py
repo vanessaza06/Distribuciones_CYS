@@ -6,6 +6,7 @@ from app.views.proveedores import views as prov_views
 from app.views.marca import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
+from app.views.lotes import views as lot_views
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -60,4 +61,12 @@ urlpatterns = [
     path('presentacion/<int:producto_pk>/crear/', pres_views.presentacion_crear, name='presentacion_crear'),
     path('presentacion/<int:pk>/editar/', pres_views.presentacion_editar, name='presentacion_editar'),
     path('presentacion/<int:pk>/toggle/', pres_views.presentacion_toggle_activo, name='presentacion_toggle_activo'),
+    
+    # LOTES
+    path('', lot_views.gestion_stock, name='gestion_stock'),
+    path('lista/', lot_views.lote_list, name='lote_list'),
+    path('crear/', lot_views.lote_create, name='lote_create'),
+    path('<str:numero_lote>/', lot_views.lote_detail, name='lote_detail'),
+    path('<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
+    path('<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
 ]

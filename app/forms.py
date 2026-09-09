@@ -111,3 +111,25 @@ class PresentacionForm(forms.ModelForm):
             'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
+        
+#-----LOTE-----#
+
+class LoteForm(forms.ModelForm):
+    class Meta:
+        model = Lote
+        fields = [
+            'numero_lote',
+            'producto',
+            'presentacion',
+            'bodega',
+            'cantidad_inicial',
+            'costo_unitario',
+        ]
+        widgets = {
+            'numero_lote': forms.TextInput(attrs={'class': 'form-control'}),
+            'producto': forms.Select(attrs={'class': 'form-select'}),
+            'presentacion': forms.Select(attrs={'class': 'form-select'}),
+            'bodega': forms.Select(attrs={'class': 'form-select'}),
+            'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
