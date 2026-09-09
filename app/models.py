@@ -467,7 +467,7 @@ class PagoVenta(models.Model):
         db_table = 'pago_venta'
 
 # ── 15. DEVOLUCION ──
-class Devolucion(models.Model):
+ class Devolucion(models.Model):
     codigo_devolucion = models.AutoField(primary_key=True, db_column='codigo_devolucion')
     fecha = models.DateTimeField(default=timezone.now, db_column='fecha')
     motivo = models.TextField(db_column='motivo')
