@@ -1,0 +1,336 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CYS — Crear Usuario</title>
+
+  <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"/>
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.20.png' %}">
+
+  {% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/usuario/crear_usuario.css' %}">
+  {% endblock %}
+</head>
+<body>
+  <div class="cys-wrap">
+    <div class="cys-card">
+
+      <div class="cys-card-header">
+        <div class="cys-logo-ring">
+          <img src="{% static 'img/logo.20.png' %}" class="cys-logo" alt="Logo CYS">
+        </div>
+        <div class="cys-header-text">
+          <div class="cys-brand">CYS</div>
+          <div class="cys-title">Nuevo Usuario</div>
+        </div>
+      </div>
+
+      <div class="cys-card-divider"></div>
+
+      {% if usuario_creado %}
+      <!-- ═══════════════════ PANTALLA DE ÉXITO REDISEÑADA ═══════════════════ -->
+      <div class="cys-success-wrap">
+
+        <div class="cys-success-icon">
+          <div class="cys-success-ring"></div>
+          <i class="bi bi-check-lg"></i>
+        </div>
+
+        <div class="cys-success-title">¡Cuenta Creada!</div>
+        <p class="cys-success-sub">
+          El usuario <strong class="usuario-creado-highlight">{{ nuevo_usuario }}</strong>
+          fue registrado correctamente en el sistema.
+        </p>
+
+        <div class="cys-credential-box">
+          <div class="cys-credential-header">
+            <i class="bi bi-key-fill"></i>
+            <span>Datos para tu primer ingreso</span>
+          </div>
+
+          <div class="cys-credential-row">
+            <div class="cys-credential-label">
+              <i class="bi bi-person-vcard"></i> Usuario (N.º de documento)
+            </div>
+            <div class="cys-credential-value-wrap">
+              <span class="cys-credential-value" id="valorUsuario">{{ nuevo_usuario }}</span>
+              <button type="button" class="cys-copy-btn" id="btnCopiarUsuario" title="Copiar usuario">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="cys-credential-row">
+            <div class="cys-credential-label">
+              <i class="bi bi-shield-lock"></i> Contraseña
+            </div>
+            <div class="cys-credential-value-wrap">
+              <span class="cys-credential-value cys-credential-muted">La que acabas de crear</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cys-alert-info">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <span>
+            <strong>Importante:</strong> para ingresar por primera vez usa tu
+            <strong>número de documento</strong> como usuario. Podrás cambiarlo
+            después desde <strong>Mi Perfil</strong>.
+          </span>
+        </div>
+
+        <a href="{% url 'login' %}" class="cys-btn-primary d-block text-decoration-none text-center">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Ir al Inicio de Sesión
+        </a>
+      </div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+      {% else %}
+      {% if messages %}
+        <div class="cys-msg-err">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          {% for message in messages %}
+            {{ message }}{% if not forloop.last %}<br>{% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="POST" action="{% url 'crear_usuario' %}" id="formNuevoUsuario" novalidate>
+        {% csrf_token %}
+
+        <div class="cys-section-label">
+          <i class="bi bi-person-badge"></i> Identificación
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-5">
+            <label class="cys-label">Tipo ID</label>
+            {{ form.tipo_id }}
+            {% if form.tipo_id.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.tipo_id.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-7">
+            <label class="cys-label">Número de Identificación</label>
+            {{ form.identificacion }}
+            {% if form.identificacion.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.identificacion.errors|join:", " }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="cys-section-label mt-1">
+          <i class="bi bi-person"></i> Datos Personales
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="cys-label">Nombres</label>
+            {{ form.nombre }}
+            {% if form.nombre.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.nombre.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="cys-label">Apellidos</label>
+            {{ form.apellidos }}
+            {% if form.apellidos.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.apellidos.errors|join:", " }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="cys-label">Correo Electrónico</label>
+            <div class="cys-input-icon-wrap">
+              <i class="bi bi-envelope cys-input-icon"></i>
+              {{ form.email }}
+            </div>
+            {% if form.email.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.email.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="cys-label">Teléfono</label>
+            <div class="cys-input-icon-wrap">
+              <i class="bi bi-telephone cys-input-icon"></i>
+              {{ form.telefono }}
+            </div>
+            {% if form.telefono.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.telefono.errors|join:", " }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="cys-section-label mt-1">
+          <i class="bi bi-shield-lock"></i> Acceso al Sistema
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="cys-label">Contraseña</label>
+            <div class="cys-input-eye">
+              {{ form.clave }}
+              <button type="button" class="cys-eye-btn" id="btnToggleClave" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="cys-password-rules" id="passwordRules">
+              <div class="cys-rule" id="rule-length"><i class="bi bi-x-circle-fill"></i> Mín. 6 caracteres</div>
+              <div class="cys-rule" id="rule-numbers"><i class="bi bi-x-circle-fill"></i> 2 números</div>
+              <div class="cys-rule" id="rule-uppercase"><i class="bi bi-x-circle-fill"></i> 1 mayúscula</div>
+            </div>
+            {% if form.clave.errors %}<div class="cys-form-error"><i class="bi bi-x-circle me-1"></i>{{ form.clave.errors|join:", " }}</div>{% endif %}
+          </div>
+        </div>
+
+        <button type="button" class="cys-btn-primary" id="btnContinuar">
+          <span class="cys-btn-inner">
+            <i class="bi bi-shield-check"></i>
+            <span>Continuar</span>
+            <i class="bi bi-arrow-right cys-btn-arrow"></i>
+          </span>
+        </button>
+      </form>
+
+      <div class="cys-divider"></div>
+      <div class="text-center">
+        <a href="{% url 'login' %}" class="cys-btn-link">
+          <i class="bi bi-arrow-left"></i> Volver al inicio de sesión
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmar Contraseña -->
+  <div class="modal fade" id="modalConfClave" tabindex="-1" aria-labelledby="modalConfClaveLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered cys-modal-sm">
+      <div class="modal-content cys-modal-content">
+
+        <div class="modal-header cys-modal-header">
+          <div class="cys-modal-title-wrap">
+            <div class="cys-modal-icon-wrap">
+              <span class="cys-modal-icon"><i class="bi bi-key-fill"></i></span>
+              <div class="cys-modal-icon-glow"></div>
+            </div>
+            <div>
+              <div class="cys-modal-eyebrow">Paso 1 de 2</div>
+              <h5 class="modal-title cys-modal-title" id="modalConfClaveLabel">Confirmar Contraseña</h5>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body cys-modal-body-simple">
+          <p class="cys-modal-desc">
+            Escribe tu contraseña una vez más para verificarla antes de continuar.
+          </p>
+          <label class="cys-label">Confirmar Contraseña</label>
+          <div class="cys-input-eye">
+            <input type="password" class="cys-input" id="confirmar_clave" placeholder="Repite tu contraseña" autocomplete="new-password">
+            <button type="button" class="cys-eye-btn" id="btnToggleConf" tabindex="-1">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div class="cys-form-error cys-error-hidden" id="err-conf-clave">
+            <i class="bi bi-x-circle me-1"></i><span id="err-conf-texto"></span>
+          </div>
+        </div>
+
+        <div class="modal-footer cys-modal-footer-row">
+          <button type="button" class="cys-btn-link" data-bs-dismiss="modal">
+            <i class="bi bi-x"></i> Cancelar
+          </button>
+          <button type="button" class="cys-btn-primary cys-btn-sm" id="btnConfirmarClave">
+            Siguiente <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Términos y Condiciones -->
+  <div class="modal fade" id="modalTC" tabindex="-1" aria-labelledby="modalTCLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content cys-modal-content">
+
+        <div class="modal-header cys-modal-header cys-modal-header-tc">
+          <div class="cys-modal-title-wrap">
+            <div class="cys-modal-icon-wrap">
+              <span class="cys-modal-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+              <div class="cys-modal-icon-glow"></div>
+            </div>
+            <div>
+              <div class="cys-modal-eyebrow">Paso 2 de 2</div>
+              <h5 class="modal-title cys-modal-title" id="modalTCLabel">Términos y Condiciones</h5>
+            </div>
+          </div>
+          <div class="cys-progress-wrap">
+            <div class="cys-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="modal-body cys-modal-body">
+          <div class="cys-tc-banner">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Antes de crear tu cuenta en <strong>CYS</strong>, lee y acepta los siguientes términos de uso.
+          </div>
+
+          <div class="cys-tc-grid">
+            <div class="cys-tc-item">
+              <div class="cys-tc-num">01</div>
+              <div class="cys-tc-content">
+                <div class="cys-tc-section-title">Uso del Sistema</div>
+                <p>El sistema CYS es de uso exclusivo para personal autorizado. El acceso está restringido a usuarios registrados y validados por la administración. Cualquier uso indebido podrá resultar en la suspensión inmediata de la cuenta.</p>
+              </div>
+            </div>
+            <div class="cys-tc-item">
+              <div class="cys-tc-num">02</div>
+              <div class="cys-tc-content">
+                <div class="cys-tc-section-title">Nombre de Usuario</div>
+                <p>Al registrarte, tu número de documento será asignado como nombre de usuario por defecto. Podrás personalizarlo desde la sección <strong>Mi Perfil</strong> una vez dentro del sistema.</p>
+              </div>
+            </div>
+            <div class="cys-tc-item">
+              <div class="cys-tc-num">03</div>
+              <div class="cys-tc-content">
+                <div class="cys-tc-section-title">Responsabilidad de Acceso</div>
+                <p>Eres responsable de mantener la confidencialidad de tu contraseña. No compartas tus credenciales con terceros. Toda actividad realizada con tu cuenta es tu responsabilidad.</p>
+              </div>
+            </div>
+            <div class="cys-tc-item">
+              <div class="cys-tc-num">04</div>
+              <div class="cys-tc-content">
+                <div class="cys-tc-section-title">Datos Personales</div>
+                <p>Los datos ingresados son tratados bajo la política de privacidad de CYS, conforme a la Ley 1581 de 2012 (Colombia). Solo serán usados para la gestión interna y no serán compartidos con terceros sin autorización.</p>
+              </div>
+            </div>
+            <div class="cys-tc-item">
+              <div class="cys-tc-num">05</div>
+              <div class="cys-tc-content">
+                <div class="cys-tc-section-title">Modificaciones</div>
+                <p>CYS se reserva el derecho de actualizar estos términos. Los cambios serán notificados mediante el sistema y el uso continuado implica aceptación de los nuevos términos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer cys-modal-footer-tc">
+          <label class="cys-check-card" for="checkTC">
+            <input class="cys-check-input" type="checkbox" id="checkTC">
+            <div class="cys-check-box">
+              <i class="bi bi-check2"></i>
+            </div>
+            <span class="cys-check-text">He leído y acepto los Términos y Condiciones</span>
+          </label>
+          <div class="cys-modal-actions">
+            <button type="button" class="cys-btn-link" id="btnVolverConf">
+              <i class="bi bi-arrow-left"></i> Volver
+            </button>
+            <button type="button" class="cys-btn-primary cys-btn-sm" id="btnAceptarTC" disabled>
+              <i class="bi bi-check-lg me-1"></i> Crear Cuenta
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/usuario/crear_usuario.js' %}"></script>
+</body>
+</html>
