@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CYS — Restablecer Contraseña</title>
+  <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"/>
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.20.png' %}">
+  <link rel="stylesheet" href="{% static 'css/usuario/restablecer_clave.css' %}">
+</head>
+<body>
+  <div class="cys-wrap">
+    <div class="cys-card">
+      <img src="{% static 'img/logo.20.png' %}" class="cys-logo" alt="Logo CYS">
+
+      {% if exito %}
+        <div class="cys-title cys-title--success">¡Listo!</div>
+        <div class="cys-msg-ok">Tu contraseña fue actualizada correctamente.</div>
+        <a href="{% url 'cerrar_sesion' %}" class="cys-btn d-block text-center text-decoration-none">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Ir al Inicio de Sesión
+        </a>
+
+      {% elif error %}
+        <div class="cys-title">Enlace Inválido</div>
+        <div class="cys-msg-err">{{ error }}</div>
+        <a href="{% url 'cerrar_sesion' %}" class="cys-btn d-block text-center text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i> Volver al Inicio
+        </a>
+
+      {% else %}
+        <div class="cys-title">Nueva Contraseña</div>
+        <p class="cys-desc mb-4">
+          Crea una contraseña segura para tu cuenta.
+        </p>
+        <form method="POST" id="formReset" autocomplete="off">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="cys-label" for="nuevaClave">Nueva Contraseña</label>
+            <div class="cys-input-eye">
+              <input type="password" name="nueva_clave" id="nuevaClave"
+                     class="cys-input" placeholder="Tu nueva contraseña"
+                     autocomplete="new-password" required>
+              <button type="button" class="cys-eye-btn" id="btnToggleNueva" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="cys-hint">
+              <i class="bi bi-info-circle me-1"></i> Mínimo 6 caracteres, 2 números y 1 mayúscula.
+            </div>
+            <div id="errClave" class="cys-err-inline"></div>
+          </div>
+          <div class="mb-4">
+            <label class="cys-label" for="confirmarClave">Confirmar Contraseña</label>
+            <div class="cys-input-eye">
+              <input type="password" name="confirmar" id="confirmarClave"
+                     class="cys-input" placeholder="Repite la contraseña"
+                     autocomplete="new-password" required>
+              <button type="button" class="cys-eye-btn" id="btnToggleConfirmar" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div id="errConfirmar" class="cys-err-inline"></div>
+          </div>
+          <button type="submit" class="cys-btn">
+            <i class="bi bi-shield-check me-1"></i> Guardar Nueva Contraseña
+          </button>
+        </form>
+        <div class="cys-divider"></div>
+        <div class="text-center">
+          <a href="{% url 'cerrar_sesion' %}" class="cys-btn-link">
+            <i class="bi bi-arrow-left"></i> Volver al inicio
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/usuario/restablecer_clave.js' %}"></script>
+</body>
+</html>
