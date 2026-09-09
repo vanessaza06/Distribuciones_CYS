@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from django.db.models import Sum
 
 
 
@@ -110,7 +111,11 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=150, db_column='nombre')
     descripcion = models.TextField(db_column='descripcion')
     fecha_vencimiento = models.DateField(db_column='fecha_vencimiento')
-    categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True, blank=True, db_column='codigo_categoria', related_name='productos')
+    categoria = models.ForeignKey(
+        'categorias.Categoria',  # antes decía 'Categoria', ya no sirve porque está en otra app
+        on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='codigo_categoria', related_name='productos'
+    )
     activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
@@ -118,6 +123,21 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    @property
+    def stock_total(self):
+        from lotes.models import Lote
+        return Lote.objects.filter(producto=self).aggregate(
+            total=Sum('stock_actual')
+        )['total'] or 0
+
+    @property
+    def stock_critico(self):
+        return self.stock_total <= 5
+
+    def precio_base(self):
+        pres = self.presentaciones.order_by('precio_venta').first()
+        return pres.precio_venta if pres else None
 
 # ── 5. PRESENTACION PRODUCTO ──
 class PresentacionProducto(models.Model):

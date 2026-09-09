@@ -1,6 +1,10 @@
 from decimal import Decimal
 from django import forms
 from app.models import Proveedor, Producto, Lote
+from django import forms
+from .models import Producto
+from app.models import Categoria
+#from presentaciones.models import PresentacionProducto
 
 
 class ProveedorForm(forms.ModelForm):
@@ -47,3 +51,62 @@ class NuevaCompraForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
         label="Precio Unitario"
     )
+#-----PRODUCTO-----#
+
+class ProductoRegistroForm(forms.ModelForm):
+    class Meta:
+        model  = Producto
+        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class':       'np-input',
+                'placeholder': 'Ej: Cerveza Club Colombia',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'np-input',
+                'rows':  2,
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'np-input',
+                'type':  'date',
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'np-input',
+            }),
+        }
+
+
+class ProductoForm(forms.ModelForm):
+    class Meta:
+        model  = Producto
+        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class':       'gp-input',
+                'placeholder': 'Ej: Cerveza Club Colombia',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class':       'gp-input',
+                'rows':        2,
+                'placeholder': 'Descripción opcional…',
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'gp-input',
+                'type':  'date',
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'gp-input',
+            }),
+        }
+#-----PRESENTACION-----#
+
+class PresentacionForm(forms.ModelForm):
+    class Meta:
+        model  = PresentacionProducto
+        fields = ['nombre', 'cantidad', 'precio_venta', 'observaciones']
+        widgets = {
+            'nombre':        forms.TextInput(attrs={'class': 'gp-input', 'placeholder': 'Ej: Six-pack'}),
+            'cantidad':      forms.NumberInput(attrs={'class': 'gp-input', 'min': '1'}),
+            'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
+            'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
+        }

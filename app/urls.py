@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
 from app.views.marca import views as mar_views  # type: ignore
+from app.views.productos import views as prod_views
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -39,10 +40,19 @@ urlpatterns = [
     path('perfil/', lambda r: HttpResponse('Perfil'), name='perfil_pagina'),
     path('usuarios/', lambda r: HttpResponse('Usuarios'), name='usuario'),
     
-       # MARCAS
+    # MARCAS
     path('marcas/', mar_views.lista_marcas, name='lista_marcas'), # type: ignore
     path('marcas/crear/', mar_views.crear_marca, name='crear_marca'), # type: ignore
     path('marcas/editar/<str:codigo_marca>/', mar_views.editar_marca, name='editar_marca'), # type: ignore
     path('marcas/eliminar/<str:codigo_marca>/', mar_views.eliminar_marca, name='eliminar_marca'), # type: ignore
+    
+    #PRODUCTOS
+    path('',                    prod_views.lista_productos,   name='lista_productos'),
+    path('crear/',               prod_views.crear_producto,    name='crear_producto'),
+    path('buscar/',              prod_views.buscar_producto,   name='buscar_producto'),
+    path('producto/<int:pk>/',   prod_views.producto_detalle,  name='producto_detalle'),
+    path('producto/<int:pk>/editar/', prod_views.producto_editar, name='producto_editar'),  # faltaba
+    path('registro/',            prod_views.producto_registro, name='producto_registro'),
+    path('stock-status/',        prod_views.stock_status,      name='stock_status'),
 
 ]
