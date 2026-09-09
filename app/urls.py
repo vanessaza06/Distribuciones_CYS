@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
+from app.views.marca import views as mar_views  # type: ignore
 
 # ── VISTA PRINCIPAL (Muestra tu esqueleto de partials: Header + Aside + Base) ──
 def inicio(request):
@@ -40,4 +41,11 @@ urlpatterns = [
     path('stock-status/', lambda r: HttpResponse('OK'), name='stock_status'),
     path('perfil/', lambda r: HttpResponse('Perfil'), name='perfil_pagina'),
     path('usuarios/', lambda r: HttpResponse('Usuarios'), name='usuario'),
+    
+       # MARCAS
+    path('marcas/', mar_views.lista_marcas, name='lista_marcas'), # type: ignore
+    path('marcas/crear/', mar_views.crear_marca, name='crear_marca'), # type: ignore
+    path('marcas/editar/<str:codigo_marca>/', mar_views.editar_marca, name='editar_marca'), # type: ignore
+    path('marcas/eliminar/<str:codigo_marca>/', mar_views.eliminar_marca, name='eliminar_marca'), # type: ignore
+
 ]
