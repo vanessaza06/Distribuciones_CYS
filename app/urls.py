@@ -5,6 +5,7 @@ from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
 from app.views.marca import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
+from app.views.presentaciones import views as pres_views
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -55,4 +56,8 @@ urlpatterns = [
     path('registro/',            prod_views.producto_registro, name='producto_registro'),
     path('stock-status/',        prod_views.stock_status,      name='stock_status'),
 
+    # Presentaciones
+    path('presentacion/<int:producto_pk>/crear/', pres_views.presentacion_crear, name='presentacion_crear'),
+    path('presentacion/<int:pk>/editar/', pres_views.presentacion_editar, name='presentacion_editar'),
+    path('presentacion/<int:pk>/toggle/', pres_views.presentacion_toggle_activo, name='presentacion_toggle_activo'),
 ]

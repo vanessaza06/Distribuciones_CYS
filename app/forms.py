@@ -4,7 +4,8 @@ from app.models import Proveedor, Producto, Lote
 from django import forms
 from .models import Producto
 from app.models import Categoria
-#from presentaciones.models import PresentacionProducto
+from app.models import PresentacionProducto
+
 
 
 class ProveedorForm(forms.ModelForm):

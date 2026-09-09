@@ -5,9 +5,9 @@ from django.http import JsonResponse
 from django.db.models import Sum, Prefetch
 from django.urls import reverse
 from app.models import Categoria
-#from presentaciones.models import PresentacionProducto
+from app.models import PresentacionProducto
 from app.models import Producto
-#from .forms import ProductoRegistroForm
+from app.forms import ProductoRegistroForm
 
 # ===============================
 # LISTA / VISTA PRINCIPAL

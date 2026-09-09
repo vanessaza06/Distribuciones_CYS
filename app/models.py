@@ -6,6 +6,7 @@ from django.db.models import Sum
 
 
 
+
 # ── MANAGER DE USUARIO ────────────────────────────────────────────────────────
 class UsuarioManager(BaseUserManager):
     def create_user(self, correo, nombre, apellido, documento, password=None):
@@ -146,13 +147,20 @@ class PresentacionProducto(models.Model):
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, db_column='precio_venta')
     cantidad = models.PositiveIntegerField(db_column='cantidad')
     observaciones = models.TextField(blank=True, null=True, db_column='observaciones')
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto')
+    activo = models.BooleanField(default=True, db_column='activo')
+    producto = models.ForeignKey(
+        'productos.Producto',
+        on_delete=models.CASCADE,
+        db_column='codigo_producto',
+        related_name='presentaciones'
+    )
 
     class Meta:
         db_table = 'presentacion_producto'
 
     def __str__(self):
         return f"{self.producto.nombre} - {self.cantidad} "
+
 
 # ── 6. LOTE ──
 class Lote(models.Model):
