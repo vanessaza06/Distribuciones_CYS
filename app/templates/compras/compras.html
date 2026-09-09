@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block page_title %}Compras{% endblock %}
@@ -277,7 +277,7 @@
                           <li><hr class="dropdown-divider"></li>
                           {% if compra.estado == 'pendiente' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                              <form method="POST" action="#" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="confirmada">
                                 <button type="submit" class="dropdown-item text-info" title="Cambiar a Confirmada">
@@ -287,7 +287,7 @@
                             </li>
                           {% elif compra.estado == 'confirmada' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                              <form method="POST" action="#" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="recibida">
                                 <button type="submit" class="dropdown-item text-success" title="Cambiar a Recibida">
@@ -299,7 +299,7 @@
 
                           {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra' compra.id %}" style="display: inline;">
+                              <form method="POST" action="#" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="cancelada">
                                 <button type="submit" class="dropdown-item text-danger" title="Cancelar compra">
@@ -394,7 +394,7 @@
       </div>
 
       <div class="modal-body p-4">
-        <form method="POST" action="{% url 'registrar_compra' %}" id="formNuevaCompra">
+        <form method="POST" action="#" id="formNuevaCompra">
           {% csrf_token %}
 
           <!-- Proveedor -->
@@ -1005,3 +1005,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

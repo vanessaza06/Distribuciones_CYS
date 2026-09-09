@@ -1,0 +1,558 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Usuarios — CYS Ltda{% endblock %}
+{% block page_title %}Usuarios{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usuario/usuarios_lista.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'error' %}
+        <div class="alert alert-dismissible fade show mb-3 cys-alert-error" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <!-- BARRA DE BÚSQUEDA + NUEVO USUARIO -->
+  <div class="ul-searchbar mb-4">
+    <i class="bi bi-search ul-searchbar__icon"></i>
+    <input type="text" id="inputBuscarUsuario" class="ul-searchbar__input"
+           placeholder="Buscar usuario en el sistema…" autocomplete="off">
+    {% if request.session.usuario_rol == 'admin' %}
+    <div class="ul-searchbar__div"></div>
+    <button type="button" class="ul-searchbar__btn" id="btnAbrirModalCrear">
+      <i class="bi bi-person-plus"></i> Nuevo Usuario
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="ul-layout" id="layout-principal">
+
+    <!-- TARJETAS -->
+    <div class="ul-main" id="ul-main-ref">
+      {% if usuarios %}
+      <div class="row g-3" id="contenedor-tarjetas">
+        {% for u in usuarios %}
+        {% if u.pk != request.session.usuario_id %}
+        <div class="col-12 col-md-6" id="col-{{ u.pk }}"
+             data-nombre="{{ u.nombre_completo|lower }}"
+             data-usuario="{{ u.usuario|lower }}"
+             data-rol="{{ u.get_rol_display|lower }}"
+             data-visible="1">
+          <div id="fila-{{ u.pk }}" class="usuario-card h-100">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="usuario-avatar">
+                  {% if u.foto %}
+                    <img src="{{ u.foto.url }}" alt="{{ u.nombre|slice:':1'|upper }}"
+                         loading="eager"
+                         class="avatar-image-cover">
+                  {% else %}
+                    {{ u.nombre|slice:":1"|upper }}
+                  {% endif %}
+                </div>
+                <div>
+                  <div class="usuario-nombre">{{ u.nombre_completo }}</div>
+                  <div class="usuario-user">@{{ u.usuario }}</div>
+                </div>
+              </div>
+
+              {% if request.session.usuario_rol == 'admin' %}
+              <div class="usuario-rol-control" id="rol-control-{{ u.pk }}">
+                <span id="rol-badge-{{ u.pk }}"
+                      class="badge usuario-rol
+                      {% if u.rol == 'admin' %}usuario-rol--admin
+                      {% elif u.rol == 'cajero' %}usuario-rol--cajero
+                      {% else %}usuario-rol--empleado{% endif %}
+                      {% if u.rol != 'admin' %}usuario-rol--clickable{% endif %}"
+                      {% if u.rol != 'admin' %}
+                      onclick="abrirSelectorRol({{ u.pk }}, '{{ u.rol }}')"
+                      title="Cambiar rol"
+                      {% endif %}>
+                  {{ u.get_rol_display }}
+                  {% if u.rol != 'admin' %}<i class="bi bi-pencil-fill usuario-rol__edit-icon"></i>{% endif %}
+                </span>
+                {% if u.rol != 'admin' %}
+                <div id="rol-selector-{{ u.pk }}" class="usuario-rol-selector hidden-display">
+                  <select id="rol-select-{{ u.pk }}" class="usuario-rol-select">
+                    <option value="cajero"   {% if u.rol == 'cajero'   %}selected{% endif %}>Cajero</option>
+                    <option value="empleado" {% if u.rol == 'empleado' %}selected{% endif %}>Empleado</option>
+                  </select>
+                  <button class="usuario-rol-btn usuario-rol-btn--ok"
+                          onclick="guardarRol({{ u.pk }})" title="Guardar rol">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button class="usuario-rol-btn usuario-rol-btn--cancel"
+                          onclick="cancelarRol({{ u.pk }})" title="Cancelar">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+              {% else %}
+              <span class="badge usuario-rol
+                {% if u.rol == 'admin' %}usuario-rol--admin
+                {% elif u.rol == 'cajero' %}usuario-rol--cajero
+                {% else %}usuario-rol--empleado{% endif %}">
+                {{ u.get_rol_display }}
+              </span>
+              {% endif %}
+            </div>
+
+            <hr class="usuario-divider">
+
+            <div class="row g-2 mb-3 usuario-datos">
+              <div class="col-6">
+                <div class="usuario-label">Identificación</div>
+                <div class="usuario-value">{{ u.identificacion }}</div>
+                <div class="usuario-sub">{{ u.get_tipo_id_display }}</div>
+              </div>
+              <div class="col-6">
+                <div class="usuario-label">Correo</div>
+                <div class="usuario-email">{{ u.email|default:"—" }}</div>
+              </div>
+              <div class="col-6">
+                <div class="usuario-label">Miembro desde</div>
+                <div class="usuario-muted">{{ u.fecha_registro|date:"d/m/Y" }}</div>
+              </div>
+              <div class="col-6">
+                <div class="usuario-label">Estado</div>
+                <span id="estado-badge-{{ u.pk }}"
+                      class="usuario-estado {% if u.activo %}usuario-estado--activo{% else %}usuario-estado--inactivo{% endif %}">
+                  <span class="usuario-dot"></span>
+                  {% if u.activo %}Activo{% else %}Inactivo{% endif %}
+                </span>
+              </div>
+            </div>
+
+            {% if request.session.usuario_rol == 'admin' %}
+            <div class="d-flex gap-2">
+              <button onclick="abrirEditar({{ u.pk }})"
+                      class="btn btn-sm flex-fill usuario-btn usuario-btn-editar">
+                <i class="bi bi-pencil me-1"></i> Editar
+              </button>
+              <div id="wrap-toggle-{{ u.pk }}" class="flex-fill d-flex flex-column gap-1">
+                <button id="btn-toggle-{{ u.pk }}"
+                        onclick="toggleActivo({{ u.pk }}, {{ u.activo|yesno:'true,false' }})"
+                        class="btn btn-sm w-100 usuario-btn
+                        {% if u.activo %}usuario-btn-desactivar{% else %}usuario-btn-activar{% endif %}">
+                  <i class="bi bi-{% if u.activo %}person-dash{% else %}person-check{% endif %} me-1"></i>
+                  {% if u.activo %}Desactivar{% else %}Activar{% endif %}
+                </button>
+                <button id="btn-eliminar-{{ u.pk }}"
+                        onclick="eliminarUsuario({{ u.pk }})"
+                        class="btn btn-sm w-100 usuario-btn usuario-btn-eliminar{% if u.activo %} hidden-display{% endif %}">
+                  <i class="bi bi-trash3 me-1"></i> Eliminar
+                </button>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="usuarios-vacio text-center py-5 hidden-important" id="sin-resultados">
+        <i class="bi bi-search usuarios-vacio-icon"></i>
+        <div class="usuarios-vacio-text">No se encontraron usuarios.</div>
+      </div>
+
+      {% else %}
+      <div class="usuarios-vacio text-center py-5">
+        <i class="bi bi-people usuarios-vacio-icon"></i>
+        <div class="usuarios-vacio-text">No hay usuarios registrados.</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="ul-sidebar" id="ul-sidebar-ref">
+
+      <div class="ul-widget widget-total">
+        <div class="ul-big-stat">
+          <div class="ul-big-stat__num" id="total-usuarios-num">{{ usuarios|length }}</div>
+          <div class="ul-big-stat__label">Usuarios totales</div>
+          <div class="ul-big-stat__sub">Sesión activa incluida</div>
+        </div>
+        <div class="ul-bar-wrap">
+          <div class="ul-bar-label-row">
+            <span>Activos</span>
+            <span id="pct-activos">—</span>
+          </div>
+          <div class="ul-bar-track">
+            <div class="ul-bar-fill bar-width-zero" id="bar-activos"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ul-sidebar-bottom" id="ul-sidebar-bottom-ref">
+
+        <div class="sidebar-dropdown-wrapper" id="wrapperStats">
+          <button class="btn-trigger-dropdown" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#collapseStats"
+                  aria-expanded="false">
+            <span><i class="bi bi-bar-chart-steps me-2"></i>Ver Estadísticas Detalladas</span>
+            <i class="bi bi-chevron-down arrow-icon"></i>
+          </button>
+          <div class="collapse" id="collapseStats">
+            <div class="stats-grid-inner">
+              <div class="widget-estado">
+                <div class="ul-widget__title"><i class="bi bi-circle-fill"></i> Estado</div>
+                <div class="ul-stat-row">
+                  <span class="ul-stat-label"><span class="ul-stat-dot ul-stat-dot--activo"></span> Activos</span>
+                  <span class="ul-stat-val" id="cnt-activos">0</span>
+                </div>
+                <div class="ul-stat-row">
+                  <span class="ul-stat-label"><span class="ul-stat-dot ul-stat-dot--inactivo"></span> Inactivos</span>
+                  <span class="ul-stat-val" id="cnt-inactivos">0</span>
+                </div>
+              </div>
+              <div class="widget-rol">
+                <div class="ul-widget__title"><i class="bi bi-person-badge"></i> Por Rol</div>
+                <div class="ul-stat-row">
+                  <span class="ul-stat-label"><span class="ul-stat-dot ul-stat-dot--admin"></span> Admin</span>
+                  <span class="ul-stat-val" id="cnt-admin">0</span>
+                </div>
+                <div class="ul-stat-row">
+                  <span class="ul-stat-label"><span class="ul-stat-dot ul-stat-dot--cajero"></span> Cajeros</span>
+                  <span class="ul-stat-val" id="cnt-cajero">0</span>
+                </div>
+                <div class="ul-stat-row">
+                  <span class="ul-stat-label"><span class="ul-stat-dot ul-stat-dot--empleado"></span> Empl.</span>
+                  <span class="ul-stat-val" id="cnt-empleado">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-dropdown-wrapper" id="wrapperRecientes">
+          <button class="btn-trigger-dropdown" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#collapseRecientes"
+                  aria-expanded="false">
+            <span><i class="bi bi-clock-history me-2"></i>Ver Registros Recientes</span>
+            <i class="bi bi-chevron-down arrow-icon"></i>
+          </button>
+          <div class="collapse" id="collapseRecientes">
+            <div class="ul-widget widget-recientes">
+              <div class="ul-widget__title"><i class="bi bi-clock-history"></i> Registros recientes</div>
+              <div class="ul-recientes-scroll" id="recientes-scroll">
+                {% for u in usuarios %}
+                {% if u.pk != request.session.usuario_id %}
+                <div class="ul-activity-item" id="reciente-{{ u.pk }}">
+                  <div class="ul-activity-avatar">
+                    {% if u.foto %}
+                      <img src="{{ u.foto.url }}" alt="{{ u.nombre|slice:':1'|upper }}"
+                           loading="eager"
+                           class="avatar-image-cover">
+                    {% else %}
+                      {{ u.nombre|slice:":1"|upper }}
+                    {% endif %}
+                  </div>
+                  <div class="ul-activity-body">
+                    <div class="ul-activity-name">{{ u.nombre_completo }}</div>
+                    <div class="ul-activity-meta">{{ u.get_rol_display }}</div>
+                  </div>
+                  <div class="ul-activity-time">{{ u.fecha_registro|date:"d/m/y" }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% if request.session.usuario_rol == 'admin' %}
+
+<!-- MODAL EDITAR USUARIO -->
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1"
+     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-editar">
+    <div class="modal-content modal-editar-content">
+      <div class="modal-header modal-editar-header">
+        <div>
+          <span class="modal-editar-title">Editar Usuario</span>
+          <span id="euNombreHeader" class="modal-editar-user"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div id="euMsg" class="eu-msg"></div>
+      <div class="modal-body modal-editar-body">
+        <input type="hidden" id="euPk">
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="eu-label">Nombres</label>
+            <input type="text" id="euNombre" class="eu-input">
+          </div>
+          <div class="col-6">
+            <label class="eu-label">Apellidos</label>
+            <input type="text" id="euApellidos" class="eu-input">
+          </div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="eu-label">Correo</label>
+            <input type="email" id="euEmail" class="eu-input">
+          </div>
+          <div class="col-6">
+            <label class="eu-label">Rol</label>
+            <select id="euRol" class="eu-input">
+              <option value="cajero">Cajero</option>
+              <option value="empleado">Empleado</option>
+            </select>
+          </div>
+        </div>
+        <hr class="modal-divider">
+        <div class="modal-pass-title">Nueva contraseña (opcional)</div>
+        <div class="mb-4">
+          <label class="eu-label">Nueva Contraseña</label>
+          <input type="password" id="euClaveNueva" class="eu-input"
+                 placeholder="Mín. 6 car., 2 núm., 1 may.">
+        </div>
+        <button onclick="guardarEditar()" id="euBtnGuardar"
+                class="btn w-100 modal-btn-guardar">
+          <i class="bi bi-check-lg me-1"></i> Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREAR USUARIO -->
+<div class="modal fade" id="modalCrearUsuario" tabindex="-1"
+     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-editar modal-dialog-custom">
+    <div class="modal-content modal-editar-content" id="modalCrearContenido">
+
+      <div class="modal-header modal-editar-header">
+        <span class="modal-editar-title">Nuevo Usuario</span>
+        <button type="button" class="btn-close btn-close-white ms-auto"
+                data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div id="cuMsg" class="eu-msg"></div>
+
+      <div class="modal-body modal-editar-body modal-body-padding-top">
+
+        <!-- DATOS PERSONALES -->
+        <div class="cu-section-label">
+          <i class="bi bi-person"></i> Datos Personales
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="eu-label">Nombres <span class="cu-required">*</span></label>
+            <input type="text" id="cuNombre" class="eu-input" autocomplete="off">
+          </div>
+          <div class="col-6">
+            <label class="eu-label">Apellidos <span class="cu-required">*</span></label>
+            <input type="text" id="cuApellidos" class="eu-input" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="eu-label">Tipo de ID <span class="cu-required">*</span></label>
+            <select id="cuTipoId" class="eu-input">
+              <option value="CC">Cédula de Ciudadanía</option>
+              <option value="TI">Tarjeta de Identidad</option>
+              <option value="CE">Cédula Extranjería</option>
+              <option value="PA">Pasaporte</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="eu-label">Identificación <span class="cu-required">*</span></label>
+            <input type="text" id="cuIdentificacion" class="eu-input" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="eu-label">Correo electrónico</label>
+          <input type="email" id="cuEmail" class="eu-input" autocomplete="off"
+                 placeholder="opcional">
+        </div>
+
+        <!-- ROL -->
+        <div class="cu-section-label mt-1">
+          <i class="bi bi-person-badge"></i> Rol
+        </div>
+
+        <div class="mb-3">
+          <div class="cu-rol-badge-wrap">
+            <span class="badge usuario-rol usuario-rol--empleado cu-rol-badge">Empleado</span>
+            <span class="cu-rol-hint">
+              Los nuevos usuarios se crean siempre como
+              <strong>Empleado</strong>. El rol puede cambiarse
+              después desde la lista de usuarios.
+            </span>
+          </div>
+        </div>
+
+        <!-- CONTRASEÑA -->
+        <div class="cu-section-label mt-1">
+          <i class="bi bi-lock"></i> Contraseña
+        </div>
+
+        <div class="mb-3">
+          <label class="eu-label">Contraseña <span class="cu-required">*</span></label>
+          <div class="cu-pass-wrap">
+            <input type="password" id="cuClave" class="eu-input cu-pass-input"
+                   placeholder="Mín. 6 car., 2 núm., 1 may."
+                   autocomplete="new-password">
+            <button type="button" class="cu-eye-btn" id="cuEyeClave"
+                    onclick="cuToggleOjo('cuClave','cuEyeIconClave')" title="Mostrar/ocultar">
+              <i class="bi bi-eye" id="cuEyeIconClave"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="eu-label">Confirmar contraseña <span class="cu-required">*</span></label>
+          <div class="cu-pass-wrap">
+            <input type="password" id="cuClaveConfirm" class="eu-input cu-pass-input"
+                   placeholder="Repite la contraseña"
+                   autocomplete="new-password">
+            <button type="button" class="cu-eye-btn" id="cuEyeConfirm"
+                    onclick="cuToggleOjo('cuClaveConfirm','cuEyeIconConfirm')" title="Mostrar/ocultar">
+              <i class="bi bi-eye" id="cuEyeIconConfirm"></i>
+            </button>
+          </div>
+          <div id="cuClaveMatch" class="cu-match-hint match-hint-hidden"></div>
+        </div>
+
+        <!-- TÉRMINOS Y CONDICIONES -->
+        <div class="cu-tc-wrap mb-4" id="cuTcWrap">
+          <label class="cu-tc-label" for="cuAceptaTC">
+            <input type="checkbox" id="cuAceptaTC" class="cu-tc-checkbox">
+            <span class="cu-tc-box"><i class="bi bi-check"></i></span>
+            <span class="cu-tc-text">
+              Acepto los
+              <button type="button" class="cu-tc-link" id="cuBtnVerTC">
+                Términos y Condiciones
+              </button>
+              de uso del sistema CYS Ltda.
+            </span>
+          </label>
+        </div>
+
+        <button type="button" id="cuBtnGuardar"
+                onclick="guardarNuevoUsuario()"
+                class="btn w-100 modal-btn-guardar">
+          <i class="bi bi-person-plus me-1"></i> Crear Usuario
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES -->
+<div class="modal fade" id="modalTC" tabindex="-1"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-dialog-tc">
+    <div class="modal-content modal-editar-content">
+
+      <div class="modal-header modal-editar-header">
+        <div>
+          <span class="modal-editar-title">
+            <i class="bi bi-file-text me-2"></i>Términos y Condiciones
+          </span>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body modal-body-padding-custom">
+
+        <div class="tc-banner mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Lea atentamente antes de registrar un nuevo usuario en el sistema.
+        </div>
+
+        <div class="tc-item">
+          <div class="tc-num">01</div>
+          <div class="tc-content">
+            <div class="tc-title">Acceso al sistema</div>
+            <p>El usuario registrado tendrá acceso al sistema de gestión de CYS Ltda.
+               únicamente para las funciones correspondientes a su rol asignado.</p>
+          </div>
+        </div>
+
+        <div class="tc-item">
+          <div class="tc-num">02</div>
+          <div class="tc-content">
+            <div class="tc-title">Confidencialidad</div>
+            <p>Toda la información manejada dentro del sistema es de carácter
+               <strong>confidencial</strong>. Queda prohibida su divulgación a terceros
+               no autorizados.</p>
+          </div>
+        </div>
+
+        <div class="tc-item">
+          <div class="tc-num">03</div>
+          <div class="tc-content">
+            <div class="tc-title">Responsabilidad de credenciales</div>
+            <p>Cada usuario es responsable de mantener la seguridad de sus credenciales
+               de acceso. No se permite compartir contraseñas entre usuarios.</p>
+          </div>
+        </div>
+
+        <div class="tc-item">
+          <div class="tc-num">04</div>
+          <div class="tc-content">
+            <div class="tc-title">Uso adecuado</div>
+            <p>El acceso al sistema debe usarse exclusivamente para actividades
+               relacionadas con las operaciones de <strong>CYS Ltda.</strong>
+               Cualquier uso indebido será motivo de suspensión inmediata.</p>
+          </div>
+        </div>
+
+        <div class="tc-item">
+          <div class="tc-num">05</div>
+          <div class="tc-content">
+            <div class="tc-title">Auditoría y monitoreo</div>
+            <p>Las acciones realizadas dentro del sistema quedan registradas y pueden
+               ser auditadas por el administrador en cualquier momento.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer modal-footer-custom">
+        <button type="button" class="btn usuario-btn usuario-btn-editar"
+                data-bs-dismiss="modal">
+          Cerrar
+        </button>
+        <button type="button" class="btn modal-btn-guardar modal-btn-custom"
+                id="tcBtnAceptar" data-bs-dismiss="modal">
+          <i class="bi bi-check-lg me-1"></i> Acepto
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<script src="{% static 'js/usuario/usuarios_lista.js' %}"></script>
+
+{% endblock %}

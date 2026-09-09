@@ -5,13 +5,10 @@ from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
 from app.views.marca import views as mar_views  # type: ignore
 
-# ── VISTA PRINCIPAL (Muestra tu esqueleto de partials: Header + Aside + Base) ──
 def inicio(request):
-    return render(request, 'partials/base.html')
-
+    return render(request, 'base/base.html')
 
 urlpatterns = [
-    # ── PÁGINA PRINCIPAL / TABLERO (http://127.0.0.1:8000/) ──
     path('', inicio, name='principal'),
 
     # CATEGORIAS
@@ -37,7 +34,7 @@ urlpatterns = [
     path('proveedores/modal/reactivar/<str:id>/', prov_views.reactivar_proveedor_modal, name='reactivar_proveedor_modal'),
     path('proveedores/modal/sancionar/<str:id>/', prov_views.sancionar_proveedor_modal, name='sancionar_proveedor_modal'),
 
-    # Rutas auxiliares (para que los enlaces de tu header y aside no den error)
+    # Rutas auxiliares (quitamos 'perfil_pagina' y 'usuario', ahora vienen del módulo usuarios)
     path('stock-status/', lambda r: HttpResponse('OK'), name='stock_status'),
     path('perfil/', lambda r: HttpResponse('Perfil'), name='perfil_pagina'),
     path('usuarios/', lambda r: HttpResponse('Usuarios'), name='usuario'),
