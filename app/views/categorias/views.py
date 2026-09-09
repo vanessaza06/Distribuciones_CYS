@@ -1,17 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse
-
 from app.models import Categoria
-
 
 #@login_required
 def categorias_lista(request):
+    # Traemos las categorías principales y precargamos las subcategorías y productos
     categorias = Categoria.objects.prefetch_related(
         'productos', 'subcategorias__productos'
     ).filter(subcategoria__isnull=True)
+    
     todas_cats = Categoria.objects.all()
+    
     context = {
         'categorias': categorias,
         'todas_cats': todas_cats,
@@ -19,70 +19,90 @@ def categorias_lista(request):
             {'nombre': 'Categorías', 'url': None},
         ],
     }
+    # Ruta corregida: apunta a la subcarpeta 'categorias'
     return render(request, 'categorias/categorias.html', context)
 
 
 #@login_required
 def categoria_crear(request):
     if request.method == 'POST':
-        nombre        = request.POST.get('nombre', '').strip()
-        codigo        = request.POST.get('codigo', '').strip()
-        descripcion   = request.POST.get('descripcion', '').strip()
-        subcategoria_id = request.POST.get('subcategoria') or None
+        nombre = request.POST.get('nombre', '').strip()
+        codigo = request.POST.get('codigo', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        
+        # En el HTML personalizaste el nombre del input hidden a 'padre'
+        padre_id = request.POST.get('padre') or None
 
+        # Validación 1: Campos vacíos
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
-            return redirect('categorias:lista')
+            return redirect('categorias_lista')
 
+        # Validación 2: Código duplicado
         if Categoria.objects.filter(codigo=codigo).exists():
             messages.error(request, f'⚠️ Ya existe una categoría con el código "{codigo}".')
-            return redirect('categorias:lista')
+            return redirect('categorias_lista')
 
-        subcategoria = get_object_or_404(Categoria, pk=subcategoria_id) if subcategoria_id else None
-        Categoria.objects.create(nombre=nombre, codigo=codigo, descripcion=descripcion, subcategoria=subcategoria)
+        subcategoria = get_object_or_404(Categoria, pk=padre_id) if padre_id else None
+        
+        # Creación
+        Categoria.objects.create(
+            nombre=nombre, 
+            codigo=codigo, 
+            descripcion=descripcion, 
+            subcategoria=subcategoria
+        )
+        
         tipo = 'Subcategoría' if subcategoria else 'Categoría'
-        messages.success(request, f'✅ {tipo} "{nombre}" creada.')
+        messages.success(request, f'✅ {tipo} "{nombre}" creada con éxito.')
 
-    return redirect('categorias:lista')
+    return redirect('categorias_lista')
 
 
 #@login_required
 def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
-        nombre        = request.POST.get('nombre', '').strip()
-        codigo        = request.POST.get('codigo', '').strip()
-        descripcion   = request.POST.get('descripcion', '').strip()
-        subcategoria_id = request.POST.get('subcategoria') or None
+        nombre = request.POST.get('nombre', '').strip()
+        codigo = request.POST.get('codigo', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        padre_id = request.POST.get('padre') or None
 
+        # Validación 1: Campos vacíos
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
-            return redirect('categorias:lista')
+            return redirect('categorias_lista')
 
+        # Validación 2: Código duplicado en otra categoría que no sea la actual
         if Categoria.objects.filter(codigo=codigo).exclude(pk=pk).exists():
             messages.error(request, f'⚠️ Ya existe otra categoría con el código "{codigo}".')
-            return redirect('categorias:lista')
+            return redirect('categorias_lista')
 
-        categoria.nombre        = nombre
-        categoria.codigo        = codigo
-        categoria.descripcion   = descripcion
-        categoria.subcategoria  = get_object_or_404(Categoria, pk=subcategoria_id) if subcategoria_id else None
+        # Actualización
+        categoria.nombre = nombre
+        categoria.codigo = codigo
+        categoria.descripcion = descripcion
+        categoria.subcategoria = get_object_or_404(Categoria, pk=padre_id) if padre_id else None
         categoria.save()
-        messages.success(request, f'✅ Categoría "{nombre}" actualizada.')
+        
+        messages.success(request, f'✅ Categoría "{nombre}" actualizada correctamente.')
 
-    return redirect('categorias:lista')
+    return redirect('categorias_lista')
 
 
 #@login_required
 def categoria_eliminar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
+        # Validación 1: Si tiene productos o subcategorías, no se borra, se inactiva.
         if categoria.productos.exists() or categoria.subcategorias.exists():
             categoria.activo = False
             categoria.save()
             messages.warning(request, f'⚠️ "{categoria.nombre}" tiene productos o subcategorías asociadas — se desactivó en lugar de eliminarse.')
         else:
+            # Si está limpia, se borra definitivamente
             nombre = categoria.nombre
             categoria.delete()
-            messages.success(request, f'✅ Categoría "{nombre}" eliminada.')
-    return redirect('categorias:lista')
+            messages.success(request, f'✅ Categoría "{nombre}" eliminada correctamente.')
+            
+    return redirect('categorias_lista')
