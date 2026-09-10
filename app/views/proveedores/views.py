@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 # ── LISTA PRINCIPAL DE PROVEEDORES ─────────────────────────────────────────────
-#@login_required
+@login_required
 def lista_proveedores(request):
     proveedores = Proveedor.objects.all().order_by('-fecha_registro')
 
@@ -95,7 +95,7 @@ def lista_proveedores(request):
 
 
 # ── CRUD TRADICIONAL ──────────────────────────────────────────────────────────
-#@login_required
+@login_required
 def crear_proveedor(request):
     if request.method == 'POST':
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -138,7 +138,7 @@ def crear_proveedor(request):
     return redirect('lista_proveedores')
 
 
-#@login_required
+@login_required
 def editar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
 
@@ -168,7 +168,7 @@ def editar_proveedor(request, id):
     return render(request, 'proveedores/editar_proveedor.html', context)
 
 
-#@login_required
+@login_required
 def detalle_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.id = proveedor.pk
@@ -190,7 +190,7 @@ def detalle_proveedor(request, id):
     return render(request, 'proveedores/detalle_proveedor.html', context)
 
 
-#@login_required
+@login_required
 def eliminar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     if request.method == 'POST':
@@ -200,7 +200,7 @@ def eliminar_proveedor(request, id):
     return redirect('lista_proveedores')
 
 
-#@login_required
+@login_required
 def activar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.estado = 'activo'
@@ -209,7 +209,7 @@ def activar_proveedor(request, id):
     return redirect('lista_proveedores')
 
 
-#@login_required
+@login_required
 def desactivar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.estado = 'inactivo'
@@ -218,7 +218,7 @@ def desactivar_proveedor(request, id):
     return redirect('lista_proveedores')
 
 
-#@login_required
+@login_required
 def sancionar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     if request.method == 'POST':
@@ -234,7 +234,7 @@ def sancionar_proveedor(request, id):
 
 
 # ── VISTAS MODALES / AJAX (Usadas por proveedores.js) ─────────────────────────
-#@login_required
+@login_required
 def detalle_proveedor_modal(request, id):
     try:
         proveedor = get_object_or_404(Proveedor, pk=id)
@@ -263,7 +263,7 @@ def detalle_proveedor_modal(request, id):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-#@login_required
+@login_required
 @csrf_exempt
 def desactivar_proveedor_modal(request, id):
     if request.method == 'POST':
@@ -274,7 +274,7 @@ def desactivar_proveedor_modal(request, id):
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 
-#@login_required
+@login_required
 @csrf_exempt
 def reactivar_proveedor_modal(request, id):
     if request.method == 'POST':
@@ -285,7 +285,7 @@ def reactivar_proveedor_modal(request, id):
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 
-#@login_required
+@login_required
 @csrf_exempt
 def sancionar_proveedor_modal(request, id):
     if request.method == 'POST':
@@ -300,7 +300,7 @@ def sancionar_proveedor_modal(request, id):
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 
-#@login_required
+@login_required
 @csrf_exempt
 def levantar_sancion_proveedor(request, id):
     if request.method == 'POST':

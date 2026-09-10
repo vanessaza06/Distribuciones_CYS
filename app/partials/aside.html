@@ -188,21 +188,22 @@
           <span>Gestión de Lotes</span>
         </a>
 
-        <!-- PROVEEDORES -->
+               <!-- PROVEEDORES -->
         <a href="{% url 'lista_proveedores' %}"
-           class="cys-sb-link"
+           class="cys-sb-link {% block nav_proveedores %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Proveedores">
-          <i class="bi bi-box-seam-fill"></i>
+          <i class="bi bi-truck"></i>
           <span>Proveedores</span>
         </a>
 
         <!-- COMPRAS -->
-        <a href="#"
-           class="cys-sb-link"
+        <a href="{% url 'lista_compras' %}"
+           class="cys-sb-link {% block nav_compras %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
           <i class="bi bi-cart-check-fill"></i>
           <span>Compras</span>
         </a>
+
 
       </nav>
     </div>
