@@ -1,10 +1,38 @@
 from decimal import Decimal
 from django import forms
+from app.models import (
+    Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
+    AgendaInventario, Hallazgo,
+)
 from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
+from app.models import DetalleProducto
 
 
+#-----DETALLE PRODUCTO-----#
+class DetalleProductoForm(forms.ModelForm):
+    class Meta:
+        model = DetalleProducto
+        fields = ['codigo_barras', 'marca', 'fecha_vencimiento', 'descripcion']
+        widgets = {
+            'codigo_barras': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 7702001234567',
+            }),
+            'marca': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Descripción del detalle (opcional)…',
+            }),
+        }
 
-
+#-----PROVEEDOR-----#
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
@@ -25,7 +53,7 @@ class ProveedorForm(forms.ModelForm):
             'observacion': forms.Textarea(attrs={'class': 'form-control prod-input', 'rows': 3}),
         }
 
-
+#-----COMPRA-----#
 class NuevaCompraForm(forms.Form):
     producto = forms.ModelChoiceField(
         queryset=Producto.objects.filter(activo=True),
@@ -48,7 +76,7 @@ class NuevaCompraForm(forms.Form):
         decimal_places=2,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
         label="Precio Unitario"
-    )  
+    )
 #-----PRODUCTO-----#
 
 class ProductoRegistroForm(forms.ModelForm):
@@ -108,7 +136,7 @@ class PresentacionForm(forms.ModelForm):
             'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
-        
+
 #-----LOTE-----#
 
 class LoteForm(forms.ModelForm):
@@ -130,3 +158,67 @@ class LoteForm(forms.ModelForm):
             'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
+
+#-----BODEGA-----#
+
+class AgendaInventarioForm(forms.ModelForm):
+    class Meta:
+        model = AgendaInventario
+        # Solo los campos que el usuario llena en el formulario.
+        # documento_usuario, estado y completado_por los asigna la vista, no van aquí.
+        fields = ['titulo', 'fecha', 'descripcion']
+        widgets = {
+            'titulo': forms.TextInput(attrs={'class': 'form-control inv-input', 'placeholder': 'Ej: Inventario mensual Junio'}),
+            'fecha': forms.DateTimeInput(attrs={'class': 'form-control inv-input', 'type': 'datetime-local'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control inv-input', 'rows': 3}),
+        }
+
+
+class HallazgoForm(forms.ModelForm):
+    class Meta:
+        model = Hallazgo
+        # agenda la asigna la vista (hallazgo.agenda = agenda), no va aquí.
+        fields = ['producto', 'tipo_hallazgo']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'form-select'}),
+            'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
+        }
+        from .models import DetalleProducto
+        
+        
+#-----CATEGORIA-----#
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['codigo', 'nombre', 'descripcion', 'subcategoria']
+        widgets = {
+            'codigo': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: CAT-001',
+            }),
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Cervezas',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Descripción opcional…',
+            }),
+            'subcategoria': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Al editar, una categoría no puede aparecer como su propia opción de subcategoria
+        if self.instance and self.instance.pk:
+            self.fields['subcategoria'].queryset = Categoria.objects.exclude(pk=self.instance.pk)
+
+    def clean_subcategoria(self):
+        subcategoria = self.cleaned_data.get('subcategoria')
+        if subcategoria and self.instance.pk and subcategoria.pk == self.instance.pk:
+            raise forms.ValidationError('Una categoría no puede ser subcategoría de sí misma.')
+        return subcategoria
+
