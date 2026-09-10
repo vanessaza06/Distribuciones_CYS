@@ -7,6 +7,8 @@ from app.views.marca import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
+from app.views.compra import views as compra_views
+
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -69,4 +71,11 @@ urlpatterns = [
     path('<str:numero_lote>/', lot_views.lote_detail, name='lote_detail'),
     path('<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
     path('<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
+    #COMPRAS
+    path('compras/', compra_views.lista_compras, name='lista_compras'),
+    path('compras/estado/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra'),
+    path('compras/estado/<int:id>/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra_id'),
+    path('compras/pago/', compra_views.registrar_pago_compra, name='registrar_pago_compra'),
+    path('compras/pago/<int:id>/', compra_views.registrar_pago_compra, name='registrar_pago_compra_id'),
+
 ]
