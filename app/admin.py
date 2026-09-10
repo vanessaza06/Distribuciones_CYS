@@ -3,7 +3,8 @@ from .models import (
     Usuario, Bodega, Categoria, Producto, PresentacionProducto,
     Lote, Marca, DetalleProducto, Proveedor, Compra, DetalleCompra,
     DevolucionProveedores, Caja, Venta, DetalleVenta, PagoVenta,
-    Devolucion, DetalleDevolucion, MetodoPago
+    Devolucion, DetalleDevolucion, MetodoPago,
+    AgendaInventario, Hallazgo
 )
 
 admin.site.register(Usuario)
@@ -25,4 +26,5 @@ admin.site.register(PagoVenta)
 admin.site.register(Devolucion)
 admin.site.register(DetalleDevolucion)
 admin.site.register(MetodoPago)
-
+admin.site.register(AgendaInventario)
+admin.site.register(Hallazgo)

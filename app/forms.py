@@ -1,5 +1,9 @@
 from decimal import Decimal
 from django import forms
+from app.models import (
+    Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
+    AgendaInventario, Hallazgo,
+)
 from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
 from app.models import DetalleProducto
 
@@ -72,7 +76,7 @@ class NuevaCompraForm(forms.Form):
         decimal_places=2,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
         label="Precio Unitario"
-    )  
+    )
 #-----PRODUCTO-----#
 
 class ProductoRegistroForm(forms.ModelForm):
@@ -132,7 +136,7 @@ class PresentacionForm(forms.ModelForm):
             'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
-        
+
 #-----LOTE-----#
 
 class LoteForm(forms.ModelForm):
@@ -153,6 +157,31 @@ class LoteForm(forms.ModelForm):
             'bodega': forms.Select(attrs={'class': 'form-select'}),
             'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+#-----BODEGA-----#
+
+class AgendaInventarioForm(forms.ModelForm):
+    class Meta:
+        model = AgendaInventario
+        # Solo los campos que el usuario llena en el formulario.
+        # documento_usuario, estado y completado_por los asigna la vista, no van aquí.
+        fields = ['titulo', 'fecha', 'descripcion']
+        widgets = {
+            'titulo': forms.TextInput(attrs={'class': 'form-control inv-input', 'placeholder': 'Ej: Inventario mensual Junio'}),
+            'fecha': forms.DateTimeInput(attrs={'class': 'form-control inv-input', 'type': 'datetime-local'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control inv-input', 'rows': 3}),
+        }
+
+
+class HallazgoForm(forms.ModelForm):
+    class Meta:
+        model = Hallazgo
+        # agenda la asigna la vista (hallazgo.agenda = agenda), no va aquí.
+        fields = ['producto', 'tipo_hallazgo']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'form-select'}),
+            'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
         }
         from .models import DetalleProducto
         
