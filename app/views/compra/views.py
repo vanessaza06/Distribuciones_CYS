@@ -1,8 +1,3 @@
-"""
-Vistas del módulo de Compras.
-Distribuciones CYS
-"""
-
 import json
 import logging
 from decimal import Decimal
@@ -15,7 +10,7 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
 from django.utils import timezone
 
 from app.models import Proveedor, Compra, DetalleCompra, MetodoPago, Producto, Lote
