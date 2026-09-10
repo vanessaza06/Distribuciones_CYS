@@ -224,14 +224,25 @@ class Marca(models.Model):
 # ── 8. DETALLE PRODUCTO ──
 class DetalleProducto(models.Model):
     numero_producto = models.AutoField(primary_key=True, db_column='numero_producto')
-    codigo_barras = models.CharField(max_length=100, db_column='codigo_barras')
+    codigo_barras = models.CharField(max_length=100, unique=True, db_column='codigo_barras')
     fecha_vencimiento = models.DateField(db_column='fecha_vencimiento')
     descripcion = models.TextField(db_column='descripcion')
-    marca = models.ForeignKey('Marca', on_delete=models.CASCADE, db_column='codigo_marca', related_name='productos')
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto')
+    marca = models.ForeignKey(
+        'Marca', on_delete=models.CASCADE,
+        db_column='codigo_marca', related_name='productos'
+    )
+    producto = models.ForeignKey(
+        'Producto', on_delete=models.CASCADE,
+        db_column='codigo_producto', related_name='detalles'
+    )
 
     class Meta:
         db_table = 'detalle_producto'
+        verbose_name = 'Detalle de Producto'
+        verbose_name_plural = 'Detalles de Producto'
+
+    def __str__(self):
+        return f"{self.codigo_barras} - {self.producto.nombre}"
 
 # ── 9. PROVEEDOR ──
 class Proveedor(models.Model):
