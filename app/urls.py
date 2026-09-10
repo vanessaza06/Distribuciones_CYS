@@ -74,20 +74,13 @@ urlpatterns = [
     path('lotes/<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
     path('lotes/<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
 
-    # COMPRAS
-    path('', lot_views.gestion_stock, name='gestion_stock'),
-    path('lista/', lot_views.lote_list, name='lote_list'),
-    path('crear/', lot_views.lote_create, name='lote_create'),
-    path('<str:numero_lote>/', lot_views.lote_detail, name='lote_detail'),
-    path('<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
-    path('<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
-    
     # DETALLE PRODUCTO
-    path('', deta_views.detalle_producto_lista, name='lista'),
-    path('crear/<int:producto_pk>/', deta_views.detalle_producto_crear, name='crear'),
-    path('editar/<int:pk>/', deta_views.detalle_producto_editar, name='editar'),
-    path('guardar-codigo/<int:pk>/', deta_views.guardar_codigo, name='guardar_codigo'),
-    #COMPRAS
+    path('detalle-producto/', deta_views.detalle_producto_lista, name='detalle_producto_lista'),
+    path('detalle-producto/crear/<int:producto_pk>/', deta_views.detalle_producto_crear, name='detalle_producto_crear'),
+    path('detalle-producto/editar/<int:pk>/', deta_views.detalle_producto_editar, name='detalle_producto_editar'),
+    path('detalle-producto/guardar-codigo/<int:pk>/', deta_views.guardar_codigo, name='guardar_codigo'),
+
+    # COMPRAS
     path('compras/', compra_views.lista_compras, name='lista_compras'),
     path('compras/estado/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra'),
     path('compras/estado/<int:id>/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra_id'),
