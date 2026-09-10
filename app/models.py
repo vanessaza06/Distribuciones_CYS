@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
-
+from django.db.models import Sum
 
 
 # ── MANAGER DE USUARIO ────────────────────────────────────────────────────────
@@ -110,7 +110,11 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=150, db_column='nombre')
     descripcion = models.TextField(db_column='descripcion')
     fecha_vencimiento = models.DateField(db_column='fecha_vencimiento')
-    categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True, blank=True, db_column='codigo_categoria', related_name='productos')
+    categoria = models.ForeignKey(
+        'Categoria',  # antes decía 'categorias.Categoria', ya no aplica: es una sola app
+        on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='codigo_categoria', related_name='productos'
+    )
     activo = models.BooleanField(default=True, db_column='activo')
 
     class Meta:
@@ -119,6 +123,20 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+    @property
+    def stock_total(self):
+        return Lote.objects.filter(producto=self).aggregate(
+            total=Sum('stock_actual')
+        )['total'] or 0
+
+    @property
+    def stock_critico(self):
+        return self.stock_total <= 5
+
+    def precio_base(self):
+        pres = self.presentaciones.order_by('precio_venta').first()
+        return pres.precio_venta if pres else None
+
 # ── 5. PRESENTACION PRODUCTO ──
 class PresentacionProducto(models.Model):
     codigo_presentacion = models.AutoField(primary_key=True, db_column='codigo_presentacion')
@@ -126,7 +144,13 @@ class PresentacionProducto(models.Model):
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, db_column='precio_venta')
     cantidad = models.PositiveIntegerField(db_column='cantidad')
     observaciones = models.TextField(blank=True, null=True, db_column='observaciones')
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto')
+    activo = models.BooleanField(default=True, db_column='activo')
+    producto = models.ForeignKey(
+        'Producto',  # antes decía 'productos.Producto', ya no aplica
+        on_delete=models.CASCADE,
+        db_column='codigo_producto',
+        related_name='presentaciones'
+    )
 
     class Meta:
         db_table = 'presentacion_producto'
@@ -134,20 +158,51 @@ class PresentacionProducto(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} - {self.cantidad} "
 
+
 # ── 6. LOTE ──
 class Lote(models.Model):
     codigo_lote = models.AutoField(primary_key=True, db_column='codigo_lote')
+    numero_lote = models.CharField( max_length=100, unique=True, db_column='numero_lote', default='TEMP')
     costo_unitario = models.DecimalField(max_digits=12, decimal_places=2, db_column='costo_unitario')
     costo_total = models.DecimalField(max_digits=12, decimal_places=2, db_column='costo_total')
     cantidad_inicial = models.PositiveIntegerField(default=0)
     stock_actual = models.PositiveIntegerField(default=0)
     fecha_registro = models.DateTimeField(default=timezone.now, db_column='fecha_registro')
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE, db_column='codigo_producto', related_name='lotes')
-    presentacion = models.ForeignKey('PresentacionProducto', on_delete=models.CASCADE, db_column='codigo_presentacion', related_name='lotes')
-    bodega = models.ForeignKey('Bodega', on_delete=models.CASCADE, db_column='codigo_bodega')
+    producto = models.ForeignKey(
+        'Producto', on_delete=models.CASCADE,  # antes 'productos.Producto'
+        db_column='codigo_producto', related_name='lotes'
+    )
+    presentacion = models.ForeignKey(
+        'PresentacionProducto', on_delete=models.CASCADE,  # antes 'presentaciones.PresentacionProducto'
+        db_column='codigo_presentacion', related_name='lotes'
+    )
+    bodega = models.ForeignKey(
+        'Bodega', on_delete=models.CASCADE,  # antes 'bodegas.Bodega'
+        db_column='codigo_bodega', related_name='lotes'
+    )
 
     class Meta:
         db_table = 'lote'
+        ordering = ['-fecha_registro']
+
+    def __str__(self):
+        return f"{self.numero_lote} - {self.presentacion}"
+
+    @property
+    def dias_para_vencer(self):
+        if not self.producto.fecha_vencimiento:
+            return None
+        return (self.producto.fecha_vencimiento - timezone.now().date()).days
+
+    @property
+    def esta_vencido(self):
+        d = self.dias_para_vencer
+        return d is not None and d < 0
+
+    @property
+    def proximo_a_vencer(self):
+        d = self.dias_para_vencer
+        return d is not None and 0 <= d <= 30
 
 # ── 7. MARCA ──
 class Marca(models.Model):
