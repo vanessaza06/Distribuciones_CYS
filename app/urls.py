@@ -7,6 +7,7 @@ from app.views.marca import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
+from app.views.detalle_producto import views as deta_views
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -19,6 +20,7 @@ urlpatterns = [
     path('crear/', cat_views.categoria_crear, name='crear'),
     path('editar/<int:pk>/', cat_views.categoria_editar, name='editar'),
     path('eliminar/<int:pk>/', cat_views.categoria_eliminar, name='eliminar'),
+    path('categorias/<int:pk>/toggle/', cat_views.categoria_toggle_activo, name='categoria_toggle_activo'),
 
     # PROVEEDORES
     path('proveedores/', prov_views.lista_proveedores, name='lista_proveedores'),
@@ -69,4 +71,10 @@ urlpatterns = [
     path('<str:numero_lote>/', lot_views.lote_detail, name='lote_detail'),
     path('<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
     path('<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
+    
+    # DETALLE PRODUCTO
+    path('', deta_views.detalle_producto_lista, name='lista'),
+    path('crear/<int:producto_pk>/', deta_views.detalle_producto_crear, name='crear'),
+    path('editar/<int:pk>/', deta_views.detalle_producto_editar, name='editar'),
+    path('guardar-codigo/<int:pk>/', deta_views.guardar_codigo, name='guardar_codigo'),
 ]
