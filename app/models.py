@@ -517,3 +517,93 @@ class MetodoPago(models.Model):
         db_table = 'metodo_pago'
 
 
+# ── 19. AGENDA INVENTARIO ──
+class AgendaInventario(models.Model):
+    ESTADO_CHOICES = [
+        ("pendiente", "Pendiente"),
+        ("en_proceso", "En proceso"),
+        ("completada", "Completada"),
+        ("cancelada", "Cancelada"),
+    ]
+    codigo_agenda = models.AutoField(primary_key=True, db_column='codigo_agenda')
+    titulo = models.CharField(max_length=200, db_column='titulo')
+    descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
+    fecha = models.DateTimeField(db_column='fecha')
+    tipo = models.CharField(max_length=50, blank=True, db_column='tipo')
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente', db_column='estado')
+    documento_usuario = models.ForeignKey(
+        'Usuario',
+        on_delete=models.PROTECT,
+        related_name='agendas_creadas',
+        null=True,
+        blank=True,
+        db_column='documento_usuario_agenda',
+    )
+    responsable = models.ForeignKey(
+        'Usuario',
+        on_delete=models.PROTECT,
+        related_name='agendas_asignadas',
+        null=True,
+        blank=True,
+        db_column='responsable_agenda',
+    )
+    completado_por = models.ForeignKey(
+        'Usuario',
+        on_delete=models.SET_NULL,
+        related_name='agendas_completadas',
+        null=True,
+        blank=True,
+        db_column='completado_por',
+    )
+
+    class Meta:
+        db_table = 'agenda_inventario'
+        verbose_name = "Agenda de Inventario"
+        verbose_name_plural = "Agendas de Inventario"
+        ordering = ["fecha"]
+
+    def __str__(self):
+        return f"{self.titulo} - {self.fecha.date()}"
+
+
+# ── 20. HALLAZGO ──
+class Hallazgo(models.Model):
+    TIPO_HALLAZGO_CHOICES = [
+        ("faltante", "Faltante"),
+        ("sobrante", "Sobrante"),
+        ("exacto", "Exacto"),
+    ]
+    numero_hallazgo = models.AutoField(primary_key=True, db_column='numero_hallazgo')
+    agenda = models.ForeignKey(
+        'AgendaInventario', on_delete=models.CASCADE, db_column='codigo_agenda', related_name='hallazgos'
+    )
+    producto = models.ForeignKey(
+        'Producto', on_delete=models.PROTECT, db_column='codigo_producto', related_name='hallazgos_bodega'
+    )
+    cantidad_sistema = models.IntegerField(db_column='cantidad_sistema')
+    cantidad_fisica = models.IntegerField(db_column='cantidad_fisica')
+    diferencia = models.IntegerField(db_column='diferencia')
+    sesion_conteo = models.CharField(max_length=50, db_column='sesion_conteo')
+    tipo_hallazgo = models.CharField(max_length=20, choices=TIPO_HALLAZGO_CHOICES, db_column='tipo_hallazgo')
+    resultado_inventario = models.CharField(max_length=255, blank=True, db_column='resultado_inventario')
+    observaciones = models.TextField(blank=True, db_column='observaciones')
+    fecha_hallazgo = models.DateTimeField(auto_now_add=True, db_column='fecha_hallazgo')
+
+    class Meta:
+        db_table = 'hallazgo'
+        verbose_name = "Hallazgo"
+        verbose_name_plural = "Hallazgos"
+        ordering = ["-fecha_hallazgo"]
+
+    def __str__(self):
+        return f"Hallazgo {self.producto} ({self.diferencia})"
+
+    def save(self, *args, **kwargs):
+        self.diferencia = self.cantidad_fisica - self.cantidad_sistema
+        if self.diferencia > 0:
+            self.tipo_hallazgo = "sobrante"
+        elif self.diferencia < 0:
+            self.tipo_hallazgo = "faltante"
+        else:
+            self.tipo_hallazgo = "exacto"
+        super().save(*args, **kwargs)
