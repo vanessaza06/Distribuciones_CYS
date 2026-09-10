@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from app.models import Categoria
 
-#@login_required
+@login_required
 def categorias_lista(request):
     # Traemos las categorías principales y precargamos las subcategorías y productos
     categorias = Categoria.objects.prefetch_related(
@@ -23,7 +23,7 @@ def categorias_lista(request):
     return render(request, 'categorias/categorias.html', context)
 
 
-#@login_required
+@login_required
 def categoria_crear(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -59,7 +59,7 @@ def categoria_crear(request):
     return redirect('categorias_lista')
 
 
-#@login_required
+@login_required
 def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -90,7 +90,7 @@ def categoria_editar(request, pk):
     return redirect('categorias_lista')
 
 
-#@login_required
+@login_required
 def categoria_eliminar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -106,3 +106,12 @@ def categoria_eliminar(request, pk):
             messages.success(request, f'✅ Categoría "{nombre}" eliminada correctamente.')
             
     return redirect('categorias_lista')
+
+@login_required
+def categoria_toggle_activo(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    categoria.activo = not categoria.activo
+    categoria.save(update_fields=['activo'])
+    estado = 'activada' if categoria.activo else 'desactivada'
+    messages.success(request, f'Categoría "{categoria.nombre}" {estado}.')
+    return redirect('categorias:categoria_list')
