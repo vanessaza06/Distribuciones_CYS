@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tablero — CYS Ltda{% endblock %}
+{% block page_title %}Tablero{% endblock %}
+{% block nav_tablero %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/principal/principal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+  {% if acceso_denegado %}
+  <div class="alert alert-danger alert-dismissible fade show mx-0 mb-3" role="alert"
+       style="background:rgba(192,57,43,.12); border:1px solid rgba(192,57,43,.35);
+              color:#e87070; border-radius:10px; font-size:.85rem;">
+    <i class="bi bi-shield-lock-fill me-2"></i> {{ acceso_denegado }}
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
+  <!-- ACCIONES RÁPIDAS -->
+<div class="d-flex justify-content-center align-items-center gap-5 my-4 flex-wrap">
+  {% if request.session.usuario_rol == 'admin' %}
+  <a href="#" class="cys-btn cys-btn--primary">
+    <i class="bi bi-box-arrow-in-down"></i> Registrar Entrada
+  </a>
+  {% endif %}
+  {% if request.session.usuario_rol == 'admin' or request.session.usuario_rol == 'cajero' or request.session.usuario_rol == 'empleado' %}
+  <a href="#" class="cys-btn cys-btn--danger">
+    <i class="bi bi-receipt"></i> Registrar Venta
+  </a>
+  {% endif %}
+  </div>
+  <!-- ══════════════════════════════════
+       INVENTARIO POR CATEGORÍA
+  ══════════════════════════════════ -->
+  <section class="cys-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="cys-card__title mb-0">Resumen de Inventario por Categoría</div>
+      <div class="d-flex gap-2">
+        <button class="cys-carousel-btn"
+                data-bs-target="#inventarioCarousel"
+                data-bs-slide="prev">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="cys-carousel-btn"
+                data-bs-target="#inventarioCarousel"
+                data-bs-slide="next">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="inventarioCarousel" class="carousel slide" data-bs-ride="false">
+      <div class="carousel-inner">
+        {% for grupo in grupos_categorias %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          <div class="cys-carousel-pad">
+            <div class="row gx-3 gy-3">
+              {% for cat in grupo %}
+              <div class="col-md-4">
+                <div class="cys-stat-card text-center">
+                  <div class="cys-stat-card__label">{{ cat.nombre }}</div>
+                  <div class="cys-stat-card__val">{{ cat.total }}</div>
+                  <div style="font-size:.65rem; color:var(--texto-muted);">tipos de producto</div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="carousel-item active">
+          <div class="text-center py-4" style="color:var(--texto-muted);">
+            No hay categorías registradas
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       ESTADÍSTICAS
+  ══════════════════════════════════ -->
+  <div class="cys-seccion-titulo">
+    Estadísticas C y S <i class="bi bi-bar-chart-fill"></i>
+  </div>
+
+  <!-- GRÁFICA SEMANAL -->
+  <section class="cys-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="cys-card__title mb-0">Semana</div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button id="btn-semana-prev" class="cys-carousel-btn" title="Semana anterior">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <div style="display:flex; align-items:center; gap:6px;
+                    background:rgba(77,168,218,0.10); border:1px solid rgba(77,168,218,0.25);
+                    border-radius:8px; padding:5px 12px; cursor:pointer; position:relative;"
+             onclick="document.getElementById('semana-picker').showPicker()">
+          <i class="bi bi-calendar3" style="color:#fff; font-size:.85rem;"></i>
+          <span id="semana-label"
+                style="font-size:.82rem; font-weight:500; color:#fff; white-space:nowrap;">
+            {{ semana_label }}
+          </span>
+          <input type="date" id="semana-picker"
+                 style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;">
+        </div>
+
+        {# Django decide el estado del botón, sin JS #}
+        <button id="btn-semana-next" class="cys-carousel-btn" title="Semana siguiente"
+                {% if offset == 0 %}disabled style="opacity:.4; cursor:default;"{% endif %}>
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MÉTRICAS SEMANA — formateadas por Django -->
+    <div class="row gx-3 gy-2 mb-4">
+      <div class="col-4">
+        <div class="cys-stat-card text-center">
+          <div class="cys-stat-card__label" id="lbl-col1">Total hoy</div>
+          <div class="cys-stat-card__val" style="font-size:1.1rem;" id="metric-col1">
+            ${{ total_hoy|floatformat:0 }}
+          </div>
+          <div style="font-size:.65rem; color:var(--texto-muted);" id="metric-col1-sub">
+            {{ ventas_hoy_num }} ventas
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="cys-stat-card text-center">
+          <div class="cys-stat-card__label">Promedio diario</div>
+          <div class="cys-stat-card__val" style="font-size:1.1rem;" id="metric-prom">
+            ${{ prom_diario|floatformat:0 }}
+          </div>
+          <div style="font-size:.65rem; color:var(--texto-muted);">esta semana</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="cys-stat-card text-center">
+          <div class="cys-stat-card__label">Mejor día</div>
+          <div class="cys-stat-card__val" style="font-size:1.1rem;" id="metric-mejor-dia">
+            {{ mejor_dia }}
+          </div>
+          <div style="font-size:.65rem; color:var(--texto-muted);" id="metric-mejor-dia-val">
+            ${{ mejor_dia_val|floatformat:0 }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEYENDA -->
+    <div class="d-flex gap-3 mb-2" style="font-size:.75rem; color:var(--gris-claro);">
+      <span>
+        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                     background:#4DA8DA;margin-right:4px;"></span>Total ($)
+      </span>
+      <span>
+        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                     background:#1D9E75;margin-right:4px;"></span>Transacciones
+      </span>
+    </div>
+
+    <div style="height:260px;">
+      <canvas id="tendenciaChart"
+              role="img"
+              aria-label="Ventas de la semana en pesos y número de transacciones">
+      </canvas>
+    </div>
+  </section>
+
+  <!-- GRÁFICA MENSUAL -->
+  <section class="cys-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="cys-card__title mb-0">Resumen del año</div>
+      <div class="d-flex gap-3 flex-wrap" style="font-size:.75rem; color:var(--gris-claro);">
+        <span>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                       background:#1D9E75;margin-right:4px;"></span>Mejor mes
+        </span>
+        <span>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                       background:#A78BFA;margin-right:4px;"></span>Normal
+        </span>
+        <span>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                       background:#dc3545;margin-right:4px;"></span>Mes bajo
+        </span>
+        <span>
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                       background:#FB923C;margin-right:4px;"></span>Transacciones
+        </span>
+      </div>
+    </div>
+
+    <!-- SKELETON -->
+    <div id="mensual-skeleton"
+         style="height:240px; display:flex; align-items:center; justify-content:center;
+                color:var(--texto-muted); font-size:.8rem; gap:8px;">
+      <span class="spinner-border spinner-border-sm" style="color:var(--texto-muted);"></span>
+      Cargando datos mensuales…
+    </div>
+
+    <div id="mensual-wrap" style="height:240px; display:none;">
+      <canvas id="mensualChart"
+              role="img"
+              aria-label="Resumen de ventas por mes del año actual">
+      </canvas>
+    </div>
+
+    <!-- BOTÓN RESUMEN MESES — renderizado por Django -->
+    {% if mejores_meses or peores_meses %}
+    <div style="margin-top:14px; text-align:center;">
+      <button id="btn-resumen-meses"
+              data-bs-toggle="collapse"
+              data-bs-target="#resumen-meses-panel"
+              aria-expanded="false"
+              style="background:rgba(77,168,218,0.10); border:1px solid rgba(77,168,218,0.25);
+                     color:#4DA8DA; border-radius:8px; padding:6px 18px; font-size:.8rem;
+                     cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        Ver resumen de meses
+        <i class="bi bi-chevron-down"></i>
+      </button>
+
+      <!-- COLLAPSE Bootstrap nativo -->
+      <div id="resumen-meses-panel"
+           class="collapse"
+           style="margin-top:10px; border-radius:10px; overflow:hidden;
+                  border:1px solid rgba(255,255,255,0.07);">
+
+        <div style="padding:12px 16px; background:rgba(29,158,117,0.10);
+                    border-bottom:1px solid rgba(29,158,117,0.15);">
+          <div style="font-size:.72rem; color:#1D9E75; font-weight:600;
+                      letter-spacing:.04em; text-transform:uppercase; margin-bottom:8px;">
+            <i class="bi bi-trophy-fill me-1"></i> Mejores meses
+          </div>
+          <div class="d-flex gap-2 flex-wrap justify-content-center">
+            {% for label, valor, count in mejores_meses %}
+            <div style="background:rgba(29,158,117,0.12); border:1px solid #1D9E7540;
+                        border-radius:8px; padding:8px 14px; min-width:90px; text-align:center;">
+              <div style="font-size:.85rem; font-weight:700; color:#1D9E75;">{{ label }}</div>
+              <div style="font-size:.72rem; color:var(--gris-claro); margin-top:2px;">
+                ${{ valor|floatformat:0 }}
+              </div>
+              <div style="font-size:.65rem; color:var(--texto-muted);">{{ count }} transac.</div>
+            </div>
+            {% empty %}
+            <span style="font-size:.78rem; color:var(--texto-muted);">Sin datos aún.</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div style="padding:12px 16px; background:rgba(220,53,69,0.08);">
+          <div style="font-size:.72rem; color:#dc3545; font-weight:600;
+                      letter-spacing:.04em; text-transform:uppercase; margin-bottom:8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Meses bajos
+          </div>
+          <div class="d-flex gap-2 flex-wrap justify-content-center">
+            {% for label, valor, count in peores_meses %}
+            <div style="background:rgba(220,53,69,0.10); border:1px solid #dc354540;
+                        border-radius:8px; padding:8px 14px; min-width:90px; text-align:center;">
+              <div style="font-size:.85rem; font-weight:700; color:#dc3545;">{{ label }}</div>
+              <div style="font-size:.72rem; color:var(--gris-claro); margin-top:2px;">
+                ${{ valor|floatformat:0 }}
+              </div>
+              <div style="font-size:.65rem; color:var(--texto-muted);">{{ count }} transac.</div>
+            </div>
+            {% empty %}
+            <span style="font-size:.78rem; color:var(--texto-muted);">Solo un mes con datos.</span>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endif %}
+
+  </section>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════════════ */
+const GRID        = 'rgba(77,168,218,.08)';
+const fmtPeso     = v => '$' + (v >= 1_000_000
+  ? (v / 1_000_000).toFixed(1) + 'M'
+  : (v / 1_000).toFixed(0) + 'k');
+const fmtPesoFull = v => '$' + Math.round(v).toLocaleString('es-CO');
+const tooltipLabel = ctx => ctx.datasetIndex === 0
+  ? ' Total: '         + fmtPesoFull(ctx.raw)
+  : ' Transacciones: ' + Math.round(ctx.raw);
+
+
+/* ══════════════════════════════════════════════
+   ALTURA DINÁMICA DEL CARRUSEL DE CATEGORÍAS
+   Mide con un clon invisible para evitar el bug de
+   Bootstrap (el slide destino aún tiene display:none
+   cuando se dispara 'slide.bs.carousel').
+══════════════════════════════════════════════ */
+(function () {
+  const carousel = document.getElementById('inventarioCarousel');
+  if (!carousel) return;
+
+  const inner = carousel.querySelector('.carousel-inner');
+
+  function medirAltura(item) {
+    if (!item) return 0;
+    const clone = item.cloneNode(true);
+    clone.style.position      = 'absolute';
+    clone.style.visibility    = 'hidden';
+    clone.style.pointerEvents = 'none';
+    clone.style.display       = 'block';
+    clone.style.width         = inner.clientWidth + 'px';
+    clone.classList.add('active');
+    inner.appendChild(clone);
+    const alto = clone.getBoundingClientRect().height;
+    inner.removeChild(clone);
+    return alto;
+  }
+
+  function ajustarAltura(item) {
+    const alto = medirAltura(item);
+    if (alto > 0) inner.style.height = alto + 'px';
+  }
+
+  function alturaActiva() {
+    ajustarAltura(carousel.querySelector('.carousel-item.active'));
+  }
+
+  // Altura inicial (recalculada varias veces por si fuentes/iconos tardan)
+  alturaActiva();
+  requestAnimationFrame(alturaActiva);
+  window.addEventListener('load', alturaActiva);
+
+  // Antes de CADA transición (ida o vuelta) medimos el slide destino
+  carousel.addEventListener('slide.bs.carousel', (e) => {
+    ajustarAltura(e.relatedTarget);
+  });
+
+  // Por si cambia el tamaño de ventana
+  window.addEventListener('resize', alturaActiva);
+})();
+
+
+/* ══════════════════════════════════════════════
+   GRÁFICA SEMANAL
+══════════════════════════════════════════════ */
+let offsetW   = 0;
+const labelsW = {{ labels|safe|default:"[]" }};
+const dataW   = {{ data|safe|default:"[]" }};
+const countsW = {{ data_count|safe|default:"[]" }};
+
+function buildDatasetsSemanal(labels, data, counts) {
+  return {
+    labels,
+    datasets: [
+      {
+        label          : 'Total ($)',
+        data,
+        backgroundColor: data.map((_, i) =>
+          i === data.length - 1 ? 'rgba(77,168,218,0.35)' : 'rgba(77,168,218,0.85)'
+        ),
+        borderColor : '#4DA8DA',
+        borderWidth : 1,
+        borderRadius: 4,
+        yAxisID     : 'y',
+        order       : 2,
+      },
+      {
+        label               : 'Transacciones',
+        data                : counts,
+        type                : 'line',
+        borderColor         : '#1D9E75',
+        backgroundColor     : 'rgba(29,158,117,0.07)',
+        tension             : 0.4,
+        fill                : true,
+        pointBackgroundColor: '#1D9E75',
+        pointRadius         : 4,
+        pointHoverRadius    : 6,
+        yAxisID             : 'y2',
+        order               : 1,
+      }
+    ]
+  };
+}
+
+const opcionesSemanal = {
+  responsive         : true,
+  maintainAspectRatio: false,
+  interaction        : { mode: 'index', intersect: false },
+  plugins: {
+    legend : { display: false },
+    tooltip: { callbacks: { label: tooltipLabel } }
+  },
+  scales: {
+    x : {
+      ticks: { color: '#ADB5BD', font: { size: 11 }, autoSkip: false, maxRotation: 0 },
+      grid : { color: GRID }
+    },
+    y : {
+      position: 'left',
+      ticks   : { color: '#ADB5BD', callback: fmtPeso },
+      grid    : { color: GRID }
+    },
+    y2: {
+      position: 'right',
+      ticks   : {
+        color   : '#1D9E75',
+        font    : { size: 11 },
+        stepSize: 1,
+        callback: v => Number.isInteger(v) ? v : null,
+      },
+      grid: { drawOnChartArea: false }
+    }
+  }
+};
+
+const chartSemanal = new Chart(
+  document.getElementById('tendenciaChart'),
+  { type: 'bar', data: buildDatasetsSemanal(labelsW, dataW, countsW), options: opcionesSemanal }
+);
+
+function actualizarMetricasSemana(json, esActual) {
+  const data   = json.data       ?? [];
+  const counts = json.data_count ?? [];
+  const total  = data.reduce((a, b) => a + b, 0);
+  const tx     = counts.reduce((a, b) => a + b, 0);
+
+  const lbl1 = document.getElementById('lbl-col1');
+  const val1 = document.getElementById('metric-col1');
+  const sub1 = document.getElementById('metric-col1-sub');
+
+  if (esActual) {
+    lbl1.textContent = 'Total hoy';
+    val1.textContent = fmtPesoFull(json.total_hoy ?? (data.at(-1) ?? 0));
+    sub1.textContent = (json.ventas_hoy_num ?? (counts.at(-1) ?? 0)) + ' ventas';
+  } else {
+    lbl1.textContent = 'Total semana';
+    val1.textContent = fmtPesoFull(total);
+    sub1.textContent = tx + ' ventas';
+  }
+
+  const prom = json.prom_diario ?? (data.length ? total / data.length : 0);
+  document.getElementById('metric-prom').textContent          = fmtPesoFull(prom);
+  document.getElementById('metric-mejor-dia').textContent     = json.mejor_dia     || '—';
+  document.getElementById('metric-mejor-dia-val').textContent = fmtPesoFull(json.mejor_dia_val ?? 0);
+}
+
+async function cargarSemana(offset) {
+  const btnPrev = document.getElementById('btn-semana-prev');
+  const btnNext = document.getElementById('btn-semana-next');
+
+  btnPrev.disabled = btnNext.disabled = true;
+  btnPrev.style.opacity = btnNext.style.opacity = '.4';
+
+  try {
+    const json = await fetch(`/semana-json/?offset=${offset}`).then(r => r.json());
+
+    chartSemanal.data = buildDatasetsSemanal(
+      json.labels     ?? [],
+      json.data       ?? [],
+      json.data_count ?? []
+    );
+    chartSemanal.update();
+
+    document.getElementById('semana-label').textContent = json.semana_label ?? '';
+    actualizarMetricasSemana(json, !!json.es_actual);
+    offsetW = offset;
+
+  } catch (e) {
+    console.error('Error cargando semana:', e);
+  } finally {
+    btnPrev.disabled      = false;
+    btnPrev.style.opacity = '1';
+    btnNext.disabled      = (offsetW === 0);
+    btnNext.style.opacity = (offsetW === 0) ? '.4' : '1';
+  }
+}
+
+/* Helpers de fecha para el date picker */
+function lunesDe(dateStr) {
+  const d   = new Date(dateStr + 'T12:00:00');
+  const day = d.getDay();
+  d.setDate(d.getDate() + ((day === 0) ? -6 : 1 - day));
+  return d;
+}
+
+function offsetDesde(lunes) {
+  const lunesHoy = lunesDe(new Date().toISOString().slice(0, 10));
+  return Math.max(0, Math.round((lunesHoy - lunes) / (7 * 86400000)));
+}
+
+document.getElementById('btn-semana-prev')
+  .addEventListener('click', () => cargarSemana(offsetW + 1));
+
+document.getElementById('btn-semana-next')
+  .addEventListener('click', () => { if (offsetW > 0) cargarSemana(offsetW - 1); });
+
+document.getElementById('semana-picker')
+  .addEventListener('change', e => {
+    if (!e.target.value) return;
+    cargarSemana(offsetDesde(lunesDe(e.target.value)));
+  });
+
+
+/* ══════════════════════════════════════════════
+   GRÁFICA MENSUAL — solo Chart.js, sin lógica de negocio
+══════════════════════════════════════════════ */
+async function cargarMensual() {
+  try {
+    const json = await fetch('/meses-json/').then(r => r.json());
+
+    const labels  = json.labels         ?? [];
+    const data    = json.data           ?? [];
+    const counts  = json.data_count     ?? [];
+    const colores = json.colores        ?? data.map(() => 'rgba(167,139,250,0.75)');
+    const idxMejores = new Set(json.idx_mejores ?? []);
+    const idxPeores  = new Set(json.idx_peores  ?? []);
+
+    document.getElementById('mensual-skeleton').style.display = 'none';
+    document.getElementById('mensual-wrap').style.display     = 'block';
+
+    new Chart(document.getElementById('mensualChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label          : 'Total ($)',
+            data,
+            backgroundColor: colores,
+            borderColor    : colores.map(c => c.replace(/[\d.]+\)$/, '1)')),
+            borderWidth    : 1,
+            borderRadius   : 5,
+            yAxisID        : 'y',
+            order          : 2,
+          },
+          {
+            label               : 'Transacciones',
+            data                : counts,
+            type                : 'line',
+            borderColor         : '#FB923C',
+            backgroundColor     : 'rgba(251,146,60,0.07)',
+            tension             : 0.4,
+            fill                : true,
+            pointBackgroundColor: '#FB923C',
+            pointRadius         : 5,
+            pointHoverRadius    : 7,
+            yAxisID             : 'y2',
+            order               : 1,
+          }
+        ]
+      },
+      options: {
+        responsive         : true,
+        maintainAspectRatio: false,
+        interaction        : { mode: 'index', intersect: false },
+        plugins: {
+          legend : { display: false },
+          tooltip: {
+            callbacks: {
+              label    : tooltipLabel,
+              afterBody: items => {
+                const i = items[0]?.dataIndex;
+                if (idxMejores.has(i)) return ['', '🏆 Mejor mes'];
+                if (idxPeores.has(i))  return ['', '⚠️  Mes bajo'];
+                return [];
+              }
+            }
+          }
+        },
+        scales: {
+          x : {
+            ticks: { color: '#ADB5BD', font: { size: 12 } },
+            grid : { color: GRID }
+          },
+          y : {
+            position: 'left',
+            ticks   : { color: '#ADB5BD', callback: fmtPeso },
+            grid    : { color: GRID }
+          },
+          y2: {
+            position: 'right',
+            ticks   : {
+              color   : '#FB923C',
+              font    : { size: 11 },
+              stepSize: 1,
+              callback: v => Number.isInteger(v) ? v : null,
+            },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+
+  } catch (e) {
+    console.error('Error cargando datos mensuales:', e);
+    document.getElementById('mensual-skeleton').innerHTML =
+      `<span style="color:var(--gp-danger);font-size:.8rem;">
+         No se pudieron cargar los datos mensuales.
+       </span>`;
+  }
+}
+
+cargarMensual();
+</script>
+{% endblock %}

@@ -263,12 +263,12 @@
       <span>Configuración</span>
     </a>
 
-    <a href="#"
-       class="cys-sb-link cys-sb-link--logout"
-       data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Cerrar Sesión">
-      <i class="bi bi-box-arrow-right"></i>
-      <span>Cerrar Sesión</span>
-    </a>
+    <a href="{% url 'cerrar_sesion' %}"
+      class="cys-sb-link cys-sb-link--logout"
+      data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Cerrar Sesión">
+    <i class="bi bi-box-arrow-right"></i>
+    <span>Cerrar Sesión</span>
+  </a>
 
     <div class="cys-sb-footer">CYS Ltda &copy; {% now "Y" %}</div>
 
@@ -276,5 +276,4 @@
 </div>
 
 <script src="{% static 'js/cuerpo/aside.js' %}" defer></script>
-
 
