@@ -9,6 +9,7 @@ from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
 from app.views.detalle_producto import views as deta_views
 from app.views.compra import views as compra_views
+from app.views.bodega import views as bod_views
 
 
 def inicio(request):
@@ -41,32 +42,39 @@ urlpatterns = [
     path('proveedores/modal/reactivar/<str:id>/', prov_views.reactivar_proveedor_modal, name='reactivar_proveedor_modal'),
     path('proveedores/modal/sancionar/<str:id>/', prov_views.sancionar_proveedor_modal, name='sancionar_proveedor_modal'),
 
-    # Rutas auxiliares (quitamos 'perfil_pagina' y 'usuario', ahora vienen del módulo usuarios)
-    path('stock-status/', lambda r: HttpResponse('OK'), name='stock_status'),
+    # Rutas auxiliares
     path('perfil/', lambda r: HttpResponse('Perfil'), name='perfil_pagina'),
     path('usuarios/', lambda r: HttpResponse('Usuarios'), name='usuario'),
-    
+
     # MARCAS
-    path('marcas/', mar_views.lista_marcas, name='lista_marcas'), # type: ignore
-    path('marcas/crear/', mar_views.crear_marca, name='crear_marca'), # type: ignore
-    path('marcas/editar/<str:codigo_marca>/', mar_views.editar_marca, name='editar_marca'), # type: ignore
-    path('marcas/eliminar/<str:codigo_marca>/', mar_views.eliminar_marca, name='eliminar_marca'), # type: ignore
-    
-    #PRODUCTOS
-    path('',                    prod_views.lista_productos,   name='lista_productos'),
-    path('crear/',               prod_views.crear_producto,    name='crear_producto'),
-    path('buscar/',              prod_views.buscar_producto,   name='buscar_producto'),
-    path('producto/<int:pk>/',   prod_views.producto_detalle,  name='producto_detalle'),
-    path('producto/<int:pk>/editar/', prod_views.producto_editar, name='producto_editar'),  # faltaba
-    path('registro/',            prod_views.producto_registro, name='producto_registro'),
-    path('stock-status/',        prod_views.stock_status,      name='stock_status'),
+    path('marcas/', mar_views.lista_marcas, name='lista_marcas'),  # type: ignore
+    path('marcas/crear/', mar_views.crear_marca, name='crear_marca'),  # type: ignore
+    path('marcas/editar/<str:codigo_marca>/', mar_views.editar_marca, name='editar_marca'),  # type: ignore
+    path('marcas/eliminar/<str:codigo_marca>/', mar_views.eliminar_marca, name='eliminar_marca'),  # type: ignore
+
+    # PRODUCTOS
+    path('productos/',                prod_views.lista_productos,   name='lista_productos'),
+    path('crear-producto/',           prod_views.crear_producto,    name='crear_producto'),
+    path('buscar/',                   prod_views.buscar_producto,   name='buscar_producto'),
+    path('producto/<int:pk>/',        prod_views.producto_detalle,  name='producto_detalle'),
+    path('producto/<int:pk>/editar/', prod_views.producto_editar,   name='producto_editar'),
+    path('registro/',                 prod_views.producto_registro, name='producto_registro'),
+    path('stock-status/',             prod_views.stock_status,      name='stock_status'),
 
     # Presentaciones
     path('presentacion/<int:producto_pk>/crear/', pres_views.presentacion_crear, name='presentacion_crear'),
     path('presentacion/<int:pk>/editar/', pres_views.presentacion_editar, name='presentacion_editar'),
     path('presentacion/<int:pk>/toggle/', pres_views.presentacion_toggle_activo, name='presentacion_toggle_activo'),
-    
+
     # LOTES
+    path('lotes/', lot_views.gestion_stock, name='gestion_stock'),
+    path('lotes/lista/', lot_views.lote_list, name='lote_list'),
+    path('lotes/crear/', lot_views.lote_create, name='lote_create'),
+    path('lotes/<str:numero_lote>/', lot_views.lote_detail, name='lote_detail'),
+    path('lotes/<str:numero_lote>/editar/', lot_views.lote_update, name='lote_update'),
+    path('lotes/<str:numero_lote>/ajustar-stock/', lot_views.lote_ajustar_stock, name='lote_ajustar_stock'),
+
+    # COMPRAS
     path('', lot_views.gestion_stock, name='gestion_stock'),
     path('lista/', lot_views.lote_list, name='lote_list'),
     path('crear/', lot_views.lote_create, name='lote_create'),
@@ -86,4 +94,14 @@ urlpatterns = [
     path('compras/pago/', compra_views.registrar_pago_compra, name='registrar_pago_compra'),
     path('compras/pago/<int:id>/', compra_views.registrar_pago_compra, name='registrar_pago_compra_id'),
 
+    # BODEGA
+    path('bodega/', bod_views.bodega_home, name='bodega_home'),
+    path('bodega/agenda/', bod_views.agenda_list, name='agenda_list'),
+    path('bodega/agenda/nueva/', bod_views.agenda_create, name='agenda_create'),
+    path('bodega/agenda/<int:codigo>/', bod_views.agenda_detail, name='agenda_detail'),
+    path('bodega/agenda/<int:codigo>/editar/', bod_views.agenda_update, name='agenda_update'),
+    path('bodega/agenda/<int:codigo>/completar/', bod_views.agenda_completar, name='agenda_completar'),
+    path('bodega/agenda/<int:codigo_agenda>/hallazgo/', bod_views.hallazgo_create, name='hallazgo_create'),
+    path('bodega/hallazgos/', bod_views.hallazgo_list, name='hallazgo_list'),
+    path('bodega/ajustar-stock/<int:pk>/', bod_views.ajustar_stock, name='ajustar_stock'),
 ]
