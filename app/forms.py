@@ -1,6 +1,8 @@
 from decimal import Decimal
 from django import forms
-from app.models import Proveedor, Producto, Lote, AgendaInventario, Hallazgo
+from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
+
+
 
 
 class ProveedorForm(forms.ModelForm):
@@ -46,46 +48,85 @@ class NuevaCompraForm(forms.Form):
         decimal_places=2,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
         label="Precio Unitario"
-    )
+    )  
+#-----PRODUCTO-----#
 
-
-class AgendaInventarioForm(forms.ModelForm):
+class ProductoRegistroForm(forms.ModelForm):
     class Meta:
-        model = AgendaInventario
-        fields = [
-            'titulo',
-            'descripcion',
-            'fecha',
-            'tipo',
-            'estado',
-            'responsable',
-        ]
+        model  = Producto
+        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
         widgets = {
-            'titulo': forms.TextInput(attrs={'class': 'form-control'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'fecha': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'tipo': forms.TextInput(attrs={'class': 'form-control'}),
-            'estado': forms.Select(attrs={'class': 'form-select'}),
-            'responsable': forms.Select(attrs={'class': 'form-select'}),
+            'nombre': forms.TextInput(attrs={
+                'class':       'np-input',
+                'placeholder': 'Ej: Cerveza Club Colombia',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'np-input',
+                'rows':  2,
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'np-input',
+                'type':  'date',
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'np-input',
+            }),
         }
 
 
-class HallazgoForm(forms.ModelForm):
+class ProductoForm(forms.ModelForm):
     class Meta:
-        model = Hallazgo
+        model  = Producto
+        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class':       'gp-input',
+                'placeholder': 'Ej: Cerveza Club Colombia',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class':       'gp-input',
+                'rows':        2,
+                'placeholder': 'Descripción opcional…',
+            }),
+            'fecha_vencimiento': forms.DateInput(attrs={
+                'class': 'gp-input',
+                'type':  'date',
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'gp-input',
+            }),
+        }
+#-----PRESENTACION-----#
+
+class PresentacionForm(forms.ModelForm):
+    class Meta:
+        model  = PresentacionProducto
+        fields = ['nombre', 'cantidad', 'precio_venta', 'observaciones']
+        widgets = {
+            'nombre':        forms.TextInput(attrs={'class': 'gp-input', 'placeholder': 'Ej: Six-pack'}),
+            'cantidad':      forms.NumberInput(attrs={'class': 'gp-input', 'min': '1'}),
+            'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
+            'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
+        }
+        
+#-----LOTE-----#
+
+class LoteForm(forms.ModelForm):
+    class Meta:
+        model = Lote
         fields = [
+            'numero_lote',
             'producto',
-            'cantidad_sistema',
-            'cantidad_fisica',
-            'sesion_conteo',
-            'resultado_inventario',
-            'observaciones',
+            'presentacion',
+            'bodega',
+            'cantidad_inicial',
+            'costo_unitario',
         ]
         widgets = {
+            'numero_lote': forms.TextInput(attrs={'class': 'form-control'}),
             'producto': forms.Select(attrs={'class': 'form-select'}),
-            'cantidad_sistema': forms.NumberInput(attrs={'class': 'form-control'}),
-            'cantidad_fisica': forms.NumberInput(attrs={'class': 'form-control'}),
-            'sesion_conteo': forms.TextInput(attrs={'class': 'form-control'}),
-            'resultado_inventario': forms.TextInput(attrs={'class': 'form-control'}),
-            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'presentacion': forms.Select(attrs={'class': 'form-select'}),
+            'bodega': forms.Select(attrs={'class': 'form-select'}),
+            'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
