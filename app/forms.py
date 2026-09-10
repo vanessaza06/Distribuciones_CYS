@@ -1,11 +1,8 @@
 from decimal import Decimal
 from django import forms
-from app.models import Proveedor, Producto, Lote
-from django import forms
-from .models import Producto
-from app.models import Categoria
-from app.models import PresentacionProducto
+from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
 from app.models import DetalleProducto
+
 
 #-----DETALLE PRODUCTO-----#
 class DetalleProductoForm(forms.ModelForm):
@@ -75,7 +72,7 @@ class NuevaCompraForm(forms.Form):
         decimal_places=2,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
         label="Precio Unitario"
-    )
+    )  
 #-----PRODUCTO-----#
 
 class ProductoRegistroForm(forms.ModelForm):

@@ -8,6 +8,8 @@ from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
 from app.views.detalle_producto import views as deta_views
+from app.views.compra import views as compra_views
+
 
 def inicio(request):
     return render(request, 'base/base.html')
@@ -77,4 +79,11 @@ urlpatterns = [
     path('crear/<int:producto_pk>/', deta_views.detalle_producto_crear, name='crear'),
     path('editar/<int:pk>/', deta_views.detalle_producto_editar, name='editar'),
     path('guardar-codigo/<int:pk>/', deta_views.guardar_codigo, name='guardar_codigo'),
+    #COMPRAS
+    path('compras/', compra_views.lista_compras, name='lista_compras'),
+    path('compras/estado/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra'),
+    path('compras/estado/<int:id>/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra_id'),
+    path('compras/pago/', compra_views.registrar_pago_compra, name='registrar_pago_compra'),
+    path('compras/pago/<int:id>/', compra_views.registrar_pago_compra, name='registrar_pago_compra_id'),
+
 ]
