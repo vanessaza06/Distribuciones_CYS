@@ -1,6 +1,5 @@
 from django.urls import path
 from django.shortcuts import render
-from django.http import HttpResponse
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
 from app.views.marca import views as mar_views  # type: ignore
@@ -10,13 +9,11 @@ from app.views.lotes import views as lot_views
 from app.views.detalle_producto import views as deta_views
 from app.views.compra import views as compra_views
 from app.views.bodega import views as bod_views
+from app.views.principal import views as principal_views
 
-
-def inicio(request):
-    return render(request, 'base/base.html')
 
 urlpatterns = [
-    path('', inicio, name='principal'),
+    path('', principal_views.principal, name='principal'),
 
     # CATEGORIAS
     path('categorias/', cat_views.categorias_lista, name='categorias_lista'),
@@ -42,9 +39,7 @@ urlpatterns = [
     path('proveedores/modal/reactivar/<str:id>/', prov_views.reactivar_proveedor_modal, name='reactivar_proveedor_modal'),
     path('proveedores/modal/sancionar/<str:id>/', prov_views.sancionar_proveedor_modal, name='sancionar_proveedor_modal'),
 
-    # Rutas auxiliares
-    path('perfil/', lambda r: HttpResponse('Perfil'), name='perfil_pagina'),
-    path('usuarios/', lambda r: HttpResponse('Usuarios'), name='usuario'),
+    
 
     # MARCAS
     path('marcas/', mar_views.lista_marcas, name='lista_marcas'),  # type: ignore
