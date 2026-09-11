@@ -173,7 +173,7 @@
         </div>
 
         <!-- BODEGA -->
-        <a href="#"
+        <a href="{% url 'bodega_home' %}"
            class="cys-sb-link {% block nav_bodega %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Bodega">
           <i class="bi bi-building-fill"></i>
@@ -188,22 +188,29 @@
           <span>Gestión de Lotes</span>
         </a>
 
-        <!-- PROVEEDORES -->
+               <!-- PROVEEDORES -->
         <a href="{% url 'lista_proveedores' %}"
-           class="cys-sb-link"
+           class="cys-sb-link {% block nav_proveedores %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Proveedores">
-          <i class="bi bi-box-seam-fill"></i>
+          <i class="bi bi-truck"></i>
           <span>Proveedores</span>
         </a>
 
         <!-- COMPRAS -->
-        <a href="#"
-           class="cys-sb-link"
+        <a href="{% url 'lista_compras' %}"
+           class="cys-sb-link {% block nav_compras %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
           <i class="bi bi-cart-check-fill"></i>
           <span>Compras</span>
         </a>
 
+        <!-- MARCAS -->
+        <a href="{% url 'lista_marcas' %}"
+           class="cys-sb-link {% block nav_marcas %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Marcas">
+          <i class="bi bi-tag-fill"></i>
+          <span>Marcas</span>
+        </a>
       </nav>
     </div>
 
@@ -263,12 +270,12 @@
       <span>Configuración</span>
     </a>
 
-    <a href="#"
-       class="cys-sb-link cys-sb-link--logout"
-       data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Cerrar Sesión">
-      <i class="bi bi-box-arrow-right"></i>
-      <span>Cerrar Sesión</span>
-    </a>
+    <a href="{% url 'cerrar_sesion' %}"
+      class="cys-sb-link cys-sb-link--logout"
+      data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Cerrar Sesión">
+    <i class="bi bi-box-arrow-right"></i>
+    <span>Cerrar Sesión</span>
+  </a>
 
     <div class="cys-sb-footer">CYS Ltda &copy; {% now "Y" %}</div>
 
