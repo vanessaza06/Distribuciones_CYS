@@ -55,6 +55,7 @@ urlpatterns = [
     path('producto/<int:pk>/editar/', prod_views.producto_editar,   name='producto_editar'),
     path('registro/',                 prod_views.producto_registro, name='producto_registro'),
     path('stock-status/',             prod_views.stock_status,      name='stock_status'),
+    path('producto/<int:pk>/toggle/', prod_views.producto_toggle_activo, name='producto_toggle_activo'),
 
     # Presentaciones
     path('presentacion/<int:producto_pk>/crear/', pres_views.presentacion_crear, name='presentacion_crear'),
