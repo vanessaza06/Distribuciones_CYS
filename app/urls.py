@@ -8,6 +8,7 @@ from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
 from app.views.detalle_producto import views as deta_views
 from app.views.compra import views as compra_views
+from app.views.devoluciones import views as dev_views
 from app.views.bodega import views as bod_views
 from app.views.principal import views as principal_views
 from app.views.reportes import views as rep_views 
@@ -63,6 +64,39 @@ urlpatterns = [
     path('presentacion/<int:pk>/editar/', pres_views.presentacion_editar, name='presentacion_editar'),
     path('presentacion/<int:pk>/toggle/', pres_views.presentacion_toggle_activo, name='presentacion_toggle_activo'),
 
+    # COMPRAS
+    path('compras/', compra_views.lista_compras, name='lista_compras'),
+    path('compras/estado/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra'),
+    path('compras/estado/<int:id>/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra_id'),
+    path('compras/pago/', compra_views.registrar_pago_compra, name='registrar_pago_compra'),
+    path('compras/pago/<int:id>/', compra_views.registrar_pago_compra, name='registrar_pago_compra_id'),
+
+    # DEVOLUCIONES
+    path("devoluciones/", dev_views.lista_devoluciones, name="lista_devoluciones"),
+    path(
+        "devoluciones/buscar/",
+        dev_views.buscar_venta_devolucion,
+        name="buscar_venta_devolucion",
+    ),
+    path("devoluciones/venta/<int:venta_id>/", dev_views.seleccionar_venta_devolucion,
+        name="seleccionar_venta_devolucion",
+    ),
+    path(
+        "devoluciones/venta/<int:venta_id>/registrar/",
+        dev_views.registrar_devolucion,
+        name="registrar_devolucion",
+    ),
+    path(
+        "devoluciones/detalle/<int:venta_id>/",
+        dev_views.detalle_venta_devolucion,
+        name="detalle_venta_devolucion",
+    ),
+    path(
+        "devoluciones/comprobante/<int:pk>/",
+        dev_views.comprobante_devolucion,
+        name="comprobante_devolucion",
+    ),
+
     # LOTES
     path('lotes/', lot_views.gestion_stock, name='gestion_stock'),
     path('lotes/lista/', lot_views.lote_list, name='lote_list'),
@@ -76,13 +110,6 @@ urlpatterns = [
     path('detalle-producto/crear/<int:producto_pk>/', deta_views.detalle_producto_crear, name='detalle_producto_crear'),
     path('detalle-producto/editar/<int:pk>/', deta_views.detalle_producto_editar, name='detalle_producto_editar'),
     path('detalle-producto/guardar-codigo/<int:pk>/', deta_views.guardar_codigo, name='guardar_codigo'),
-
-    # COMPRAS
-    path('compras/', compra_views.lista_compras, name='lista_compras'),
-    path('compras/estado/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra'),
-    path('compras/estado/<int:id>/', compra_views.cambiar_estado_compra, name='cambiar_estado_compra_id'),
-    path('compras/pago/', compra_views.registrar_pago_compra, name='registrar_pago_compra'),
-    path('compras/pago/<int:id>/', compra_views.registrar_pago_compra, name='registrar_pago_compra_id'),
 
     # BODEGA
     path('bodega/', bod_views.bodega_home, name='bodega_home'),
