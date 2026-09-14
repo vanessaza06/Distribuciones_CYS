@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% load static l10n %}
+
+{% block title %}Stock & Productos — CYS Ltda{% endblock %}
+{% block page_title %}Stock & Productos{% endblock %}
+{% block nav_stock %}active{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/inventario/inventario.css' %}">
+<link rel="stylesheet" href="{% static 'css/inventario/stock.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+{% endblock %}
+{% block content %}
+
+{% if messages %}
+<div class="mb-3">
+  {% for message in messages %}
+  <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Encabezado -->
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card kpi-card--stock">
+      <div>
+        <div class="kpi-label">Productos</div>
+        <div class="kpi-value kpi-value--claro">{{ productos|length }}</div>
+      </div>
+      <i class="bi bi-box kpi-icon kpi-icon--productos"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card kpi-card--lotes-activos">
+      <div>
+        <div class="kpi-label">Lotes activos</div>
+        <div class="kpi-value kpi-value--claro">{{ lotes_activos|length }}</div>
+      </div>
+      <i class="bi bi-box-seam kpi-icon kpi-icon--lotes-activos"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card kpi-card--por-vencer">
+      <div>
+        <div class="kpi-label">Por vencer</div>
+        <div class="kpi-value kpi-value--claro">{{ lotes_por_vencer|length }}</div>
+      </div>
+      <i class="bi bi-exclamation-circle kpi-icon kpi-icon--por-vencer"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card kpi-card--vencidos">
+      <div>
+        <div class="kpi-label">Vencidos</div>
+        <div class="kpi-value kpi-value--claro">{{ lotes_vencidos|length }}</div>
+      </div>
+      <i class="bi bi-x-circle kpi-icon kpi-icon--vencidos"></i>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN: STOCK POR LOTE -->
+<div class="d-flex align-items-center gap-2 mb-3">
+  <i class="bi bi-table lotes-seccion-icon"></i>
+  <h3 class="fw-bold m-0 lotes-seccion-titulo">Stock por Lote</h3>
+</div>
+
+<!-- Buscador -->
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <div class="d-flex align-items-center buscar-lote-grupo" id="buscarLote-grupo">
+  <span class="lotes-search-prefix">
+    <i class="bi bi-search"></i>
+  </span>
+  <input type="text" id="buscarLote" class="form-control lotes-search-input"
+         placeholder="Buscar producto, lote…">
+</div>
+  <div class="dropdown" id="filtroEstado-wrap">
+    <button class="btn btn-sm dropdown-toggle px-3 lotes-filtro-btn" type="button"
+          id="filtroEstado-btn" data-bs-toggle="dropdown">
+      <span id="filtroEstado-label">Todos</span>
+    </button>
+    <ul class="dropdown-menu lotes-filtro-menu">
+      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="todos">Todos</a></li>
+      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="ok">En orden</a></li>
+      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="por_vencer">Por vencer</a></li>
+      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="vencido">Vencido</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="table-responsive rounded-3 lotes-table-wrap">
+  <table class="table table-hover mb-0 align-middle" id="tablaLotes">
+    <thead>
+      <tr>
+        <th class="ps-3">Producto / Presentación</th>
+        <th>Nº Lote</th>
+        <th class="text-center">Stock</th>
+        <th>Vencimiento</th>
+        <th>Estado</th>
+        <th class="text-center">Costo unit.</th>
+        <th class="text-center">Valor total</th>
+        <th class="pe-3 text-end">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lote in lotes_activos %}
+      <tr class="lote-row"
+          data-nombre="{{ lote.presentacion.producto.nombre|lower }}"
+          data-lote="{{ lote.numero_lote|lower }}"
+          data-estado="{% if lote.esta_vencido %}vencido{% elif lote.proximo_a_vencer %}por_vencer{% else %}ok{% endif %}">
+
+        <td class="ps-3">
+          <div class="fw-semibold lote-producto-nombre">{{ lote.presentacion.producto.nombre }}</div>
+          <small class="lote-presentacion-nombre">{{ lote.presentacion.nombre }}</small>
+        </td>
+
+        <td>
+          <span class="badge rounded-pill px-2 py-1 lote-badge-numero">
+            {{ lote.numero_lote }}
+          </span>
+        </td>
+
+        <td class="text-center">
+          <span class="fw-bold lote-stock-valor">{{ lote.stock_actual }}</span>
+          <small class="lote-stock-unidad"> uds</small>
+        </td>
+
+        <td>
+          {% if lote.fecha_vencimiento %}
+            <span class="{% if lote.esta_vencido %}lote-fecha--vencido{% elif lote.proximo_a_vencer %}lote-fecha--por-vencer{% else %}lote-fecha--ok{% endif %}">
+              {{ lote.fecha_vencimiento|date:"d/m/Y" }}
+            </span>
+            {% if lote.dias_para_vencer is not None %}
+              <br><small class="lote-fecha-dias">
+                {% if lote.esta_vencido %}Vencido hace {{ lote.dias_para_vencer }} días
+                {% else %}{{ lote.dias_para_vencer }} días{% endif %}
+              </small>
+            {% endif %}
+          {% else %}
+            <span class="lote-fecha--vacio">—</span>
+          {% endif %}
+        </td>
+
+        <td>
+          {% if lote.esta_vencido %}
+            <span class="badge rounded-pill px-2 lote-badge-estado--vencido">
+              <i class="bi bi-x-circle me-1"></i>Vencido
+            </span>
+          {% elif lote.proximo_a_vencer %}
+            <span class="badge rounded-pill px-2 lote-badge-estado--por-vencer">
+              <i class="bi bi-exclamation-circle me-1"></i>Por vencer
+            </span>
+          {% else %}
+            <span class="badge rounded-pill px-2 lote-badge-estado--ok">
+              <i class="bi bi-check-circle me-1"></i>OK
+            </span>
+          {% endif %}
+        </td>
+
+        <td class="text-center">
+          {% if lote.costo_unitario %}
+            <span class="fw-semibold lote-costo-valor">
+              ${{ lote.costo_unitario|floatformat:0 }}
+            </span>
+          {% else %}
+            <span class="lote-valor-vacio">—</span>
+          {% endif %}
+        </td>
+
+        <td class="text-center">
+          {% if lote.costo_unitario %}
+            <span class="lote-valor-total">
+              ${% widthratio lote.stock_actual 1 lote.costo_unitario %}
+            </span>
+          {% else %}
+            <span class="lote-valor-vacio">—</span>
+          {% endif %}
+        </td>
+
+        <td class="pe-3 text-end">
+          <button class="btn-edit-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEditarLote{{ lote.pk }}"
+                  title="Editar">
+            <i class="bi bi-pencil"></i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %} </tbody>
+  </table>
+</div>
+
+<div id="sinResultadosLotes" class="text-center py-5 d-none lotes-sin-resultados">
+  <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
+  Sin resultados para tu búsqueda.
+</div>
+
+<!-- MODALES EDITAR LOTE -->
+{% for lote in lotes_activos %}
+<div class="modal fade" id="modalEditarLote{{ lote.pk }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered lote-modal-dialog">
+    <div class="modal-content lote-modal-content">
+      <div class="modal-header lote-modal-header">
+        <h5 class="modal-title fw-bold lote-modal-titulo">
+          <i class="bi bi-pencil-square me-2 lote-modal-icono-titulo"></i>
+          Editar lote {{ lote.numero_lote }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'lotes:lote_ajustar_stock' lote.numero_lote %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="rounded-3 p-3 mb-3 lote-modal-info-box">
+            <div class="fw-semibold lote-modal-producto-nombre">{{ lote.presentacion.producto.nombre }}</div>
+            <small class="lote-modal-presentacion-nombre">{{ lote.presentacion.nombre }}</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold lote-modal-label">
+              Stock de este lote
+            </label>
+            <input type="number" name="nuevo_stock" class="form-control lote-modal-input lote-modal-input--stock"
+                   min="0" value="{{ lote.stock_actual }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold lote-modal-label">
+              Costo unitario ($)
+            </label>
+            <input type="number" name="costo_unitario" class="form-control lote-modal-input"
+                   min="0" step="1" value="{{ lote.costo_unitario|unlocalize|default:0 }}"
+                   placeholder="0">
+          </div>
+          <div class="mb-1">
+            <label class="form-label small fw-semibold lote-modal-label">
+              Motivo (opcional)
+            </label>
+            <input type="text" name="motivo" class="form-control lote-modal-input"
+                   placeholder="Conteo físico, corrección de error…" maxlength="200">
+          </div>
+        </div>
+        <div class="modal-footer lote-modal-footer">
+          <button type="button" class="btn-accion-ghost" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-accion-primary">
+            <i class="bi bi-check-lg"></i> Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/inventario/gestion_stock.js' %}"></script>
+{% endblock %}

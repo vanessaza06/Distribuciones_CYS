@@ -69,7 +69,9 @@ def lote_create(request):
             lote.save()
             messages.success(request, f'Lote {lote.numero_lote} registrado.')
         else:
-            messages.error(request, 'Error al registrar lote.')
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
     return redirect('lote_list')
 
 

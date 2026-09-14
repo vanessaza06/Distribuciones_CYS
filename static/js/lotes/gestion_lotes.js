@@ -83,12 +83,14 @@ function inicializarGraficoProveedores() {
  */
 function inicializarDropdownPresentacion() {
   const selLote = document.getElementById('select-presentacion-lote');
-  if (!selLote) return;
+  const inputProducto = document.getElementById('input-producto-lote');
+  if (!selLote || !inputProducto) return;
 
   document.querySelectorAll('.presentacion-lote-item').forEach(item => {
     item.addEventListener('click', e => {
       e.preventDefault();
       selLote.value = item.dataset.value;
+      inputProducto.value = item.dataset.productoPk;
       document.getElementById('presentacion-lote-label').textContent = item.textContent.trim();
     });
   });
