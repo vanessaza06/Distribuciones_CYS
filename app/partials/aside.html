@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside.css' %}">
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside-inline.css' %}">
@@ -126,23 +126,17 @@
         </a>
 
 
-            <!-- PRODUCTOS -->
-<a href="{% url 'lista_productos' %}"
-   class="cys-sb-link"
-   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
-  <i class="bi bi-box-seam-fill"></i>
-  <span>Productos</span>
-</a>
-
-<!-- Submenú Inventario -->
-<a href="{% url 'gestion_stock' %}" class="cys-sb-sublink {% block nav_stock %}{% endblock %}">
-  <i class="bi bi-layers"></i> Stock & Productos
-</a>
-
+        <!-- PRODUCTOS -->
+        <a href="{% url 'lista_productos' %}"
+           class="cys-sb-link {% block nav_productos %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
+          <i class="bi bi-box-seam-fill"></i>
+          <span>Productos</span>
+        </a>
 
         <!-- CATEGORÍAS -->
         <a href="{% url 'categorias_lista' %}"
-           class="cys-sb-link"
+           class="cys-sb-link {% block nav_categorias %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Categorías">
           <i class="bi bi-tags-fill"></i>
           <span>Categorías</span>
@@ -150,8 +144,8 @@
 
         <!-- DETALLE DE PRODUCTO -->
         <a href="{% url 'detalle_producto_lista' %}"
-          class="cys-sb-link"
-          data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle de Producto">
+           class="cys-sb-link {% block nav_detalle_prod %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle de Producto">
           <i class="bi bi-box-seam"></i>
           <span>Detalle de Producto</span>
         </a>
@@ -172,7 +166,7 @@
   <span>Lotes</span>
 </a>
 
-               <!-- PROVEEDORES -->
+        <!-- PROVEEDORES -->
         <a href="{% url 'lista_proveedores' %}"
            class="cys-sb-link {% block nav_proveedores %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Proveedores">
