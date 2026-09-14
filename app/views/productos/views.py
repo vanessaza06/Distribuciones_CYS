@@ -317,3 +317,14 @@ def buscar_producto(request):
             'presentaciones': presentaciones,
         }
     })
+    
+@login_required
+def producto_toggle_activo(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    producto.activo = not producto.activo
+    producto.save(update_fields=['activo'])
+    estado = 'activado' if producto.activo else 'desactivado'
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True, 'nombre': producto.nombre, 'activo': producto.activo})
+    messages.success(request, f'Producto "{producto.nombre}" {estado}.')
+    return redirect('lista_productos')
