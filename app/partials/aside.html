@@ -121,18 +121,23 @@
           <a href="#" class="cys-sb-sublink">
             <i class="bi bi-wallet2"></i> Métodos de Pago
           </a>
-          <a href="#" class="cys-sb-sublink">
-            <i class="bi bi-bar-chart-fill"></i> Reportes
-          </a>
         </div>
 
         <!-- DEVOLUCIONES -->
-        <a href="#"
-           class="cys-sb-link"
+        <a href="{% url 'lista_devoluciones' %}"
+           class="cys-sb-link {% block nav_devoluciones %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Devoluciones">
           <i class="bi bi-arrow-return-left"></i>
           <span>Devoluciones</span>
         </a>
+
+        <!--REPORTES-->
+        <a href="{% url 'reportes_home' %}"
+      class="cys-sb-link"
+    data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Reportes">
+    <i class="bi bi-bar-chart-fill"></i>
+       <span>Reportes</span>
+    </a>
 
 
             <!-- PRODUCTOS -->
@@ -171,27 +176,50 @@
           <a href="#"
              class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
              data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Inventario">
-            <i class="bi bi-clipboard-data-fill"></i>
+            <i class="bi bi-boxes"></i>
             <span class="flex-grow-1">Inventario</span>
           </a>
+          <button id="btnInventario"
+                  onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuInventario')"
+                  class="sb-submenu-toggle">
+            <i class="bi bi-chevron-down cys-chevron"></i>
+          </button>
+        </div>
+        <div class="cys-sb-submenu" id="submenuInventario">
 
-        <!-- BODEGA -->
-        <a href="{% url 'bodega_home' %}"
-           class="cys-sb-link {% block nav_bodega %}{% endblock %}"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Bodega">
-          <i class="bi bi-building-fill"></i>
-          <span>Bodega</span>
-        </a>
+          <a href="{% url 'lista_productos' %}"
+             class="cys-sb-sublink {% block nav_productos %}{% endblock %}">
+            <i class="bi bi-box-seam-fill"></i> Productos
+          </a>
 
-        <!-- GESTIÓN DE LOTES -->
-        <a href="{% url 'lote_list' %}"
-   class="cys-sb-link {% block nav_lotes %}{% endblock %}"
-   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Gestión de Lotes">
-  <i class="bi bi-tag-fill"></i>
-  <span>Gestión de Lotes</span>
-</a>
+          <a href="{% url 'categorias_lista' %}"
+             class="cys-sb-sublink {% block nav_categorias %}{% endblock %}">
+            <i class="bi bi-tags-fill"></i> Categorías
+          </a>
 
-               <!-- PROVEEDORES -->
+          <a href="{% url 'detalle_producto_lista' %}"
+             class="cys-sb-sublink {% block nav_detalle_prod %}{% endblock %}">
+            <i class="bi bi-box-seam"></i> Detalle de Producto
+          </a>
+
+          <a href="{% url 'lista_marcas' %}"
+             class="cys-sb-sublink {% block nav_marcas %}{% endblock %}">
+            <i class="bi bi-tag-fill"></i> Marcas
+          </a>
+
+          <a href="{% url 'bodega_home' %}"
+             class="cys-sb-sublink {% block nav_bodega %}{% endblock %}">
+            <i class="bi bi-building-fill"></i> Bodega
+          </a>
+
+          <a href="{% url 'lote_list' %}"
+             class="cys-sb-sublink {% block nav_lotes %}{% endblock %}">
+            <i class="bi bi-tag-fill"></i> Lotes
+          </a>
+
+        </div>
+
+        <!-- PROVEEDORES -->
         <a href="{% url 'lista_proveedores' %}"
            class="cys-sb-link {% block nav_proveedores %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Proveedores">
@@ -205,14 +233,6 @@
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
           <i class="bi bi-cart-check-fill"></i>
           <span>Compras</span>
-        </a>
-
-        <!-- MARCAS -->
-        <a href="{% url 'lista_marcas' %}"
-           class="cys-sb-link {% block nav_marcas %}{% endblock %}"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Marcas">
-          <i class="bi bi-tag-fill"></i>
-          <span>Marcas</span>
         </a>
       </nav>
     </div>
@@ -286,4 +306,3 @@
 </div>
 
 <script src="{% static 'js/cuerpo/aside.js' %}" defer></script>
-

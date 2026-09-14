@@ -8,13 +8,16 @@ from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
 from app.views.detalle_producto import views as deta_views
 from app.views.compra import views as compra_views
+from app.views.devoluciones import views as dev_views
 from app.views.bodega import views as bod_views
 from app.views.principal import views as principal_views
 from app.views.ventas import views as ventas_views
+from app.views.reportes import views as rep_views 
 
 
 urlpatterns = [
     path("", principal_views.principal, name="principal"),
+
     # VENTAS
     path("ventas/", ventas_views.ventas, name="ventas"),
     path("ventas/lista/", ventas_views.ventas_lista, name="ventas_lista"),
@@ -30,12 +33,13 @@ urlpatterns = [
     path("ventas/caja/cierre/", ventas_views.cierre_caja, name="cierre_caja"),
     path("ventas/caja/conteo/", ventas_views.registrar_conteo, name="registrar_conteo"),
 
-    # DEVOLUCIONES
+    # DEVOLUCIONES DE VENTAS
     path("ventas/devoluciones/", ventas_views.lista_devoluciones, name="lista_devoluciones"),
     path("ventas/devoluciones/buscar/", ventas_views.buscar_venta_devolucion, name="buscar_venta_devolucion"),
     path("ventas/devoluciones/detalle/<int:venta_id>/", ventas_views.detalle_venta_devolucion, name="detalle_venta_devolucion"),
     path("ventas/devoluciones/registrar/", ventas_views.registrar_devolucion, name="registrar_devolucion"),
     path("ventas/devoluciones/comprobante/<int:pk>/", ventas_views.comprobante_devolucion, name="comprobante_devolucion"),
+
     # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("crear/", cat_views.categoria_crear, name="crear"),
@@ -46,6 +50,7 @@ urlpatterns = [
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
     ),
+
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
     path("proveedores/crear/", prov_views.crear_proveedor, name="crear_proveedor"),
@@ -105,11 +110,13 @@ urlpatterns = [
         prov_views.sancionar_proveedor_modal,
         name="sancionar_proveedor_modal",
     ),
+
     # MARCAS
     path("marcas/", mar_views.lista_marcas, name="lista_marcas"),  # type: ignore
     path("marcas/crear/", mar_views.crear_marca, name="crear_marca"),  # type: ignore
     path("marcas/editar/<str:codigo_marca>/", mar_views.editar_marca, name="editar_marca"),  # type: ignore
     path("marcas/eliminar/<str:codigo_marca>/", mar_views.eliminar_marca, name="eliminar_marca"),  # type: ignore
+
     # PRODUCTOS
     path("productos/", prod_views.lista_productos, name="lista_productos"),
     path("crear-producto/", prod_views.crear_producto, name="crear_producto"),
@@ -125,7 +132,8 @@ urlpatterns = [
         prod_views.producto_toggle_activo,
         name="producto_toggle_activo",
     ),
-    # Presentaciones
+
+    # PRESENTACIONES
     path(
         "presentacion/<int:producto_pk>/crear/",
         pres_views.presentacion_crear,
@@ -141,38 +149,7 @@ urlpatterns = [
         pres_views.presentacion_toggle_activo,
         name="presentacion_toggle_activo",
     ),
-    # LOTES
-    path("lotes/", lot_views.gestion_stock, name="gestion_stock"),
-    path("lotes/lista/", lot_views.lote_list, name="lote_list"),
-    path("lotes/crear/", lot_views.lote_create, name="lote_create"),
-    path("lotes/<str:numero_lote>/", lot_views.lote_detail, name="lote_detail"),
-    path("lotes/<str:numero_lote>/editar/", lot_views.lote_update, name="lote_update"),
-    path(
-        "lotes/<str:numero_lote>/ajustar-stock/",
-        lot_views.lote_ajustar_stock,
-        name="lote_ajustar_stock",
-    ),
-    # DETALLE PRODUCTO
-    path(
-        "detalle-producto/",
-        deta_views.detalle_producto_lista,
-        name="detalle_producto_lista",
-    ),
-    path(
-        "detalle-producto/crear/<int:producto_pk>/",
-        deta_views.detalle_producto_crear,
-        name="detalle_producto_crear",
-    ),
-    path(
-        "detalle-producto/editar/<int:pk>/",
-        deta_views.detalle_producto_editar,
-        name="detalle_producto_editar",
-    ),
-    path(
-        "detalle-producto/guardar-codigo/<int:pk>/",
-        deta_views.guardar_codigo,
-        name="guardar_codigo",
-    ),
+
     # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
     path(
@@ -195,6 +172,41 @@ urlpatterns = [
         compra_views.registrar_pago_compra,
         name="registrar_pago_compra_id",
     ),
+
+    # LOTES
+    path("lotes/", lot_views.gestion_stock, name="gestion_stock"),
+    path("lotes/lista/", lot_views.lote_list, name="lote_list"),
+    path("lotes/crear/", lot_views.lote_create, name="lote_create"),
+    path("lotes/<str:numero_lote>/", lot_views.lote_detail, name="lote_detail"),
+    path("lotes/<str:numero_lote>/editar/", lot_views.lote_update, name="lote_update"),
+    path(
+        "lotes/<str:numero_lote>/ajustar-stock/",
+        lot_views.lote_ajustar_stock,
+        name="lote_ajustar_stock",
+    ),
+
+    # DETALLE PRODUCTO
+    path(
+        "detalle-producto/",
+        deta_views.detalle_producto_lista,
+        name="detalle_producto_lista",
+    ),
+    path(
+        "detalle-producto/crear/<int:producto_pk>/",
+        deta_views.detalle_producto_crear,
+        name="detalle_producto_crear",
+    ),
+    path(
+        "detalle-producto/editar/<int:pk>/",
+        deta_views.detalle_producto_editar,
+        name="detalle_producto_editar",
+    ),
+    path(
+        "detalle-producto/guardar-codigo/<int:pk>/",
+        deta_views.guardar_codigo,
+        name="guardar_codigo",
+    ),
+
     # BODEGA
     path("bodega/", bod_views.bodega_home, name="bodega_home"),
     path("bodega/agenda/", bod_views.agenda_list, name="agenda_list"),
@@ -219,4 +231,13 @@ urlpatterns = [
     path(
         "bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"
     ),
+
+    # REPORTES
+    path("reportes/", rep_views.reportes_home, name="reportes_home"),  # type: ignore
+    path("reportes/ventas/", rep_views.reporte_ventas, name="reporte_ventas"),  # type: ignore
+    path("reportes/compras/", rep_views.reporte_compras, name="reporte_compras"),
+    path("reportes/inventario/", rep_views.reporte_inventario, name="reporte_inventario"),
+    path("reportes/stock-bajo/", rep_views.reporte_stock_bajo, name="reporte_stock_bajo"),
+    path("reportes/proveedores/", rep_views.reporte_proveedores, name="reporte_proveedores"),
+    path("reportes/exportar/<str:tipo>/", rep_views.reporte_exportar, name="reporte_exportar"),
 ]

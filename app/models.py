@@ -502,13 +502,12 @@ class DetalleCompra(models.Model):
             self.subtotal_compra = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
-
 # ── 12. DEVOLUCION PROVEEDORES ──
 class DevolucionProveedores(models.Model):
     numero_proveedor = models.AutoField(primary_key=True, db_column="numero_proveedor")
     fecha = models.DateTimeField(default=timezone.now, db_column="fecha")
     motivo = models.TextField(db_column="motivo")
-    estado = models.CharField(max_length=20, db_column="estado")
+    estado = models.CharField(max_length=20, db_column="estado")  # ej: pendiente, aprobada, rechazada
     observaciones = models.TextField(blank=True, null=True, db_column="observaciones")
     proveedor = models.ForeignKey(
         "Proveedor", on_delete=models.CASCADE, db_column="nit_proveedores"
@@ -516,6 +515,9 @@ class DevolucionProveedores(models.Model):
 
     class Meta:
         db_table = "devolucion_proveedores"
+
+    def __str__(self):
+        return f"Devolución Proveedor #{self.numero_proveedor} - {self.proveedor}"
 
 
 # ── CLIENTE ──
@@ -789,6 +791,13 @@ class Devolucion(models.Model):
         verbose_name="Venta original",
         db_column="codigo_venta",
     )
+    detalle_venta = models.ForeignKey(
+        "DetalleVenta",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="codigo_detalle_venta",
+    )
     fecha = models.DateTimeField(default=timezone.now, db_column="fecha")
     motivo = models.CharField(
         max_length=50, choices=MOTIVO_CHOICES, default="otro", db_column="motivo"
@@ -838,7 +847,6 @@ class Devolucion(models.Model):
     @property
     def numero(self):
         return f"DEV-{self.pk:04d}"
-
 
 # ── 16. DETALLE DEVOLUCION ──
 class DetalleDevolucion(models.Model):
