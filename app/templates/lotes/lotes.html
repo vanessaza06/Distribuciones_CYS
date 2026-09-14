@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lotes — CYS Ltda{% endblock %}
+{% block page_title %}Lotes{% endblock %}
+{% block nav_lotes %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/inventario/inventario.css' %}">
+<link rel="stylesheet" href="{% static 'css/lotes/lotes.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="mb-3">
+  {% for message in messages %}
+  <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="{% url 'gestion_stock' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+    <i class="bi bi-table me-1"></i> Ver Stock y Vencimientos
+  </a>
+</div>
+
+<div class="row g-4" id="lotes-layout">
+  <!-- ── Formulario ── -->
+  <div class="col-lg-7">
+    <div class="inv-card p-4 h-100">
+
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <div class="icon-box lote-icon-box">
+          <i class="bi bi-plus-circle-fill"></i>
+        </div>
+        <div>
+          <h6 class="mb-0 fw-bold text-uppercase lote-titulo">Registrar Nuevo Lote</h6>
+          <small class="lote-subtitulo">El precio de costo se guarda en la presentación</small>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'lote_create' %}" id="form-lote">
+        {% csrf_token %}
+
+        <!-- Presentación -->
+        <div class="mb-3">
+          <label class="inv-label">Presentación <span class="text-danger">*</span></label>
+
+          <select name="presentacion" id="select-presentacion-lote" class="d-none">
+            <option value="">— Selecciona presentación —</option>
+            {% for p in productos %}
+              {% if p.presentaciones.all %}
+              <optgroup label="{{ p.nombre }}">
+                {% for pr in p.presentaciones.all %}
+                <option value="{{ pr.pk }}" data-producto-pk="{{ p.pk }}">{{ pr.nombre }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+            {% endfor %}
+          </select>
+
+          <!-- Campo oculto: producto, se rellena por JS al elegir presentación -->
+          <input type="hidden" name="producto" id="input-producto-lote">
+
+          <div class="dropdown">
+            <button class="btn dropdown-toggle w-100 text-start lote-presentacion-btn" type="button"
+                    id="presentacion-lote-btn" data-bs-toggle="dropdown"
+                    {% if not hay_presentaciones %}disabled{% endif %}>
+              <span id="presentacion-lote-label">
+                {% if hay_presentaciones %}— Selecciona presentación —{% else %}No hay presentaciones disponibles{% endif %}
+              </span>
+            </button>
+            <ul class="dropdown-menu w-100 lote-presentacion-menu">
+              {% for p in productos %}
+                {% if p.presentaciones.all %}
+                <li><h6 class="dropdown-header">{{ p.nombre }}</h6></li>
+                  {% for pr in p.presentaciones.all %}
+                  <li>
+                    <a class="dropdown-item presentacion-lote-item" href="#"
+                       data-value="{{ pr.pk }}" data-producto-pk="{{ p.pk }}">
+                      {{ pr.nombre }}
+                    </a>
+                  </li>
+                  {% endfor %}
+                {% endif %}
+              {% empty %}
+                <li><span class="dropdown-item disabled">No hay productos registrados.</span></li>
+              {% endfor %}
+            </ul>
+            {% if not hay_presentaciones %}
+              <small class="text-danger mt-1 d-block">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                No hay presentaciones disponibles. Registra una presentación antes de crear un lote.
+              </small>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Bodega -->
+        <div class="mb-3">
+          <label class="inv-label">Bodega <span class="text-danger">*</span></label>
+          <select name="bodega" class="form-select inv-input" required>
+            <option value="">— Selecciona bodega —</option>
+            {% for b in bodegas %}
+            <option value="{{ b.pk }}">{{ b.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Nº Lote + Cantidad -->
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="inv-label">Nº de Lote <span class="text-danger">*</span></label>
+            <input type="text" name="numero_lote" class="form-control inv-input"
+                   placeholder="Ej: LOT-2024-01" required>
+          </div>
+          <div class="col-6">
+            <label class="inv-label">Cantidad inicial <span class="text-danger">*</span></label>
+            <div class="d-flex lote-cantidad-wrap">
+              <input type="number" name="cantidad_inicial" id="input-cantidad-lote"
+               class="form-control inv-input lote-cantidad-input"
+               min="1" placeholder="0" required>
+              <div class="lote-precio-spinners">
+                <button type="button" class="lote-spin-btn lote-spin-up" data-target="input-cantidad-lote">
+                  <i class="bi bi-caret-up-fill"></i>
+                </button>
+                <button type="button" class="lote-spin-btn lote-spin-down" data-target="input-cantidad-lote">
+                  <i class="bi bi-caret-down-fill"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr class="section-divider">
+
+        <div class="mb-3">
+          <label class="inv-label">Precio de Costo <span class="lote-label-hint">(por unidad)</span></label>
+          <div class="d-flex lote-precio-wrap">
+            <span class="precio-prefix">$</span>
+            <input type="number" name="costo_unitario" id="input-costo-unitario"
+               class="form-control inv-input inv-input-precio lote-precio-input"
+               min="0" step="1000" placeholder="0" required>
+            <div class="lote-precio-spinners">
+              <button type="button" class="lote-spin-btn lote-spin-up" data-target="input-costo-unitario">
+                <i class="bi bi-caret-up-fill"></i>
+              </button>
+              <button type="button" class="lote-spin-btn lote-spin-down" data-target="input-costo-unitario">
+                <i class="bi bi-caret-down-fill"></i>
+              </button>
+            </div>
+          </div>
+          <p class="precio-hint">
+            <i class="bi bi-info-circle me-1"></i>
+            Este valor se actualizará en la presentación y será visible en Stock y Gestión de Productos.
+          </p>
+        </div>
+
+        <button type="submit" class="btn fw-bold rounded-pill px-4 py-2 w-100 lote-btn-crear"
+              {% if not hay_presentaciones %}disabled{% endif %}>
+          <i class="bi bi-plus-circle me-2"></i>Crear Lote
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Panel derecho ── -->
+  <div class="col-lg-5 d-flex flex-column gap-4">
+    <div class="row g-3">
+      <div class="col-6">
+        <div class="stat-mini p-3 d-flex align-items-center justify-content-between">
+          <div>
+            <small class="d-block text-uppercase lote-stat-label">Ingresos Hoy</small>
+            <h4 class="mb-0 fw-bold mt-1 lote-stat-value-success">+{{ ingresos_hoy }} uds</h4>
+          </div>
+          <i class="bi bi-box-arrow-in-down fs-3 lote-icon-opacidad"></i>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="stat-mini lote-stat-mini--info p-3 d-flex align-items-center justify-content-between">
+          <div>
+            <small class="d-block text-uppercase lote-stat-label">Lotes del Mes</small>
+            <h4 class="mb-0 fw-bold mt-1 lote-stat-value-info">{{ ordenes_mes }}</h4>
+          </div>
+          <i class="bi bi-cart-check fs-3 lote-icon-info"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-card p-4 flex-grow-1 d-flex flex-column">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-shop lote-icon-azul"></i>
+        <h6 class="mb-0 fw-bold text-uppercase lote-panel-titulo">Top 5 Productos en Stock</h6>
+      </div>
+      <div class="flex-grow-1 position-relative lote-chart-wrap">
+        <canvas id="chartProveedores"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<div id="lotes-config"
+     data-labels="{{ proveedores_labels }}"
+     data-data="{{ proveedores_data }}"
+     class="d-none"></div>
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/lotes/gestion_lotes.js' %}"></script>
+{% endblock %}

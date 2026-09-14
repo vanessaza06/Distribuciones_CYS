@@ -156,16 +156,6 @@
           <span>Detalle de Producto</span>
         </a>
 
-
-        <!-- INVENTARIO -->
-        <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
-          <a href="#"
-             class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
-             data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Inventario">
-            <i class="bi bi-clipboard-data-fill"></i>
-            <span class="flex-grow-1">Inventario</span>
-          </a>
-
         <!-- BODEGA -->
         <a href="{% url 'bodega_home' %}"
            class="cys-sb-link {% block nav_bodega %}{% endblock %}"
@@ -174,12 +164,12 @@
           <span>Bodega</span>
         </a>
 
-        <!-- GESTIÓN DE LOTES -->
-        <a href="{% url 'lote_list' %}"
+       <!-- LOTES -->
+<a href="{% url 'lote_list' %}"
    class="cys-sb-link {% block nav_lotes %}{% endblock %}"
-   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Gestión de Lotes">
+   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Lotes">
   <i class="bi bi-tag-fill"></i>
-  <span>Gestión de Lotes</span>
+  <span>Lotes</span>
 </a>
 
                <!-- PROVEEDORES -->
