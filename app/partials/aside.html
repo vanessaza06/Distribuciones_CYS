@@ -158,13 +158,13 @@
           <span>Bodega</span>
         </a>
 
-        <!-- GESTIÓN DE LOTES -->
-        <a href="{% url 'lote_list' %}"
-           class="cys-sb-link {% block nav_lotes %}{% endblock %}"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Gestión de Lotes">
-          <i class="bi bi-layers"></i>
-          <span>Gestión de Lotes</span>
-        </a>
+       <!-- LOTES -->
+<a href="{% url 'lote_list' %}"
+   class="cys-sb-link {% block nav_lotes %}{% endblock %}"
+   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Lotes">
+  <i class="bi bi-tag-fill"></i>
+  <span>Lotes</span>
+</a>
 
         <!-- PROVEEDORES -->
         <a href="{% url 'lista_proveedores' %}"
