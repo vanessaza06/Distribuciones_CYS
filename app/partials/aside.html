@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside.css' %}">
 <link rel="stylesheet" href="{% static 'css/cuerpo/aside-inline.css' %}">
@@ -95,8 +95,8 @@
         </a>
 
         <!-- VENTAS -->
-        <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
-          <a href="#"
+        <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex {% block nav_ventas %}{% endblock %}">
+          <a href="{% url 'ventas' %}"
              class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
              data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ventas">
             <i class="bi bi-receipt"></i>
@@ -109,6 +109,15 @@
           </button>
         </div>
         <div class="cys-sb-submenu" id="submenuVentas">
+          <a href="{% url 'ventas' %}" class="cys-sb-sublink">
+            <i class="bi bi-cart-check"></i> Punto de Venta
+          </a>
+          <a href="{% url 'ventas_dia' %}" class="cys-sb-sublink">
+            <i class="bi bi-calendar-event"></i> Ventas del Día
+          </a>
+          <a href="{% url 'caja' %}" class="cys-sb-sublink">
+            <i class="bi bi-cash-register"></i> Caja
+          </a>
           <a href="#" class="cys-sb-sublink">
             <i class="bi bi-wallet2"></i> Métodos de Pago
           </a>
