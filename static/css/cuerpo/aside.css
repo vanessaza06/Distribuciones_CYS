@@ -286,7 +286,7 @@
 }
 
 .cys-sb-submenu.abierto {
-  max-height: 200px;
+  max-height: 400px;
   opacity: 1;
   transform: translateY(0);
 }
