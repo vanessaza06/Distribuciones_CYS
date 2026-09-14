@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from app.models import Producto
+import json
+
+from app.models import Producto, Lote, Bodega, PresentacionProducto
 from app.forms import LoteForm
-from app.models import Lote
 
 
 @login_required
@@ -21,7 +22,7 @@ def gestion_stock(request):
         'lotes_por_vencer': lotes_por_vencer,
         'lotes_vencidos': lotes_vencidos,
     }
-    return render(request, 'lotes/gestion_stock.html', context)
+    return render(request, 'lotes/gestion.html', context)
 
 
 @login_required
@@ -29,16 +30,25 @@ def lote_list(request):
     lotes = Lote.objects.select_related('presentacion__producto', 'bodega')
     hoy = timezone.now().date()
     ingresos_hoy = lotes.filter(fecha_registro__date=hoy).aggregate(total=Sum('stock_actual'))['total'] or 0
-    lotes_mes = lotes.filter(fecha_registro__year=hoy.year, fecha_registro__month=hoy.month).count()
+    ordenes_mes = lotes.filter(fecha_registro__year=hoy.year, fecha_registro__month=hoy.month).count()
     top_productos = Producto.objects.annotate(
         stock_calculado=Sum('lotes__stock_actual')
     ).order_by('-stock_calculado')[:5]
+    proveedores_labels = json.dumps([p.nombre for p in top_productos])
+    proveedores_data = json.dumps([p.stock_calculado or 0 for p in top_productos])
 
-    return render(request, 'lotes/lote_list.html', {
+    productos = Producto.objects.prefetch_related('presentaciones').all()
+    bodegas = Bodega.objects.all()
+
+    return render(request, 'lotes/lotes.html', {
         'lotes': lotes,
         'ingresos_hoy': ingresos_hoy,
-        'lotes_mes': lotes_mes,
-        'top_productos': top_productos,
+        'ordenes_mes': ordenes_mes,
+        'proveedores_labels': proveedores_labels,
+        'proveedores_data': proveedores_data,
+        'productos': productos,
+        'bodegas': bodegas,
+        'hay_presentaciones': PresentacionProducto.objects.exists(),
     })
 
 
@@ -60,9 +70,7 @@ def lote_create(request):
             messages.success(request, f'Lote {lote.numero_lote} registrado.')
         else:
             messages.error(request, 'Error al registrar lote.')
-    else:
-        form = LoteForm()
-    return render(request, 'lotes/lote_form.html', {'form': form})
+    return redirect('lote_list')
 
 
 @login_required
@@ -73,7 +81,7 @@ def lote_update(request, numero_lote):
         if form.is_valid():
             form.save()
             messages.success(request, f'Lote {lote.numero_lote} actualizado.')
-            return redirect('lotes:lote_list')
+            return redirect('lote_list')
     else:
         form = LoteForm(instance=lote)
     return render(request, 'lotes/lote_form.html', {'form': form, 'lote': lote})
@@ -84,7 +92,10 @@ def lote_ajustar_stock(request, numero_lote):
     lote = get_object_or_404(Lote, numero_lote=numero_lote)
     if request.method == 'POST':
         nuevo_stock = int(request.POST.get('nuevo_stock', 0))
+        costo_unitario = request.POST.get('costo_unitario')
         lote.stock_actual = nuevo_stock
-        lote.save(update_fields=['stock_actual'])
+        if costo_unitario:
+            lote.costo_unitario = costo_unitario
+        lote.save(update_fields=['stock_actual', 'costo_unitario'])
         messages.success(request, 'Stock ajustado.')
-    return redirect('lotes:gestion_stock')
+    return redirect('gestion_stock')

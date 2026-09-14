@@ -471,18 +471,21 @@ class DetalleCompra(models.Model):
             self.subtotal_compra = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
-
 # ── 12. DEVOLUCION PROVEEDORES ──
 class DevolucionProveedores(models.Model):
     numero_proveedor = models.AutoField(primary_key=True, db_column='numero_proveedor')
     fecha = models.DateTimeField(default=timezone.now, db_column='fecha')
     motivo = models.TextField(db_column='motivo')
-    estado = models.CharField(max_length=20, db_column='estado')
+    estado = models.CharField(max_length=20, db_column='estado')  # ej: pendiente, aprobada, rechazada
     observaciones = models.TextField(blank=True, null=True, db_column='observaciones')
     proveedor = models.ForeignKey('Proveedor', on_delete=models.CASCADE, db_column='nit_proveedores')
 
     class Meta:
         db_table = 'devolucion_proveedores'
+
+    def __str__(self):
+        return f"Devolución Proveedor #{self.numero_proveedor} - {self.proveedor}"
+
 
 # ── 18. CAJA ──
 class Caja(models.Model):
@@ -541,11 +544,11 @@ class Devolucion(models.Model):
     codigo_devolucion = models.AutoField(primary_key=True, db_column='codigo_devolucion')
     fecha = models.DateTimeField(default=timezone.now, db_column='fecha')
     motivo = models.TextField(db_column='motivo')
-    tipo_devolucion = models.CharField(max_length=50, db_column='tipo_devolucion')
+    tipo_devolucion = models.CharField(max_length=50, db_column='tipo_devolucion')  # cambio, nota_credito, reembolso
     observaciones = models.TextField(blank=True, null=True, db_column='observaciones')
     presenta_comprobante = models.BooleanField(db_column='presenta_comprobante')
     total_devuelto = models.DecimalField(max_digits=12, decimal_places=2, db_column='total_devuelto')
-    estado = models.CharField(max_length=20, db_column='estado')
+    estado = models.CharField(max_length=20, db_column='estado')  # ej: completada, pendiente
     cantidad_cambio = models.IntegerField(db_column='cantidad_cambio')
     metodo_pago_devolucion = models.CharField(max_length=50, db_column='metodo_pago_devolucion')
     usuario = models.ForeignKey('Usuario', on_delete=models.PROTECT, db_column='documento_usuario')
@@ -554,6 +557,9 @@ class Devolucion(models.Model):
 
     class Meta:
         db_table = 'devolucion'
+
+    def __str__(self):
+        return f"Devolución #{self.codigo_devolucion} (Venta #{self.venta_id})"
 
 # ── 16. DETALLE DEVOLUCION ──
 class DetalleDevolucion(models.Model):
@@ -567,6 +573,10 @@ class DetalleDevolucion(models.Model):
 
     class Meta:
         db_table = 'detalle_devolucion'
+
+    def __str__(self):
+        return f"Detalle #{self.numero_devolucion} - {self.producto.nombre} x{self.cantidad}"
+
 
 # ── 17. METODO PAGO ──
 class MetodoPago(models.Model):
