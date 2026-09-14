@@ -118,8 +118,8 @@
         </div>
 
         <!-- DEVOLUCIONES -->
-        <a href="#"
-           class="cys-sb-link"
+        <a href="{% url 'lista_devoluciones' %}"
+           class="cys-sb-link {% block nav_devoluciones %}{% endblock %}"
            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Devoluciones">
           <i class="bi bi-arrow-return-left"></i>
           <span>Devoluciones</span>
