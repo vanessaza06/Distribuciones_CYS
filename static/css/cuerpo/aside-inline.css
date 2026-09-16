@@ -39,3 +39,35 @@
 .sb-link-flex-grow > span {
   flex-grow: 1;
 }
+/* ============================================================
+   TOOLTIPS — color según el botón (Ayuda / Configuración / Cerrar Sesión)
+   ============================================================ */
+.tooltip.cys-tip-ayuda .tooltip-inner {
+  background: rgba(4,14,28,.92);
+  color: #4dd0e1;
+  border: 1px solid rgba(77,208,225,.4);
+  box-shadow: 0 0 12px rgba(77,208,225,.35);
+}
+.tooltip.cys-tip-ayuda .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
+}
+
+.tooltip.cys-tip-config .tooltip-inner {
+  background: rgba(4,14,28,.92);
+  color: #f1c40f;
+  border: 1px solid rgba(241,196,15,.4);
+  box-shadow: 0 0 12px rgba(241,196,15,.35);
+}
+.tooltip.cys-tip-config .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
+}
+
+.tooltip.cys-tip-logout .tooltip-inner {
+  background: rgba(4,14,28,.92);
+  color: #ff8a8a;
+  border: 1px solid rgba(232,112,112,.4);
+  box-shadow: 0 0 12px rgba(232,112,112,.35);
+}
+.tooltip.cys-tip-logout .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
+}
