@@ -94,15 +94,25 @@
 
   // Tooltips de TODO lo que tenga data-bs-toggle="tooltip" dentro del aside
   // (módulos, Ventas/Inventario, avatar, botón de cerrar y botón modo mini).
+  // Ayuda / Configuración / Cerrar Sesión reciben cada uno su propio color
+  // de tooltip (customClass), en vez del azul por defecto de Bootstrap.
   // Quedan siempre activos, sin importar si el aside está expandido o compacto.
   let sidebarTooltips = [];
   if (window.bootstrap) {
     sidebarTooltips = Array.from(sidebar.querySelectorAll('[data-bs-toggle="tooltip"]'))
-      .map(el => new bootstrap.Tooltip(el, {
-        trigger: 'hover',
-        placement: el.getAttribute('data-bs-placement') || 'right',
-        container: 'body' // evita que el overflow del sidebar los recorte
-      }));
+      .map(el => {
+        let customClass = '';
+        if (el.classList.contains('cys-sb-link--ayuda'))  customClass = 'cys-tip-ayuda';
+        if (el.classList.contains('cys-sb-link--config')) customClass = 'cys-tip-config';
+        if (el.classList.contains('cys-sb-link--logout')) customClass = 'cys-tip-logout';
+
+        return new bootstrap.Tooltip(el, {
+          trigger: 'hover',
+          placement: el.getAttribute('data-bs-placement') || 'right',
+          container: 'body', // evita que el overflow del sidebar los recorte
+          customClass: customClass
+        });
+      });
   }
 
   // Ajusta la variable CSS que usa base.css para el espacio que le deja

@@ -1,6 +1,7 @@
 /* =========================================================
    CYS Licorera — Marcas
    Sistema de diseño: paleta navy oscuro, acentos ámbar
+   (paleta propia de Marcas — NO hereda la de Productos)
 
    NOTA IMPORTANTE:
    Este archivo se carga DESPUÉS de base.css (vía extra_css en
@@ -8,14 +9,16 @@
    subnav y sidebar fijos + <main class="cys-main">).
 
    Por eso aquí SOLO deben existir clases que realmente usa
-   marca.html. Antes este archivo traía clases sueltas de otra
-   plantilla (.cys-layout, .cys-sidebar, .cys-topbar, .cys-user,
-   .cys-main, .cys-breadcrumb, .cys-dot) que no se usaban en
-   marca.html pero SÍ existían también en base.css con otro
-   significado. Al cargarse después, pisaban los estilos reales
-   de base.css — en particular el padding-top que compensa el
-   header/subnav fijos — y por eso el encabezado de la página se
-   veía tapado/cortado. Se eliminaron todas esas clases muertas.
+   marca.html. No volver a meter .cys-layout, .cys-sidebar,
+   .cys-topbar, .cys-user, .cys-main, .cys-breadcrumb ni
+   .cys-dot: existen también en base.css con otro significado y,
+   al cargarse este archivo después, pisan el padding-top que
+   compensa el header/subnav fijos (el encabezado se veía
+   tapado/cortado).
+
+   Al final hay un bloque "BLINDAJE" con !important para las
+   reglas que base.css sí estaba pisando (centrado de las stat
+   cards, mayúsculas, color del botón primario).
    ========================================================= */
 
 /* ---------- Tipografía: Plus Jakarta Sans ---------- */
@@ -42,12 +45,15 @@
   --cys-amber: #f5b301;
   --cys-amber-dark: #d99a00;
   --cys-amber-soft: rgba(245, 179, 1, 0.12);
+  --cys-amber-border: rgba(245, 179, 1, 0.35);
 
   --cys-blue: #2f7bf5;
   --cys-green: #22c55e;
   --cys-green-soft: rgba(34, 197, 94, 0.12);
+  --cys-green-border: rgba(34, 197, 94, 0.35);
   --cys-red: #ef4444;
   --cys-red-soft: rgba(239, 68, 68, 0.12);
+  --cys-red-border: rgba(239, 68, 68, 0.35);
 
   --cys-radius-sm: 8px;
   --cys-radius-md: 12px;
@@ -77,7 +83,7 @@
   height: 52px;
   border-radius: var(--cys-radius-md);
   background: var(--cys-amber-soft);
-  border: 1px solid rgba(245, 179, 1, 0.35);
+  border: 1px solid var(--cys-amber-border);
   color: var(--cys-amber);
   font-size: 20px;
   display: inline-flex;
@@ -148,7 +154,7 @@
 
 .cys-stat-card {
   background: var(--cys-surface);
-  border: 1px solid rgba(245, 179, 1, 0.25);
+  border: 1px solid var(--cys-amber-border);
   border-radius: var(--cys-radius-md);
   padding: 18px;
   display: flex;
@@ -156,6 +162,10 @@
   gap: 14px;
   position: relative;
 }
+
+/* Borde de color según el tipo de tarjeta (como en el boceto) */
+.cys-stat-card:has(.cys-stat-card__icon--active) { border-color: var(--cys-green-border); }
+.cys-stat-card:has(.cys-stat-card__icon--inactive) { border-color: var(--cys-red-border); }
 
 .cys-stat-card__icon {
   width: 46px;
@@ -168,7 +178,7 @@
   flex-shrink: 0;
 }
 
-.cys-stat-card__icon--tag { background: var(--cys-surface-alt); color: var(--cys-amber); }
+.cys-stat-card__icon--tag { background: var(--cys-amber-soft); color: var(--cys-amber); }
 .cys-stat-card__icon--active { background: var(--cys-green-soft); color: var(--cys-green); }
 .cys-stat-card__icon--inactive { background: var(--cys-red-soft); color: var(--cys-red); }
 
@@ -489,6 +499,67 @@
 .cys-confirm-text { margin: 0 0 4px; color: var(--cys-text-secondary); font-size: 14px; line-height: 1.5; }
 .cys-confirm-text strong { color: var(--cys-text); }
 
+/* =========================================================
+   BLINDAJE — corrige lo que base.css estaba pisando
+   (comparar con la captura: stat cards centradas, textos en
+   mayúsculas y botón primario azul tipo píldora)
+   ========================================================= */
+
+/* 1) Stat cards: ícono a la izquierda, texto alineado a la izquierda */
+.cys-stats .cys-stat-card {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.cys-stats .cys-stat-card > div,
+.cys-stats .cys-stat-card__body { text-align: left !important; }
+
+.cys-stats .cys-stat-card__label {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--cys-text-secondary) !important;
+  text-align: left !important;
+}
+
+.cys-stats .cys-stat-card__value {
+  font-size: 26px !important;
+  text-align: left !important;
+}
+
+/* 2) Botón primario: ámbar, esquinas del sistema, sin mayúsculas forzadas */
+.cys-btn.cys-btn--primary,
+button.cys-btn--primary,
+a.cys-btn--primary {
+  background: linear-gradient(180deg, var(--cys-amber), var(--cys-amber-dark)) !important;
+  background-color: var(--cys-amber) !important;
+  color: #1a1204 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--cys-radius-sm) !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+/* 3) Encabezados de tabla: sin el uppercase/azul global */
+.cys-table-card .cys-table thead th {
+  color: var(--cys-text-muted) !important;
+  background: var(--cys-surface-alt) !important;
+  text-transform: none !important;
+  font-size: 12px !important;
+  letter-spacing: .03em !important;
+}
+
+/* 4) Superficies: que no las aclare/transparente el tema global */
+.cys-table-card,
+.cys-stats .cys-stat-card,
+.cys-search,
+.cys-select__trigger { background-color: var(--cys-surface) !important; }
+.cys-select__menu { background-color: var(--cys-surface-alt) !important; }
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 960px) {
@@ -499,4 +570,23 @@
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+}
+.cys-alert {
+  padding: 12px 16px;
+  border-radius: var(--cys-radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+  border: 1px solid;
+}
+
+.cys-alert--success {
+  background: var(--cys-green-soft);
+  border-color: var(--cys-green-border);
+  color: var(--cys-green);
+}
+
+.cys-alert--error {
+  background: var(--cys-red-soft);
+  border-color: var(--cys-red-border);
+  color: var(--cys-red);
 }
