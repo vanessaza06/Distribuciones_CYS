@@ -266,7 +266,7 @@ class DetalleProducto(models.Model):
         max_length=100, unique=True, db_column="codigo_barras"
     )
     fecha_vencimiento = models.DateField(db_column="fecha_vencimiento")
-    descripcion = models.TextField(db_column="descripcion")
+    descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
     marca = models.ForeignKey(
         "Marca",
         on_delete=models.CASCADE,
