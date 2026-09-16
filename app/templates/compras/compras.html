@@ -258,7 +258,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
                           <li>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#detalleCompra{{ compra.id }}">
+                            <a class="dropdown-item" href="{% url 'detalle_compra' compra.id %}">
                               <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
                             </a>
                           </li>
