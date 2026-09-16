@@ -35,7 +35,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  inicializarGraficos();
+  // Protegido: si inicializarGraficos() no existe todavía en ningún archivo
+  // cargado, esto ya NO detiene la ejecución del resto del script.
+  if (typeof inicializarGraficos === 'function') {
+    inicializarGraficos();
+  } else {
+    console.warn('inicializarGraficos() no está definida — se omite (revisar si falta cargar su <script>).');
+  }
+});
+
+// ═══════ INICIALIZACIÓN INDEPENDIENTE DEL DROPDOWN DE CATEGORÍA ═══════
+// En su propio listener para que NUNCA dependa de si otras funciones
+// (como inicializarGraficos) existen o fallan.
+document.addEventListener('DOMContentLoaded', function () {
   inicializarDropdownCategorias();
 });
 
@@ -135,3 +147,67 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// ═══════ DROPDOWN CATEGORÍA (modal Nuevo Producto) ═══════
+function inicializarDropdownCategorias() {
+  document.querySelectorAll('.crear-cat-item').forEach(item => {
+    item.addEventListener('click', function (e) {
+      e.preventDefault();
+      const valor  = this.dataset.value;
+      const texto  = this.textContent.trim();
+
+      document.getElementById('crear-categoria').value = valor;
+      document.getElementById('crear-categoria-label').textContent = texto;
+    });
+  });
+}
+
+// ═══════ ENVÍO DEL FORMULARIO NUEVO PRODUCTO ═══════
+function enviarCrearProducto() {
+  const nombre           = document.getElementById('crear-nombre').value.trim();
+  const categoria        = document.getElementById('crear-categoria').value;
+  const descripcion      = document.getElementById('crear-descripcion').value.trim();
+  const fechaVencimiento = document.getElementById('crear-fecha-venc').value;
+  const feedback         = document.getElementById('crear-feedback');
+
+  feedback.classList.add('d-none');
+  feedback.innerHTML = '';
+
+  if (!nombre || !categoria || !fechaVencimiento) {
+    feedback.classList.remove('d-none');
+    feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">
+      Completa nombre, categoría y fecha de vencimiento antes de guardar.</div>`;
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('nombre', nombre);
+  formData.append('categoria', categoria);
+  formData.append('descripcion', descripcion);
+  formData.append('fecha_vencimiento', fechaVencimiento);
+  formData.append('next', NEXT_PATH);
+
+  fetch(CREAR_URL, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': CSRF_TOKEN,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        location.reload();
+      } else {
+        feedback.classList.remove('d-none');
+        const mensajes = Object.values(data.errores || {}).flat().join(' ');
+        feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">${mensajes || 'Error al guardar.'}</div>`;
+      }
+    })
+    .catch(err => {
+      console.error('Error creando producto:', err);
+      feedback.classList.remove('d-none');
+      feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">Error de conexión.</div>`;
+    });
+}

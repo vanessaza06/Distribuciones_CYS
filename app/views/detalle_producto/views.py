@@ -31,7 +31,7 @@ def detalle_producto_crear(request, producto_pk):
         else:
             messages.error(request, 'Revisa los datos: ' + str(form.errors))
 
-    return redirect('productos:producto_detalle', pk=producto_pk)
+    return redirect('producto_detalle', pk=producto_pk)
 
 
 @login_required
@@ -49,7 +49,7 @@ def detalle_producto_editar(request, pk):
                 return JsonResponse({'ok': False, 'errores': form.errors}, status=400)
             messages.error(request, 'Revisa los datos del formulario.')
 
-    return redirect('detalle_producto:lista')
+    return redirect('detalle_producto_lista')
 
 
 @login_required

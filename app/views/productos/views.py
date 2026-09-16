@@ -66,15 +66,19 @@ def crear_producto(request):
     is_ajax  = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     next_url = request.POST.get('next') or request.GET.get('next') or 'lista_productos'
 
-    nombre      = request.POST.get('nombre', '').strip()
-    categoria   = request.POST.get('categoria')
-    descripcion = request.POST.get('descripcion', '').strip()
+    # DESPUÉS
+    nombre             = request.POST.get('nombre', '').strip()
+    categoria          = request.POST.get('categoria')
+    descripcion        = request.POST.get('descripcion', '').strip()
+    fecha_vencimiento  = request.POST.get('fecha_vencimiento', '').strip()
 
     errores = {}
     if not nombre:
         errores['nombre'] = ['El nombre es obligatorio.']
     if not categoria:
         errores['categoria'] = ['La categoría es obligatoria.']
+    if not fecha_vencimiento:
+        errores['fecha_vencimiento'] = ['La fecha de vencimiento es obligatoria.']
 
     if errores:
         if is_ajax:
@@ -86,6 +90,7 @@ def crear_producto(request):
         nombre=nombre,
         categoria_id=categoria,
         descripcion=descripcion,
+        fecha_vencimiento=fecha_vencimiento,
     )
 
     messages.success(request, f'✅ Producto "{producto.nombre}" creado correctamente.')
