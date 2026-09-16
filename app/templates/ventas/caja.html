@@ -1,78 +1,90 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Caja — CYS Ltda{% endblock %}
+{% block title %}Estado de Caja — CYS Ltda{% endblock %}
+{% block page_title %}Estado de Caja{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="min-vh-100 d-flex align-items-center justify-content-center py-5">
+<div class="d-flex align-items-center justify-content-center py-5" style="min-height: 80vh;">
 
-  <div class="card shadow-sm border-0 p-4" style="width: 100%; max-width: 380px; border-radius: 16px;">
+  <div class="cys-pos-card p-4 shadow-lg" style="width: 100%; max-width: 440px; border-radius: 20px;">
 
+    <!-- Card Brand Header -->
     <div class="text-center mb-4">
-      <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-           style="width:52px; height:52px; background:#E6F1FB;">
-        <i class="bi bi-cash-register fs-4" style="color:#185FA5;"></i>
+      <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow"
+           style="width:64px; height:64px; background:linear-gradient(135deg, rgba(77,168,218,0.2), rgba(15,59,108,0.8)); border:1px solid rgba(77,168,218,0.4);">
+        <i class="bi bi-cash-register fs-3" style="color:var(--azul-claro,#4DA8DA);"></i>
       </div>
-      <div class="fw-medium fs-5">CYS Ltda</div>
-      <div class="small text-muted">Sistema de Caja</div>
+      <h4 class="fw-bold mb-1" style="color:#ffffff; letter-spacing:0.5px;">CYS Ltda</h4>
+      <div class="small fw-semibold" style="color:var(--texto-muted); text-transform:uppercase; letter-spacing:1px; font-size:.75rem;">Sistema de Control de Caja</div>
     </div>
 
     {% if ultimo_cierre %}
-    <div class="rounded-3 small px-3 py-2 mb-3 d-flex align-items-center gap-2"
-         style="background:#E6F1FB; color:#0C447C;">
-      <i class="bi bi-arrow-repeat"></i>
-      Nuevo turno — la base anterior fue ${{ ultimo_cierre.monto_base_siguiente|floatformat:0 }}
+    <div class="rounded-3 small px-3 py-25 mb-4 d-flex align-items-center gap-2"
+         style="background:rgba(77,168,218,0.12); color:var(--azul-claro,#4DA8DA); border:1px solid rgba(77,168,218,0.25);">
+      <i class="bi bi-arrow-repeat fs-5"></i>
+      <div>
+        <div style="font-size:.68rem; text-transform:uppercase; font-weight:700;">Base previa disponible</div>
+        <div style="font-weight:800; font-family:'Rajdhani',sans-serif; font-size:1.1rem; color:#fff;">${{ ultimo_cierre.monto_base_siguiente|floatformat:0 }}</div>
+      </div>
     </div>
     {% endif %}
 
     {% if hay_cierre_hoy %}
 
       <div class="text-center py-3">
-        <i class="bi bi-lock-fill fs-1 d-block mb-2" style="color:#E24B4A;"></i>
-        <p class="fw-medium mb-1">Caja cerrada</p>
-        <p class="small text-muted mb-3">
-          La caja ya se cerró el día de hoy.<br>
-          Vuelve mañana para iniciar un nuevo turno.
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:50px; height:50px; background:rgba(235,77,75,0.15); color:#ff7675;">
+          <i class="bi bi-lock-fill fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-1" style="color:#ff7675;">Turno de Caja Cerrado</h5>
+        <p class="small text-muted mb-4" style="line-height:1.5;">
+          La caja fue cerrada para el turno de hoy.<br>
+          Para reabrir o realizar operaciones, inicia un nuevo turno.
         </p>
 
         {% if ultimo_cierre %}
-        <div class="text-start rounded-3 p-3 mb-3"
-             style="background:#F1EFE8; border: 0.5px solid #D3D1C7;">
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">Hora de cierre</span>
-            <span>{{ ultimo_cierre.fecha_cierre|date:"H:i" }}</span>
+        <div class="text-start rounded-3 p-3 mb-4"
+             style="background:rgba(10,42,82,0.8); border: 1px solid rgba(77,168,218,0.25);">
+          <div class="d-flex justify-content-between small py-1.5" style="border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span class="text-muted">Hora de Cierre</span>
+            <span class="fw-bold text-white">{{ ultimo_cierre.fecha_cierre|date:"H:i hs" }}</span>
           </div>
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">Total contado</span>
-            <span>${{ ultimo_cierre.total_contado|floatformat:0 }}</span>
+          <div class="d-flex justify-content-between small py-1.5" style="border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span class="text-muted">Total Contado</span>
+            <span class="fw-bold text-white" style="font-family:'Rajdhani',sans-serif;">${{ ultimo_cierre.total_contado|floatformat:0 }}</span>
           </div>
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">Total retirado</span>
-            <span>${{ ultimo_cierre.total_retirado|floatformat:0 }}</span>
+          <div class="d-flex justify-content-between small py-1.5" style="border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span class="text-muted">Total Retirado</span>
+            <span class="fw-bold text-white" style="font-family:'Rajdhani',sans-serif;">${{ ultimo_cierre.total_retirado|floatformat:0 }}</span>
           </div>
-          <div class="d-flex justify-content-between small py-1 fw-medium"
-               style="color:#1D9E75;">
-            <span>Base para mañana</span>
-            <span>${{ ultimo_cierre.monto_base_siguiente|floatformat:0 }}</span>
+          <div class="d-flex justify-content-between small py-1.5 fw-bold" style="color:#2ed573;">
+            <span>Base para Siguiente Turno</span>
+            <span style="font-family:'Rajdhani',sans-serif; font-size:1.05rem;">${{ ultimo_cierre.monto_base_siguiente|floatformat:0 }}</span>
           </div>
         </div>
         {% endif %}
 
-        <p class="small text-muted mb-0">
-          <i class="bi bi-info-circle me-1"></i>
+        <p class="small text-muted mb-0" style="font-size:.78rem;">
+          <i class="bi bi-info-circle me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
           Si necesitas acceso de emergencia, contacta al administrador.
         </p>
       </div>
 
     {% else %}
 
-      <div class="text-center py-2">
-        <i class="bi bi-check-circle-fill fs-1 d-block mb-2" style="color:#1D9E75;"></i>
-        <p class="fw-medium mb-1">Caja lista</p>
-        <p class="small text-muted mb-3">El turno está activo y listo para operar.</p>
-        <a href="{% url 'punto_venta' %}" class="btn w-100 fw-medium"
-           style="background:#185FA5; color:#fff; border-radius:8px;">
-          <i class="bi bi-arrow-right-circle me-2"></i> Ir al punto de venta
+      <div class="text-center py-3">
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px; height:56px; background:rgba(46,213,115,0.15); color:#2ed573;">
+          <i class="bi bi-check-circle-fill fs-2"></i>
+        </div>
+        <h5 class="fw-bold mb-1" style="color:#ffffff;">Turno Activo y Listo</h5>
+        <p class="small text-muted mb-4">El sistema de punto de venta está habilitado para procesar transacciones.</p>
+        <a href="{% url 'punto_venta' %}" class="btn w-100 fw-bold cys-btn-checkout py-2.5">
+          <i class="bi bi-cart-check-fill me-2"></i> Ir al Punto de Venta (POS)
         </a>
       </div>
 
