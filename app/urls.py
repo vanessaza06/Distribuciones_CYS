@@ -155,6 +155,11 @@ urlpatterns = [
     # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
     path(
+        "compras/<int:id>/",
+        compra_views.detalle_compra,
+        name="detalle_compra",
+    ),
+    path(
         "compras/estado/",
         compra_views.cambiar_estado_compra,
         name="cambiar_estado_compra",
