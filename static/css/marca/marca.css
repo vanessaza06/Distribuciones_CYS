@@ -1,6 +1,21 @@
 /* =========================================================
    CYS Licorera — Marcas
    Sistema de diseño: paleta navy oscuro, acentos ámbar
+
+   NOTA IMPORTANTE:
+   Este archivo se carga DESPUÉS de base.css (vía extra_css en
+   marca.html), dentro del layout global de base.html (header,
+   subnav y sidebar fijos + <main class="cys-main">).
+
+   Por eso aquí SOLO deben existir clases que realmente usa
+   marca.html. Antes este archivo traía clases sueltas de otra
+   plantilla (.cys-layout, .cys-sidebar, .cys-topbar, .cys-user,
+   .cys-main, .cys-breadcrumb, .cys-dot) que no se usaban en
+   marca.html pero SÍ existían también en base.css con otro
+   significado. Al cargarse después, pisaban los estilos reales
+   de base.css — en particular el padding-top que compensa el
+   header/subnav fijos — y por eso el encabezado de la página se
+   veía tapado/cortado. Se eliminaron todas esas clases muertas.
    ========================================================= */
 
 /* ---------- Tipografía: Plus Jakarta Sans ---------- */
@@ -15,8 +30,6 @@
 
 :root {
   --cys-bg: #0a1628;
-  --cys-sidebar-bg: #0c1a2e;
-  --cys-topbar-bg: #0c1a2e;
   --cys-surface: #0f2036;
   --cys-surface-alt: #12243c;
   --cys-border: #1d3050;
@@ -39,166 +52,14 @@
   --cys-radius-sm: 8px;
   --cys-radius-md: 12px;
   --cys-radius-lg: 16px;
-  --cys-sidebar-w: 240px;
-  --cys-topbar-h: 68px;
 
   --cys-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-  background: var(--cys-bg);
-  color: var(--cys-text);
-  font-family: "Plus Jakarta Sans", "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 15px;
-}
-
-a { color: inherit; text-decoration: none; }
-ul { list-style: none; margin: 0; padding: 0; }
-button { font-family: inherit; cursor: pointer; }
-
-/* ---------- Layout ---------- */
-
-.cys-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.cys-sidebar {
-  width: var(--cys-sidebar-w);
-  flex-shrink: 0;
-  background: var(--cys-sidebar-bg);
-  border-right: 1px solid var(--cys-border-soft);
-  padding: 24px 12px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  transition: margin-left 0.25s ease;
-}
-
-.cys-content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ---------- Sidebar nav ---------- */
-
-.cys-nav__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: var(--cys-radius-sm);
-  color: var(--cys-text-secondary);
-  font-size: 14.5px;
-  margin-bottom: 4px;
-  border: 1px solid transparent;
-}
-
-.cys-nav__item i { width: 18px; text-align: center; }
-
-.cys-nav__item:hover {
-  background: var(--cys-surface-alt);
-  color: var(--cys-text);
-}
-
-.cys-nav__item--active {
-  background: var(--cys-amber-soft);
-  border-color: rgba(245, 179, 1, 0.35);
-  color: var(--cys-amber);
-  font-weight: 600;
-}
-
-/* ---------- Topbar ---------- */
-
-.cys-topbar {
-  height: var(--cys-topbar-h);
-  background: var(--cys-topbar-bg);
-  border-bottom: 1px solid var(--cys-border-soft);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.cys-icon-btn {
-  background: transparent;
-  border: none;
-  color: var(--cys-text-secondary);
-  font-size: 18px;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--cys-radius-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.cys-icon-btn:hover { background: var(--cys-surface-alt); color: var(--cys-text); }
-
-.cys-topbar__right { display: flex; align-items: center; gap: 14px; }
-
-.cys-dot {
-  position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--cys-amber);
-  border: 2px solid var(--cys-topbar-bg);
-}
-
-.cys-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: transparent;
-  border: none;
-  color: var(--cys-text);
-  padding: 6px 10px;
-  border-radius: var(--cys-radius-sm);
-}
-
-.cys-user:hover { background: var(--cys-surface-alt); }
-
-.cys-user__avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--cys-blue);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-}
-
-.cys-user__name { font-size: 14px; font-weight: 500; }
-.cys-user__chevron { font-size: 11px; color: var(--cys-text-muted); }
-
-/* ---------- Main ---------- */
-
-.cys-main {
-  padding: 28px 32px 40px;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-}
+/* Nota: el reset global (*, html, body, a, ul, button) ya lo hace
+   base.css. Se quitó de aquí para no repetir/entrar en conflicto. */
 
 /* ---------- Page header ---------- */
-/* scroll-margin-top: evita que este bloque quede tapado por
-   barras sticky (topbar + barra secundaria) si algo hace
-   scroll/anchor hacia esta sección al cargar la página. */
 
 .cys-page-header {
   display: flex;
@@ -207,7 +68,6 @@ button { font-family: inherit; cursor: pointer; }
   gap: 16px;
   margin-bottom: 24px;
   flex-wrap: wrap;
-  scroll-margin-top: calc(var(--cys-topbar-h) + 56px);
 }
 
 .cys-page-header__left { display: flex; align-items: center; gap: 16px; }
@@ -226,15 +86,27 @@ button { font-family: inherit; cursor: pointer; }
   flex-shrink: 0;
 }
 
-.cys-page-title { margin: 0; font-size: 26px; font-weight: 700; }
+.cys-page-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--cys-text); }
 .cys-page-subtitle { margin: 2px 0 0; color: var(--cys-text-secondary); font-size: 14px; }
 
-.cys-page-header__right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.cys-page-header__right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 
-.cys-breadcrumb { margin: 0; color: var(--cys-text-muted); font-size: 13px; display: flex; align-items: center; gap: 6px; }
-.cys-breadcrumb i { font-size: 10px; }
+/* ---------- Botones propios de esta página ---------- */
 
-/* ---------- Buttons ---------- */
+.cys-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--cys-text-secondary);
+  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--cys-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cys-icon-btn:hover { background: var(--cys-surface-alt); color: var(--cys-text); }
 
 .cys-btn {
   display: inline-flex;
@@ -440,6 +312,7 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
   gap: 7px;
   font-size: 13.5px;
+  color: var(--cys-text);
 }
 
 .cys-status::before {
@@ -558,7 +431,7 @@ button { font-family: inherit; cursor: pointer; }
   border-bottom: 1px solid var(--cys-border-soft);
 }
 
-.cys-modal__header h2 { margin: 0; font-size: 17px; }
+.cys-modal__header h2 { margin: 0; font-size: 17px; color: var(--cys-text); }
 
 .cys-modal__body { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
 
@@ -620,14 +493,6 @@ button { font-family: inherit; cursor: pointer; }
 
 @media (max-width: 960px) {
   .cys-stats { grid-template-columns: 1fr; }
-  .cys-sidebar {
-    position: fixed;
-    left: 0;
-    z-index: 30;
-    margin-left: calc(-1 * var(--cys-sidebar-w));
-    box-shadow: var(--cys-shadow);
-  }
-  .cys-layout--sidebar-open .cys-sidebar { margin-left: 0; }
   .cys-page-header { flex-direction: column; align-items: flex-start; }
   .cys-page-header__right { align-items: flex-start; }
 }

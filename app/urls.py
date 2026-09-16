@@ -2,7 +2,7 @@ from django.urls import path
 from django.shortcuts import render
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
-from app.views.marca import views as mar_views  # type: ignore
+from app.views.marcas import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views

@@ -1,8 +1,8 @@
 /* =========================================================
    CYS Licorera — Marcas
    Lógica de interfaz. Trabaja sobre un arreglo local `marcas`,
-   pero AHORA se inicializa leyendo las filas que Django ya
-   renderizó en el HTML, en vez de arrancar vacío y borrarlas.
+   pero se inicializa leyendo las filas que Django ya renderizó
+   en el HTML, en vez de arrancar vacío y borrarlas.
    Cuando conectes al backend con fetch/AJAX, reemplaza
    `leerMarcasIniciales()` por la respuesta del servidor.
    ========================================================= */
@@ -29,12 +29,19 @@
   // Django (data-id, data-nombre, data-descripcion, data-productos,
   // data-activa en el botón de editar de cada fila), para no
   // perder los datos reales del backend al primer render().
+  //
+  // OJO: el botón de editar que renderiza Django tiene la clase
+  // "cys-action-btn--edit" (ver marca.html). Antes aquí se
+  // buscaba ".cys-row-action-btn--edit" (con "row-"), que es la
+  // clase que usa crearFila() para las filas que arma el propio
+  // JS, no la que trae el HTML del servidor. Por eso las marcas
+  // iniciales nunca se leían. Se corrigió el selector.
   // ---------------------------------------------------------
   function leerMarcasIniciales() {
     const filas = tableBody.querySelectorAll("tr[data-id]");
     const datos = [];
     filas.forEach((fila) => {
-      const btnEditar = fila.querySelector(".cys-row-action-btn--edit");
+      const btnEditar = fila.querySelector(".cys-action-btn--edit");
       if (!btnEditar) return;
       datos.push({
         id: btnEditar.dataset.id,
