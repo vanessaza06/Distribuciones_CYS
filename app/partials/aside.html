@@ -94,34 +94,37 @@
           <span>Tablero</span>
         </a>
 
-        <!-- VENTAS -->
-        <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex {% block nav_ventas %}{% endblock %}">
-          <a href="{% url 'ventas' %}"
-             class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
-             data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ventas">
-            <i class="bi bi-receipt"></i>
-            <span class="flex-grow-1">Ventas</span>
-          </a>
-          <button id="btnVentas"
-                  onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuVentas')"
-                  class="sb-submenu-toggle">
-            <i class="bi bi-chevron-down cys-chevron"></i>
-          </button>
-        </div>
-        <div class="cys-sb-submenu" id="submenuVentas">
-          <a href="{% url 'ventas' %}" class="cys-sb-sublink">
-            <i class="bi bi-cart-check"></i> Punto de Venta
-          </a>
-          <a href="{% url 'ventas_dia' %}" class="cys-sb-sublink">
-            <i class="bi bi-calendar-event"></i> Ventas del Día
-          </a>
-          <a href="{% url 'caja' %}" class="cys-sb-sublink">
-            <i class="bi bi-cash-register"></i> Caja
-          </a>
-          <a href="#" class="cys-sb-sublink">
-            <i class="bi bi-wallet2"></i> Métodos de Pago
-          </a>
-        </div>
+        <!-- VENTAS (PUNTO DE VENTA) -->
+        <a href="{% url 'ventas' %}"
+           class="cys-sb-link {% block nav_ventas %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ventas">
+          <i class="bi bi-cart-check"></i>
+          <span>Ventas</span>
+        </a>
+
+        <!-- VENTAS DEL DÍA -->
+        <a href="{% url 'ventas_dia' %}"
+           class="cys-sb-link {% block nav_ventas_dia %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ventas del Día">
+          <i class="bi bi-calendar-event"></i>
+          <span>Ventas del Día</span>
+        </a>
+
+        <!-- CAJA -->
+        <a href="{% url 'caja' %}"
+           class="cys-sb-link {% block nav_caja %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Caja">
+          <i class="bi bi-cash-register"></i>
+          <span>Caja</span>
+        </a>
+
+        <!-- MÉTODOS DE PAGO -->
+        <a href="#"
+           class="cys-sb-link {% block nav_metodos_pago %}{% endblock %}"
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Métodos de Pago">
+          <i class="bi bi-wallet2"></i>
+          <span>Métodos de Pago</span>
+        </a>
 
         <!-- DEVOLUCIONES -->
         <a href="{% url 'lista_devoluciones' %}"

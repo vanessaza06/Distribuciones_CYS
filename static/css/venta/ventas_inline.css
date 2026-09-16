@@ -257,9 +257,305 @@
 }
 
 /* ────────────────────────────────────────────────────────────────
-   RESPONSIVIDAD EN TABLA
+   REDISEÑO POS PREMIUM — Clases de Alta Fidelidad
    ──────────────────────────────────────────────────────────────── */
 
-@media print {
-  /* Estilos para impresión si es necesario */
+/* Barra de Estado POS */
+.cys-pos-header-bar {
+  background: linear-gradient(135deg, rgba(15, 59, 108, 0.95), rgba(10, 42, 82, 0.95));
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-left: 4px solid var(--azul-claro, #4da8da);
+  border-radius: 14px;
+  padding: 1.1rem 1.35rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
 }
+
+.cys-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.cys-status-pill--abierta {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.4);
+  box-shadow: 0 0 12px rgba(46, 213, 115, 0.2);
+}
+
+.cys-status-pill--cerrada {
+  background: rgba(235, 77, 75, 0.15);
+  color: #ff7675;
+  border: 1px solid rgba(235, 77, 75, 0.4);
+  box-shadow: 0 0 12px rgba(235, 77, 75, 0.2);
+}
+
+.cys-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: cysPulse 1.8s infinite;
+}
+
+@keyframes cysPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(46, 213, 115, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+}
+
+/* Tarjeta POS Contenedora */
+.cys-pos-card {
+  background: var(--fondo-card, #0F3B6C);
+  border: 1px solid rgba(77, 168, 218, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.cys-pos-card-header {
+  padding: 1.1rem 1.35rem 0.8rem;
+  border-bottom: 1px solid rgba(77, 168, 218, 0.2);
+  background: rgba(10, 42, 82, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cys-pos-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--azul-claro, #4DA8DA);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Campo de Búsqueda POS */
+.cys-search-group {
+  position: relative;
+}
+
+.cys-search-group .bi-search {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-muted, rgba(232,237,242,.45));
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.cys-search-input {
+  padding-left: 42px !important;
+  background: rgba(10, 42, 82, 0.8) !important;
+  border: 1px solid rgba(77, 168, 218, 0.3) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.cys-search-input:focus {
+  border-color: var(--azul-claro, #4DA8DA) !important;
+  box-shadow: 0 0 0 3px rgba(77, 168, 218, 0.2) !important;
+  background: rgba(10, 42, 82, 0.95) !important;
+}
+
+/* Tarjetas de Categoría */
+.cys-cat-card-item {
+  background: linear-gradient(145deg, rgba(10, 42, 82, 0.85), rgba(15, 59, 108, 0.85));
+  border: 1px solid rgba(77, 168, 218, 0.2);
+  border-radius: 12px;
+  padding: 1.1rem 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  height: 100%;
+  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cys-cat-card-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--azul-claro, #4DA8DA);
+  box-shadow: 0 10px 25px rgba(77, 168, 218, 0.18);
+  background: linear-gradient(145deg, rgba(15, 59, 108, 0.95), rgba(18, 71, 133, 0.95));
+}
+
+.cys-cat-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(77, 168, 218, 0.12);
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.6rem;
+  color: var(--azul-claro, #4DA8DA);
+  font-size: 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.cys-cat-card-item:hover .cys-cat-icon-circle {
+  background: var(--azul-claro, #4DA8DA);
+  color: #0A2A52;
+  transform: scale(1.08);
+}
+
+/* Tarjetas de Producto */
+.cys-prod-card-item {
+  background: rgba(10, 42, 82, 0.75);
+  border: 1px solid rgba(77, 168, 218, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  height: 100%;
+  transition: all 0.22s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cys-prod-card-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--azul-claro, #4DA8DA);
+  box-shadow: 0 8px 24px rgba(77, 168, 218, 0.16);
+  background: rgba(15, 59, 108, 0.9);
+}
+
+.cys-stock-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cys-stock-badge--ok {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.35);
+}
+
+.cys-stock-badge--low {
+  background: rgba(255, 171, 0, 0.15);
+  color: #ffab00;
+  border: 1px solid rgba(255, 171, 0, 0.35);
+}
+
+.cys-stock-badge--empty {
+  background: rgba(235, 77, 75, 0.15);
+  color: #ff7675;
+  border: 1px solid rgba(235, 77, 75, 0.35);
+}
+
+/* Items del Carrito */
+.cys-cart-item {
+  background: rgba(10, 42, 82, 0.65);
+  border: 1px solid rgba(77, 168, 218, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.cys-cart-item:hover {
+  border-color: rgba(77, 168, 218, 0.4);
+  background: rgba(10, 42, 82, 0.85);
+}
+
+.cys-qty-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+  background: rgba(77, 168, 218, 0.15);
+  border: 1px solid rgba(77, 168, 218, 0.3);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.cys-qty-btn:hover {
+  background: var(--azul-claro, #4DA8DA);
+  color: #0A2A52;
+  border-color: var(--azul-claro, #4DA8DA);
+}
+
+/* Panel de Desglose de Pagos y Calculadora de Cambio */
+.cys-payment-panel {
+  background: rgba(10, 42, 82, 0.7);
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-radius: 12px;
+  padding: 1.1rem;
+}
+
+.cys-change-indicator {
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-family: 'Rajdhani', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.cys-change-indicator--ok {
+  background: rgba(46, 213, 115, 0.12);
+  border: 1px solid rgba(46, 213, 115, 0.3);
+  color: #2ed573;
+}
+
+.cys-change-indicator--pending {
+  background: rgba(255, 171, 0, 0.12);
+  border: 1px solid rgba(255, 171, 0, 0.3);
+  color: #ffab00;
+}
+
+/* Botones Principales POS */
+.cys-btn-checkout {
+  background: linear-gradient(135deg, var(--azul-claro, #4DA8DA), #2979a8);
+  color: #0A2A52 !important;
+  font-weight: 800 !important;
+  border-radius: 12px !important;
+  padding: 0.75rem 1.2rem !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.04em !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(77, 168, 218, 0.3);
+  transition: all 0.2s ease !important;
+}
+
+.cys-btn-checkout:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(77, 168, 218, 0.45);
+  color: #051833 !important;
+}
+
+.cys-btn-checkout:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
