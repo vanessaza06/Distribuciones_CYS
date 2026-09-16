@@ -5,7 +5,7 @@ from app.models import Marca  # type: ignore
 
 def lista_marcas(request):
     marcas = Marca.objects.all().order_by('nombre')
-    return render(request, 'marca/marca.html', {'marcas': marcas})
+    return render(request, 'marcas/marcas.html', {'marcas': marcas})
 
 
 def crear_marca(request):
