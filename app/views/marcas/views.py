@@ -1,11 +1,45 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
+from django.shortcuts import render, redirect, get_object_or_404
 from app.models import Marca  # type: ignore
 
 
 def lista_marcas(request):
-    marcas = Marca.objects.all().order_by('nombre')
-    return render(request, 'marca/marca.html', {'marcas': marcas})
+    query = request.GET.get('q', '').strip()
+    estado_filtro = request.GET.get('estado', 'todos')
+
+    marcas_todas = Marca.objects.all()
+    total_marcas = marcas_todas.count()
+    total_activas = marcas_todas.filter(estado='activo').count()
+    total_inactivas = marcas_todas.filter(estado='inactivo').count()
+
+    marcas = marcas_todas.annotate(
+        total_productos=Count('productos')
+    ).order_by('nombre')
+
+    if query:
+        marcas = marcas.filter(
+            Q(nombre__icontains=query) | Q(descripcion__icontains=query)
+        )
+
+    if estado_filtro in ('activo', 'inactivo'):
+        marcas = marcas.filter(estado=estado_filtro)
+
+    paginator = Paginator(marcas, 10)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'marcas/marcas.html', {
+        'marcas': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'total_marcas': total_marcas,
+        'total_activas': total_activas,
+        'total_inactivas': total_inactivas,
+        'query': query,
+        'estado_filtro': estado_filtro,
+    })
 
 
 def crear_marca(request):

@@ -2,7 +2,7 @@ from django.urls import path
 from django.shortcuts import render
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
-from app.views.marca import views as mar_views  # type: ignore
+from app.views.marcas import views as mar_views  # type: ignore
 from app.views.productos import views as prod_views
 from app.views.presentaciones import views as pres_views
 from app.views.lotes import views as lot_views
@@ -40,17 +40,19 @@ urlpatterns = [
     path("ventas/devoluciones/registrar/", ventas_views.registrar_devolucion, name="registrar_devolucion"),
     path("ventas/devoluciones/comprobante/<int:pk>/", ventas_views.comprobante_devolucion, name="comprobante_devolucion"),
 
-    # CATEGORIAS
+      # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
-    path("crear/", cat_views.categoria_crear, name="crear"),
-    path("editar/<int:pk>/", cat_views.categoria_editar, name="editar"),
-    path("eliminar/<int:pk>/", cat_views.categoria_eliminar, name="eliminar"),
+    path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
-        "categorias/<int:pk>/toggle/",
+        "categorias/editar/<int:pk>/",
+        cat_views.categoria_editar,
+        name="categoria_editar",
+    ),
+    path(
+        "categorias/toggle/<int:pk>/",
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
     ),
-
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
     path("proveedores/crear/", prov_views.crear_proveedor, name="crear_proveedor"),
@@ -152,6 +154,11 @@ urlpatterns = [
 
     # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
+    path(
+        "compras/<int:id>/",
+        compra_views.detalle_compra,
+        name="detalle_compra",
+    ),
     path(
         "compras/estado/",
         compra_views.cambiar_estado_compra,

@@ -42,7 +42,7 @@
   <div class="cys-sb-body">
 
     <!-- USUARIO -->
-    <div class="cys-sb-user-wrap" id="userHoverWrapper">
+    <div class="cys-sb-user-wrap {% if request.session.usuario_rol == 'admin' or request.session.usuario_rol == 'cajero' %}cys-sb-user-wrap--has-usuarios{% endif %}" id="userHoverWrapper">
       <div class="cys-sb-user-row">
         <a href="{% url 'perfil_pagina' %}"
            class="cys-sb-user-info-btn"
@@ -74,11 +74,12 @@
       </div>
 
       {% if request.session.usuario_rol == 'admin' or request.session.usuario_rol == 'cajero' %}
-      <div class="cys-sb-user-drop" id="userDrop">
-        <a href="{% url 'usuario' %}" class="cys-sb-user-drop-link">
-          <i class="bi bi-people-fill"></i> Lista de Usuarios
-        </a>
-      </div>
+      <a href="{% url 'usuario' %}"
+         class="cys-sb-link--usuarios"
+         data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Lista de Usuarios">
+        <i class="bi bi-people-fill"></i>
+        <span>Lista de Usuarios</span>
+      </a>
       {% endif %}
     </div>
 
@@ -134,92 +135,74 @@
           <span>Devoluciones</span>
         </a>
 
-        <!--REPORTES-->
+        <!-- REPORTES -->
         <a href="{% url 'reportes_home' %}"
-      class="cys-sb-link"
-    data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Reportes">
-    <i class="bi bi-bar-chart-fill"></i>
-       <span>Reportes</span>
-    </a>
-
-
-            <!-- PRODUCTOS -->
-<a href="{% url 'lista_productos' %}"
-   class="cys-sb-link"
-   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
-  <i class="bi bi-box-seam-fill"></i>
-  <span>Productos</span>
-</a>
-
-<!-- Submenú Inventario -->
-<a href="{% url 'gestion_stock' %}" class="cys-sb-sublink {% block nav_stock %}{% endblock %}">
-  <i class="bi bi-layers"></i> Stock & Productos
-</a>
-
-
-        <!-- CATEGORÍAS -->
-        <a href="{% url 'categorias_lista' %}"
            class="cys-sb-link"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Categorías">
-          <i class="bi bi-tags-fill"></i>
-          <span>Categorías</span>
+           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Reportes">
+          <i class="bi bi-bar-chart-fill"></i>
+          <span>Reportes</span>
         </a>
-
-        <!-- DETALLE DE PRODUCTO -->
-        <a href="{% url 'detalle_producto_lista' %}"
-          class="cys-sb-link"
-          data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle de Producto">
-          <i class="bi bi-box-seam"></i>
-          <span>Detalle de Producto</span>
-        </a>
-
 
         <!-- INVENTARIO -->
-        <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
-          <a href="#"
-             class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
-             data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Inventario">
-            <i class="bi bi-boxes"></i>
-            <span class="flex-grow-1">Inventario</span>
-          </a>
-          <button id="btnInventario"
-                  onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuInventario')"
-                  class="sb-submenu-toggle">
-            <i class="bi bi-chevron-down cys-chevron"></i>
-          </button>
-        </div>
-        <div class="cys-sb-submenu" id="submenuInventario">
+        <div class="cys-sb-inventario-wrap">
+          <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
+            <a href="#"
+               class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Inventario">
+              <i class="bi bi-boxes"></i>
+              <span class="flex-grow-1">Inventario</span>
+            </a>
+            <button id="btnInventario"
+                    onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuInventario')"
+                    class="sb-submenu-toggle">
+              <i class="bi bi-chevron-down cys-chevron"></i>
+            </button>
+          </div>
+          <div class="cys-sb-submenu" id="submenuInventario">
 
-          <a href="{% url 'lista_productos' %}"
-             class="cys-sb-sublink {% block nav_productos %}{% endblock %}">
-            <i class="bi bi-box-seam-fill"></i> Productos
-          </a>
+            <a href="{% url 'lista_productos' %}"
+               class="cys-sb-sublink {% block nav_productos %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
+              <i class="bi bi-box-seam-fill"></i> Productos
+            </a>
 
-          <a href="{% url 'categorias_lista' %}"
-             class="cys-sb-sublink {% block nav_categorias %}{% endblock %}">
-            <i class="bi bi-tags-fill"></i> Categorías
-          </a>
+            <a href="{% url 'gestion_stock' %}"
+               class="cys-sb-sublink {% block nav_stock %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Stock & Productos">
+              <i class="bi bi-layers"></i> Stock & Productos
+            </a>
 
-          <a href="{% url 'detalle_producto_lista' %}"
-             class="cys-sb-sublink {% block nav_detalle_prod %}{% endblock %}">
-            <i class="bi bi-box-seam"></i> Detalle de Producto
-          </a>
+            <a href="{% url 'categorias_lista' %}"
+               class="cys-sb-sublink {% block nav_categorias %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Categorías">
+              <i class="bi bi-tags-fill"></i> Categorías
+            </a>
 
-          <a href="{% url 'lista_marcas' %}"
-             class="cys-sb-sublink {% block nav_marcas %}{% endblock %}">
-            <i class="bi bi-tag-fill"></i> Marcas
-          </a>
+            <a href="{% url 'detalle_producto_lista' %}"
+               class="cys-sb-sublink {% block nav_detalle_prod %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle de Producto">
+              <i class="bi bi-box-seam"></i> Detalle de Producto
+            </a>
 
-          <a href="{% url 'bodega_home' %}"
-             class="cys-sb-sublink {% block nav_bodega %}{% endblock %}">
-            <i class="bi bi-building-fill"></i> Bodega
-          </a>
+            <a href="{% url 'lista_marcas' %}"
+               class="cys-sb-sublink {% block nav_marcas %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Marcas">
+              <i class="bi bi-tag-fill"></i> Marcas
+            </a>
 
-          <a href="{% url 'lote_list' %}"
-             class="cys-sb-sublink {% block nav_lotes %}{% endblock %}">
-            <i class="bi bi-tag-fill"></i> Lotes
-          </a>
+            <a href="{% url 'bodega_home' %}"
+               class="cys-sb-sublink {% block nav_bodega %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Bodega">
+              <i class="bi bi-building-fill"></i> Bodega
+            </a>
 
+            <a href="{% url 'lote_list' %}"
+               class="cys-sb-sublink {% block nav_lotes %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Lotes">
+              <i class="bi bi-tag-fill"></i> Lotes
+            </a>
+
+          </div>
         </div>
 
         <!-- PROVEEDORES -->
@@ -283,7 +266,7 @@
     <hr class="cys-sb-divider">
 
     <a href="#"
-       class="cys-sb-link cys-sb-link--config"
+       class="cys-sb-link cys-sb-link--ayuda"
        data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ayuda">
       <i class="bi bi-question-circle-fill"></i>
       <span>Ayuda</span>
@@ -307,5 +290,30 @@
 
   </div>
 </div>
+
+<!-- Overlay animación de cierre de sesión -->
+<div id="cysLogoutOverlay" class="cys-logout-overlay">
+  <div class="cys-logout-box">
+    <div class="cys-logout-spinner"></div>
+    <div class="cys-logout-text">Cerrando sesión...</div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var logoutLink = document.querySelector('.cys-sb-link--logout');
+  var overlay = document.getElementById('cysLogoutOverlay');
+  if (logoutLink && overlay) {
+    logoutLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      var destino = logoutLink.getAttribute('href');
+      overlay.classList.add('activo');
+      setTimeout(function () {
+        window.location.href = destino;
+      }, 600);
+    });
+  }
+});
+</script>
 
 <script src="{% static 'js/cuerpo/aside.js' %}" defer></script>

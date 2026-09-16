@@ -268,3 +268,35 @@ def registrar_pago_compra(request, id=None):
         f'Saldo restante: ${compra.saldo:,.0f}.'
     )
     return redirect('lista_compras')
+
+
+# ── DETALLE DE UNA COMPRA ──────────────────────────────────────────────────────
+@login_required
+def detalle_compra(request, id):
+    """
+    Muestra el detalle completo de una compra específica.
+    """
+    compra = get_object_or_404(Compra, pk=id)
+
+    # Obtener el primer detalle de compra asociado
+    primer_detalle = compra.detalles.first()
+
+    # Asignar propiedades dinámicas para el template
+    if primer_detalle:
+        compra.cantidad = primer_detalle.cantidad
+        compra.precio_unitario = primer_detalle.precio_unitario
+        compra.total = primer_detalle.subtotal_compra or (Decimal(str(primer_detalle.cantidad)) * primer_detalle.precio_unitario)
+        compra.monto_pagado = compra.valor - compra.saldo
+        compra.numero_lote = primer_detalle.numero_lote
+        compra.producto = primer_detalle.producto
+
+    context = {
+        'compra': compra,
+        'proveedor': compra.proveedor,
+        'breadcrumb_items': [
+            {'nombre': 'Compras', 'url': reverse('lista_compras')},
+            {'nombre': f'Compra #{compra.codigo_compra}', 'url': None},
+        ],
+    }
+
+    return render(request, 'compras/detalle_compra.html', context)
