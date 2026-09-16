@@ -40,17 +40,19 @@ urlpatterns = [
     path("ventas/devoluciones/registrar/", ventas_views.registrar_devolucion, name="registrar_devolucion"),
     path("ventas/devoluciones/comprobante/<int:pk>/", ventas_views.comprobante_devolucion, name="comprobante_devolucion"),
 
-    # CATEGORIAS
+      # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
-    path("crear/", cat_views.categoria_crear, name="crear"),
-    path("editar/<int:pk>/", cat_views.categoria_editar, name="editar"),
-    path("eliminar/<int:pk>/", cat_views.categoria_eliminar, name="eliminar"),
+    path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
-        "categorias/<int:pk>/toggle/",
+        "categorias/editar/<int:pk>/",
+        cat_views.categoria_editar,
+        name="categoria_editar",
+    ),
+    path(
+        "categorias/toggle/<int:pk>/",
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
     ),
-
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
     path("proveedores/crear/", prov_views.crear_proveedor, name="crear_proveedor"),
