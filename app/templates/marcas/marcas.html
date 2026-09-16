@@ -23,12 +23,18 @@
     </div>
 
     <div class="cys-page-header__right">
-      <button class="cys-btn cys-btn--primary" id="btnNuevaMarca">
+      <button class="cys-btn cys-btn--primary" id="btnNuevaMarca" type="button">
         <i class="bi bi-plus-lg"></i>
         Nueva marca
       </button>
     </div>
   </section>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="cys-alert cys-alert--{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
 
   <!-- Tarjetas de resumen -->
   <section class="cys-stats" id="cysStats">
@@ -36,7 +42,7 @@
       <div class="cys-stat-card__icon cys-stat-card__icon--tag"><i class="bi bi-tag"></i></div>
       <div class="cys-stat-card__body">
         <p class="cys-stat-card__label">Total de marcas</p>
-        <p class="cys-stat-card__value" id="statTotal">{{ total_marcas|default:"0" }}</p>
+        <p class="cys-stat-card__value">{{ total_marcas }}</p>
       </div>
       <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
     </article>
@@ -45,7 +51,7 @@
       <div class="cys-stat-card__icon cys-stat-card__icon--active"><i class="bi bi-circle-fill"></i></div>
       <div class="cys-stat-card__body">
         <p class="cys-stat-card__label">Marcas activas</p>
-        <p class="cys-stat-card__value cys-stat-card__value--green" id="statActivas">{{ total_activas|default:"0" }}</p>
+        <p class="cys-stat-card__value cys-stat-card__value--green">{{ total_activas }}</p>
       </div>
       <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
     </article>
@@ -54,31 +60,36 @@
       <div class="cys-stat-card__icon cys-stat-card__icon--inactive"><i class="bi bi-circle-fill"></i></div>
       <div class="cys-stat-card__body">
         <p class="cys-stat-card__label">Marcas inactivas</p>
-        <p class="cys-stat-card__value cys-stat-card__value--red" id="statInactivas">{{ total_inactivas|default:"0" }}</p>
+        <p class="cys-stat-card__value cys-stat-card__value--red">{{ total_inactivas }}</p>
       </div>
       <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
     </article>
   </section>
 
-  <!-- Búsqueda y filtros -->
-  <section class="cys-toolbar">
+  <!-- Búsqueda y filtros (GET real al servidor) -->
+  <form class="cys-toolbar" id="cysFiltroForm" method="get">
     <div class="cys-search">
       <i class="bi bi-search"></i>
-      <input type="text" id="inputBuscar" placeholder="Buscar marca...">
+      <input type="text" id="inputBuscar" name="q" placeholder="Buscar marca..." value="{{ query }}">
     </div>
 
     <div class="cys-select" id="cysEstadoSelect">
       <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
-        <span id="cysEstadoLabel">Todos los estados</span>
+        <span id="cysEstadoLabel">
+          {% if estado_filtro == "activo" %}Activa
+          {% elif estado_filtro == "inactivo" %}Inactiva
+          {% else %}Todos los estados{% endif %}
+        </span>
         <i class="bi bi-chevron-down"></i>
       </button>
       <ul class="cys-select__menu" id="cysEstadoMenu">
         <li data-value="todos">Todos los estados</li>
-        <li data-value="activa">Activa</li>
-        <li data-value="inactiva">Inactiva</li>
+        <li data-value="activo">Activa</li>
+        <li data-value="inactivo">Inactiva</li>
       </ul>
+      <input type="hidden" name="estado" id="fieldEstadoFiltro" value="{{ estado_filtro }}">
     </div>
-  </section>
+  </form>
 
   <!-- Tabla -->
   <section class="cys-table-card {% if not marcas %}cys-table-card--empty{% endif %}" id="cysTableCard">
@@ -95,13 +106,13 @@
       </thead>
       <tbody id="cysTableBody">
         {% for marca in marcas %}
-        <tr data-id="{{ marca.id }}">
-          <td class="cys-col-num">{{ forloop.counter }}</td>
+        <tr data-id="{{ marca.codigo_marca }}">
+          <td class="cys-col-num">{{ page_obj.start_index|add:forloop.counter0 }}</td>
           <td class="cys-marca-name">{{ marca.nombre }}</td>
           <td class="cys-marca-desc">{{ marca.descripcion|default:"—" }}</td>
-          <td class="cys-col-center">{{ marca.total_productos|default:"0" }}</td>
+          <td class="cys-col-center">{{ marca.total_productos }}</td>
           <td>
-            {% if marca.activa %}
+            {% if marca.estado == "activo" %}
               <span class="cys-status">Activa</span>
             {% else %}
               <span class="cys-status cys-status--inactiva">Inactiva</span>
@@ -109,15 +120,14 @@
           </td>
           <td>
             <div class="cys-row-actions">
-              <button class="cys-action-btn cys-action-btn--edit" title="Editar"
-                      data-id="{{ marca.id }}" data-nombre="{{ marca.nombre }}"
+              <button class="cys-action-btn cys-action-btn--edit" type="button" title="Editar"
+                      data-id="{{ marca.codigo_marca }}" data-nombre="{{ marca.nombre }}"
                       data-descripcion="{{ marca.descripcion }}"
-                      data-productos="{{ marca.total_productos|default:'0' }}"
-                      data-activa="{{ marca.activa|yesno:'true,false' }}">
+                      data-estado="{{ marca.estado }}">
                 <i class="bi bi-pencil"></i>
               </button>
-              <button class="cys-action-btn cys-action-btn--delete" title="Eliminar"
-                      data-id="{{ marca.id }}" data-nombre="{{ marca.nombre }}">
+              <button class="cys-action-btn cys-action-btn--delete" type="button" title="Eliminar"
+                      data-id="{{ marca.codigo_marca }}" data-nombre="{{ marca.nombre }}">
                 <i class="bi bi-trash"></i>
               </button>
             </div>
@@ -130,17 +140,40 @@
     <p class="cys-empty" id="cysEmptyState">No hay marcas para mostrar.</p>
   </section>
 
-  <!-- Pie: resumen + paginación -->
+  <!-- Pie: resumen + paginación (Django real) -->
   <section class="cys-table-footer">
-    <p class="cys-table-count" id="cysTableCount">Mostrando {{ marcas|length|default:"0" }} marcas</p>
-    <div class="cys-pagination" id="cysPagination">
-      <button class="cys-page-btn" id="cysPagePrev" aria-label="Página anterior">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-      <div class="cys-page-numbers" id="cysPageNumbers"></div>
-      <button class="cys-page-btn" id="cysPageNext" aria-label="Página siguiente">
-        <i class="bi bi-chevron-right"></i>
-      </button>
+    <p class="cys-table-count">
+      {% if marcas %}
+        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ paginator.count }} marcas
+      {% else %}
+        Mostrando 0 marcas
+      {% endif %}
+    </p>
+    <div class="cys-pagination">
+      {% if page_obj.has_previous %}
+        <a class="cys-page-btn" aria-label="Página anterior"
+           href="?q={{ query }}&estado={{ estado_filtro }}&page={{ page_obj.previous_page_number }}">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      {% else %}
+        <button class="cys-page-btn" disabled aria-label="Página anterior"><i class="bi bi-chevron-left"></i></button>
+      {% endif %}
+
+      <div class="cys-page-numbers">
+        {% for num in paginator.page_range %}
+          <a class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}"
+             href="?q={{ query }}&estado={{ estado_filtro }}&page={{ num }}">{{ num }}</a>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_next %}
+        <a class="cys-page-btn" aria-label="Página siguiente"
+           href="?q={{ query }}&estado={{ estado_filtro }}&page={{ page_obj.next_page_number }}">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      {% else %}
+        <button class="cys-page-btn" disabled aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
+      {% endif %}
     </div>
   </section>
 
@@ -151,12 +184,11 @@
   <div class="cys-modal">
     <header class="cys-modal__header">
       <h2 id="cysModalTitle">Nueva marca</h2>
-      <button class="cys-icon-btn" id="cysModalClose" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <button class="cys-icon-btn" id="cysModalClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
     </header>
 
-    <form class="cys-modal__body" id="cysMarcaForm" method="post">
+    <form class="cys-modal__body" id="cysMarcaForm" method="post" action="{% url 'crear_marca' %}">
       {% csrf_token %}
-      <input type="hidden" id="fieldId" name="id" value="">
 
       <label class="cys-field">
         <span>Nombre de la marca</span>
@@ -171,10 +203,11 @@
       <label class="cys-field cys-field--switch">
         <span>Estado</span>
         <span class="cys-switch">
-          <input type="checkbox" id="fieldEstado" name="activa" checked>
+          <input type="checkbox" id="fieldEstado" checked>
           <span class="cys-switch__track"><span class="cys-switch__thumb"></span></span>
           <span class="cys-switch__label" id="fieldEstadoLabel">Activa</span>
         </span>
+        <input type="hidden" id="fieldEstadoValue" name="estado" value="activo">
       </label>
 
       <footer class="cys-modal__footer">
@@ -190,20 +223,30 @@
   <div class="cys-modal cys-modal--sm">
     <header class="cys-modal__header">
       <h2>Eliminar marca</h2>
-      <button class="cys-icon-btn" id="cysDeleteClose" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <button class="cys-icon-btn" id="cysDeleteClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
     </header>
-    <div class="cys-modal__body">
-      <p class="cys-confirm-text">¿Seguro que deseas eliminar <strong id="cysDeleteName">esta marca</strong>? Esta acción no se puede deshacer.</p>
-      <footer class="cys-modal__footer">
-        <button type="button" class="cys-btn cys-btn--ghost" id="cysDeleteCancel">Cancelar</button>
-        <button type="button" class="cys-btn cys-btn--danger" id="cysDeleteConfirm">Eliminar</button>
-      </footer>
-    </div>
+    <form method="post" id="cysDeleteForm" action="">
+      {% csrf_token %}
+      <div class="cys-modal__body">
+        <p class="cys-confirm-text">¿Seguro que deseas eliminar <strong id="cysDeleteName">esta marca</strong>? Esta acción no se puede deshacer.</p>
+        <footer class="cys-modal__footer">
+          <button type="button" class="cys-btn cys-btn--ghost" id="cysDeleteCancel">Cancelar</button>
+          <button type="submit" class="cys-btn cys-btn--danger">Eliminar</button>
+        </footer>
+      </div>
+    </form>
   </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  window.CYS_URLS = {
+    crear: "{% url 'crear_marca' %}",
+    editarBase: "{% url 'editar_marca' 0 %}".replace('/0/', '/'),
+    eliminarBase: "{% url 'eliminar_marca' 0 %}".replace('/0/', '/'),
+  };
+</script>
 <script src="{% static 'js/marca/marcas.js' %}"></script>
 {% endblock %}

@@ -39,12 +39,6 @@
   color: inherit;
 }
 
-.cys-sb-user-wrap:hover .cys-sb-user-info-btn {
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  border-bottom-color: transparent !important;
-}
-
 /* ============================================================
    AVATAR
    ============================================================ */
@@ -109,48 +103,57 @@
 }
 
 /* ============================================================
-   DROPDOWN HOVER
+   USUARIO — panel "Lista de Usuarios" pegado a Perfil
    ============================================================ */
-.cys-sb-user-drop {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: max-height .25s ease, opacity .2s ease, transform .2s ease;
-  transform: translateY(-4px);
-  transform-origin: top center;
-  border: 1px solid rgba(77,168,218,.13) !important;
-  border-top: none !important;
-  border-radius: 0 0 12px 12px;
-  background: rgba(4,14,28,.58) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  position: relative;
-  z-index: 10;
+.cys-sb-user-wrap--has-usuarios .cys-sb-user-info-btn {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
 }
 
-.cys-sb-user-wrap:hover .cys-sb-user-drop {
-  max-height: 80px;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.cys-sb-user-drop-link {
+.cys-sb-link--usuarios {
   display: flex;
   align-items: center;
   gap: .55rem;
   padding: .7rem 1rem;
   font-size: .82rem;
-  color: rgba(77,168,218,.65);
+  font-weight: 500;
   text-decoration: none;
+  color: rgba(77,168,218,.75);
+  background: rgba(4,14,28,.58) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(77,168,218,.13) !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px;
   transition: background .18s, color .18s, padding-left .18s;
+  animation: cysUsuariosReveal .35s ease both;
 }
 
-.cys-sb-user-drop-link:hover {
-  background: rgba(77,168,218,.07);
+.cys-sb-link--usuarios i {
+  font-size: .95rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.cys-sb-link--usuarios:hover {
+  background: rgba(77,168,218,.10) !important;
   color: var(--azul-claro);
   padding-left: 1.25rem;
+}
+
+@keyframes cysUsuariosReveal {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    max-height: 80px;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================================
@@ -211,40 +214,6 @@
 }
 
 /* ============================================================
-   AYUDA / CONFIGURACIÓN / CERRAR SESIÓN — más presencia de color,
-   igual en modo expandido y en modo mini (no dependen de .cys-sb-mini)
-   ============================================================ */
-.cys-sb-link--config {
-  color: var(--azul-claro);
-  border-color: rgba(77,168,218,.35);
-  background: rgba(77,168,218,.10);
-  margin-top: .25rem;
-}
-.cys-sb-link--config i {
-  text-shadow: 0 0 10px rgba(77,168,218,.5);
-}
-.cys-sb-link--config:hover {
-  background: rgba(77,168,218,.22);
-  border-color: rgba(77,168,218,.55);
-  color: var(--azul-claro);
-}
-
-.cys-sb-link--logout {
-  color: #ff8a8a;
-  border-color: rgba(232,112,112,.35);
-  background: rgba(232,112,112,.10);
-  margin-top: .25rem;
-}
-.cys-sb-link--logout i {
-  text-shadow: 0 0 10px rgba(232,112,112,.5);
-}
-.cys-sb-link--logout:hover {
-  background: rgba(232,112,112,.22);
-  border-color: rgba(232,112,112,.55);
-  color: #ff8a8a;
-}
-
-/* ============================================================
    SUBMENÚ
    ============================================================ */
 .cys-sb-link--parent { cursor: pointer; user-select: none; }
@@ -270,8 +239,10 @@
   margin-top: .1rem;
   opacity: 0;
   transform: translateY(-4px);
-  transition: max-height .25s ease, opacity .2s ease, transform .2s ease;
+  transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s ease .05s, transform .3s ease;
+  pointer-events: none;
   position: relative;
+  box-shadow: none !important;
 }
 
 .cys-sb-submenu::before {
@@ -285,10 +256,12 @@
   opacity: .3;
 }
 
-.cys-sb-submenu.abierto {
+.cys-sb-submenu.abierto,
+.cys-sb-inventario-wrap:hover .cys-sb-submenu {
   max-height: 400px;
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .cys-sb-sublink {
@@ -400,7 +373,7 @@
 }
 
 /* ============================================================
-   BOTÓN CERRAR (EQUIS) — MODIFICACIONES ESTÉTICAS
+   BOTÓN CERRAR (EQUIS)
    ============================================================ */
 .cys-sb-close {
   background: transparent;
@@ -426,7 +399,7 @@
 }
 
 /* ============================================================
-   RESUMEN — VISIBILIDAD (movido desde <style> inline en aside.html)
+   RESUMEN — VISIBILIDAD
    ============================================================ */
 #cys-sb-resumen-wrap {
   transition: opacity .35s ease, visibility .35s ease;
@@ -470,11 +443,6 @@
   transform: scale(0.95);
 }
 
-/* ============================================================
-   FOCO DE TECLADO/CLIC — reemplaza el outline cuadrado por defecto
-   del navegador (que ignora el border-radius y se ve "cortado")
-   por un box-shadow que sigue la forma redondeada del botón.
-   ============================================================ */
 .cys-sb-mini-toggle:focus,
 .cys-sb-close:focus {
   outline: none;
@@ -506,15 +474,15 @@
 .cys-sb-mini .cys-sb-link span,
 .cys-sb-mini .sb-link-flex-grow span,
 .cys-sb-mini .sb-submenu-toggle,
-.cys-sb-mini .cys-sb-submenu,
-.cys-sb-mini .cys-sb-user-drop,
 .cys-sb-mini #cys-sb-resumen-wrap,
-.cys-sb-mini .cys-sb-footer {
+.cys-sb-mini .cys-sb-footer,
+.cys-sb-mini .cys-sb-link--usuarios span {
   display: none !important;
 }
 
 .cys-sb-mini .cys-sb-link,
-.cys-sb-mini .cys-sb-user-info-btn {
+.cys-sb-mini .cys-sb-user-info-btn,
+.cys-sb-mini .cys-sb-link--usuarios {
   justify-content: center;
   gap: 0;
   padding-left: 0;
@@ -527,7 +495,8 @@
 }
 
 .cys-sb-mini .cys-sb-link i,
-.cys-sb-mini .sb-link-flex-grow i {
+.cys-sb-mini .sb-link-flex-grow i,
+.cys-sb-mini .cys-sb-link--usuarios i {
   width: auto;
   font-size: 1.05rem;
 }
@@ -540,4 +509,161 @@
 .cys-sb-mini .cys-sb-user-info-btn {
   width: auto;
   padding: calc(.6rem * var(--density-scale, 1));
+}
+
+.cys-sb-mini .cys-sb-link--usuarios {
+  padding-top: calc(.6rem * var(--density-scale, 1));
+  padding-bottom: calc(.6rem * var(--density-scale, 1));
+}
+
+/* ============================================================
+   INVENTARIO — apertura con hover (modo expandido)
+   ============================================================ */
+.cys-sb-inventario-wrap {
+  position: relative;
+}
+
+.cys-sb-inventario-wrap:hover .cys-chevron {
+  transform: rotate(180deg);
+}
+
+/* ============================================================
+   MODO MINI — INVENTARIO COMO FLYOUT LATERAL
+   ============================================================ */
+
+/* Evita que el body/scroll del aside recorte el flyout que sale
+   fuera del ancho de 84px. Si tu aside.css tiene overflow-y en
+   .cys-sb-body u otro contenedor scrollable, esta regla puede no
+   ser suficiente por sí sola — avísame y ajusto ese selector puntual. */
+.cys-sb-mini,
+.cys-sb-mini .cys-sb-body {
+  overflow-x: visible;
+}
+
+.cys-sb-mini .cys-sb-submenu {
+  position: absolute;
+  left: calc(100% + .5rem);
+  top: 0;
+  width: max-content;
+  min-width: 190px;
+  padding-left: .35rem;
+  margin-top: 0;
+  z-index: 1060;
+}
+
+.cys-sb-mini .cys-sb-submenu::before {
+  display: none;
+}
+
+.cys-sb-mini .cys-sb-inventario-wrap:hover .cys-sb-submenu,
+.cys-sb-mini .cys-sb-submenu.abierto {
+  max-height: 400px;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* ============================================================
+   INVENTARIO — hereda el look "glass"
+   ============================================================ */
+#submenuInventario {
+  background: rgba(4,14,28,.58) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(77,168,218,.13) !important;
+  border-radius: 10px;
+  padding: .35rem;
+  margin-top: .3rem;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   AYUDA / CONFIGURACIÓN / CERRAR SESIÓN — tres colores distintos
+   ============================================================ */
+.cys-sb-link--ayuda {
+  color: #4dd0e1;
+  border-color: rgba(77,208,225,.35);
+  background: rgba(77,208,225,.10);
+  margin-top: .25rem;
+  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+}
+.cys-sb-link--ayuda i { text-shadow: 0 0 10px rgba(77,208,225,.5); }
+.cys-sb-link--ayuda:hover {
+  background: rgba(77,208,225,.22);
+  border-color: rgba(77,208,225,.55);
+  color: #4dd0e1;
+  box-shadow: 0 0 14px rgba(77,208,225,.35);
+}
+
+.cys-sb-link--config {
+  color: #f1c40f;
+  border-color: rgba(241,196,15,.35);
+  background: rgba(241,196,15,.10);
+  margin-top: .25rem;
+  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+}
+.cys-sb-link--config i { text-shadow: 0 0 10px rgba(241,196,15,.5); }
+.cys-sb-link--config:hover {
+  background: rgba(241,196,15,.22);
+  border-color: rgba(241,196,15,.55);
+  color: #f1c40f;
+  box-shadow: 0 0 14px rgba(241,196,15,.35);
+}
+
+.cys-sb-link--logout {
+  color: #ff8a8a;
+  border-color: rgba(232,112,112,.35);
+  background: rgba(232,112,112,.10);
+  margin-top: .25rem;
+  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+}
+.cys-sb-link--logout i { text-shadow: 0 0 10px rgba(232,112,112,.5); }
+.cys-sb-link--logout:hover {
+  background: rgba(232,112,112,.22);
+  border-color: rgba(232,112,112,.55);
+  color: #ff8a8a;
+  box-shadow: 0 0 14px rgba(232,112,112,.35);
+}
+
+/* ============================================================
+   OVERLAY DE CIERRE DE SESIÓN
+   ============================================================ */
+.cys-logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,14,28,.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.cys-logout-overlay.activo {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cys-logout-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.cys-logout-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid rgba(232,112,112,.25);
+  border-top-color: #e87070;
+  animation: cysSpin .7s linear infinite;
+}
+@keyframes cysSpin { to { transform: rotate(360deg); } }
+.cys-logout-text {
+  color: #ff8a8a;
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .05em;
 }
