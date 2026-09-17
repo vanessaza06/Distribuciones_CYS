@@ -1036,3 +1036,43 @@ class Hallazgo(models.Model):
         else:
             self.tipo_hallazgo = "exacto"
         super().save(*args, **kwargs)
+
+# -- CONFIGURACION DE EMPRESA --
+class ConfiguracionEmpresa(models.Model):
+    nombre_empresa  = models.CharField(max_length=200, default='CYS Ltda')
+    nit             = models.CharField(max_length=50,  blank=True, default='')
+    direccion       = models.CharField(max_length=300, blank=True, default='')
+    telefono        = models.CharField(max_length=50,  blank=True, default='')
+    email           = models.EmailField(blank=True, default='')
+    iva_porcentaje  = models.DecimalField(max_digits=5, decimal_places=2, default=19)
+    moneda          = models.CharField(max_length=10, default='COP')
+    unidades_medida = models.JSONField(default=list)
+
+    class Meta:
+        db_table             = 'configuracion_empresa'
+        verbose_name         = 'Configuracion de Empresa'
+        verbose_name_plural  = 'Configuracion de Empresa'
+
+    def __str__(self):
+        return self.nombre_empresa
+
+    @classmethod
+    def get_config(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class BackupRegistro(models.Model):
+    nombre    = models.CharField(max_length=200)
+    ruta      = models.CharField(max_length=500, blank=True)
+    fecha     = models.DateTimeField(auto_now_add=True)
+    tamaño_mb = models.FloatField(default=0)
+
+    class Meta:
+        db_table            = 'backup_registro'
+        verbose_name        = 'Respaldo'
+        verbose_name_plural  = 'Respaldos'
+        ordering            = ['-fecha']
+
+    def __str__(self):
+        return self.nombre
