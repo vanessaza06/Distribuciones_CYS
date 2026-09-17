@@ -26,6 +26,8 @@ urlpatterns = [
     path("ventas/eliminar/<int:pk>/", ventas_views.eliminar_venta, name="eliminar_venta"),
     path("ventas/producto-stock/<int:pk>/", ventas_views.producto_stock_json, name="producto_stock_json"),
     path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
+    path("ventas/exportar/excel/", ventas_views.exportar_ventas_excel, name="exportar_ventas_excel"),
+    path("ventas/exportar/pdf/", ventas_views.exportar_ventas_pdf, name="exportar_ventas_pdf"),
 
     # CAJA
     path("ventas/caja/", ventas_views.caja, name="caja"),

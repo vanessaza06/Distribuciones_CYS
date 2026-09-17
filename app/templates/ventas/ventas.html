@@ -34,7 +34,7 @@
         </div>
       {% else %}
         <div class="cys-status-pill cys-status-pill--cerrada">
-          <i class="bi bi-circle-fill" style="font-size:.4rem;"></i> CAJA CERRADA
+          <i class="bi bi-lock-fill me-1" style="font-size:.75rem;"></i> CAJA BLOQUEADA
         </div>
       {% endif %}
 
@@ -52,7 +52,7 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap align-items-center">
-      {% if not caja_abierta and not ultimo_cierre %}
+      {% if not caja_abierta %}
         <button class="btn btn-sm fw-bold cys-btn-checkout"
                 data-bs-toggle="modal" data-bs-target="#modalConteo">
           <i class="bi bi-unlock me-1"></i> Abrir Caja
@@ -79,11 +79,12 @@
     {% endfor %}
   {% endif %}
  
-  <div class="row g-4">
+  {% if caja_abierta %}
+  <div class="row g-4 align-items-stretch">
  
     <!-- ── COLUMNA PRODUCTOS ── -->
-    <div class="col-lg-7">
-      <div class="cys-pos-card" style="min-height:620px;">
+    <div class="col-lg-7 d-flex flex-column">
+      <div class="cys-pos-card flex-grow-1" style="min-height:620px;">
         <!-- Header columna -->
         <div class="cys-pos-card-header">
           <div class="cys-pos-card-title">
@@ -92,7 +93,7 @@
           <span style="font-size:.75rem; color:var(--texto-muted); font-weight:600;">Haz clic para agregar al carrito</span>
         </div>
 
-        <div class="p-3">
+        <div class="p-3 d-flex flex-column flex-grow-1">
           <!-- Buscador con Icono de Lupa -->
           <div class="cys-search-group mb-4">
             <i class="bi bi-search"></i>
@@ -104,7 +105,7 @@
           <div id="vistaCategorias">
             <div class="row g-3">
               {% for cat in categorias %}
-              <div class="col-6 col-md-4 col-lg-3">
+              <div class="col-6 col-sm-4 col-lg-3">
                 <div class="cys-cat-card-item"
                      data-cat-id="{{ cat.id }}" data-cat-nombre="{{ cat.nombre }}">
                   <div class="cys-cat-icon-circle">
@@ -155,8 +156,8 @@
     </div>
 
     <!-- ── COLUMNA CARRITO ── -->
-    <div class="col-lg-5">
-      <div class="cys-pos-card">
+    <div class="col-lg-5 d-flex flex-column">
+      <div class="cys-pos-card flex-grow-1">
 
         <!-- Header carrito -->
         <div class="cys-pos-card-header">
@@ -294,6 +295,56 @@
       </div>
     </div>
   </div>
+  {% else %}
+  <!-- ── PANTALLA DE CAJA BLOQUEADA ── -->
+  <div class="cys-lock-card my-3">
+    
+    <div class="mb-3">
+      <span class="cys-lock-badge">
+        <span class="cys-pulse-dot" style="background:#ff7675; box-shadow: 0 0 8px #ff7675;"></span>
+        CAJA BLOQUEADA
+      </span>
+    </div>
+
+    <div class="cys-lock-emblem">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+
+    <h2 class="fw-bold text-white mb-2" style="font-family:'Rajdhani',sans-serif; font-size: 2.2rem; letter-spacing:0.5px;">
+      CAJA BLOQUEADA
+    </h2>
+    
+    <p class="text-white mb-4" style="max-width: 580px; font-size: 1rem; line-height: 1.6; color:#ffffff !important;">
+      El punto de venta se encuentra inactivo. Debes realizar el conteo de apertura de caja para desbloquear la facturación y habilitar el catálogo de productos.
+    </p>
+
+    <div class="d-flex align-items-center justify-content-center gap-3">
+      <button class="btn btn-lg fw-bold text-white px-4 py-3 cys-btn-checkout shadow-lg d-inline-flex align-items-center gap-2"
+              data-bs-toggle="modal" data-bs-target="#modalConteo"
+              style="border-radius: 14px; font-size: 1.05rem; padding-left: 1.8rem !important; padding-right: 1.8rem !important;">
+        <i class="bi bi-unlock-fill fs-5"></i> DESBLOQUEAR Y ABRIR CAJA
+      </button>
+    </div>
+
+    <div class="cys-lock-steps">
+      <div class="cys-lock-step-chip">
+        <i class="bi bi-1-circle-fill"></i> Conteo Inicial
+      </div>
+      <i class="bi bi-chevron-right text-white" style="font-size:0.75rem; color:#ffffff !important;"></i>
+      <div class="cys-lock-step-chip">
+        <i class="bi bi-2-circle-fill"></i> Definir Base
+      </div>
+      <i class="bi bi-chevron-right text-white" style="font-size:0.75rem; color:#ffffff !important;"></i>
+      <div class="cys-lock-step-chip">
+        <i class="bi bi-check-circle-fill" style="color:#2ed573;"></i> Desbloqueo POS
+      </div>
+    </div>
+    
+    <div class="mt-5 pt-3 border-top border-secondary border-opacity-25 text-white" style="font-size:0.85rem; color:#ffffff !important;">
+      <i class="bi bi-shield-check me-1" style="color:#ffffff;"></i> Control de Caja CYS Ltda &bull; Sistema de Seguridad POS
+    </div>
+  </div>
+  {% endif %}
 
   <!-- ══════════════════════════════════════
        HISTORIAL DE VENTAS
@@ -305,18 +356,43 @@
       </div>
     </div>
 
-    <div class="px-3 pt-3 pb-2 d-flex flex-wrap align-items-center gap-3"
+    <div class="px-3 pt-3 pb-2 d-flex flex-wrap align-items-center justify-content-between gap-3"
          style="border-bottom:1px solid rgba(77,168,218,0.2); background:rgba(10,42,82,0.4);">
-      <span style="font-size:.75rem; font-weight:700; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.06em;">Filtrar por fecha:</span>
-      <input type="date" id="filtroDesde" class="form-control form-control-sm"
-             style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
-      <span style="color:var(--texto-muted); font-size:.85rem; font-weight:700;">a</span>
-      <input type="date" id="filtroHasta" class="form-control form-control-sm"
-             style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
-      <button id="btnLimpiarFiltro" class="btn btn-sm"
-              style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:var(--texto-muted); border-radius:8px; font-weight:600;">
-        <i class="bi bi-x-circle me-1"></i>Limpiar
-      </button>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span style="font-size:.75rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:.06em;">Filtrar por fecha:</span>
+        <input type="date" id="filtroDesde" class="form-control form-control-sm"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
+        <span style="color:#ffffff; font-size:.85rem; font-weight:700;">a</span>
+        <input type="date" id="filtroHasta" class="form-control form-control-sm"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
+        <button id="btnLimpiarFiltro" class="btn btn-sm"
+                style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#ffffff; border-radius:8px; font-weight:600;">
+          <i class="bi bi-x-circle me-1"></i>Limpiar
+        </button>
+      </div>
+
+      <!-- Buscador en tiempo real y Exportación -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="cys-search-group" style="min-width:200px;">
+          <i class="bi bi-search"></i>
+          <input type="text" id="buscadorHistorial" class="form-control form-control-sm cys-search-input"
+                 placeholder="Buscar cliente, ítem..." style="padding-left:36px !important;">
+        </div>
+
+        <a href="{% url 'exportar_ventas_excel' %}"
+           id="btnExportExcelHistorial"
+           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
+           style="background:linear-gradient(135deg, #107c41, #1f9a55); border:none; border-radius:8px; padding:.4rem .85rem;">
+          <i class="bi bi-file-earmark-excel-fill"></i> Excel
+        </a>
+
+        <a href="{% url 'exportar_ventas_pdf' %}"
+           id="btnExportPdfHistorial"
+           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
+           style="background:linear-gradient(135deg, #d32f2f, #b71c1c); border:none; border-radius:8px; padding:.4rem .85rem;">
+          <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+        </a>
+      </div>
     </div>
 
     <div class="table-responsive px-3 pb-3 pt-2">
@@ -419,58 +495,103 @@
 <!-- ══ MODAL APERTURA DE CAJA ══ -->
 <div class="modal fade" id="modalConteo" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content cys-modal" style="background:#0F3B6C; border:1px solid rgba(77,168,218,0.3); border-radius:16px;">
-      <div class="cys-modal__header" style="border-bottom:1px solid rgba(77,168,218,0.2); padding:1.2rem 1.5rem; background:rgba(10,42,82,0.6);">
-        <div class="d-flex align-items-center gap-3">
-          <div class="cys-modal__icon" style="width:40px; height:40px; border-radius:10px; background:rgba(46,213,115,0.15); color:#2ed573; display:flex; align-items:center; justify-content:center;">
-            <i class="bi bi-unlock-fill fs-5"></i>
+    <div class="modal-content cys-modal" style="background:#0b223e; border:1px solid rgba(77,168,218,0.35); border-radius:20px; box-shadow:0 15px 50px rgba(0,0,0,0.5);">
+      
+      <!-- Modal Header -->
+      <div class="cys-modal__header" style="border-bottom:1px solid rgba(77,168,218,0.2); padding:1.25rem 1.5rem; background:linear-gradient(135deg, rgba(15,59,108,0.8), rgba(10,42,82,0.9)); border-radius:20px 20px 0 0;">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center gap-3">
+            <div class="cys-modal__icon" style="width:46px; height:46px; border-radius:12px; background:rgba(46,213,115,0.15); border:1px solid rgba(46,213,115,0.35); color:#2ed573; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(46,213,115,0.2);">
+              <i class="bi bi-unlock-fill fs-4"></i>
+            </div>
+            <div>
+              <div style="font-size:.7rem; color:#2ed573; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Apertura de Turno</div>
+              <div class="cys-modal__title" style="font-size:1.2rem; font-weight:800; color:#fff; margin:0;">Conteo de Caja Inicial</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:.68rem; color:#2ed573; text-transform:uppercase; letter-spacing:1px; font-weight:700;">Inicio del día</div>
-            <div class="cys-modal__title" style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">Conteo de Apertura de Caja</div>
-          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-        <button type="button" class="cys-modal__close" data-bs-dismiss="modal" style="background:none; border:none; color:#fff; font-size:1.2rem;"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div class="modal-body p-4">
-        <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">Cuenta el dinero disponible e ingresa la cantidad por denominación.</p>
 
-        <div style="font-size:.75rem; text-transform:uppercase; color:var(--azul-claro,#4DA8DA); font-weight:800; margin-bottom:.5rem; letter-spacing:.08em;">Billetes</div>
-        <div class="row g-2 mb-3">
+      <div class="modal-body p-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+        <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">
+          <i class="bi bi-info-circle me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
+          Ingresa la cantidad de billetes y monedas con los que inicias la caja registradora.
+        </p>
+
+        <!-- Seccion Billetes -->
+        <div class="cys-denom-section-title">
+          <span><i class="bi bi-cash-stack me-1"></i> Billetes</span>
+          <span class="badge" style="background:rgba(46,213,115,0.15); color:#2ed573; border:1px solid rgba(46,213,115,0.3);" id="totalBilletesCt">$0</span>
+        </div>
+        <div class="row g-2 mb-4">
           {% for valor in billetes_denom %}
-          <div class="col-6 col-md-3">
-            <label style="font-size:.72rem; color:var(--texto-muted); font-weight:700;">${{ valor|floatformat:0 }}</label>
-            <input type="number" min="0" value="0" class="form-control text-center denom-ct" data-valor="{{ valor }}"
-                   style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
+          <div class="col-6 col-sm-4 col-md-3">
+            <div class="cys-denom-card cys-denom-card--billete">
+              <div class="cys-denom-header">
+                <span class="cys-denom-badge cys-denom-badge--billete" title="Billete"><i class="bi bi-cash-stack"></i></span>
+                <span class="cys-denom-val">${{ valor|floatformat:0 }}</span>
+              </div>
+              <div class="cys-denom-stepper">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
+                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor }}">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              </div>
+              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+            </div>
           </div>
           {% endfor %}
         </div>
 
-        <div style="font-size:.75rem; text-transform:uppercase; color:var(--azul-claro,#4DA8DA); font-weight:800; margin-bottom:.5rem; letter-spacing:.08em;">Monedas</div>
-        <div class="row g-2 mb-3">
+        <!-- Seccion Monedas -->
+        <div class="cys-denom-section-title">
+          <span><i class="bi bi-coin me-1"></i> Monedas</span>
+          <span class="badge" style="background:rgba(255,165,2,0.15); color:#ffa502; border:1px solid rgba(255,165,2,0.3);" id="totalMonedasCt">$0</span>
+        </div>
+        <div class="row g-2 mb-4">
           {% for valor in monedas_denom %}
-          <div class="col-6 col-md-3">
-            <label style="font-size:.72rem; color:var(--texto-muted); font-weight:700;">${{ valor }}</label>
-            <input type="number" min="0" value="0" class="form-control text-center denom-ct" data-valor="{{ valor }}"
-                   style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
+          <div class="col-6 col-sm-4 col-md-3">
+            <div class="cys-denom-card cys-denom-card--moneda">
+              <div class="cys-denom-header">
+                <span class="cys-denom-badge cys-denom-badge--moneda" title="Moneda"><i class="bi bi-coin"></i></span>
+                <span class="cys-denom-val">${{ valor }}</span>
+              </div>
+              <div class="cys-denom-stepper">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
+                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor }}">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              </div>
+              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+            </div>
           </div>
           {% endfor %}
         </div>
- 
-        <div class="d-flex justify-content-between align-items-center rounded-3 p-3 mb-3"
-             style="background:rgba(77,168,218,.1); border:1px solid rgba(77,168,218,0.3);">
-          <span style="font-size:.85rem; color:#fff; font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Total Contado (Base Inicial)</span>
-          <span style="font-family:'Rajdhani',sans-serif; font-size:1.6rem; font-weight:800; color:var(--azul-claro,#4DA8DA);" id="totalConteo">$0</span>
+
+        <!-- Box Resumen -->
+        <div class="cys-conteo-summary-box mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; font-weight:800; letter-spacing:0.8px;">Base Inicial Total</div>
+              <div style="font-size:.8rem; color:rgba(255,255,255,0.7); font-weight:600;">Monto acumulado del conteo</div>
+            </div>
+            <div style="font-family:'Rajdhani',sans-serif; font-size:2rem; font-weight:800; color:#2ed573; text-shadow:0 0 15px rgba(46,213,115,0.3);" id="totalConteo">$0</div>
+          </div>
         </div>
 
-        <label style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700; margin-bottom:4px;">Observaciones (opcional)</label>
-        <input type="text" class="form-control mb-4" id="ctObservacion" placeholder="Ej: base habitual en billetes de $20.000"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
+        <!-- Observaciones -->
+        <div class="mb-4">
+          <label style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700; margin-bottom:6px; display:block;">
+            <i class="bi bi-chat-left-text me-1"></i> Observaciones de Apertura (opcional)
+          </label>
+          <input type="text" class="form-control" id="ctObservacion" placeholder="Ej: Base en billetes pequeños para cambio..."
+                 style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.65rem 1rem; font-size:.9rem;">
+        </div>
 
-        <button class="btn w-100 fw-bold cys-btn-checkout" id="btnConfirmarConteo" type="button">
-          <i class="bi bi-check-circle-fill me-1"></i> Confirmar Conteo e Iniciar Turno
+        <button class="btn w-100 fw-bold cys-btn-checkout py-3" id="btnConfirmarConteo" type="button" style="font-size:1rem !important;">
+          <i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno
         </button>
       </div>
+
     </div>
   </div>
 </div>
@@ -479,86 +600,123 @@
 <!-- ══ MODAL CIERRE DE CAJA ══ -->
 <div class="modal fade" id="modalCierre" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content cys-modal" style="background:#0F3B6C; border:1px solid rgba(77,168,218,0.3); border-radius:16px;">
-      <div class="cys-modal__header" style="border-bottom:1px solid rgba(77,168,218,0.2); padding:1.2rem 1.5rem; background:rgba(10,42,82,0.6);">
-        <div class="d-flex align-items-center gap-3">
-          <div class="cys-modal__icon" style="width:40px; height:40px; border-radius:10px; background:rgba(235,77,75,0.15); color:#ff7675; display:flex; align-items:center; justify-content:center;">
-            <i class="bi bi-lock-fill fs-5"></i>
+    <div class="modal-content cys-modal" style="background:#0b223e; border:1px solid rgba(235,77,75,0.35); border-radius:20px; box-shadow:0 15px 50px rgba(0,0,0,0.5);">
+      
+      <!-- Modal Header -->
+      <div class="cys-modal__header" style="border-bottom:1px solid rgba(77,168,218,0.2); padding:1.25rem 1.5rem; background:linear-gradient(135deg, rgba(50,20,30,0.8), rgba(10,42,82,0.9)); border-radius:20px 20px 0 0;">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center gap-3">
+            <div class="cys-modal__icon" style="width:46px; height:46px; border-radius:12px; background:rgba(235,77,75,0.15); border:1px solid rgba(235,77,75,0.35); color:#ff7675; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(235,77,75,0.2);">
+              <i class="bi bi-lock-fill fs-4"></i>
+            </div>
+            <div>
+              <div style="font-size:.7rem; color:#ff7675; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Cierre de Turno</div>
+              <div class="cys-modal__title" style="font-size:1.2rem; font-weight:800; color:#fff; margin:0;">Conteo de Cierre de Caja</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:.68rem; color:#ff7675; text-transform:uppercase; letter-spacing:1px; font-weight:700;">Cierre del turno</div>
-            <div class="cys-modal__title" style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">Conteo de Cierre de Caja</div>
-          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-        <button type="button" class="cys-modal__close" data-bs-dismiss="modal" style="background:none; border:none; color:#fff; font-size:1.2rem;"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div class="modal-body p-4">
-        <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">Cuenta todo el dinero físico que hay actualmente en la caja registradora.</p>
 
-        <div style="font-size:.75rem; text-transform:uppercase; color:var(--azul-claro,#4DA8DA); font-weight:800; margin-bottom:.5rem; letter-spacing:.08em;">Billetes</div>
-        <div class="row g-2 mb-3">
+      <div class="modal-body p-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+        <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">
+          <i class="bi bi-info-circle me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
+          Cuenta todo el dinero físico disponible en la caja e ingresa el monto a reservar para el siguiente turno.
+        </p>
+
+        <!-- Seccion Billetes -->
+        <div class="cys-denom-section-title">
+          <span><i class="bi bi-cash-stack me-1"></i> Billetes</span>
+          <span class="badge" style="background:rgba(46,213,115,0.15); color:#2ed573; border:1px solid rgba(46,213,115,0.3);" id="totalBilletesCi">$0</span>
+        </div>
+        <div class="row g-2 mb-4">
           {% for valor in billetes_denom %}
-          <div class="col-6 col-md-3">
-            <label style="font-size:.72rem; color:var(--texto-muted); font-weight:700;">${{ valor|floatformat:0 }}</label>
-            <input type="number" min="0" value="0" class="form-control text-center denom-ci" data-valor="{{ valor }}"
-                   style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
+          <div class="col-6 col-sm-4 col-md-3">
+            <div class="cys-denom-card cys-denom-card--billete">
+              <div class="cys-denom-header">
+                <span class="cys-denom-badge cys-denom-badge--billete" title="Billete"><i class="bi bi-cash-stack"></i></span>
+                <span class="cys-denom-val">${{ valor|floatformat:0 }}</span>
+              </div>
+              <div class="cys-denom-stepper">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
+                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor }}">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              </div>
+              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+            </div>
           </div>
           {% endfor %}
         </div>
 
-        <div style="font-size:.75rem; text-transform:uppercase; color:var(--azul-claro,#4DA8DA); font-weight:800; margin-bottom:.5rem; letter-spacing:.08em;">Monedas</div>
-        <div class="row g-2 mb-3">
+        <!-- Seccion Monedas -->
+        <div class="cys-denom-section-title">
+          <span><i class="bi bi-coin me-1"></i> Monedas</span>
+          <span class="badge" style="background:rgba(255,165,2,0.15); color:#ffa502; border:1px solid rgba(255,165,2,0.3);" id="totalMonedasCi">$0</span>
+        </div>
+        <div class="row g-2 mb-4">
           {% for valor in monedas_denom %}
-          <div class="col-6 col-md-3">
-            <label style="font-size:.72rem; color:var(--texto-muted); font-weight:700;">${{ valor }}</label>
-            <input type="number" min="0" value="0" class="form-control text-center denom-ci" data-valor="{{ valor }}"
-                   style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
+          <div class="col-6 col-sm-4 col-md-3">
+            <div class="cys-denom-card cys-denom-card--moneda">
+              <div class="cys-denom-header">
+                <span class="cys-denom-badge cys-denom-badge--moneda" title="Moneda"><i class="bi bi-coin"></i></span>
+                <span class="cys-denom-val">${{ valor }}</span>
+              </div>
+              <div class="cys-denom-stepper">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
+                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor }}">
+                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              </div>
+              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+            </div>
           </div>
           {% endfor %}
         </div>
- 
-        <div class="d-flex justify-content-between align-items-center rounded-3 p-3 mb-3"
-             style="background:rgba(77,168,218,.1); border:1px solid rgba(77,168,218,0.3);">
-          <span style="font-size:.85rem; color:#fff; font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Total Físico Contado</span>
-          <span style="font-family:'Rajdhani',sans-serif; font-size:1.6rem; font-weight:800; color:var(--azul-claro,#4DA8DA);" id="totalCierre">$0</span>
+
+        <!-- Base siguiente input -->
+        <div class="mb-4">
+          <label style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700; margin-bottom:6px; display:block;">
+            <i class="bi bi-wallet2 me-1"></i> Monto Base Reservado para Mañana ($)
+          </label>
+          <input type="number" class="form-control" id="baseSiguiente" placeholder="Ej: 100000" min="0"
+                 style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.65rem 1rem; font-size:1rem; font-weight:700; font-family:'Rajdhani',sans-serif;">
         </div>
 
-        <label style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700; margin-bottom:4px;">Monto base reservado para mañana ($)</label>
-        <input type="number" class="form-control mb-3" id="baseSiguiente" placeholder="Ej: 100000" min="0"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px;">
-
-        <!-- Resumen del día -->
-        <div class="rounded-3 p-3 mb-4" style="background:rgba(10,42,82,0.6); border:1px solid rgba(77,168,218,0.25);">
-          <div class="cys-filter-label mb-2" style="font-weight:700; color:var(--azul-claro,#4DA8DA); font-size:.75rem; text-transform:uppercase;">Balance General del Turno</div>
+        <!-- Balance General Card -->
+        <div class="cys-conteo-summary-box mb-4">
+          <div class="cys-filter-label mb-3" style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em;">
+            <i class="bi bi-pie-chart-fill me-1"></i> Resumen de Balance del Cierre
+          </div>
           {% if caja_abierta %}
-          <div class="d-flex justify-content-between py-1" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
             <span style="color:var(--texto-muted);">Base de apertura</span>
             <span style="font-weight:700; color:#fff;">${{ caja_abierta.monto_base|floatformat:0 }}</span>
           </div>
           {% endif %}
-          <div class="d-flex justify-content-between py-1" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
             <span style="color:var(--texto-muted);">Ventas brutas del día</span>
             <span style="font-weight:700; color:#2ed573;">${{ total_dia|floatformat:0 }}</span>
           </div>
-          <div class="d-flex justify-content-between py-1" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
-            <span style="color:var(--texto-muted);">Total física en caja</span>
-            <span style="font-weight:700; color:var(--azul-claro,#4DA8DA);" id="resumenTotalContado">$0</span>
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span style="color:var(--texto-muted);">Total física contado</span>
+            <span style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-family:'Rajdhani',sans-serif; font-size:1.1rem;" id="totalCierre">$0</span>
+            <span id="resumenTotalContado" style="display:none;">$0</span>
           </div>
-          <div class="d-flex justify-content-between py-1" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
-            <span style="color:var(--texto-muted);">Base que queda para mañana</span>
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span style="color:var(--texto-muted);">Base reservada para mañana</span>
             <span style="font-weight:700; color:#fff;" id="resumenBaseSig">$0</span>
           </div>
-          <div class="d-flex justify-content-between pt-2 mt-1" style="font-size:1rem;">
-            <span style="font-weight:800; color:#fff; text-transform:uppercase;">Total a Retirar</span>
-            <span style="font-family:'Rajdhani',sans-serif; font-size:1.4rem; font-weight:800; color:#2ed573;" id="resumenRetirar">$0</span>
+          <div class="d-flex justify-content-between align-items-center pt-3 mt-1" style="font-size:1rem;">
+            <span style="font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">Efectivo a Retirar</span>
+            <span style="font-family:'Rajdhani',sans-serif; font-size:1.6rem; font-weight:800; color:#2ed573; text-shadow:0 0 12px rgba(46,213,115,0.3);" id="resumenRetirar">$0</span>
           </div>
         </div>
- 
-        <button class="btn w-100 fw-bold" id="btnConfirmarCierre" type="button"
-                style="background:linear-gradient(135deg,#da4d4d,#a02020); color:#fff; border-radius:12px; padding:.8rem; font-size:.95rem; border:none; box-shadow:0 4px 15px rgba(218,77,77,0.3);">
-          <i class="bi bi-lock me-1"></i> Confirmar Cierre de Caja
+
+        <button class="btn w-100 fw-bold py-3" id="btnConfirmarCierre" type="button"
+                style="background:linear-gradient(135deg,#e74c3c,#c0392b); color:#fff; border-radius:12px; font-size:1rem; border:none; box-shadow:0 4px 20px rgba(231,76,60,0.4);">
+          <i class="bi bi-lock-fill me-2"></i> Confirmar Cierre de Caja
         </button>
       </div>
+
     </div>
   </div>
 </div>
@@ -607,7 +765,7 @@ document.querySelectorAll('[data-cat-id]').forEach(card => {
     lista.innerHTML = '';
     productos.forEach(p => {
       const div = document.createElement('div');
-      div.className = 'col-6 col-md-4';
+      div.className = 'col-6 col-sm-4 col-lg-3';
       const stockVal = parseInt(p.dataset.stock) || 0;
       let stockClass = 'cys-stock-badge--ok';
       let stockLabel = `Stock: ${stockVal}`;
@@ -842,7 +1000,7 @@ document.getElementById('buscadorProducto').addEventListener('input', function()
   document.querySelectorAll('.prod-item').forEach(p => {
     if (!p.dataset.nombre.toLowerCase().includes(q)) return;
     const div = document.createElement('div');
-    div.className = 'col-6 col-md-4';
+    div.className = 'col-6 col-sm-4 col-lg-3';
     const stockVal = parseInt(p.dataset.stock) || 0;
     let stockClass = 'cys-stock-badge--ok';
     let stockLabel = `Stock: ${stockVal}`;
@@ -900,54 +1058,111 @@ document.getElementById('sugerenciasClientes').querySelectorAll('button').forEac
   });
 });
  
-// ══ FILTRO DE FECHAS EN HISTORIAL ══
-function aplicarFiltro() {
+// ══ FILTRO DE FECHAS Y BÚSQUEDA EN HISTORIAL ══
+function aplicarFiltroHistorial() {
   const desde = document.getElementById('filtroDesde').value;
   const hasta = document.getElementById('filtroHasta').value;
+  const q     = (document.getElementById('buscadorHistorial') ? document.getElementById('buscadorHistorial').value : '').toLowerCase().trim();
   const filas = document.querySelectorAll('.fila-venta');
   let visibles = 0;
- 
+
+  // Actualizar URLs de exportación
+  const params = new URLSearchParams();
+  if (desde) params.set('fecha_inicio', desde);
+  if (hasta) params.set('fecha_fin', hasta);
+  if (q) params.set('q', q);
+  const qStr = params.toString() ? ('?' + params.toString()) : '';
+
+  const btnExcel = document.getElementById('btnExportExcelHistorial');
+  const btnPdf   = document.getElementById('btnExportPdfHistorial');
+  if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + qStr;
+  if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + qStr;
+
   const grupos = {};
   filas.forEach(fila => {
     const vid = fila.dataset.ventaId;
     if (!grupos[vid]) grupos[vid] = [];
     grupos[vid].push(fila);
   });
- 
+
   Object.values(grupos).forEach(grupo => {
     const fecha = grupo[0].dataset.fecha;
     let mostrarFila = true;
     if (desde && fecha < desde) mostrarFila = false;
     if (hasta && fecha > hasta) mostrarFila = false;
- 
+
+    if (mostrarFila && q) {
+      let textoGrupo = '';
+      grupo.forEach(f => textoGrupo += f.textContent.toLowerCase() + ' ');
+      if (!textoGrupo.includes(q)) mostrarFila = false;
+    }
+
     grupo.forEach(fila => {
       fila.style.display = mostrarFila ? '' : 'none';
     });
     if (mostrarFila) visibles++;
   });
- 
+
   const sinRes = document.getElementById('sinResultadosFiltro');
-  sinRes.style.display = visibles === 0 ? 'block' : 'none';
+  if (sinRes) sinRes.style.display = visibles === 0 ? 'block' : 'none';
 }
- 
-document.getElementById('filtroDesde').addEventListener('change', aplicarFiltro);
-document.getElementById('filtroHasta').addEventListener('change', aplicarFiltro);
+
+document.getElementById('filtroDesde').addEventListener('change', aplicarFiltroHistorial);
+document.getElementById('filtroHasta').addEventListener('change', aplicarFiltroHistorial);
+if (document.getElementById('buscadorHistorial')) {
+  document.getElementById('buscadorHistorial').addEventListener('input', aplicarFiltroHistorial);
+}
 document.getElementById('btnLimpiarFiltro').addEventListener('click', function() {
   document.getElementById('filtroDesde').value = '';
   document.getElementById('filtroHasta').value = '';
-  document.querySelectorAll('.fila-venta').forEach(f => f.style.display = '');
-  document.getElementById('sinResultadosFiltro').style.display = 'none';
+  if (document.getElementById('buscadorHistorial')) document.getElementById('buscadorHistorial').value = '';
+  aplicarFiltroHistorial();
 });
  
+// ══ STEPPER HELPER PARA DENOMINACIONES ══
+function stepDenom(btn, delta) {
+  const container = btn.closest('.cys-denom-stepper');
+  if (!container) return;
+  const input = container.querySelector('input');
+  if (input) {
+    let val = parseInt(input.value) || 0;
+    val = Math.max(0, val + delta);
+    input.value = val;
+    input.dispatchEvent(new Event('input'));
+  }
+}
+
 // ══ APERTURA DE CAJA ══
-document.querySelectorAll('.denom-ct').forEach(i => {
-  i.addEventListener('input', () => {
-    let total = 0;
-    document.querySelectorAll('.denom-ct').forEach(d => total += (parseInt(d.value)||0) * parseInt(d.dataset.valor));
-    document.getElementById('totalConteo').textContent = '$' + total.toLocaleString('es-CO');
+function recalcApertura() {
+  let total = 0;
+  let totalBilletes = 0;
+  let totalMonedas = 0;
+
+  document.querySelectorAll('.denom-ct').forEach(d => {
+    const cant = parseInt(d.value) || 0;
+    const valor = parseInt(d.dataset.valor) || 0;
+    const sub = cant * valor;
+    total += sub;
+
+    const card = d.closest('.cys-denom-card');
+    if (card) {
+      const subSpan = card.querySelector('.cys-denom-subtotal span');
+      if (subSpan) subSpan.textContent = '$' + sub.toLocaleString('es-CO');
+      if (card.classList.contains('cys-denom-card--billete')) totalBilletes += sub;
+      else totalMonedas += sub;
+    }
   });
-});
- 
+
+  const totEl = document.getElementById('totalConteo');
+  if (totEl) totEl.textContent = '$' + total.toLocaleString('es-CO');
+  const tbBadge = document.getElementById('totalBilletesCt');
+  if (tbBadge) tbBadge.textContent = '$' + totalBilletes.toLocaleString('es-CO');
+  const tmBadge = document.getElementById('totalMonedasCt');
+  if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
+}
+
+document.querySelectorAll('.denom-ct').forEach(i => i.addEventListener('input', recalcApertura));
+
 document.getElementById('btnConfirmarConteo').addEventListener('click', function() {
   const denoms = {};
   let monto = 0;
@@ -960,32 +1175,63 @@ document.getElementById('btnConfirmarConteo').addEventListener('click', function
   fetch('/ventas/caja/conteo/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ monto_contado: monto, observacion: document.getElementById('ctObservacion').value, denominaciones: denoms })
+    body: JSON.stringify({ monto_base: monto, observacion: document.getElementById('ctObservacion').value, denominaciones: denoms })
   }).then(r => r.json()).then(data => {
     if (data.ok) location.reload();
     else alert(data.error || 'Error al registrar apertura.');
   });
 });
- 
+
 // ══ CIERRE DE CAJA ══
-document.querySelectorAll('.denom-ci').forEach(i => {
-  i.addEventListener('input', () => {
-    let total = 0;
-    document.querySelectorAll('.denom-ci').forEach(d => total += (parseInt(d.value)||0) * parseInt(d.dataset.valor));
-    document.getElementById('totalCierre').textContent         = '$' + total.toLocaleString('es-CO');
-    document.getElementById('resumenTotalContado').textContent = '$' + total.toLocaleString('es-CO');
-    const base = parseInt(document.getElementById('baseSiguiente').value) || 0;
-    document.getElementById('resumenRetirar').textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
+function recalcCierre() {
+  let total = 0;
+  let totalBilletes = 0;
+  let totalMonedas = 0;
+
+  document.querySelectorAll('.denom-ci').forEach(d => {
+    const cant = parseInt(d.value) || 0;
+    const valor = parseInt(d.dataset.valor) || 0;
+    const sub = cant * valor;
+    total += sub;
+
+    const card = d.closest('.cys-denom-card');
+    if (card) {
+      const subSpan = card.querySelector('.cys-denom-subtotal span');
+      if (subSpan) subSpan.textContent = '$' + sub.toLocaleString('es-CO');
+      if (card.classList.contains('cys-denom-card--billete')) totalBilletes += sub;
+      else totalMonedas += sub;
+    }
   });
-});
- 
+
+  const totFmt = '$' + total.toLocaleString('es-CO');
+  const totCierreEl = document.getElementById('totalCierre');
+  if (totCierreEl) totCierreEl.textContent = totFmt;
+  const resTotEl = document.getElementById('resumenTotalContado');
+  if (resTotEl) resTotEl.textContent = totFmt;
+
+  const baseInput = document.getElementById('baseSiguiente');
+  const base = parseInt(baseInput ? baseInput.value : 0) || 0;
+  const retEl = document.getElementById('resumenRetirar');
+  if (retEl) retEl.textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
+
+  const tbBadge = document.getElementById('totalBilletesCi');
+  if (tbBadge) tbBadge.textContent = '$' + totalBilletes.toLocaleString('es-CO');
+  const tmBadge = document.getElementById('totalMonedasCi');
+  if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
+}
+
+document.querySelectorAll('.denom-ci').forEach(i => i.addEventListener('input', recalcCierre));
+
 document.getElementById('baseSiguiente').addEventListener('input', function() {
-  const total = parseInt(document.getElementById('totalCierre').textContent.replace(/\D/g,'')) || 0;
+  const totalStr = document.getElementById('totalCierre') ? document.getElementById('totalCierre').textContent : '0';
+  const total = parseInt(totalStr.replace(/\D/g,'')) || 0;
   const base  = parseInt(this.value) || 0;
-  document.getElementById('resumenBaseSig').textContent = '$' + base.toLocaleString('es-CO');
-  document.getElementById('resumenRetirar').textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
+  const resBaseEl = document.getElementById('resumenBaseSig');
+  if (resBaseEl) resBaseEl.textContent = '$' + base.toLocaleString('es-CO');
+  const retEl = document.getElementById('resumenRetirar');
+  if (retEl) retEl.textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
 });
- 
+
 document.getElementById('btnConfirmarCierre').addEventListener('click', function() {
   const denoms = {};
   let monto = 0;

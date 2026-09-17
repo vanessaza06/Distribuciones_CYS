@@ -23,9 +23,6 @@
       <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.45rem 1.1rem;">
         <i class="bi bi-arrow-left me-1"></i> Volver al POS
       </a>
-      <button onclick="window.print()" class="btn btn-sm fw-bold cys-btn-checkout" style="padding:.45rem 1.1rem;">
-        <i class="bi bi-printer me-1"></i> Imprimir Reporte
-      </button>
     </div>
   </div>
 
@@ -79,6 +76,106 @@
 
   </div>
 
+  <!-- ── TOPE DE VENTAS POR PERIODO (DÍA, SEMANA, MES, AÑO) ── -->
+  <section class="cys-pos-card p-3 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="cys-pos-card-title">
+        <i class="bi bi-graph-up-arrow me-2" style="color:var(--azul-claro,#4DA8DA);"></i>Tope de Ventas por Periodo
+      </div>
+      <span style="font-size:.78rem; color:var(--texto-muted); font-weight:600;">
+        Consolidado Acumulado: <strong style="color:#2ed573; font-family:'Rajdhani',sans-serif; font-size:1.05rem;">Día | Semana | Mes | Año</strong>
+      </span>
+    </div>
+
+    <!-- Grid de tarjetas de Tope de Ventas -->
+    <div class="row g-3">
+      {% for item in topes_ventas %}
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="cys-top-sales-card">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2" style="min-width:0;">
+              <div class="rounded-circle d-flex align-items-center justify-content-center"
+                   style="width:38px; height:38px; background:{{ item.badge_bg }}; color:{{ item.color }}; border:1px solid {{ item.color }}; flex-shrink:0;">
+                <i class="bi {{ item.icon }} fs-6"></i>
+              </div>
+              <div style="min-width:0;">
+                <div style="font-size:.82rem; font-weight:800; color:#fff; text-transform:uppercase; line-height:1.1;">{{ item.label }}</div>
+                <div style="font-size:.68rem; color:var(--texto-muted); font-weight:600;" class="text-truncate">{{ item.sublabel }}</div>
+              </div>
+            </div>
+            <span class="badge" style="background:{{ item.badge_bg }}; color:{{ item.color }}; border:1px solid {{ item.color }}; font-size:.68rem; font-weight:700; flex-shrink:0;">
+              {{ item.cantidad }} vent{{ item.cantidad|pluralize:"a,as" }}
+            </span>
+          </div>
+
+          <div class="my-2">
+            <div style="font-family:'Rajdhani',sans-serif; font-size:1.65rem; font-weight:800; color:{{ item.color }}; line-height:1.1;">
+              ${{ item.monto|floatformat:0 }}
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:.68rem; color:var(--texto-muted);">
+              <span>Participación anual</span>
+              <span style="font-weight:700; color:{{ item.color }};">{{ item.porcentaje }}%</span>
+            </div>
+            <div class="progress" style="height:6px; border-radius:6px; background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.2); overflow:hidden;">
+              <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje }}%; background-color: {{ item.color }};"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ── RANKING DE PRODUCTOS MÁS VENDIDOS DEL DÍA ── -->
+  <section class="cys-pos-card p-3 mb-4">
+    <div class="cys-pos-card-header mb-3" style="background:none; border:none; padding:0;">
+      <div class="cys-pos-card-title">
+        <i class="bi bi-trophy-fill me-1" style="color:#ffab00;"></i> Productos Más Vendidos
+      </div>
+      <span style="font-size:.75rem; color:var(--texto-muted); font-weight:600;">Top artículos por volumen despachado</span>
+    </div>
+
+    {% if productos_top %}
+    <div class="row g-3">
+      {% for p in productos_top %}
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="cys-top-product-card">
+          <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+            <span class="cys-rank-badge {% if p.posicion == 1 %}cys-rank-badge--1{% elif p.posicion == 2 %}cys-rank-badge--2{% elif p.posicion == 3 %}cys-rank-badge--3{% else %}cys-rank-badge--other{% endif %}">
+              {% if p.posicion == 1 %}🥇{% elif p.posicion == 2 %}🥈{% elif p.posicion == 3 %}🥉{% else %}{{ p.posicion }}°{% endif %}
+            </span>
+            <div class="text-end">
+              <span style="font-family:'Rajdhani',sans-serif; font-size:1.15rem; font-weight:800; color:var(--azul-claro,#4DA8DA); display:block; line-height:1.1;">${{ p.recaudo|floatformat:0 }}</span>
+              <span style="font-size:.68rem; color:var(--texto-muted); font-weight:700;">{{ p.porcentaje }}% del total</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight:700; font-size:.88rem; color:#fff; line-height:1.2; margin-bottom:6px;" class="text-truncate">{{ p.nombre }}</div>
+            <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:.72rem; color:var(--texto-muted);">
+              <span>Despachados:</span>
+              <span style="font-weight:800; color:#2ed573;">{{ p.cantidad }} unid.</span>
+            </div>
+            <div class="progress" style="height:5px; border-radius:4px; background:rgba(77,168,218,0.15); overflow:hidden;">
+              <div class="progress-bar" style="width:{{ p.relativo }}%; background:linear-gradient(90deg, var(--azul-claro,#4DA8DA), #2ed573);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4">
+      <div class="cys-empty-box">
+        <i class="bi bi-box-seam fs-2 d-block mb-2" style="color:var(--texto-muted);"></i>
+        No hay registros de productos vendidos en esta consulta.
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
   <!-- Historical Sales Table Section -->
   <section class="cys-pos-card">
     
@@ -88,26 +185,51 @@
       </div>
     </div>
 
-    <form method="GET" class="d-flex flex-wrap align-items-center gap-2 p-3" style="background:rgba(10,42,82,0.4); border-bottom:1px solid rgba(77,168,218,0.2);">
-      <span style="font-size:.75rem; font-weight:700; color:var(--texto-muted); text-transform:uppercase; letter-spacing:0.5px;">
-        Rango de fechas:
-      </span>
-      
-      <input type="date" name="fecha_inicio" value="{{ request.GET.fecha_inicio }}"
-             style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
-      
-      <span style="color:var(--texto-muted); font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
-      
-      <input type="date" name="fecha_fin" value="{{ request.GET.fecha_fin }}"
-             style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
-      
-      <button type="submit" class="btn btn-sm fw-bold" style="background:rgba(77,168,218,0.15); color:var(--azul-claro,#4DA8DA); border:1px solid rgba(77,168,218,0.3); border-radius:8px;">
-        <i class="bi bi-funnel me-1"></i> Filtrar
-      </button>
+    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3" style="background:rgba(10,42,82,0.4); border-bottom:1px solid rgba(77,168,218,0.2);">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span style="font-size:.75rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px;">
+          Rango de fechas:
+        </span>
+        
+        <input type="date" name="fecha_inicio" id="filtroFechaIni" value="{{ fecha_inicio }}"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        
+        <span style="color:#ffffff; font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
+        
+        <input type="date" name="fecha_fin" id="filtroFechaFin" value="{{ fecha_fin }}"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        
+        <button type="submit" class="btn btn-sm fw-bold" style="background:rgba(77,168,218,0.15); color:var(--azul-claro,#4DA8DA); border:1px solid rgba(77,168,218,0.3); border-radius:8px;">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
 
-      <a href="?" class="btn btn-sm" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.25); color:var(--texto-muted); border-radius:8px; font-weight:600;">
-        <i class="bi bi-x-circle me-1"></i> Limpiar
-      </a>
+        <a href="?" class="btn btn-sm" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.25); color:#ffffff; border-radius:8px; font-weight:600;">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
+        </a>
+      </div>
+
+      <!-- Buscador en tiempo real y Botones de Exportación -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="cys-search-group" style="min-width:220px;">
+          <i class="bi bi-search"></i>
+          <input type="text" id="buscadorTablaVentasDia" class="form-control form-control-sm cys-search-input"
+                 placeholder="Buscar cliente, ítem..." style="padding-left:36px !important;">
+        </div>
+
+        <a href="{% url 'exportar_ventas_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+           id="btnExportExcel"
+           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
+           style="background:linear-gradient(135deg, #107c41, #1f9a55); border:none; border-radius:8px; padding:.4rem .85rem;">
+          <i class="bi bi-file-earmark-excel-fill"></i> Excel
+        </a>
+
+        <a href="{% url 'exportar_ventas_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+           id="btnExportPdf"
+           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
+           style="background:linear-gradient(135deg, #d32f2f, #b71c1c); border:none; border-radius:8px; padding:.4rem .85rem;">
+          <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+        </a>
+      </div>
     </form>
 
     {% if ventas %}
@@ -128,7 +250,7 @@
           {% for venta in ventas %}
             {% if venta.detalles.all %}
               {% for det in venta.detalles.all %}
-              <tr>
+              <tr class="fila-venta-dia">
                 <td style="text-align: center; color: var(--texto-muted);">{{ forloop.parentloop.counter }}</td>
                 <td style="font-weight: 600; color: #fff;">{{ venta.usuario.nombre }} {{ venta.usuario.apellido }}</td>
                 <td style="color: #e2e8f0;">
@@ -141,7 +263,7 @@
               </tr>
               {% endfor %}
             {% else %}
-              <tr>
+              <tr class="fila-venta-dia">
                 <td style="text-align: center; color: var(--texto-muted);">{{ forloop.counter }}</td>
                 <td style="font-weight: 600; color: #fff;">{{ venta.usuario.nombre }} {{ venta.usuario.apellido }}</td>
                 <td style="color: #e2e8f0;">Venta #{{ venta.codigo_venta }} ({{ venta.metodo_pago }})</td>
@@ -175,4 +297,40 @@
   </section>
 
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const buscador = document.getElementById('buscadorTablaVentasDia');
+  const btnExcel = document.getElementById('btnExportExcel');
+  const btnPdf   = document.getElementById('btnExportPdf');
+
+  function actualizarUrlsExport() {
+    const q = buscador ? buscador.value.trim() : '';
+    const fIni = document.getElementById('filtroFechaIni') ? document.getElementById('filtroFechaIni').value : '';
+    const fFin = document.getElementById('filtroFechaFin') ? document.getElementById('filtroFechaFin').value : '';
+    const params = new URLSearchParams();
+    if (fIni) params.set('fecha_inicio', fIni);
+    if (fFin) params.set('fecha_fin', fFin);
+    if (q) params.set('q', q);
+
+    const queryStr = params.toString() ? ('?' + params.toString()) : '';
+    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + queryStr;
+    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + queryStr;
+  }
+
+  if (buscador) {
+    buscador.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      actualizarUrlsExport();
+      const filas = document.querySelectorAll('.fila-venta-dia');
+      filas.forEach(f => {
+        const txt = f.textContent.toLowerCase();
+        f.style.display = txt.includes(q) ? '' : 'none';
+      });
+    });
+  }
+});
+</script>
+{% endblock %}
 {% endblock %}
