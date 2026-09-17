@@ -183,7 +183,13 @@
 <div class="cys-modal-overlay" id="cysModalOverlay">
   <div class="cys-modal">
     <header class="cys-modal__header">
-      <h2 id="cysModalTitle">Nueva marca</h2>
+      <div class="cys-modal__header-left">
+        <div class="cys-modal-icon"><i class="bi bi-tag-fill"></i></div>
+        <div>
+          <h2 id="cysModalTitle">Nueva marca</h2>
+          <p class="cys-modal-subtitle" id="cysModalSubtitle">Registra una nueva marca de productos</p>
+        </div>
+      </div>
       <button class="cys-icon-btn" id="cysModalClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
     </header>
 
@@ -191,28 +197,50 @@
       {% csrf_token %}
 
       <label class="cys-field">
-        <span>Nombre de la marca</span>
-        <input type="text" id="fieldNombre" name="nombre" placeholder="Ej. Águila" required>
+        <span>Nombre de la marca <em>*</em></span>
+        <div class="cys-input-icon">
+          <i class="bi bi-tag"></i>
+          <input type="text" id="fieldNombre" name="nombre" placeholder="Ej. Corona" required>
+        </div>
       </label>
 
       <label class="cys-field">
         <span>Descripción</span>
-        <input type="text" id="fieldDescripcion" name="descripcion" placeholder="Ej. Cerveza colombiana" required>
+        <textarea id="fieldDescripcion" name="descripcion" maxlength="200"
+                  placeholder="Ej. Marca de cerveza reconocida por su calidad y tradición. (Opcional)"></textarea>
+        <span class="cys-char-count" id="cysCharCount">0/200</span>
       </label>
 
-      <label class="cys-field cys-field--switch">
-        <span>Estado</span>
-        <span class="cys-switch">
-          <input type="checkbox" id="fieldEstado" checked>
-          <span class="cys-switch__track"><span class="cys-switch__thumb"></span></span>
-          <span class="cys-switch__label" id="fieldEstadoLabel">Activa</span>
-        </span>
+      <div class="cys-field">
+        <span>Estado <em>*</em></span>
+        <div class="cys-estado-options">
+          <label class="cys-estado-card cys-estado-card--activa" id="cysEstadoActivaCard">
+            <input type="radio" name="estado_radio" value="activo" id="fieldEstadoActivo" checked>
+            <span class="cys-estado-card__radio"></span>
+            <span class="cys-estado-card__content">
+              <span class="cys-estado-card__title"><span class="cys-dot cys-dot--green"></span>Activa</span>
+              <span class="cys-estado-card__desc">La marca estará disponible en el sistema.</span>
+            </span>
+          </label>
+
+          <label class="cys-estado-card cys-estado-card--inactiva" id="cysEstadoInactivaCard">
+            <input type="radio" name="estado_radio" value="inactivo" id="fieldEstadoInactivo">
+            <span class="cys-estado-card__radio"></span>
+            <span class="cys-estado-card__content">
+              <span class="cys-estado-card__title"><span class="cys-dot cys-dot--red"></span>Inactiva</span>
+              <span class="cys-estado-card__desc">La marca no estará disponible temporalmente.</span>
+            </span>
+          </label>
+        </div>
         <input type="hidden" id="fieldEstadoValue" name="estado" value="activo">
-      </label>
+      </div>
 
       <footer class="cys-modal__footer">
         <button type="button" class="cys-btn cys-btn--ghost" id="cysCancelBtn">Cancelar</button>
-        <button type="submit" class="cys-btn cys-btn--primary">Guardar marca</button>
+        <button type="submit" class="cys-btn cys-btn--primary">
+          <i class="bi bi-save"></i>
+          Guardar marca
+        </button>
       </footer>
     </form>
   </div>
