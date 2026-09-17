@@ -91,24 +91,24 @@ urlpatterns = [
         name="producto_toggle_activo",
     ),
 
-    # PRESENTACIONES
-    path(
-        "presentacion/<int:producto_pk>/crear/",
-        pres_views.presentacion_crear,
-        name="presentacion_crear",
-    ),
-    path(
-        "presentacion/<int:pk>/editar/",
-        pres_views.presentacion_editar,
-        name="presentacion_editar",
-    ),
-    path(
-        "presentacion/<int:pk>/toggle/",
-        pres_views.presentacion_toggle_activo,
-        name="presentacion_toggle_activo",
-    ),
-
-    # COMPRAS
+        # PRESENTACIONES
+path("presentaciones/", pres_views.presentacion_lista, name="presentacion_lista"),
+path(
+    "presentacion/<int:producto_pk>/crear/",
+    pres_views.presentacion_crear,
+    name="presentacion_crear",
+),
+path(
+    "presentacion/<int:pk>/editar/",
+    pres_views.presentacion_editar,
+    name="presentacion_editar",
+),
+path(
+    "presentacion/<int:pk>/toggle/",
+    pres_views.presentacion_toggle_activo,
+    name="presentacion_toggle_activo",
+),
+        # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
     path("compras/<int:id>/", compra_views.detalle_compra, name="detalle_compra",),
     path("compras/estado/",compra_views.cambiar_estado_compra, name="cambiar_estado_compra", ),

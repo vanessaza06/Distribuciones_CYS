@@ -142,7 +142,13 @@
           <i class="bi bi-bar-chart-fill"></i>
           <span>Reportes</span>
         </a>
-
+                    <!-- PRESENTACIONES -->
+<a href="{% url 'presentacion_lista' %}"
+   class="cys-sb-link {% block nav_presentaciones %}{% endblock %}"
+   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Presentaciones">
+  <i class="bi bi-layers-fill"></i>
+  <span>Presentaciones</span>
+</a>
         <!-- INVENTARIO -->
         <div class="cys-sb-inventario-wrap">
           <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
