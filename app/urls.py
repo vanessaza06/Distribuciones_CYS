@@ -56,62 +56,18 @@ urlpatterns = [
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
     path("proveedores/crear/", prov_views.crear_proveedor, name="crear_proveedor"),
-    path(
-        "proveedores/detalle/<str:id>/",
-        prov_views.detalle_proveedor,
-        name="detalle_proveedor",
-    ),
-    path(
-        "proveedores/editar/<str:id>/",
-        prov_views.editar_proveedor,
-        name="editar_proveedor",
-    ),
-    path(
-        "proveedores/eliminar/<str:id>/",
-        prov_views.eliminar_proveedor,
-        name="eliminar_proveedor",
-    ),
-    path(
-        "proveedores/activar/<str:id>/",
-        prov_views.activar_proveedor,
-        name="activar_proveedor",
-    ),
-    path(
-        "proveedores/desactivar/<str:id>/",
-        prov_views.desactivar_proveedor,
-        name="desactivar_proveedor",
-    ),
-    path(
-        "proveedores/sancionar/<str:id>/",
-        prov_views.sancionar_proveedor,
-        name="sancionar_proveedor",
-    ),
-    path(
-        "proveedores/levantar-sancion/<str:id>/",
-        prov_views.levantar_sancion_proveedor,
-        name="levantar_sancion_proveedor",
-    ),
+    path("proveedores/detalle/<str:id>/",prov_views.detalle_proveedor,name="detalle_proveedor",),
+    path("proveedores/editar/<str:id>/",prov_views.editar_proveedor,name="editar_proveedor",),
+    path("proveedores/eliminar/<str:id>/",prov_views.eliminar_proveedor,name="eliminar_proveedor",),
+    path( "proveedores/activar/<str:id>/", prov_views.activar_proveedor, name="activar_proveedor",),
+    path("proveedores/desactivar/<str:id>/",prov_views.desactivar_proveedor,name="desactivar_proveedor",),
+    path( "proveedores/sancionar/<str:id>/",prov_views.sancionar_proveedor, name="sancionar_proveedor",),
+    path("proveedores/levantar-sancion/<str:id>/",prov_views.levantar_sancion_proveedor, name="levantar_sancion_proveedor",),
     # Modales / AJAX Proveedores
-    path(
-        "proveedores/modal/detalle/<str:id>/",
-        prov_views.detalle_proveedor_modal,
-        name="detalle_proveedor_modal",
-    ),
-    path(
-        "proveedores/modal/desactivar/<str:id>/",
-        prov_views.desactivar_proveedor_modal,
-        name="desactivar_proveedor_modal",
-    ),
-    path(
-        "proveedores/modal/reactivar/<str:id>/",
-        prov_views.reactivar_proveedor_modal,
-        name="reactivar_proveedor_modal",
-    ),
-    path(
-        "proveedores/modal/sancionar/<str:id>/",
-        prov_views.sancionar_proveedor_modal,
-        name="sancionar_proveedor_modal",
-    ),
+    path("proveedores/modal/detalle/<str:id>/",prov_views.detalle_proveedor_modal,name="detalle_proveedor_modal",),
+    path("proveedores/modal/desactivar/<str:id>/",prov_views.desactivar_proveedor_modal,name="desactivar_proveedor_modal",),
+    path("proveedores/modal/reactivar/<str:id>/",prov_views.reactivar_proveedor_modal,name="reactivar_proveedor_modal",),
+    path("proveedores/modal/sancionar/<str:id>/",prov_views.sancionar_proveedor_modal,name="sancionar_proveedor_modal",),
 
     # MARCAS
     path("marcas/", mar_views.lista_marcas, name="lista_marcas"),  # type: ignore
@@ -154,31 +110,12 @@ path(
 ),
         # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
-    path(
-        "compras/<int:id>/",
-        compra_views.detalle_compra,
-        name="detalle_compra",
-    ),
-    path(
-        "compras/estado/",
-        compra_views.cambiar_estado_compra,
-        name="cambiar_estado_compra",
-    ),
-    path(
-        "compras/estado/<int:id>/",
-        compra_views.cambiar_estado_compra,
-        name="cambiar_estado_compra_id",
-    ),
-    path(
-        "compras/pago/",
-        compra_views.registrar_pago_compra,
-        name="registrar_pago_compra",
-    ),
-    path(
-        "compras/pago/<int:id>/",
-        compra_views.registrar_pago_compra,
-        name="registrar_pago_compra_id",
-    ),
+    path("compras/<int:id>/", compra_views.detalle_compra, name="detalle_compra",),
+    path("compras/estado/",compra_views.cambiar_estado_compra, name="cambiar_estado_compra", ),
+    path("compras/estado/<int:id>/",compra_views.cambiar_estado_compra,name="cambiar_estado_compra_id",),
+    path("compras/pago/",compra_views.registrar_pago_compra,name="registrar_pago_compra",),
+    path("compras/pago/<int:id>/",compra_views.registrar_pago_compra,name="registrar_pago_compra_id",),
+
     # LOTES
     path("lotes/", lot_views.gestion_stock, name="gestion_stock"),
     path("lotes/lista/", lot_views.lote_list, name="lote_list"),

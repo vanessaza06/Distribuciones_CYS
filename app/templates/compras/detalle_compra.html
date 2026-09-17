@@ -6,202 +6,815 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
+<style>
+  /* ─── DETALLE COMPRA — Estilos específicos ─── */
+
+  .dc-hero {
+    background: linear-gradient(135deg, #02224a 0%, #011936 60%, rgba(207,156,72,0.06) 100%);
+    border: 1px solid rgba(207,156,72,0.2);
+    border-left: 4px solid #CF9C48;
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dc-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(207,156,72,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .dc-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(207,156,72,0.12);
+    color: #CF9C48;
+    border: 1px solid rgba(207,156,72,0.3);
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .dc-hero-title {
+    color: #e2e8f0;
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .dc-hero-title i {
+    color: #CF9C48;
+    margin-right: 0.4rem;
+  }
+
+  .dc-hero-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #8FA3B1;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  .dc-hero-code span {
+    color: #CF9C48;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+
+  .btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(207,156,72,0.3);
+    color: #CF9C48;
+    border-radius: 8px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .btn-volver:hover {
+    background: rgba(207,156,72,0.1);
+    border-color: #CF9C48;
+    color: #CF9C48;
+    transform: translateX(-2px);
+  }
+
+  /* ─── KPI Cards fila superior ─── */
+  .dc-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .dc-kpi {
+    background: #02224a;
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    border-left: 3px solid transparent;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .dc-kpi:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+
+  .dc-kpi--gold  { border-left-color: #CF9C48; }
+  .dc-kpi--blue  { border-left-color: #4DA8DA; }
+  .dc-kpi--green { border-left-color: #27ae60; }
+  .dc-kpi--red   { border-left-color: #912F40; }
+  .dc-kpi--purple{ border-left-color: #9b5de5; }
+
+  .dc-kpi__label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8FA3B1;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dc-kpi__value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #e2e8f0;
+  }
+
+  .dc-kpi__sub {
+    font-size: 0.72rem;
+    color: #8FA3B1;
+    margin-top: 0.3rem;
+  }
+
+  .dc-kpi--gold .dc-kpi__value  { color: #CF9C48; }
+  .dc-kpi--blue .dc-kpi__value  { color: #4DA8DA; }
+  .dc-kpi--green .dc-kpi__value { color: #27ae60; }
+  .dc-kpi--purple .dc-kpi__value{ color: #9b5de5; }
+
+  /* ─── Secciones de información ─── */
+  .dc-section {
+    background: #02224a;
+    border: 1px solid rgba(239,248,226,0.1);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+
+  .dc-section__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(239,248,226,0.08);
+    background: rgba(207,156,72,0.04);
+  }
+
+  .dc-section__head-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(207,156,72,0.12);
+    border: 1px solid rgba(207,156,72,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #CF9C48;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .dc-section__head-title {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .dc-section__body {
+    padding: 1.5rem;
+  }
+
+  /* ─── Filas de datos ─── */
+  .dc-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .dc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .dc-field__label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8FA3B1;
+  }
+
+  .dc-field__value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+
+  .dc-field__value--big {
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  .dc-field__value--gold   { color: #CF9C48; }
+  .dc-field__value--blue   { color: #4DA8DA; }
+  .dc-field__value--green  { color: #27ae60; }
+  .dc-field__value--muted  { color: #8FA3B1; }
+
+  /* ─── Divider ─── */
+  .dc-divider {
+    height: 1px;
+    background: rgba(239,248,226,0.08);
+    margin: 1.25rem 0;
+  }
+
+  /* ─── Badge de estado ─── */
+  .dc-estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .dc-estado-badge--pendiente  { background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
+  .dc-estado-badge--confirmada { background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.35); }
+  .dc-estado-badge--recibida   { background: rgba(39,174,96,0.15);  color: #27ae60; border: 1px solid rgba(39,174,96,0.35); }
+  .dc-estado-badge--cancelada  { background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
+
+  .dc-pago-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .dc-pago-badge--pagada   { background: rgba(207,156,72,0.15); color: #CF9C48; border: 1px solid rgba(207,156,72,0.35); }
+  .dc-pago-badge--parcial  { background: rgba(232,168,124,0.15); color: #e8a87c; border: 1px solid rgba(232,168,124,0.35); }
+  .dc-pago-badge--pendiente{ background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
+
+  /* ─── Barra de progreso de pago ─── */
+  .dc-progress-wrap {
+    margin-top: 1rem;
+  }
+  .dc-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #8FA3B1;
+    margin-bottom: 0.4rem;
+  }
+  .dc-progress-bar-bg {
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dc-progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #CF9C48, #e8a87c);
+    transition: width 0.6s ease;
+  }
+
+  /* ─── Botones de acción ─── */
+  .dc-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid rgba(239,248,226,0.08);
+    background: rgba(207,156,72,0.03);
+    border-radius: 0 0 10px 10px;
+  }
+
+  .dc-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #CF9C48;
+    color: #011936;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dc-btn-primary:hover {
+    background: #e8b55a;
+    color: #011936;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(207,156,72,0.4);
+  }
+
+  .dc-btn-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(77,168,218,0.15);
+    color: #4DA8DA;
+    border: 1px solid rgba(77,168,218,0.35);
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dc-btn-info:hover {
+    background: rgba(77,168,218,0.25);
+    color: #4DA8DA;
+    transform: translateY(-2px);
+  }
+
+  .dc-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #8FA3B1;
+    border: 1px solid rgba(239,248,226,0.15);
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dc-btn-outline:hover {
+    background: rgba(239,248,226,0.05);
+    color: #e2e8f0;
+    border-color: rgba(239,248,226,0.3);
+  }
+
+  /* ─── Timeline de auditoría ─── */
+  .dc-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .dc-timeline-item {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    padding-bottom: 1.25rem;
+  }
+  .dc-timeline-item:last-child { padding-bottom: 0; }
+  .dc-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 28px;
+    bottom: 0;
+    width: 2px;
+    background: rgba(207,156,72,0.15);
+  }
+  .dc-timeline-item:last-child::before { display: none; }
+  .dc-timeline-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(207,156,72,0.12);
+    border: 2px solid rgba(207,156,72,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #CF9C48;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .dc-timeline-content { flex: 1; padding-top: 0.25rem; }
+  .dc-timeline-title { color: #e2e8f0; font-size: 0.85rem; font-weight: 600; }
+  .dc-timeline-sub { color: #8FA3B1; font-size: 0.75rem; margin-top: 0.15rem; }
+
+  /* ─── Lote badge ─── */
+  .dc-lote-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(77,168,218,0.1);
+    border: 1px solid rgba(77,168,218,0.25);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    color: #4DA8DA;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .dc-kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .dc-hero-title { font-size: 1.4rem; }
+    .dc-hero { padding: 1.25rem; }
+    .dc-section__body { padding: 1.1rem; }
+    .dc-actions { flex-direction: column; }
+    .dc-btn-primary, .dc-btn-info, .dc-btn-outline { width: 100%; justify-content: center; }
+  }
+  @media (max-width: 480px) {
+    .dc-kpi-row { grid-template-columns: 1fr 1fr; }
+    .dc-data-grid { grid-template-columns: 1fr; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
-  <div class="cys-snap-section px-3 py-4">
+<div class="container-fluid px-4 py-4">
 
-    <!-- ENCABEZADO -->
-    <div class="card card-dev cys-card editar-header p-4 mb-4">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-        <div>
-          <span class="badge badge-cyan small mb-2 d-inline-block">
-            <i class="bi bi-receipt me-1"></i>DETALLE
-          </span>
-          <h1 class="editar-title mb-0">
-            <i class="bi bi-receipt-cutoff"></i> Compra #{{ compra.id }}
-          </h1>
-        </div>
-        <a href="{% url 'compras' %}" class="btn btn-sm btn-outline-secondary fw-bold">
-          <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
+  {# ─── ENCABEZADO HERO ─── #}
+  <div class="dc-hero d-flex align-items-start justify-content-between flex-wrap gap-3">
+    <div>
+      <div class="dc-hero-badge">
+        <i class="bi bi-receipt"></i> Detalle de Compra
+      </div>
+      <h1 class="dc-hero-title">
+        <i class="bi bi-receipt-cutoff"></i>Compra
+        <span style="color:#CF9C48;">#{{ compra.codigo_compra }}</span>
+      </h1>
+      <div class="dc-hero-code">
+        <i class="bi bi-building"></i>
+        {% if compra.proveedor %}{{ compra.proveedor.nombre_empresa }}{% else %}Sin proveedor{% endif %}
+        &nbsp;·&nbsp;
+        <i class="bi bi-calendar3"></i>
+        {{ compra.fecha|date:"d/m/Y" }}
+      </div>
+    </div>
+    <a href="{% url 'compras' %}" class="btn-volver">
+      <i class="bi bi-arrow-left"></i> Volver a Compras
+    </a>
+  </div>
+
+  {# ─── TARJETAS KPI ─── #}
+  <div class="dc-kpi-row">
+
+    {# Estado de Compra #}
+    <div class="dc-kpi dc-kpi--gold">
+      <div class="dc-kpi__label"><i class="bi bi-activity"></i> Estado</div>
+      {% if compra.estado == 'recibida' %}
+        <div class="dc-estado-badge dc-estado-badge--recibida"><i class="bi bi-check-circle-fill"></i>{{ compra.get_estado_display }}</div>
+      {% elif compra.estado == 'confirmada' %}
+        <div class="dc-estado-badge dc-estado-badge--confirmada"><i class="bi bi-check2-circle"></i>{{ compra.get_estado_display }}</div>
+      {% elif compra.estado == 'cancelada' %}
+        <div class="dc-estado-badge dc-estado-badge--cancelada"><i class="bi bi-x-circle-fill"></i>{{ compra.get_estado_display }}</div>
+      {% else %}
+        <div class="dc-estado-badge dc-estado-badge--pendiente"><i class="bi bi-hourglass-split"></i>{{ compra.get_estado_display }}</div>
+      {% endif %}
+      <div class="dc-kpi__sub">Estado actual de la compra</div>
+    </div>
+
+    {# Total Compra #}
+    <div class="dc-kpi dc-kpi--gold">
+      <div class="dc-kpi__label"><i class="bi bi-cash-stack"></i> Total Compra</div>
+      <div class="dc-kpi__value dc-kpi__value--gold">
+        {% if compra.precio_unitario %}${{ compra.total|floatformat:0 }}{% else %}<span style="color:#8FA3B1;">—</span>{% endif %}
+      </div>
+      <div class="dc-kpi__sub">{{ compra.cantidad|default:0 }} und. × ${{ compra.precio_unitario|default:0|floatformat:0 }}/und.</div>
+    </div>
+
+    {# Estado de Pago #}
+    <div class="dc-kpi dc-kpi--blue">
+      <div class="dc-kpi__label"><i class="bi bi-credit-card"></i> Pago</div>
+      {% if compra.estado_pago == 'pagada' %}
+        <div class="dc-pago-badge dc-pago-badge--pagada"><i class="bi bi-check-circle-fill"></i>Pagada</div>
+      {% elif compra.estado_pago == 'parcial' %}
+        <div class="dc-pago-badge dc-pago-badge--parcial"><i class="bi bi-dash-circle"></i>Parcial</div>
+      {% else %}
+        <div class="dc-pago-badge dc-pago-badge--pendiente"><i class="bi bi-hourglass"></i>Pendiente</div>
+      {% endif %}
+      <div class="dc-kpi__sub">
+        Saldo: ${{ compra.saldo|default:0|floatformat:0 }}
       </div>
     </div>
 
-    <!-- INFORMACIÓN DE AUDITORÍA Y ESTADO -->
-    <div class="row gx-2 gy-2 mb-4">
-      <div class="col-12 col-md-6">
-        <div class="cys-card cys-card--inv p-3">
-          <div class="cys-card__title small mb-2">Estado Compra</div>
-          <span class="cys-badge
-            {% if compra.estado == 'recibida' %}cys-badge--verde
-            {% elif compra.estado == 'confirmada' %}cys-badge--azul
-            {% elif compra.estado == 'cancelada' %}cys-badge--rojo
-            {% else %}cys-badge--amarillo{% endif %}">
-            {{ compra.get_estado_display|upper }}
-          </span>
-        </div>
+    {# Fecha Registro #}
+    <div class="dc-kpi dc-kpi--purple">
+      <div class="dc-kpi__label"><i class="bi bi-calendar-check"></i> Fecha</div>
+      <div class="dc-kpi__value" style="font-size:1.1rem; color:#9b5de5;">
+        {% if compra.detalles.first %}
+          {{ compra.detalles.first.fecha_registro|date:"d/m/Y" }}
+        {% else %}
+          {{ compra.fecha|date:"d/m/Y" }}
+        {% endif %}
       </div>
-      <div class="col-12 col-md-6">
-        <div class="cys-card cys-card--diario p-3">
-          <div class="cys-card__title small mb-2">Fecha de Registro</div>
-          <div class="fw-bold text-yellow">{{ compra.fecha_registro|date:"d/m/Y" }}</div>
-          <div class="text-sm text-muted">{{ compra.fecha_registro|time:"H:i" }}</div>
-        </div>
+      <div class="dc-kpi__sub">
+        {% if compra.detalles.first %}
+          {{ compra.detalles.first.fecha_registro|time:"H:i" }} hrs
+        {% else %}
+          {{ compra.fecha|time:"H:i" }} hrs
+        {% endif %}
       </div>
     </div>
+  </div>
 
-    <!-- INFORMACIÓN DEL PRODUCTO -->
-    <div class="card card-dev editar-form-card p-4 mb-4">
-      <h5><i class="bi bi-box-seam me-2"></i>Información del Producto</h5>
-      <div class="row g-3 mt-3">
-        <div class="col-12 col-md-8">
-          <div class="prod-label text-uppercase mb-2">Nombre del Producto</div>
-          <div class="fw-bold fs-5">{{ compra.producto.nombre }}</div>
-          {% if compra.producto.categoria %}
-          <div class="text-muted small mt-1">
-            <i class="bi bi-tag me-1"></i>{{ compra.producto.categoria.nombre }}
-          </div>
-          {% endif %}
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="prod-label text-uppercase mb-2">Cantidad</div>
-          <div class="fw-bold fs-5 text-primary">{{ compra.cantidad }} und.</div>
-        </div>
-      </div>
-    </div>
+  <div class="row g-3">
 
-    <!-- INFORMACIÓN DE PRECIO Y TOTALES -->
-    <div class="card card-dev editar-form-card p-4 mb-4">
-      <h5><i class="bi bi-cash-coin me-2"></i>Información Financiera</h5>
-      <div class="row g-3 mt-3">
-        <div class="col-12 col-md-4">
-          <div class="prod-label text-uppercase mb-2">Precio Unitario</div>
-          <div class="fw-bold fs-5 text-success">
-            {% if compra.precio_unitario %}
-              ${{ compra.precio_unitario|floatformat:0 }}
-            {% else %}
-              <span class="text-muted">No especificado</span>
+    {# ─── COLUMNA IZQUIERDA ─── #}
+    <div class="col-12 col-lg-7">
+
+      {# INFORMACIÓN DEL PRODUCTO #}
+      <div class="dc-section">
+        <div class="dc-section__head">
+          <div class="dc-section__head-icon"><i class="bi bi-box-seam"></i></div>
+          <h2 class="dc-section__head-title">Información del Producto</h2>
+        </div>
+        <div class="dc-section__body">
+          {% if compra.producto %}
+          <div class="dc-data-grid">
+            <div class="dc-field" style="grid-column: 1 / -1;">
+              <div class="dc-field__label">Nombre del Producto</div>
+              <div class="dc-field__value dc-field__value--big">{{ compra.producto.nombre }}</div>
+              {% if compra.producto.categoria %}
+              <div style="margin-top:0.4rem;">
+                <span style="background:rgba(77,168,218,0.1);color:#4DA8DA;border:1px solid rgba(77,168,218,0.25);border-radius:6px;padding:0.2rem 0.65rem;font-size:0.75rem;font-weight:600;">
+                  <i class="bi bi-tag me-1"></i>{{ compra.producto.categoria.nombre }}
+                </span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label">Cantidad Comprada</div>
+              <div class="dc-field__value dc-field__value--blue" style="font-size:1.5rem;font-weight:800;">{{ compra.cantidad|default:0 }} <span style="font-size:0.9rem;font-weight:600;">und.</span></div>
+            </div>
+            {% if compra.producto.codigo %}
+            <div class="dc-field">
+              <div class="dc-field__label">Código Producto</div>
+              <div class="dc-field__value dc-field__value--muted" style="font-family:monospace;">{{ compra.producto.codigo }}</div>
+            </div>
             {% endif %}
           </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="prod-label text-uppercase mb-2">Total Compra</div>
-          <div class="fw-bold fs-4 text-primary">
-            {% if compra.precio_unitario %}
-              ${{ compra.total|floatformat:0 }}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="prod-label text-uppercase mb-2">Estado de Pago</div>
-          {% if compra.estado_pago == 'pagada' %}
-            <span class="badge badge-success-custom">
-              <i class="bi bi-check-circle me-1"></i>Pagada
-            </span>
-          {% elif compra.estado_pago == 'parcial' %}
-            <span class="badge badge-warning-custom">
-              <i class="bi bi-dash-circle me-1"></i>Parcial
-            </span>
           {% else %}
-            <span class="badge badge-pending-custom">
-              <i class="bi bi-hourglass-split me-1"></i>Pendiente
-            </span>
+          <div class="text-center py-3" style="color:#8FA3B1;">
+            <i class="bi bi-box" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+            Sin información de producto
+          </div>
+          {% endif %}
+
+          {% if compra.numero_lote %}
+          <div class="dc-divider"></div>
+          <div class="dc-field">
+            <div class="dc-field__label"><i class="bi bi-tag me-1"></i>Número de Lote</div>
+            <div class="dc-lote-tag">
+              <i class="bi bi-upc-scan"></i>{{ compra.numero_lote }}
+            </div>
+          </div>
           {% endif %}
         </div>
       </div>
+
+      {# INFORMACIÓN FINANCIERA #}
+      <div class="dc-section">
+        <div class="dc-section__head">
+          <div class="dc-section__head-icon"><i class="bi bi-cash-coin"></i></div>
+          <h2 class="dc-section__head-title">Información Financiera</h2>
+        </div>
+        <div class="dc-section__body">
+          <div class="dc-data-grid">
+            <div class="dc-field">
+              <div class="dc-field__label">Precio Unitario</div>
+              <div class="dc-field__value dc-field__value--gold" style="font-size:1.3rem;font-weight:800;">
+                {% if compra.precio_unitario %}
+                  ${{ compra.precio_unitario|floatformat:0 }}
+                {% else %}
+                  <span class="dc-field__value--muted" style="font-size:1rem;">No especificado</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label">Total Compra</div>
+              <div class="dc-field__value dc-field__value--gold" style="font-size:1.6rem;font-weight:800;">
+                {% if compra.precio_unitario %}
+                  ${{ compra.total|floatformat:0 }}
+                {% else %}
+                  <span class="dc-field__value--muted" style="font-size:1rem;">—</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label">Monto Pagado</div>
+              <div class="dc-field__value" style="color:#27ae60;font-size:1.2rem;font-weight:700;">
+                ${{ compra.monto_pagado|default:0|floatformat:0 }}
+              </div>
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label">Saldo Pendiente</div>
+              <div class="dc-field__value" style="color:{% if compra.saldo <= 0 %}#27ae60{% else %}#e74c3c{% endif %};font-size:1.2rem;font-weight:700;">
+                ${{ compra.saldo|default:0|floatformat:0 }}
+              </div>
+            </div>
+          </div>
+
+          {# Barra de progreso de pago #}
+          {% if compra.total and compra.total > 0 %}
+          <div class="dc-progress-wrap">
+            <div class="dc-progress-labels">
+              <span>Progreso de pago</span>
+              <span>
+                {% if compra.monto_pagado %}
+                  {{ compra.monto_pagado|floatformat:0 }} / {{ compra.total|floatformat:0 }}
+                {% else %}0 / {{ compra.total|floatformat:0 }}{% endif %}
+              </span>
+            </div>
+            <div class="dc-progress-bar-bg">
+              <div class="dc-progress-bar-fill"
+                style="width: {% if compra.monto_pagado and compra.total %}{% widthratio compra.monto_pagado compra.total 100 %}{% else %}0{% endif %}%;">
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
 
-    <!-- INFORMACIÓN DEL PROVEEDOR -->
-    <div class="card card-dev editar-form-card p-4 mb-4">
-      <h5><i class="bi bi-truck me-2"></i>Información del Proveedor</h5>
-      <div class="row g-3 mt-3">
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Empresa</div>
-          <div class="fw-bold">{{ compra.proveedor.nombre_empresa|default:"N/A" }}</div>
+    {# ─── COLUMNA DERECHA ─── #}
+    <div class="col-12 col-lg-5">
+
+      {# INFORMACIÓN DEL PROVEEDOR #}
+      <div class="dc-section">
+        <div class="dc-section__head">
+          <div class="dc-section__head-icon"><i class="bi bi-truck"></i></div>
+          <h2 class="dc-section__head-title">Información del Proveedor</h2>
         </div>
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Contacto</div>
-          <div class="fw-bold">{{ compra.proveedor.nombre_contacto|default:"No especificado" }}</div>
+        <div class="dc-section__body">
+          {% if compra.proveedor %}
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+            <div style="width:48px;height:48px;border-radius:10px;background:rgba(207,156,72,0.12);border:1.5px solid rgba(207,156,72,0.3);display:flex;align-items:center;justify-content:center;color:#CF9C48;font-size:1.3rem;flex-shrink:0;">
+              <i class="bi bi-building"></i>
+            </div>
+            <div>
+              <div style="color:#e2e8f0;font-size:1.05rem;font-weight:700;">{{ compra.proveedor.nombre_empresa|default:"N/A" }}</div>
+              {% if compra.proveedor.tipo_proveedor %}
+              <span style="background:rgba(77,168,218,0.1);color:#4DA8DA;border:1px solid rgba(77,168,218,0.25);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;">
+                {{ compra.proveedor.get_tipo_proveedor_display }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="dc-divider"></div>
+
+          <div style="display:flex;flex-direction:column;gap:0.85rem;">
+            <div class="dc-field">
+              <div class="dc-field__label"><i class="bi bi-person me-1"></i>Contacto</div>
+              <div class="dc-field__value">{{ compra.proveedor.nombre_contacto|default:"No especificado" }}</div>
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label"><i class="bi bi-telephone me-1"></i>Teléfono</div>
+              <div class="dc-field__value">
+                {% if compra.proveedor.telefono %}
+                  <a href="tel:{{ compra.proveedor.telefono }}" style="color:#4DA8DA;text-decoration:none;">
+                    {{ compra.proveedor.telefono }}
+                  </a>
+                {% else %}
+                  <span class="dc-field__value--muted">No especificado</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="dc-field">
+              <div class="dc-field__label"><i class="bi bi-envelope me-1"></i>Correo</div>
+              <div class="dc-field__value">
+                {% if compra.proveedor.email %}
+                  <a href="mailto:{{ compra.proveedor.email }}" style="color:#4DA8DA;text-decoration:none;">{{ compra.proveedor.email }}</a>
+                {% else %}
+                  <span class="dc-field__value--muted">No especificado</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-3" style="color:#8FA3B1;">
+            <i class="bi bi-truck" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+            Sin información de proveedor
+          </div>
+          {% endif %}
         </div>
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Teléfono</div>
-          <div class="fw-bold">{{ compra.proveedor.telefono|default:"No especificado" }}</div>
+      </div>
+
+      {# AUDITORÍA / TIMELINE #}
+      <div class="dc-section">
+        <div class="dc-section__head">
+          <div class="dc-section__head-icon"><i class="bi bi-clock-history"></i></div>
+          <h2 class="dc-section__head-title">Auditoría</h2>
         </div>
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Correo</div>
-          <div class="fw-bold">
-            {% if compra.proveedor.email %}
-              <a href="mailto:{{ compra.proveedor.email }}" class="text-decoration-none">{{ compra.proveedor.email }}</a>
-            {% else %}
-              <span class="text-muted">No especificado</span>
+        <div class="dc-section__body">
+          <div class="dc-timeline">
+            <div class="dc-timeline-item">
+              <div class="dc-timeline-dot"><i class="bi bi-plus-lg"></i></div>
+              <div class="dc-timeline-content">
+                <div class="dc-timeline-title">Compra registrada</div>
+                <div class="dc-timeline-sub">{{ compra.fecha|date:"d/m/Y H:i" }} hrs</div>
+              </div>
+            </div>
+            {% if compra.estado == 'confirmada' or compra.estado == 'recibida' %}
+            <div class="dc-timeline-item">
+              <div class="dc-timeline-dot" style="background:rgba(77,168,218,0.12);border-color:rgba(77,168,218,0.35);color:#4DA8DA;">
+                <i class="bi bi-check2"></i>
+              </div>
+              <div class="dc-timeline-content">
+                <div class="dc-timeline-title">Compra confirmada</div>
+                <div class="dc-timeline-sub" style="color:#4DA8DA;">Estado: Confirmada</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if compra.estado == 'recibida' %}
+            <div class="dc-timeline-item">
+              <div class="dc-timeline-dot" style="background:rgba(39,174,96,0.12);border-color:rgba(39,174,96,0.35);color:#27ae60;">
+                <i class="bi bi-box-arrow-in-down"></i>
+              </div>
+              <div class="dc-timeline-content">
+                <div class="dc-timeline-title">Mercancía recibida</div>
+                <div class="dc-timeline-sub" style="color:#27ae60;">Estado: Recibida</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if compra.estado == 'cancelada' %}
+            <div class="dc-timeline-item">
+              <div class="dc-timeline-dot" style="background:rgba(231,76,60,0.12);border-color:rgba(231,76,60,0.35);color:#e74c3c;">
+                <i class="bi bi-x-lg"></i>
+              </div>
+              <div class="dc-timeline-content">
+                <div class="dc-timeline-title">Compra cancelada</div>
+                <div class="dc-timeline-sub" style="color:#e74c3c;">Estado: Cancelada</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if compra.usuario %}
+            <div class="dc-timeline-item">
+              <div class="dc-timeline-dot" style="background:rgba(155,93,229,0.12);border-color:rgba(155,93,229,0.35);color:#9b5de5;">
+                <i class="bi bi-person"></i>
+              </div>
+              <div class="dc-timeline-content">
+                <div class="dc-timeline-title">Registrado por</div>
+                <div class="dc-timeline-sub">{{ compra.usuario.get_full_name|default:compra.usuario.username }}</div>
+              </div>
+            </div>
             {% endif %}
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- INFORMACIÓN DEL LOTE -->
-    {% if compra.numero_lote %}
-    <div class="card card-dev editar-form-card p-4 mb-4">
-      <h5><i class="bi bi-tag me-2"></i>Información del Lote</h5>
-      <div class="row g-3 mt-3">
-        <div class="col-12">
-          <div class="prod-label text-uppercase mb-2">Número de Lote</div>
-          <div class="fw-bold fs-5 text-monospace">{{ compra.numero_lote }}</div>
-        </div>
-      </div>
     </div>
-    {% endif %}
+  </div>
 
-    <!-- INFORMACIÓN DE PAGO DETALLADA -->
-    {% if compra.monto_pagado > 0 or compra.estado_pago != 'pendiente' %}
-    <div class="card card-dev editar-form-card p-4 mb-4">
-      <h5><i class="bi bi-credit-card me-2"></i>Detalles de Pago</h5>
-      <div class="row g-3 mt-3">
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Monto Pagado</div>
-          <div class="fw-bold fs-5 text-success">${{ compra.monto_pagado|default:0|floatformat:0 }}</div>
-        </div>
-        <div class="col-12 col-md-6">
-          <div class="prod-label text-uppercase mb-2">Saldo Pendiente</div>
-          <div class="fw-bold fs-5 {% if compra.monto_pagado >= compra.total %}text-success{% else %}text-danger{% endif %}">
-            {% with saldo=compra.total|add:compra.monto_pagado|add:-compra.total %}
-              ${{ saldo|default:0|floatformat:0 }}
-            {% endwith %}
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- BOTONES DE ACCIONES -->
-    <div class="d-flex gap-2 mt-4">
-      {% if compra.estado_pago != 'pagada' %}
-      <a href="{% url 'compras' %}" class="btn btn-success fw-bold">
-        <i class="bi bi-credit-card me-1"></i>Registrar Pago
+  {# ─── BOTONES DE ACCIONES ─── #}
+  <div class="dc-section mt-2">
+    <div class="dc-actions">
+      {% if compra.estado_pago != 'pagada' and compra.estado != 'cancelada' %}
+      <a href="{% url 'compras' %}" class="dc-btn-primary">
+        <i class="bi bi-credit-card"></i> Registrar Pago
       </a>
       {% endif %}
 
       {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
       <form method="POST" action="#" class="d-inline">
         {% csrf_token %}
-        <input type="hidden" name="estado" value="{% if compra.estado == 'pendiente' %}confirmada{% elif compra.estado == 'confirmada' %}recibida{% endif %}">
-        <button type="submit" class="btn btn-info fw-bold">
-          <i class="bi bi-check2-circle me-1"></i>
-          {% if compra.estado == 'pendiente' %}Confirmar{% elif compra.estado == 'confirmada' %}Marcar como Recibida{% endif %}
+        <input type="hidden" name="estado"
+          value="{% if compra.estado == 'pendiente' %}confirmada{% elif compra.estado == 'confirmada' %}recibida{% endif %}">
+        <button type="submit" class="dc-btn-info">
+          <i class="bi bi-check2-circle"></i>
+          {% if compra.estado == 'pendiente' %}Confirmar Compra{% elif compra.estado == 'confirmada' %}Marcar como Recibida{% endif %}
         </button>
       </form>
       {% endif %}
 
-      <a href="{% url 'compras' %}" class="btn btn-outline-secondary fw-bold">
-        <i class="bi bi-x-circle me-1"></i>Cerrar
+      <a href="{% url 'compras' %}" class="dc-btn-outline">
+        <i class="bi bi-arrow-left"></i> Volver a Compras
       </a>
     </div>
-
   </div>
+
 </div>
 {% endblock %}
