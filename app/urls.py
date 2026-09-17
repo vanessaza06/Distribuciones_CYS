@@ -26,6 +26,15 @@ urlpatterns = [
     path("ventas/nueva/", ventas_views.nueva_venta, name="nueva_venta"),
     path("ventas/eliminar/<int:pk>/", ventas_views.eliminar_venta, name="eliminar_venta"),
     path("ventas/producto-stock/<int:pk>/", ventas_views.producto_stock_json, name="producto_stock_json"),
+
+    # DEVOLUCIONES
+    path("devoluciones/", dev_views.lista_devoluciones, name="lista_devoluciones"),
+    path("devoluciones/buscar/",dev_views.buscar_venta_devolucion,name="buscar_venta_devolucion",),
+    path("devoluciones/venta/<int:venta_id>/",dev_views.seleccionar_venta_devolucion,name="seleccionar_venta_devolucion", ),
+    path( "devoluciones/venta/<int:venta_id>/registrar/",dev_views.registrar_devolucion,name="registrar_devolucion",),
+    path( "devoluciones/detalle/<int:venta_id>/",dev_views.detalle_venta_devolucion,name="detalle_venta_devolucion",),
+    path("devoluciones/comprobante/<int:pk>/",dev_views.comprobante_devolucion,name="comprobante_devolucion",),
+    path("devoluciones/<int:pk>/", dev_views.detalle_devolucion, name="detalle_devolucion",),
     path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
 
     # CAJA
@@ -34,12 +43,8 @@ urlpatterns = [
     path("ventas/caja/cierre/", ventas_views.cierre_caja, name="cierre_caja"),
     path("ventas/caja/conteo/", ventas_views.registrar_conteo, name="registrar_conteo"),
 
-    # DEVOLUCIONES DE VENTAS
-    path("ventas/devoluciones/", ventas_views.lista_devoluciones, name="lista_devoluciones"),
-    path("ventas/devoluciones/buscar/", ventas_views.buscar_venta_devolucion, name="buscar_venta_devolucion"),
-    path("ventas/devoluciones/detalle/<int:venta_id>/", ventas_views.detalle_venta_devolucion, name="detalle_venta_devolucion"),
-    path("ventas/devoluciones/registrar/", ventas_views.registrar_devolucion, name="registrar_devolucion"),
-    path("ventas/devoluciones/comprobante/<int:pk>/", ventas_views.comprobante_devolucion, name="comprobante_devolucion"),
+    
+
 
     # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
