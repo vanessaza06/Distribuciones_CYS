@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ devolucion.numero }} — Detalle Devolución | CYS Ltda{% endblock %}
+{% block page_title %}Detalle de Devolución{% endblock %}
+{% block nav_devoluciones %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}">
+<link rel="stylesheet" href="{% static 'css/devoluciones/detalle_devolucion.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="dev-page container-fluid p-0">
+
+  {% if messages %}
+  <div aria-live="polite" class="mb-3">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show mb-2" role="alert">
+      {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- HERO -->
+  <header class="dd-hero" aria-label="Encabezado devolución">
+    <div class="dd-hero__left">
+      <span class="dd-hero__badge">
+        <i class="bi bi-arrow-return-left"></i> Devolución de Cliente
+      </span>
+      <h1 class="dd-hero__num">{{ devolucion.numero }}</h1>
+      <p class="dd-hero__sub">
+        <i class="bi bi-calendar3" style="color:#CF9C48"></i>
+        {{ devolucion.fecha|date:"d \d\e F \d\e Y, H:i" }}
+        {% if devolucion.usuario %}
+          &nbsp;·&nbsp;
+          <i class="bi bi-person" style="color:#CF9C48"></i>
+          {{ devolucion.usuario.nombre }} {{ devolucion.usuario.apellido }}
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="dd-hero__right">
+      {% if devolucion.estado == 'completada' %}
+        <span class="dd-estado dd-estado--completada">
+          <i class="bi bi-check-circle-fill" style="color:#29b8a6 !important"></i> Completada
+        </span>
+      {% elif devolucion.estado == 'pendiente' %}
+        <span class="dd-estado dd-estado--pendiente">
+          <i class="bi bi-clock-history" style="color:#CF9C48 !important"></i> Pendiente
+        </span>
+      {% elif devolucion.estado == 'rechazada' %}
+        <span class="dd-estado dd-estado--rechazada">
+          <i class="bi bi-x-circle-fill" style="color:#ef4444 !important"></i> Rechazada
+        </span>
+      {% else %}
+        <span class="dd-estado dd-estado--activo">
+          <i class="bi bi-circle-fill" style="color:#CF9C48 !important"></i> {{ devolucion.estado|capfirst }}
+        </span>
+      {% endif %}
+      <div class="dd-monto">
+        ${{ devolucion.total_devuelto|floatformat:0 }}
+        <small>total devuelto</small>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT PRINCIPAL -->
+  <div class="dd-layout">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+      <!-- 1. Información general -->
+      <section class="dd-card" aria-labelledby="sec-info">
+        <div class="dd-card__head">
+          <h3 id="sec-info"><i class="bi bi-info-circle"></i> Información General</h3>
+          <span class="dd-badge">Resumen</span>
+        </div>
+        <div class="dd-card__body">
+          <div class="dd-info-grid">
+
+            <!-- Cliente -->
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-person-circle"></i> Cliente</div>
+              <div class="dd-info-value">
+                {% if devolucion.venta.cliente %}{{ devolucion.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}
+              </div>
+              {% if devolucion.venta.cliente.email %}
+              <div class="dd-info-sub">{{ devolucion.venta.cliente.email }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Motivo -->
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-chat-square-text"></i> Motivo</div>
+              <div class="dd-info-value">{{ devolucion.get_motivo_display }}</div>
+            </div>
+
+            <!-- Solución -->
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-arrow-left-right"></i> Solución aplicada</div>
+              <div class="dd-info-value">
+                {% if devolucion.tipo_devolucion == 'cambio' %}
+                  Cambio de producto
+                  {% if devolucion.cantidad_cambio > 0 %}
+                  <div class="dd-info-sub">Cantidad: {{ devolucion.cantidad_cambio }} unidades</div>
+                  {% endif %}
+                {% elif devolucion.tipo_devolucion == 'nota_credito' %}
+                  Nota de crédito
+                {% elif devolucion.tipo_devolucion == 'reembolso' %}
+                  Reembolso de dinero
+                  {% if devolucion.metodo_pago_devolucion %}
+                  <div class="dd-info-sub">Vía: {{ devolucion.metodo_pago_devolucion|capfirst }}</div>
+                  {% endif %}
+                {% else %}
+                  {{ devolucion.tipo_devolucion|capfirst|default:"—" }}
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Fecha -->
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-calendar-event"></i> Fecha de registro</div>
+              <div class="dd-info-value">{{ devolucion.fecha|date:"d/m/Y" }}</div>
+              <div class="dd-info-sub">{{ devolucion.fecha|date:"H:i" }} hrs</div>
+            </div>
+
+            <!-- Registrado por -->
+            {% if devolucion.usuario %}
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-person-badge"></i> Registrado por</div>
+              <div class="dd-info-value">{{ devolucion.usuario.nombre }} {{ devolucion.usuario.apellido }}</div>
+              <div class="dd-info-sub">{{ devolucion.usuario.rol|default:"Empleado" }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Estado -->
+            <div class="dd-info-item">
+              <div class="dd-info-label"><i class="bi bi-activity"></i> Estado</div>
+              <div class="dd-info-value">
+                {% if devolucion.estado == 'completada' %}<span style="color:#29b8a6">✓ Completada</span>
+                {% elif devolucion.estado == 'pendiente' %}<span style="color:#CF9C48">⏳ Pendiente</span>
+                {% elif devolucion.estado == 'rechazada' %}<span style="color:#ef4444">✗ Rechazada</span>
+                {% else %}{{ devolucion.estado|capfirst }}{% endif %}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Observaciones -->
+          {% if devolucion.observaciones %}
+          <div class="dd-obs">
+            <i class="bi bi-chat-left-quote"></i>
+            <div>
+              <strong style="font-size:.75rem;color:#CF9C48;text-transform:uppercase;letter-spacing:.08em;">Observaciones</strong>
+              <p style="margin:.25rem 0 0;">{{ devolucion.observaciones }}</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- 2. Productos devueltos -->
+      <section class="dd-card" aria-labelledby="sec-productos">
+        <div class="dd-card__head">
+          <h3 id="sec-productos"><i class="bi bi-box-seam"></i> Productos Devueltos</h3>
+          <span class="dd-badge">{{ devolucion.detalles.count }} ítem{{ devolucion.detalles.count|pluralize:"s" }}</span>
+        </div>
+
+        {% if devolucion.detalles.all %}
+        <div class="table-responsive">
+          <table class="dd-prod-table" aria-label="Listado de productos devueltos">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Presentación</th>
+                <th style="text-align:center">Cantidad</th>
+                <th class="text-end">Precio unit.</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in devolucion.detalles.all %}
+              <tr>
+                <td>
+                  <div class="dd-prod-name">{{ item.producto.nombre|default:"—" }}</div>
+                  {% if item.producto.marca %}<div class="dd-prod-pres">{{ item.producto.marca }}</div>{% endif %}
+                </td>
+                <td>
+                  {% if item.presentacion %}{{ item.presentacion.nombre }}
+                  {% else %}<span style="color:var(--dev-muted)">—</span>{% endif %}
+                </td>
+                <td style="text-align:center"><span class="dd-qty-badge">{{ item.cantidad }}</span></td>
+                <td class="text-end" style="color:var(--dev-muted)">${{ item.precio_unitario|floatformat:0 }}</td>
+                <td class="dd-money">${{ item.subtotal|floatformat:0 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr class="dd-total-row">
+                <td colspan="4" style="text-align:right;color:var(--dev-muted);font-size:.8rem;">
+                  <i class="bi bi-calculator"></i> Total devuelto
+                </td>
+                <td class="dd-money" style="font-size:1.05rem;">${{ devolucion.total_devuelto|floatformat:0 }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        {% else %}
+        <div class="dd-empty">
+          <i class="bi bi-box"></i>
+          <strong>Sin productos registrados</strong>
+          <span>No se encontraron detalles para esta devolución.</span>
+        </div>
+        {% endif %}
+      </section>
+
+    </div><!-- / col izquierda -->
+
+    <!-- SIDEBAR -->
+    <aside class="dd-sidebar" aria-label="Panel lateral">
+
+      <!-- Venta original -->
+      <section class="dd-card" aria-labelledby="sec-venta">
+        <div class="dd-card__head">
+          <h3 id="sec-venta"><i class="bi bi-receipt"></i> Venta Original</h3>
+        </div>
+        <div class="dd-card__body">
+          <a href="{% url 'ventas_lista' %}" class="dd-venta-link" title="Ver ventas">
+            <div class="dd-venta-link__icon"><i class="bi bi-bag-check"></i></div>
+            <div>
+              <strong>Venta #{{ devolucion.venta.pk }}</strong>
+              <small>{{ devolucion.venta.fecha|date:"d/m/Y, H:i" }}</small>
+              <small style="color:#CF9C48;font-weight:700;margin-top:2px;">${{ devolucion.venta.total_venta|floatformat:0 }}</small>
+            </div>
+            <i class="bi bi-arrow-up-right dd-arr"></i>
+          </a>
+
+          <div style="margin-top:1rem;">
+            <div class="dd-resumen-item">
+              <span>Cliente</span>
+              <strong>{% if devolucion.venta.cliente %}{{ devolucion.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}</strong>
+            </div>
+            <div class="dd-resumen-item">
+              <span>Total venta</span>
+              <strong class="dd-money">${{ devolucion.venta.total_venta|floatformat:0 }}</strong>
+            </div>
+            <div class="dd-resumen-item">
+              <span>Fecha</span>
+              <strong>{{ devolucion.venta.fecha|date:"d/m/Y" }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Resumen financiero -->
+      <section class="dd-card" aria-labelledby="sec-resumen">
+        <div class="dd-card__head">
+          <h3 id="sec-resumen"><i class="bi bi-graph-down-arrow"></i> Resumen Financiero</h3>
+        </div>
+        <div class="dd-card__body">
+          <div class="dd-resumen-item">
+            <span>Ítems devueltos</span>
+            <strong>{{ devolucion.detalles.count }}</strong>
+          </div>
+          <div class="dd-resumen-item">
+            <span>Total unidades</span>
+            <strong>{% for item in devolucion.detalles.all %}{{ item.cantidad }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</strong>
+          </div>
+          <div class="dd-resumen-item">
+            <span>Solución</span>
+            <strong>
+              {% if devolucion.tipo_devolucion == 'cambio' %}Cambio
+              {% elif devolucion.tipo_devolucion == 'nota_credito' %}Nota crédito
+              {% elif devolucion.tipo_devolucion == 'reembolso' %}Reembolso
+              {% else %}{{ devolucion.tipo_devolucion|capfirst|default:"—" }}{% endif %}
+            </strong>
+          </div>
+          {% if devolucion.tipo_devolucion == 'reembolso' and devolucion.metodo_pago_devolucion %}
+          <div class="dd-resumen-item">
+            <span>Medio de pago</span>
+            <strong>{{ devolucion.metodo_pago_devolucion|capfirst }}</strong>
+          </div>
+          {% endif %}
+          <div class="dd-resumen-item" style="border-top:2px solid rgba(207,156,72,.3);margin-top:.35rem;padding-top:1rem;">
+            <span style="font-weight:700;">Total devuelto</span>
+            <strong class="dd-money" style="font-size:1.1rem;">${{ devolucion.total_devuelto|floatformat:0 }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Timeline -->
+      <section class="dd-card" aria-labelledby="sec-timeline">
+        <div class="dd-card__head">
+          <h3 id="sec-timeline"><i class="bi bi-clock-history"></i> Cronología</h3>
+        </div>
+        <div class="dd-card__body">
+          <div class="dd-timeline">
+            <div class="dd-timeline-item">
+              <div class="dd-tl-icon dd-tl-icon--done"><i class="bi bi-bag-check"></i></div>
+              <div class="dd-tl-text">
+                <strong>Venta original</strong>
+                <small>{{ devolucion.venta.fecha|date:"d/m/Y, H:i" }}</small>
+              </div>
+            </div>
+            <div class="dd-timeline-item">
+              <div class="dd-tl-icon dd-tl-icon--done"><i class="bi bi-arrow-return-left"></i></div>
+              <div class="dd-tl-text">
+                <strong>Solicitud registrada</strong>
+                <small>{{ devolucion.fecha|date:"d/m/Y, H:i" }}</small>
+              </div>
+            </div>
+            {% if devolucion.estado == 'completada' %}
+            <div class="dd-timeline-item">
+              <div class="dd-tl-icon dd-tl-icon--done"><i class="bi bi-check-circle"></i></div>
+              <div class="dd-tl-text">
+                <strong>Devolución procesada</strong>
+                <small>{{ devolucion.fecha|date:"d/m/Y, H:i" }}</small>
+              </div>
+            </div>
+            {% elif devolucion.estado == 'pendiente' %}
+            <div class="dd-timeline-item">
+              <div class="dd-tl-icon"><i class="bi bi-hourglass-split"></i></div>
+              <div class="dd-tl-text">
+                <strong>Pendiente de resolución</strong>
+                <small>En espera</small>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Acciones -->
+      <section class="dd-card" aria-labelledby="sec-acciones">
+        <div class="dd-card__head">
+          <h3 id="sec-acciones"><i class="bi bi-lightning-charge"></i> Acciones</h3>
+        </div>
+        <div class="dd-card__body" style="padding: 1rem 1.3rem;">
+          <div class="dd-actions" style="margin-top:0;flex-direction:column;">
+            <button type="button" class="dd-btn dd-btn--primary" onclick="window.print()" style="width:100%;justify-content:center;">
+              <i class="bi bi-printer"></i> Imprimir / Exportar
+            </button>
+            <a href="{% url 'comprobante_devolucion' devolucion.pk %}" class="dd-btn dd-btn--ghost" style="width:100%;justify-content:center;">
+              <i class="bi bi-file-earmark-text"></i> Ver Comprobante
+            </a>
+            <a href="{% url 'lista_devoluciones' %}" class="dd-btn dd-btn--ghost" style="width:100%;justify-content:center;">
+              <i class="bi bi-arrow-left"></i> Volver a Devoluciones
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </aside><!-- / sidebar -->
+
+  </div><!-- / dd-layout -->
+
+</div><!-- / dev-page -->
+{% endblock %}
