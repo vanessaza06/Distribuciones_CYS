@@ -266,7 +266,7 @@
                   {% endif %}
                 </td>
                 <td class="text-center">
-                  <a href="#" class="dev-table-action" title="Ver detalle">
+                  <a href="#" class="dev-table-action" title="Ver detalle proveedor">
                     <i class="bi bi-eye"></i>
                   </a>
                 </td>
@@ -392,7 +392,7 @@
           <div class="table-responsive dev-history-table-wrap">
             <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">
               <thead><tr><th>Número</th><th>Cliente</th><th>Motivo</th><th>Solución</th><th>Total</th><th>Fecha</th><th></th></tr></thead>
-              <tbody>{% for dev in devoluciones %}<tr><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{{ dev.codigo_venta.codigo_cliente.nombre }}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td><a class="dev-table-action" href="#" title="Ver comprobante"><i class="bi bi-receipt"></i></a></td></tr>{% endfor %}</tbody>
+              <tbody>{% for dev in devoluciones %}<tr><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{% if dev.venta.cliente %}{{ dev.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td><a class="dev-table-action" href="{% url 'detalle_devolucion' dev.pk %}" title="Ver detalle"><i class="bi bi-eye"></i></a></td></tr>{% endfor %}</tbody>
             </table>
           </div>
         </div>

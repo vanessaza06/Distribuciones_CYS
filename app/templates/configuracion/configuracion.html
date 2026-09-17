@@ -1,0 +1,471 @@
+﻿  {% extends 'base.html' %}
+  {% load static %}
+
+  {% block page_title %}Configuración{% endblock %}
+  {% block title %}Configuración — CYS Ltda{% endblock %}
+
+  {% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/configuracion/configuracion.css' %}">
+  {% endblock %}
+
+  {% block content %}
+  <div class="container-fluid p-0">
+
+    {% csrf_token %}
+
+    <div id="cfg-data"
+        class="cfg-data"
+        data-url-actividad="{% url 'actividad_usuarios' %}"
+        data-url-guardar-empresa="{% url 'guardar_empresa' %}"
+        data-url-verificar-empresa="{% url 'verificar_clave_empresa' %}"
+        data-url-bloquear-empresa="{% url 'bloquear_empresa' %}"
+        data-url-guardar-impuestos="{% url 'guardar_impuestos' %}"
+        data-url-crear-backup="{% url 'crear_backup' %}"
+        data-es-admin="{{ es_admin_empresa|yesno:'true,false' }}"></div>
+
+    <!-- ① VISUALIZACIÓN: BRILLO / FUENTE / AUMENTO (3 TARJETAS CON PERILLA) -->
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-sliders2"></i> Visualización</div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-brightness-high"></i> Brillo</div>
+                <div class="cfg-knob-card__hint">Brillo general de la interfaz</div>
+              </div>
+              <div class="cfg-knob" id="knobBrillo" data-min="60" data-max="120" data-step="1" data-unit="%" data-default="100"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetBrillo" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-fonts"></i> Tamaño de letra</div>
+                <div class="cfg-knob-card__hint">Tamaño base del texto</div>
+              </div>
+              <div class="cfg-knob" id="knobFuente" data-min="12" data-max="20" data-step="1" data-unit="px" data-default="14"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetFuente" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-zoom-in"></i> Aumento</div>
+                <div class="cfg-knob-card__hint">Escala general de la pantalla</div>
+              </div>
+              <div class="cfg-knob" id="knobZoom" data-min="80" data-max="150" data-step="5" data-unit="%" data-default="100"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetZoom" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② TEMA -->
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-palette-fill"></i> Tema y apariencia</div>
+      <div class="cfg-options" id="opcionesTema">
+
+        <div class="cfg-opt" data-tema="oscuro" onclick="seleccionarTema('oscuro', this)">
+          <div class="tema-preview tema-preview-oscuro"></div>
+          <i class="bi bi-moon-stars-fill tema-icon"></i>
+          Oscuro
+        </div>
+
+        <div class="cfg-opt" data-tema="claro" onclick="seleccionarTema('claro', this)">
+          <div class="tema-preview tema-preview-claro"></div>
+          <i class="bi bi-sun-fill tema-icon"></i>
+          Claro
+        </div>
+
+        <div class="cfg-opt" data-tema="alto-contraste" onclick="seleccionarTema('alto-contraste', this)">
+          <div class="tema-preview tema-preview-alto-contraste"></div>
+          <i class="bi bi-circle-half tema-icon"></i>
+          Alto contraste
+        </div>
+
+        <div class="cfg-opt" data-tema="basecys" onclick="seleccionarTema('basecys', this)">
+          <div class="tema-preview tema-preview-base-cys"></div>
+          <i class="bi bi-cup-straw tema-icon"></i>
+          Base CyS
+        </div>
+
+        <div class="cfg-opt" data-tema="sepia" onclick="seleccionarTema('sepia', this)">
+          <div class="tema-preview tema-preview-sepia"></div>
+          <i class="bi bi-book-fill tema-icon"></i>
+          Sepia
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ③ PÁGINA DE INICIO + ④ BARRA LATERAL -->
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-house-door-fill"></i> Página de inicio al entrar</div>
+          <div class="cfg-options" id="opcionesInicio">
+
+            <div class="cfg-opt" data-inicio="tablero" onclick="seleccionarInicio('tablero', this)">
+              <i class="bi bi-grid-1x2-fill cfg-opt-icon-lg"></i>
+              Tablero
+              <div class="cfg-opt-desc">Vista general del negocio</div>
+            </div>
+
+            <div class="cfg-opt" data-inicio="ventas" onclick="seleccionarInicio('ventas', this)">
+              <i class="bi bi-receipt cfg-opt-icon-lg"></i>
+              Ventas
+              <div class="cfg-opt-desc">Directo a registrar ventas</div>
+            </div>
+
+            <div class="cfg-opt" data-inicio="productos" onclick="seleccionarInicio('productos', this)">
+              <i class="bi bi-box-seam-fill cfg-opt-icon-lg"></i>
+              Productos
+              <div class="cfg-opt-desc">Gestión de productos</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-layout-sidebar-reverse"></i> Barra lateral</div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-pin-angle icon-azul"></i>
+              <div>
+                Abrir automáticamente al entrar
+                <span>La barra lateral se abre al cargar cualquier página</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleSidebarAuto">
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bar-chart-steps icon-azul"></i>
+              <div>
+                Mostrar sección Resumen
+                <span>Stock total, crítico y categorías en el sidebar</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleResumenSidebar" checked>
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑤ ACTIVIDAD DE USUARIOS + ⑥ NOTIFICACIONES -->
+    <div class="row g-3 cfg-row">
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-clock-history"></i> Actividad de usuarios</div>
+
+          <p class="cfg-hint" id="actividadHint">
+            Consulta los inicios de sesión registrados en el sistema.
+          </p>
+
+          <button type="button" class="cys-btn cys-btn--primary" data-bs-toggle="modal" data-bs-target="#modalActividad">
+            <i class="bi bi-eye me-1"></i> Ver actividad
+          </button>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-bell-fill"></i> Notificaciones y alertas</div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-exclamation-triangle-fill icon-rojo-alert"></i>
+              <div>
+                Alertas de stock crítico
+                <span>Muestra el banner rojo cuando hay productos en 0 o bajo mínimo</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleAlertaStock" checked>
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bar-chart-fill icon-azul"></i>
+              <div>
+                Widget de estadísticas en productos
+                <span>Muestra la sección de rotación y producto estrella</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleWidgetRotacion" checked>
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bell-slash icon-muted"></i>
+              <div>
+                Modo silencioso
+                <span>Oculta todas las alertas visuales del sistema</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleSilencioso">
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑦ INFORMACIÓN DE LA EMPRESA — BLOQUEADA CON CONTRASEÑA DE ADMIN -->
+    <div class="cfg-section cfg-row">
+      <div class="cfg-title-row">
+        <div class="cfg-title cfg-title-no-margin"><i class="bi bi-building"></i> Información de la empresa</div>
+        <div class="cfg-title-row__acciones">
+          {% if es_admin_empresa %}
+          <button type="button" onclick="bloquearEmpresa()" class="cfg-btn-lock" id="btnBloquearEmpresa" style="display:none;">
+            <i class="bi bi-lock-fill"></i> Bloquear
+          </button>
+          {% endif %}
+          <button type="button" onclick="guardarInfoEmpresa()" class="cfg-btn-mini" id="btnGuardarEmpresa" style="display:none;">
+            <i class="bi bi-check-lg"></i> Guardar
+          </button>
+        </div>
+      </div>
+
+      <div id="empresaBody">
+
+        <!-- Pantalla de bloqueo, estilo "desbloquear celular" -->
+        <div id="empresaLockScreen" class="cfg-lockscreen">
+          <div class="cfg-lockscreen__icon" id="empresaLockIcon">
+            <i class="bi bi-lock-fill" id="empresaLockIconGlyph"></i>
+          </div>
+          <div class="cfg-lockscreen__titulo">Información protegida</div>
+
+          {% if es_admin_empresa %}
+            <div class="cfg-lockscreen__sub">Ingresa tu contraseña de administrador para desbloquear</div>
+            <div class="cfg-lockscreen__form">
+              <input type="password"
+                    id="claveEmpresaInput"
+                    class="cfg-lockscreen__input"
+                    placeholder="••••••••"
+                    autocomplete="current-password">
+              <button type="button" class="cfg-lockscreen__btn" id="btnVerificarClaveEmpresa" onclick="verificarClaveEmpresa()">
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+            <div id="claveEmpresaError" class="cfg-lockscreen__error" style="display:none;"></div>
+          {% else %}
+            <div class="cfg-lockscreen__sub">Solo un administrador puede ver y editar esta información.</div>
+          {% endif %}
+        </div>
+
+        <!-- Contenido real, oculto hasta desbloquear -->
+        <div id="empresaCampos" class="cfg-locked-content" style="display:none;">
+          <div class="cfg-empresa-header">
+            <div class="cfg-logo-preview" id="logoEmpresaPreview"
+                onclick="document.getElementById('inputLogoEmpresa').click()">
+              {% if config.logo %}
+                <img src="{{ config.logo.url }}" alt="Logo empresa">
+              {% else %}
+                <i class="bi bi-image"></i>
+              {% endif %}
+            </div>
+            <input type="file" id="inputLogoEmpresa" accept="image/*" class="input-file-hidden"
+                  onchange="previewLogoEmpresa(this)">
+
+            <div class="cfg-empresa-header__campos">
+              <div>
+                <label class="cfg-label">Nombre de la empresa</label>
+                <input type="text" class="cfg-input" id="empresaNombre" placeholder="Licorera CYS Ltda">
+              </div>
+              <div>
+                <label class="cfg-label">NIT</label>
+                <input type="text" class="cfg-input" id="empresaNit" placeholder="900.123.456-7">
+              </div>
+              <div>
+                <label class="cfg-label">Teléfono</label>
+                <input type="text" class="cfg-input" id="empresaTelefono" placeholder="+57 300 000 0000">
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="cfg-label">Correo de contacto</label>
+              <input type="email" class="cfg-input" id="empresaEmail" placeholder="contacto@cysltda.com">
+            </div>
+            <div class="col-sm-6">
+              <label class="cfg-label">Dirección</label>
+              <input type="text" class="cfg-input" id="empresaDireccion" placeholder="Calle 00 # 00-00, local 00">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ⑧ IMPUESTOS Y MONEDA (CONECTADO A guardar_impuestos) -->
+    <div class="cfg-section cfg-row">
+      <div class="cfg-title-row">
+        <div class="cfg-title cfg-title-no-margin"><i class="bi bi-cash-coin"></i> Impuestos y moneda</div>
+        <button onclick="guardarImpuestos()" class="cfg-btn-mini" id="btnGuardarImpuestos">
+          <i class="bi bi-check-lg"></i> Guardar
+        </button>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-sm-6 col-lg-4">
+          <label class="cfg-label">IVA (%)</label>
+          <input type="number" step="0.01" min="0" max="100" class="cfg-input" id="ivaPorcentaje" value="{{ config.iva_porcentaje }}">
+        </div>
+        <div class="col-sm-6 col-lg-4">
+          <label class="cfg-label">Moneda</label>
+          <select class="cfg-select" id="monedaSelect">
+            <option value="COP" {% if config.moneda == 'COP' %}selected{% endif %}>COP — Peso colombiano</option>
+            <option value="USD" {% if config.moneda == 'USD' %}selected{% endif %}>USD — Dólar</option>
+          </select>
+        </div>
+        <div class="col-sm-12 col-lg-4">
+          <label class="cfg-label">Unidades de medida</label>
+          <input type="text" class="cfg-input" id="unidadesMedida"
+                value="{{ config.unidades_medida|join:', ' }}"
+                placeholder="unidad, caja, paquete">
+          <div class="cfg-hint-sm">Sepáralas con comas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑨ BASE DE DATOS (CONECTADO A crear_backup) -->
+    <div class="cfg-section cfg-row">
+      <div class="cfg-title"><i class="bi bi-database-fill"></i> Base de datos</div>
+
+      <div class="row g-3">
+        <div class="col-sm-6 col-lg-3">
+          <div class="cfg-db-stat">
+            <div>
+              <div class="lbl">Tablas</div>
+              <div class="val" id="dbTablas">{{ db_stats.tablas }}</div>
+            </div>
+            <i class="bi bi-hdd-stack db-stat-icon"></i>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="cfg-db-stat">
+            <div>
+              <div class="lbl">Registros totales</div>
+              <div class="val" id="dbRegistros">{{ db_stats.registros }}</div>
+            </div>
+            <i class="bi bi-stack db-stat-icon"></i>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="cfg-db-stat">
+            <div>
+              <div class="lbl">Tamaño BD</div>
+              <div class="val" id="dbTamano">{{ db_stats.tamaño }}</div>
+            </div>
+            <i class="bi bi-hdd db-stat-icon"></i>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="cfg-db-stat">
+            <div>
+              <div class="lbl">Último respaldo</div>
+              <div class="val" id="dbUltimoRespaldo">
+                {% if backups.0 %}{{ backups.0.fecha|date:"d/m/Y H:i" }}{% else %}Sin registrar{% endif %}
+              </div>
+            </div>
+            <i class="bi bi-clock-history db-stat-icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="cfg-db-actions">
+        <button onclick="generarRespaldo()" class="cys-btn cys-btn--primary" id="btnBackup">
+          <i class="bi bi-cloud-arrow-down me-1"></i> Generar respaldo
+        </button>
+      </div>
+
+      <div id="listaBackups" class="mt-backups">
+        {% for b in backups %}
+          <div class="cfg-backup-item" data-backup-item>
+            <div>
+              <div class="cfg-backup-item__nombre">{{ b.nombre }}</div>
+              <div class="cfg-backup-item__meta">{{ b.fecha|date:"d/m/Y H:i" }} · {{ b.tamaño_mb }} MB</div>
+            </div>
+            <i class="bi bi-file-earmark-zip icon-azul"></i>
+          </div>
+        {% empty %}
+          <div class="backup-empty-text" data-backup-empty>
+            Todavía no hay respaldos generados.
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <div id="cfg-toast"><i class="bi bi-check-circle-fill me-2"></i> Configuración guardada</div>
+
+  <!-- MODAL: ACTIVIDAD DE USUARIOS -->
+  <div class="modal fade" id="modalActividad" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content cfg-modal-content">
+        <div class="modal-header cfg-modal-header">
+          <h5 class="modal-title cfg-modal-title">
+            <i class="bi bi-clock-history"></i> <span id="tituloActividad">Actividad</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body cfg-modal-body">
+          <table class="table table-sm cfg-activity-table">
+            <thead>
+              <tr>
+                <th id="colUsuario">Usuario</th>
+                <th>Fecha y hora</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody id="tablaActividad">
+              <tr><td colspan="3" class="text-center">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endblock %}
+
+  {% block extra_js %}
+  <script src="{% static 'js/configuracion/configuracion.js' %}" defer></script>
+  {% endblock %}
+

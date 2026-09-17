@@ -75,14 +75,15 @@ def buscar_venta_devolucion(request):
     if not q:
         return JsonResponse({'ventas': []})
 
-    ventas = Venta.objects.select_related('usuario').all().order_by('-fecha')
+    ventas = Venta.objects.select_related('vendedor', 'cliente').all().order_by('-fecha')
     if q.isdigit():
         ventas = ventas.filter(pk=int(q))[:10]
     else:
         ventas = ventas.filter(
-            Q(usuario__nombre__icontains=q) |
-            Q(usuario__apellido__icontains=q) |
-            Q(usuario__documento__icontains=q)
+            Q(vendedor__nombre__icontains=q) |
+            Q(vendedor__apellido__icontains=q) |
+            Q(vendedor__documento__icontains=q) |
+            Q(cliente__nombre__icontains=q)
         )[:10]
 
     return JsonResponse({'ventas': [
@@ -99,8 +100,8 @@ def buscar_venta_devolucion(request):
 @login_required
 def detalle_venta_devolucion(request, venta_id):
     """Detalle AJAX de una venta seleccionada."""
-    venta = get_object_or_404(Venta.objects.prefetch_related('detalleventa_set__producto'), pk=venta_id)
-    detalles = venta.detalleventa_set.select_related('producto').all()
+    venta = get_object_or_404(Venta.objects.prefetch_related('detalles__producto'), pk=venta_id)
+    detalles = venta.detalles.select_related('producto').all()
 
     return JsonResponse({
         'venta_id': venta.pk,
@@ -149,7 +150,7 @@ def comprobante_devolucion(request, pk):
     """Muestra el comprobante individual de una devolución."""
     devolucion = get_object_or_404(
         Devolucion.objects.select_related('venta', 'usuario', 'detalle_venta__producto')
-        .prefetch_related('detalledevolucion_set__producto'),
+        .prefetch_related('detalles__producto'),
         pk=pk
     )
     return render(request, 'devoluciones/comprobante_devolucion.html', {
@@ -157,6 +158,29 @@ def comprobante_devolucion(request, pk):
         'breadcrumb_items': [
             {'nombre': 'Devoluciones', 'url': reverse('lista_devoluciones')},
             {'nombre': f'Comprobante #{devolucion.codigo_devolucion}', 'url': None},
+        ],
+    })
+
+
+@login_required
+def detalle_devolucion(request, pk):
+    """Muestra el detalle completo de una devolución de cliente."""
+    devolucion = get_object_or_404(
+        Devolucion.objects.select_related(
+            'venta__cliente',
+            'usuario',
+            'detalle_venta__producto',
+        ).prefetch_related(
+            'detalles__producto',
+            'detalles__presentacion',
+        ),
+        pk=pk
+    )
+    return render(request, 'devoluciones/detalle_devolucion.html', {
+        'devolucion': devolucion,
+        'breadcrumb_items': [
+            {'nombre': 'Devoluciones', 'url': reverse('lista_devoluciones')},
+            {'nombre': devolucion.numero, 'url': None},
         ],
     })
 
@@ -220,7 +244,7 @@ def devoluciones_flujo(request):
             try:
                 det_id = int(detalle_id)
                 cant = int(request.POST.get(f'cantidad_devolucion_{det_id}', '0'))
-                detalle = venta_actual.detalleventa_set.get(pk=det_id)
+                detalle = venta_actual.detalles.get(pk=det_id)
 
                 if cant <= 0 or cant > detalle.cantidad:
                     messages.error(request, f'⚠️ Cantidad inválida para {detalle.producto.nombre}.')
@@ -323,7 +347,7 @@ def devoluciones_flujo(request):
                 metodo_pago_dev = request.session.get('dev_metodo_devolucion', 'efectivo')
 
                 detalles_dict = {int(k): v for k, v in productos_data.items()}
-                detalles_venta = venta.detalleventa_set.filter(pk__in=detalles_dict.keys())
+                detalles_venta = venta.detalles.filter(pk__in=detalles_dict.keys())
 
                 if not detalles_venta.exists():
                     messages.error(request, '⚠️ No se encontraron los productos a devolver.')
@@ -345,7 +369,7 @@ def devoluciones_flujo(request):
                     tipo_devolucion=tipo_devolucion,
                     observaciones=observaciones,
                     total_devuelto=total_devuelto,
-                    presenta_comprobante=True,
+                    tiene_comprobante=True,
                     estado='completada',
                     cantidad_cambio=cantidad_cambio,
                     metodo_pago_devolucion=metodo_pago_dev
@@ -384,7 +408,7 @@ def devoluciones_flujo(request):
             return redirect('lista_devoluciones')
 
     # ── RENDERIZADO DEL TEMPLATE ──
-    ventas = Venta.objects.select_related('usuario').prefetch_related('detalleventa_set').order_by('-fecha')[:50]
+    ventas = Venta.objects.select_related('vendedor', 'cliente').prefetch_related('detalles__producto').order_by('-fecha')[:50]
     devoluciones = Devolucion.objects.select_related('venta', 'usuario').order_by('-fecha')[:50]
 
     venta = None
@@ -393,8 +417,8 @@ def devoluciones_flujo(request):
 
     if venta_id:
         try:
-            venta = Venta.objects.prefetch_related('detalleventa_set__producto').get(pk=venta_id)
-            detalles_venta = venta.detalleventa_set.select_related('producto').all()
+            venta = Venta.objects.prefetch_related('detalles__producto').get(pk=venta_id)
+            detalles_venta = venta.detalles.select_related('producto').all()
 
             for det in detalles_venta:
                 cant_devuelta = DetalleDevolucion.objects.filter(
@@ -456,7 +480,7 @@ def devoluciones_flujo(request):
 @login_required
 def metodos_pago_lista(request):
     """Lista de pagos recibidos en ventas."""
-    pagos_qs = PagoVenta.objects.select_related('metodo', 'venta', 'venta__usuario').order_by('-fecha_pago')
+    pagos_qs = PagoVenta.objects.select_related('metodo', 'venta', 'venta__vendedor').order_by('-fecha_pago')
 
     q = request.GET.get('q', '').strip()
     if q:
@@ -464,7 +488,7 @@ def metodos_pago_lista(request):
             Q(metodo__referencia__icontains=q) |
             Q(metodo__observacion__icontains=q) |
             Q(observaciones__icontains=q) |
-            Q(venta__usuario__nombre__icontains=q)
+            Q(venta__vendedor__nombre__icontains=q)
         ).distinct()
 
     total_monto = pagos_qs.aggregate(total=Sum('monto'))['total'] or Decimal('0')
