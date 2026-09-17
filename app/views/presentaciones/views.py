@@ -6,7 +6,7 @@ from app.models import Producto
 
 
 
-#@login_required
+@login_required
 def presentacion_crear(request, producto_pk):
     producto = get_object_or_404(Producto, pk=producto_pk)
     if request.method == 'POST':
@@ -31,7 +31,7 @@ def presentacion_crear(request, producto_pk):
     return redirect('producto_detalle', pk=producto_pk)
 
 
-#@login_required
+@login_required
 def presentacion_editar(request, pk):
     pres = get_object_or_404(PresentacionProducto, pk=pk)
     if request.method == 'POST':
@@ -63,3 +63,16 @@ def presentacion_toggle_activo(request, pk):
     estado = 'activada' if pres.activo else 'desactivada'
     messages.success(request, f'Presentación "{pres.nombre}" {estado}.')
     return redirect('producto_detalle', pk=pres.producto_id)
+
+def presentacion_lista(request):
+    presentaciones = PresentacionProducto.objects.select_related('producto', 'producto__categoria').order_by('producto__nombre', 'nombre')
+    productos = Producto.objects.filter(activo=True).order_by('nombre')
+
+    context = {
+        'presentaciones': presentaciones,
+        'productos': productos,
+        'breadcrumb_items': [
+            {'nombre': 'Presentaciones', 'url': None},
+        ],
+    }
+    return render(request, 'presentaciones/presentaciones.html', context)
