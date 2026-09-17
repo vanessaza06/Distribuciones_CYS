@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 from django.shortcuts import render
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
@@ -12,7 +12,8 @@ from app.views.devoluciones import views as dev_views
 from app.views.bodega import views as bod_views
 from app.views.principal import views as principal_views
 from app.views.ventas import views as ventas_views
-from app.views.reportes import views as rep_views 
+from app.views.reportes import views as rep_views
+from app.views.configuracion import views as config_views
 
 
 urlpatterns = [
@@ -40,7 +41,7 @@ urlpatterns = [
     path("ventas/devoluciones/registrar/", ventas_views.registrar_devolucion, name="registrar_devolucion"),
     path("ventas/devoluciones/comprobante/<int:pk>/", ventas_views.comprobante_devolucion, name="comprobante_devolucion"),
 
-      # CATEGORIAS
+    # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
@@ -183,4 +184,12 @@ path(
     path("reportes/stock-bajo/", rep_views.reporte_stock_bajo, name="reporte_stock_bajo"),
     path("reportes/proveedores/", rep_views.reporte_proveedores, name="reporte_proveedores"),
     path("reportes/exportar/<str:tipo>/", rep_views.reporte_exportar, name="reporte_exportar"),
+
+    # CONFIGURACION
+    path("configuracion/", config_views.index, name="configuracion_index"),
+    path("configuracion/empresa/", config_views.guardar_empresa, name="guardar_empresa"),
+    path("configuracion/empresa/verificar/", config_views.verificar_clave_empresa, name="verificar_clave_empresa"),
+    path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
+    path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
+    path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
 ]
