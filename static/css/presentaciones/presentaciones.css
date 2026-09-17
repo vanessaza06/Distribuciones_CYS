@@ -1,0 +1,133 @@
+/* ── Presentaciones: tabla ── */
+.pres-table-wrap {
+  background: var(--cys-card-bg, #1b2735);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pres-table-wrap table {
+  color: var(--cys-text, #e8eef5);
+  margin-bottom: 0;
+}
+
+.pres-table-wrap thead th {
+  background: rgba(77, 168, 218, 0.08);
+  color: #4DA8DA;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid rgba(77, 168, 218, 0.15);
+}
+
+.pres-table-wrap tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+
+.pres-table-wrap tbody tr:hover {
+  background: rgba(77, 168, 218, 0.06);
+}
+
+.pres-producto-nombre {
+  font-weight: 600;
+  color: #e8eef5;
+}
+
+.pres-producto-categoria {
+  color: rgba(232, 238, 245, 0.55);
+  font-size: 0.78rem;
+}
+
+.pres-badge-activa {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.pres-badge-inactiva {
+  background: rgba(150, 150, 150, 0.15);
+  color: #999;
+  border: 1px solid rgba(150, 150, 150, 0.3);
+}
+
+.pres-btn-editar,
+.pres-btn-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Modales ── */
+.pres-modal {
+  background: var(--cys-card-bg, #1b2735);
+  color: #e8eef5;
+  border-radius: 14px;
+  border: none;
+}
+
+.pres-modal-header {
+  border-bottom: 1px solid rgba(77, 168, 218, 0.15);
+}
+
+.pres-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e8eef5;
+}
+
+.pres-input:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #4DA8DA;
+  color: #e8eef5;
+  box-shadow: 0 0 0 0.2rem rgba(77, 168, 218, 0.15);
+}
+.pres-search-grupo {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  padding: 0.4rem 1rem;
+  min-width: 280px;
+}
+
+.pres-search-prefix {
+  color: #4DA8DA;
+  margin-right: 0.5rem;
+}
+
+.pres-search-input {
+  background: transparent;
+  border: none;
+  color: #e8eef5;
+  box-shadow: none;
+  padding: 0;
+}
+
+.pres-search-input:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #e8eef5;
+}
+.pres-table-wrap table,
+.pres-table-wrap thead,
+.pres-table-wrap tbody,
+.pres-table-wrap tr,
+.pres-table-wrap td,
+.pres-table-wrap th {
+  background-color: transparent !important;
+  color: #e8eef5 !important;
+}
+
+.pres-table-wrap thead th {
+  background: rgba(77, 168, 218, 0.08) !important;
+  color: #4DA8DA !important;
+}
+
+.pres-table-wrap tbody tr:hover td {
+  background-color: rgba(77, 168, 218, 0.06) !important;
+}

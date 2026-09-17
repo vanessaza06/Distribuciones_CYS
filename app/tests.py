@@ -2,7 +2,13 @@ from django.test import TestCase
 from django.db import IntegrityError
 from decimal import Decimal
 from app.models import Categoria, Producto, PresentacionProducto, Lote, Bodega
+from datetime import date, timedelta
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
+from app.models import Categoria, Producto, Marca, DetalleProducto
+
+Usuario = get_user_model()
 
 # ─────────────────────────────────────────────
 #  TESTS: Categoria
@@ -134,9 +140,8 @@ class ProductoModelTest(TestCase):
         """Sin presentaciones, precio_base debe retornar None."""
         self.assertIsNone(self.producto.precio_base())
 
-
 # ─────────────────────────────────────────────
-#  TESTS: PresentacionProducto
+#  TESTS: PresentacionProducto (modelo)
 # ─────────────────────────────────────────────
 class PresentacionProductoModelTest(TestCase):
 
@@ -191,20 +196,101 @@ class PresentacionProductoModelTest(TestCase):
             self.presentacion,
             self.producto.presentaciones.all()
         )
-# app/tests.py
-
-from datetime import date, timedelta
-from decimal import Decimal
-
-from django.contrib.auth import get_user_model
-from django.db import IntegrityError
-from django.test import TestCase
-
-from app.models import Categoria, Producto, PresentacionProducto, Bodega, Lote
-
-Usuario = get_user_model()
 
 
+# ─────────────────────────────────────────────
+#  TESTS: Vistas de PresentacionProducto
+# ─────────────────────────────────────────────
+class PresentacionViewsTest(TestCase):
+
+    def setUp(self):
+        Usuario = get_user_model()
+        self.user = Usuario.objects.create_user(
+            correo='test@cys.com', nombre='Test', apellido='User',
+            documento='123', password='clave123'
+        )
+        self.client.force_login(self.user)
+
+        self.categoria = Categoria.objects.create(codigo='CAT01', nombre='Medicamentos')
+        self.producto = Producto.objects.create(
+            nombre='Ibuprofeno', descripcion='Analgésico',
+            fecha_vencimiento='2027-01-01', categoria=self.categoria,
+        )
+        self.presentacion = PresentacionProducto.objects.create(
+            producto=self.producto, nombre='Caja x10',
+            cantidad=10, precio_venta=Decimal('15000.00')
+        )
+
+    def test_lista_requiere_login(self):
+        """Sin login, redirige (no da 200 directo)."""
+        self.client.logout()
+        resp = self.client.get(reverse('presentacion_lista'))
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_lista_devuelve_200(self):
+        resp = self.client.get(reverse('presentacion_lista'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_lista_incluye_presentaciones_en_contexto(self):
+        resp = self.client.get(reverse('presentacion_lista'))
+        self.assertIn(self.presentacion, resp.context['presentaciones'])
+
+    def test_crear_presentacion_valida(self):
+        resp = self.client.post(
+            reverse('presentacion_crear', args=[self.producto.pk]),
+            {'nombre': 'Six-pack', 'cantidad': '6', 'precio_venta': '9000', 'observaciones': ''}
+        )
+        self.assertRedirects(resp, reverse('presentacion_lista'))
+        self.assertTrue(
+            PresentacionProducto.objects.filter(producto=self.producto, nombre='Six-pack').exists()
+        )
+
+    def test_crear_presentacion_sin_nombre_no_crea(self):
+        total_antes = PresentacionProducto.objects.count()
+        self.client.post(
+            reverse('presentacion_crear', args=[self.producto.pk]),
+            {'nombre': '', 'cantidad': '6', 'precio_venta': '9000'}
+        )
+        self.assertEqual(PresentacionProducto.objects.count(), total_antes)
+
+    def test_editar_presentacion_actualiza_campos(self):
+        resp = self.client.post(
+            reverse('presentacion_editar', args=[self.presentacion.pk]),
+            {'nombre': 'Caja x20', 'cantidad': '20', 'precio_venta': '25000', 'observaciones': 'nota'}
+        )
+        self.assertRedirects(resp, reverse('presentacion_lista'))
+        self.presentacion.refresh_from_db()
+        self.assertEqual(self.presentacion.nombre, 'Caja x20')
+        self.assertEqual(self.presentacion.cantidad, 20)
+        self.assertEqual(self.presentacion.precio_venta, Decimal('25000.00'))
+
+    def test_editar_actualiza_costo_unitario_de_lotes(self):
+        """Al cambiar el precio_venta, sus lotes deben actualizar costo_unitario."""
+        bodega = Bodega.objects.create(nombre='Principal', estado='activo')
+        lote = Lote.objects.create(
+            numero_lote='LOT-01', producto=self.producto, presentacion=self.presentacion, bodega=bodega,
+            cantidad_inicial=10, stock_actual=10,
+            costo_unitario=Decimal('1000.00'), costo_total=Decimal('10000.00'),
+        )
+        self.client.post(
+            reverse('presentacion_editar', args=[self.presentacion.pk]),
+            {'nombre': 'Caja x10', 'cantidad': '10', 'precio_venta': '30000'}
+        )
+        lote.refresh_from_db()
+        self.assertEqual(lote.costo_unitario, Decimal('30000.00'))
+
+    def test_toggle_activo_desactiva(self):
+        self.assertTrue(self.presentacion.activo)
+        self.client.post(reverse('presentacion_toggle_activo', args=[self.presentacion.pk]))
+        self.presentacion.refresh_from_db()
+        self.assertFalse(self.presentacion.activo)
+
+    def test_toggle_activo_reactiva(self):
+        self.presentacion.activo = False
+        self.presentacion.save()
+        self.client.post(reverse('presentacion_toggle_activo', args=[self.presentacion.pk]))
+        self.presentacion.refresh_from_db()
+        self.assertTrue(self.presentacion.activo)
 # ─────────────────────────────────────────────
 #  DATOS BASE COMPARTIDOS (setUp)
 # ─────────────────────────────────────────────
@@ -353,18 +439,6 @@ class LoteModelTest(BaseTestCase):
         self.assertEqual(primero, lote2)
         
         # app/tests.py — DetalleProducto (modelo + vistas)
-
-from datetime import date, timedelta
-from decimal import Decimal
-
-from django.contrib.auth import get_user_model
-from django.db import IntegrityError
-from django.test import TestCase
-from django.urls import reverse
-
-from app.models import Categoria, Producto, Marca, DetalleProducto
-
-Usuario = get_user_model()
 
 
 class BaseDetalleProductoTestCase(TestCase):
