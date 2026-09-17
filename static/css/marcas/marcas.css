@@ -1,27 +1,3 @@
-/* =========================================================
-   CYS Licorera — Marcas
-   Sistema de diseño: paleta navy oscuro, acentos ámbar
-   (paleta propia de Marcas — NO hereda la de Productos)
-
-   NOTA IMPORTANTE:
-   Este archivo se carga DESPUÉS de base.css (vía extra_css en
-   marca.html), dentro del layout global de base.html (header,
-   subnav y sidebar fijos + <main class="cys-main">).
-
-   Por eso aquí SOLO deben existir clases que realmente usa
-   marca.html. No volver a meter .cys-layout, .cys-sidebar,
-   .cys-topbar, .cys-user, .cys-main, .cys-breadcrumb ni
-   .cys-dot: existen también en base.css con otro significado y,
-   al cargarse este archivo después, pisan el padding-top que
-   compensa el header/subnav fijos (el encabezado se veía
-   tapado/cortado).
-
-   Al final hay un bloque "BLINDAJE" con !important para las
-   reglas que base.css sí estaba pisando (centrado de las stat
-   cards, mayúsculas, color del botón primario).
-   ========================================================= */
-
-/* ---------- Tipografía: Plus Jakarta Sans ---------- */
 @font-face {
   font-family: "Plus Jakarta Sans";
   src: url("../../fonts/PlusJakartaSans-VariableFont_wght.woff2") format("woff2-variations"),
@@ -288,9 +264,9 @@
 
 .cys-table { width: 100%; border-collapse: collapse; }
 
+/* === TODO CENTRADO: encabezados y celdas === */
 .cys-table thead th {
-  text-align: left;
-  font-size: 12px;
+  text-align: center;
   letter-spacing: 0.03em;
   color: var(--cys-text-muted);
   font-weight: 600;
@@ -305,6 +281,7 @@
   font-size: 14px;
   color: var(--cys-text);
   vertical-align: middle;
+  text-align: center;
 }
 
 .cys-table tbody tr:last-child td { border-bottom: none; }
@@ -320,6 +297,7 @@
 .cys-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   font-size: 13.5px;
   color: var(--cys-text);
@@ -336,7 +314,7 @@
 .cys-status--inactiva::before { background: var(--cys-red); }
 .cys-status--inactiva { color: var(--cys-text-secondary); }
 
-.cys-row-actions { display: flex; gap: 8px; }
+.cys-row-actions { display: flex; gap: 8px; justify-content: center; align-items: center; }
 
 .cys-action-btn {
   width: 32px;
@@ -414,10 +392,12 @@
   inset: 0;
   background: rgba(4, 9, 18, 0.65);
   display: none;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 100;
   padding: 20px;
+  padding-top: 140px;
+  overflow-y: auto;
 }
 
 .cys-modal-overlay--open { display: flex; }
@@ -425,6 +405,9 @@
 .cys-modal {
   width: 100%;
   max-width: 440px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  margin-bottom: 40px;
   background: var(--cys-surface);
   border: 1px solid var(--cys-border);
   border-radius: var(--cys-radius-lg);
@@ -439,6 +422,10 @@
   justify-content: space-between;
   padding: 18px 22px;
   border-bottom: 1px solid var(--cys-border-soft);
+  position: sticky;
+  top: 0;
+  background: var(--cys-surface);
+  z-index: 1;
 }
 
 .cys-modal__header h2 { margin: 0; font-size: 17px; color: var(--cys-text); }
@@ -544,13 +531,19 @@ a.cys-btn--primary {
   font-weight: 600 !important;
 }
 
-/* 3) Encabezados de tabla: sin el uppercase/azul global */
+/* 3) Encabezados de tabla: sin el uppercase/azul global, CENTRADOS */
 .cys-table-card .cys-table thead th {
   color: var(--cys-text-muted) !important;
   background: var(--cys-surface-alt) !important;
   text-transform: none !important;
   font-size: 12px !important;
   letter-spacing: .03em !important;
+  text-align: center !important;
+}
+
+/* 3b) Celdas del cuerpo de la tabla: CENTRADAS (por si base.css las pisa) */
+.cys-table-card .cys-table tbody td {
+  text-align: center !important;
 }
 
 /* 4) Superficies: que no las aclare/transparente el tema global */
@@ -566,6 +559,16 @@ a.cys-btn--primary {
   .cys-stats { grid-template-columns: 1fr; }
   .cys-page-header { flex-direction: column; align-items: flex-start; }
   .cys-page-header__right { align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .cys-modal-overlay { align-items: flex-end; padding: 0; }
+  .cys-modal {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: var(--cys-radius-lg) var(--cys-radius-lg) 0 0;
+    margin: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -590,3 +593,126 @@ a.cys-btn--primary {
   border-color: var(--cys-red-border);
   color: var(--cys-red);
 }
+/* Variables extra para el ícono/acento azul del modal */
+:root {
+  --cys-blue-soft: rgba(47, 123, 245, 0.12);
+  --cys-blue-border: rgba(47, 123, 245, 0.35);
+}
+
+/* ===== Modal Nueva/Editar marca (rediseño) ===== */
+.cys-modal__header-left { display: flex; align-items: center; gap: 14px; }
+
+.cys-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--cys-radius-md);
+  background: var(--cys-blue-soft);
+  border: 1px solid var(--cys-blue-border);
+  color: var(--cys-blue);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cys-modal-subtitle { margin: 2px 0 0; font-size: 13px; color: var(--cys-text-secondary); }
+
+.cys-field em { color: var(--cys-red); font-style: normal; margin-left: 2px; }
+
+.cys-input-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cys-surface-alt);
+  border: 1px solid var(--cys-border);
+  border-radius: var(--cys-radius-sm);
+  padding: 11px 14px;
+}
+.cys-input-icon i { color: var(--cys-text-muted); font-size: 14px; }
+.cys-input-icon input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cys-text);
+  font-size: 14px;
+}
+.cys-input-icon:focus-within { border-color: var(--cys-blue); }
+
+#fieldDescripcion {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  background: var(--cys-surface-alt);
+  border: 1px solid var(--cys-border);
+  border-radius: var(--cys-radius-sm);
+  padding: 11px 14px;
+  color: var(--cys-text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+#fieldDescripcion:focus { border-color: var(--cys-blue); }
+
+.cys-char-count { align-self: flex-end; font-size: 12px; color: var(--cys-text-muted); }
+
+.cys-estado-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.cys-estado-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--cys-border);
+  border-radius: var(--cys-radius-md);
+  background: var(--cys-surface-alt);
+  cursor: pointer;
+}
+
+.cys-estado-card input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.cys-estado-card__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--cys-text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+}
+.cys-estado-card input:checked + .cys-estado-card__radio { border-color: var(--cys-blue); }
+.cys-estado-card input:checked + .cys-estado-card__radio::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--cys-blue);
+}
+
+.cys-estado-card__content { display: flex; flex-direction: column; gap: 4px; }
+.cys-estado-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cys-text);
+}
+.cys-estado-card__desc { font-size: 12px; color: var(--cys-text-secondary); line-height: 1.4; }
+
+.cys-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.cys-dot--green { background: var(--cys-green); }
+.cys-dot--red { background: var(--cys-red); }
+
+.cys-estado-card--selected {
+  border-color: var(--cys-blue);
+  background: var(--cys-blue-soft);
+}
+
+#cysMarcaForm .cys-btn--primary {
+  background: var(--cys-blue) !important;
+  color: #fff !important;
+}
+#cysMarcaForm .cys-btn--primary:hover { filter: brightness(1.08); }
