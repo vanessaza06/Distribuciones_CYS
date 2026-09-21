@@ -381,27 +381,31 @@ def apertura_caja(request):
 
     hoy = timezone.localdate()
 
-    if obtener_caja_abierta(hoy):
-        return JsonResponse({'ok': False, 'error': 'Ya existe una caja abierta para hoy.'}, status=400)
-
     try:
         monto_base = float(data.get('monto_base', 0) or data.get('monto_contado', 0))
         if monto_base < 0:
-            raise ValueError
+            monto_base = 0.0
     except (TypeError, ValueError):
-        return JsonResponse({'ok': False, 'error': 'Monto base inválido.'}, status=400)
+        monto_base = 0.0
 
     usuario = request.user if request.user.is_authenticated else Usuario.objects.first()
 
-    Caja.objects.create(
-        monto_base=monto_base,
-        total_efectivo=0,
-        total_transferencias=0,
-        total_retirado=0,
-        usuario=usuario,
-        observacion=data.get('observacion', ''),
-        denominaciones=data.get('denominaciones', {}),
-    )
+    caja_existente = obtener_caja_abierta(hoy)
+    if caja_existente:
+        caja_existente.monto_base = monto_base
+        caja_existente.observacion = data.get('observacion', '')
+        caja_existente.denominaciones = data.get('denominaciones', {})
+        caja_existente.save()
+    else:
+        Caja.objects.create(
+            monto_base=monto_base,
+            total_efectivo=0,
+            total_transferencias=0,
+            total_retirado=0,
+            usuario=usuario,
+            observacion=data.get('observacion', ''),
+            denominaciones=data.get('denominaciones', {}),
+        )
     return JsonResponse({'ok': True})
 
 
@@ -417,13 +421,17 @@ def cierre_caja(request):
     caja_reg = obtener_caja_abierta(hoy)
 
     if not caja_reg:
-        return JsonResponse({'ok': False, 'error': 'No hay caja abierta para hoy.'}, status=400)
+        caja_reg = Caja.objects.filter(fecha_hora__date=hoy).order_by('-fecha_hora').first()
+
+    if not caja_reg:
+        return JsonResponse({'ok': False, 'error': 'No hay registro de caja disponible para cerrar hoy.'}, status=400)
 
     try:
         total_contado = float(data.get('total_contado', 0))
         total_retirado = float(data.get('total_retirado', 0))
     except (TypeError, ValueError):
-        return JsonResponse({'ok': False, 'error': 'Valores numéricos inválidos.'}, status=400)
+        total_contado = 0.0
+        total_retirado = 0.0
 
     caja_reg.total_efectivo = total_contado
     caja_reg.total_retirado = total_retirado
