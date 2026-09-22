@@ -483,6 +483,24 @@ class DetalleCompra(models.Model):
         related_name="detalles",
         verbose_name="Compra",
     )
+    producto = models.ForeignKey(
+        "Producto",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="codigo_producto",
+        related_name="detalles_compra",
+        verbose_name="Producto",
+    )
+    lote = models.ForeignKey(
+        "Lote",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="codigo_lote",
+        related_name="detalles_compra",
+        verbose_name="Lote",
+    )
 
     class Meta:
         db_table = "detalle_compra"
@@ -495,6 +513,10 @@ class DetalleCompra(models.Model):
     @property
     def subtotal(self):
         return self.subtotal_compra or (self.cantidad * self.precio_unitario)
+
+    @property
+    def numero_lote(self):
+        return self.lote.numero_lote if self.lote else None
 
     def save(self, *args, **kwargs):
         # Calcula automáticamente el subtotal si no viene definido

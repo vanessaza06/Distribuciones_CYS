@@ -120,12 +120,28 @@
         </a>
 
         <!-- DEVOLUCIONES -->
-        <a href="{% url 'lista_devoluciones' %}"
-           class="cys-sb-link {% block nav_devoluciones %}{% endblock %}"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Devoluciones">
-          <i class="bi bi-arrow-return-left"></i>
-          <span>Devoluciones</span>
-        </a>
+        <div class="cys-sb-inventario-wrap">
+          <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex {% block nav_devoluciones %}{% endblock %}">
+            <a href="{% url 'lista_devoluciones' %}"
+               class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Devoluciones">
+              <i class="bi bi-arrow-return-left"></i>
+              <span class="flex-grow-1">Devoluciones</span>
+            </a>
+            <button id="btnDevoluciones"
+                    onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuDevoluciones')"
+                    class="sb-submenu-toggle">
+              <i class="bi bi-chevron-down cys-chevron"></i>
+            </button>
+          </div>
+          <div class="cys-sb-submenu" id="submenuDevoluciones">
+            <a href="{% url 'ultima_devolucion' %}"
+               class="cys-sb-sublink {% block nav_detalle_devolucion %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle Devolución">
+              <i class="bi bi-file-earmark-text-fill"></i> Detalle Devolución
+            </a>
+          </div>
+        </div>
 
         <!-- REPORTES -->
         <a href="{% url 'reportes_home' %}"
@@ -210,12 +226,28 @@
         </a>
 
         <!-- COMPRAS -->
-        <a href="{% url 'lista_compras' %}"
-           class="cys-sb-link {% block nav_compras %}{% endblock %}"
-           data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
-          <i class="bi bi-cart-check-fill"></i>
-          <span>Compras</span>
-        </a>
+        <div class="cys-sb-inventario-wrap">
+          <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex {% block nav_compras %}{% endblock %}">
+            <a href="{% url 'lista_compras' %}"
+               class="d-flex align-items-center gap-2 flex-grow-1 text-decoration-none sb-link-flex-grow"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Compras">
+              <i class="bi bi-cart-check-fill"></i>
+              <span class="flex-grow-1">Compras</span>
+            </a>
+            <button id="btnCompras"
+                    onclick="toggleSubmenu(event, this.closest('.cys-sb-link--parent'), 'submenuCompras')"
+                    class="sb-submenu-toggle">
+              <i class="bi bi-chevron-down cys-chevron"></i>
+            </button>
+          </div>
+          <div class="cys-sb-submenu" id="submenuCompras">
+            <a href="{% url 'ultima_compra' %}"
+               class="cys-sb-sublink {% block nav_detalle_compra %}{% endblock %}"
+               data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Detalle Compra">
+              <i class="bi bi-receipt-cutoff"></i> Detalle Compra
+            </a>
+          </div>
+        </div>
       </nav>
     </div>
 

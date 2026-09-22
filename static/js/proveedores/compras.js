@@ -34,18 +34,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (buscarProveedor) {
     buscarProveedor.addEventListener('input', function() {
-      const termino = this.value.toLowerCase();
+      const termino = this.value.toLowerCase().trim();
       let visible = 0;
       const filas = document.querySelectorAll('.fila-proveedor');
       filas.forEach(fila => {
-        const coincide = fila.dataset.nombre.includes(termino) ||
-                        fila.dataset.contacto.includes(termino) ||
-                        fila.dataset.telefono.includes(termino);
+        const nombre = fila.dataset.nombre || '';
+        const nit = fila.dataset.nit || '';
+        const contacto = fila.dataset.contacto || '';
+        const telefono = fila.dataset.telefono || '';
+        const coincide = nombre.includes(termino) || nit.includes(termino) || contacto.includes(termino) || telefono.includes(termino);
         fila.style.display = coincide ? '' : 'none';
         if (coincide) visible++;
       });
-      sinResultados.style.display = visible === 0 && termino !== '' ? 'block' : 'none';
+      if (sinResultados) {
+        sinResultados.style.display = visible === 0 && termino !== '' ? 'block' : 'none';
+      }
     });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MODAL NUEVA COMPRA: CÁLCULOS EN VIVO Y SELECCIÓN DE PRODUCTO
+  // ═══════════════════════════════════════════════════════════════
+  const productoSelect = document.getElementById('formCompraProducto');
+  const loteSelect = document.getElementById('formCompraLote');
+  const cantidadInput = document.getElementById('formCompraCantidad');
+  const precioInput = document.getElementById('formCompraPrecio');
+  const calculoTexto = document.getElementById('calculoDetalleTexto');
+  const calculoDisplay = document.getElementById('calculoTotalDisplay');
+
+  function actualizarCalculoNuevaCompra() {
+    const cant = parseInt(cantidadInput ? cantidadInput.value : 1) || 0;
+    const precio = parseFloat(precioInput ? precioInput.value : 0) || 0;
+    const total = cant * precio;
+
+    if (calculoTexto) {
+      calculoTexto.textContent = `${cant} und. × $${precio.toLocaleString('es-CO')}`;
+    }
+    if (calculoDisplay) {
+      calculoDisplay.textContent = `$${total.toLocaleString('es-CO')}`;
+    }
+  }
+
+  if (productoSelect) {
+    productoSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const precioSugerido = parseFloat(selectedOption.getAttribute('data-precio')) || 0;
+      const prodId = this.value;
+
+      if (precioInput) {
+        if (precioSugerido > 0) {
+          precioInput.value = precioSugerido;
+        }
+      }
+
+      // Filtrar lotes correspondientes al producto
+      if (loteSelect) {
+        Array.from(loteSelect.options).forEach((opt, idx) => {
+          if (idx === 0) return;
+          const optProdId = opt.getAttribute('data-producto');
+          if (!optProdId || optProdId === prodId) {
+            opt.style.display = '';
+          } else {
+            opt.style.display = 'none';
+          }
+        });
+        loteSelect.value = '';
+      }
+
+      actualizarCalculoNuevaCompra();
+    });
+  }
+
+  if (cantidadInput) {
+    cantidadInput.addEventListener('input', actualizarCalculoNuevaCompra);
+  }
+  if (precioInput) {
+    precioInput.addEventListener('input', actualizarCalculoNuevaCompra);
   }
 
   document.querySelectorAll('[role="button"][data-bs-toggle="modal"], [role="button"][data-bs-toggle="collapse"]').forEach(elemento => {
@@ -57,8 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Mostrar/ocultar monto pagado según estado
-  // Preparar modal de pago
   // Inicializar gráficas
   initializeCharts();
 });
