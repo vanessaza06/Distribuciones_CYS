@@ -157,7 +157,7 @@ path(
         deta_views.guardar_codigo,
         name="guardar_codigo",
     ),
-
+    path("detalle/<int:producto_pk>/crear-rapido/", deta_views.detalle_producto_crear_rapido, name="detalle_producto_crear_rapido"),
     # BODEGA
     path("bodega/", bod_views.bodega_home, name="bodega_home"),
     path("bodega/agenda/", bod_views.agenda_list, name="agenda_list"),
