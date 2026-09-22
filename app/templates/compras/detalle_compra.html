@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block page_title %}Detalle de Compra{% endblock %}
+{% block nav_compras %}active{% endblock %}
+{% block nav_detalle_compra %}active{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
@@ -472,7 +474,7 @@
         {{ compra.fecha|date:"d/m/Y" }}
       </div>
     </div>
-    <a href="{% url 'compras' %}" class="btn-volver">
+    <a href="{% url 'lista_compras' %}" class="btn-volver">
       <i class="bi bi-arrow-left"></i> Volver a Compras
     </a>
   </div>
@@ -793,13 +795,13 @@
   <div class="dc-section mt-2">
     <div class="dc-actions">
       {% if compra.estado_pago != 'pagada' and compra.estado != 'cancelada' %}
-      <a href="{% url 'compras' %}" class="dc-btn-primary">
+      <a href="{% url 'lista_compras' %}?proveedor={{ compra.proveedor.pk }}" class="dc-btn-primary">
         <i class="bi bi-credit-card"></i> Registrar Pago
       </a>
       {% endif %}
 
       {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
-      <form method="POST" action="#" class="d-inline">
+      <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.codigo_compra %}" class="d-inline">
         {% csrf_token %}
         <input type="hidden" name="estado"
           value="{% if compra.estado == 'pendiente' %}confirmada{% elif compra.estado == 'confirmada' %}recibida{% endif %}">

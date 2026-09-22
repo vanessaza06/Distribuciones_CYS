@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import Sum, Count, Q, F
 from django.utils import timezone
 
-from app.models import Proveedor, Compra, DetalleCompra, MetodoPago, Producto, Lote
+from app.models import Proveedor, Compra, DetalleCompra, MetodoPago, Producto, Lote, Usuario as AppUsuario
 from app.forms import NuevaCompraForm
 
 logger = logging.getLogger(__name__)
@@ -30,17 +30,20 @@ def lista_compras(request):
     if not todos_proveedores.exists():
         todos_proveedores = Proveedor.objects.all().order_by('nombre_empresa')
 
-    # Identificar el proveedor activo (prioridad: POST -> GET -> sesión -> primer proveedor)
-    proveedor_id = request.POST.get('proveedor_id') or request.GET.get('proveedor') or request.session.get('proveedor_id')
+    # Identificar el proveedor activo (prioridad: GET -> POST -> sesión -> primer proveedor)
+    proveedor_param = request.GET.get('proveedor') or request.POST.get('proveedor_id')
     proveedor = None
 
-    if proveedor_id:
-        try:
-            proveedor = Proveedor.objects.filter(pk=proveedor_id).first()
-            if proveedor:
-                request.session['proveedor_id'] = str(proveedor.pk)
-        except Exception:
-            proveedor = None
+    if proveedor_param:
+        proveedor_param = str(proveedor_param).strip()
+        proveedor = Proveedor.objects.filter(pk=proveedor_param).first()
+        if proveedor:
+            request.session['proveedor_id'] = str(proveedor.pk)
+
+    if not proveedor:
+        sesion_prov_id = request.session.get('proveedor_id')
+        if sesion_prov_id:
+            proveedor = Proveedor.objects.filter(pk=sesion_prov_id).first()
 
     if not proveedor and todos_proveedores.exists():
         proveedor = todos_proveedores.first()
@@ -49,50 +52,102 @@ def lista_compras(request):
     # ── Procesar registro de nueva compra (POST desde modal) ────────────────────
     form = NuevaCompraForm()
     if request.method == 'POST' and 'cantidad' in request.POST:
-        if not proveedor:
-            messages.error(request, 'Debe seleccionar un proveedor válido para registrar la compra.')
-            return redirect('lista_compras')
-
         form = NuevaCompraForm(request.POST)
         if form.is_valid():
             producto = form.cleaned_data['producto']
             lote = form.cleaned_data.get('lote')
             cantidad = form.cleaned_data['cantidad']
             precio_unitario = form.cleaned_data['precio_unitario']
+            estado_compra = form.cleaned_data.get('estado') or 'recibida'
+            monto_pagado = form.cleaned_data.get('monto_pagado') or Decimal('0.00')
+            metodo_pago = form.cleaned_data.get('metodo_pago') or 'efectivo'
+            numero_factura = (form.cleaned_data.get('numero_factura') or '').strip()
+
+            # Proveedor del formulario si se especificó, sino el activo
+            proveedor_compra = form.cleaned_data.get('proveedor') or proveedor
+            if not proveedor_compra:
+                messages.error(request, 'Debe seleccionar un proveedor válido para registrar la compra.')
+                return redirect('lista_compras')
+
             total = Decimal(str(cantidad)) * precio_unitario
+            monto_pagado = min(total, max(Decimal('0.00'), monto_pagado))
+            saldo = max(Decimal('0.00'), total - monto_pagado)
+
+            # Resolver instancia compatible de Usuario para Compra.usuario
+            usuario_compra = None
+            if request.user and request.user.is_authenticated:
+                if isinstance(request.user, AppUsuario):
+                    usuario_compra = request.user
+                else:
+                    ident = getattr(request.user, 'identificacion', None) or getattr(request.user, 'username', '')
+                    correo = getattr(request.user, 'email', '')
+                    usuario_compra = (
+                        AppUsuario.objects.filter(documento=ident).first() or
+                        AppUsuario.objects.filter(correo=correo).first()
+                    )
+                    if not usuario_compra and ident:
+                        usuario_compra, _ = AppUsuario.objects.get_or_create(
+                            documento=str(ident),
+                            defaults={
+                                'nombre': getattr(request.user, 'first_name', '') or getattr(request.user, 'username', 'Usuario'),
+                                'apellido': getattr(request.user, 'last_name', '') or '',
+                                'correo': correo or f"{ident}@cys.com",
+                                'tipo_identificacion': 'CC',
+                                'rol': getattr(request.user, 'rol', 'empleado') or 'empleado',
+                                'estado': 'activo',
+                            }
+                        )
+
+            if not usuario_compra:
+                usuario_compra = AppUsuario.objects.first()
 
             try:
                 with transaction.atomic():
                     # 1. Crear cabecera de compra
                     nueva_compra = Compra.objects.create(
-                        proveedor=proveedor,
-                        usuario=request.user,
+                        proveedor=proveedor_compra,
+                        usuario=usuario_compra,
                         fecha=timezone.now(),
                         valor=total,
-                        saldo=total,
-                        estado='pendiente',
+                        saldo=saldo,
+                        estado=estado_compra,
                     )
 
-                    # 2. Crear detalle de compra
+                    # 2. Crear detalle de compra vinculado a Producto y Lote
                     DetalleCompra.objects.create(
                         compra=nueva_compra,
+                        producto=producto,
+                        lote=lote,
                         cantidad=cantidad,
                         precio_unitario=precio_unitario,
                         subtotal_compra=total,
                         fecha_registro=timezone.now(),
                     )
 
-                    # 3. Si se seleccionó lote, ingresar unidades al stock del lote
-                    if lote:
+                    # 3. Si hubo pago/abono inicial, registrarlo
+                    if monto_pagado > Decimal('0.00'):
+                        MetodoPago.objects.create(
+                            compra=nueva_compra,
+                            valor=monto_pagado,
+                            referencia=numero_factura or f"Pago inicial Compra #{nueva_compra.codigo_compra}",
+                            efectivo=monto_pagado if metodo_pago == 'efectivo' else Decimal('0.00'),
+                            transaccion=monto_pagado if metodo_pago != 'efectivo' else Decimal('0.00'),
+                            observacion=f"Abono de compra vía {metodo_pago.capitalize()}" + (f" - Factura {numero_factura}" if numero_factura else ""),
+                            fecha=timezone.now(),
+                        )
+
+                    # 4. Si la compra se marca como recibida o confirmada y tiene lote, sumar unidades al stock
+                    if lote and estado_compra in ('recibida', 'confirmada'):
                         lote.stock_actual = (lote.stock_actual or 0) + cantidad
                         lote.save(update_fields=['stock_actual'])
 
+                request.session['proveedor_id'] = str(proveedor_compra.pk)
                 messages.success(
                     request,
                     f'✅ Compra #{nueva_compra.codigo_compra} registrada exitosamente: '
-                    f'{cantidad} und. de "{producto.nombre}" (${total:,.0f}).'
+                    f'{cantidad} und. de "{producto.nombre}" (${total:,.0f}) para {proveedor_compra.nombre_empresa}.'
                 )
-                return redirect('lista_compras')
+                return redirect(f"{reverse('lista_compras')}?proveedor={proveedor_compra.pk}")
             except Exception as e:
                 logger.error(f"Error al registrar compra: {e}")
                 messages.error(request, f'Ocurrió un error al guardar la compra: {str(e)}')
@@ -105,7 +160,7 @@ def lista_compras(request):
     if proveedor:
         compras_qs = Compra.objects.filter(proveedor=proveedor).select_related(
             'proveedor', 'usuario'
-        ).prefetch_related('detalles').order_by('-fecha')
+        ).prefetch_related('detalles__producto', 'detalles__lote').order_by('-fecha')
 
         # Adecuar atributos para compras.html
         for c in compras_qs:
@@ -114,9 +169,13 @@ def lista_compras(request):
             if primer_detalle:
                 c.cantidad = primer_detalle.cantidad
                 c.precio_unitario = primer_detalle.precio_unitario
+                c.producto = primer_detalle.producto
+                c.numero_lote = primer_detalle.numero_lote
             else:
                 c.cantidad = 1
                 c.precio_unitario = c.valor
+                c.producto = None
+                c.numero_lote = None
             compras.append(c)
 
     # ── KPIs y Estadísticas ───────────────────────────────────────────────────
@@ -136,6 +195,25 @@ def lista_compras(request):
         gastado=Sum(F('valor') - F('saldo'))
     )['gastado'] or Decimal('0.00')
 
+    # ── Producto Top y Productos más comprados ──
+    top_prod_qs = (
+        DetalleCompra.objects.filter(compra__proveedor=proveedor, producto__isnull=False)
+        .values('producto__nombre')
+        .annotate(total_und=Sum('cantidad'), total_dinero=Sum('subtotal_compra'))
+        .order_by('-total_und')[:5]
+    )
+    producto_top = None
+    productos_labels = []
+    productos_data = []
+    if top_prod_qs.exists():
+        p_primero = top_prod_qs.first()
+        producto_top = {
+            'producto__nombre': p_primero['producto__nombre'],
+            'total_und': p_primero['total_und'],
+        }
+        productos_labels = [p['producto__nombre'] for p in top_prod_qs]
+        productos_data = [int(p['total_und']) for p in top_prod_qs]
+
     # ── Datos para los Gráficos (Chart.js) ─────────────────────────────────────
     # 1. Compras por mes (últimos 6 meses)
     meses_labels = []
@@ -143,7 +221,7 @@ def lista_compras(request):
     for i in range(5, -1, -1):
         m = (mes_actual - i - 1) % 12 + 1
         y = ano_actual if (mes_actual - i) > 0 else ano_actual - 1
-        total_m = Compra.objects.filter(fecha__year=y, fecha__month=m).aggregate(s=Sum('valor'))['s'] or 0
+        total_m = Compra.objects.filter(proveedor=proveedor, fecha__year=y, fecha__month=m).aggregate(s=Sum('valor'))['s'] or 0
         nombres_meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
         meses_labels.append(f"{nombres_meses[m-1]} {y}")
         meses_data.append(float(total_m))
@@ -159,6 +237,27 @@ def lista_compras(request):
     suma_gastos = sum(gastos_data) or 1
     gastos_porcentajes = [int((g / suma_gastos) * 100) for g in gastos_data]
 
+    # Catálogo de productos y lotes para autocompletado en frontend
+    catalogo_productos = []
+    for p in Producto.objects.filter(activo=True).select_related('categoria'):
+        p_base = p.precio_base() or 0
+        catalogo_productos.append({
+            'id': p.pk,
+            'nombre': p.nombre,
+            'categoria': p.categoria.nombre if p.categoria else 'General',
+            'precio_sugerido': float(p_base),
+            'stock': p.stock_total,
+        })
+
+    lotes_catalogo = []
+    for l in Lote.objects.select_related('producto').all():
+        lotes_catalogo.append({
+            'id': l.pk,
+            'numero_lote': l.numero_lote,
+            'producto_id': l.producto.pk if l.producto else None,
+            'stock': l.stock_actual,
+        })
+
     context = {
         'proveedor': proveedor,
         'todos_proveedores': todos_proveedores,
@@ -169,14 +268,16 @@ def lista_compras(request):
         'total_gastado': total_gastado,
         'count_mes': count_mes,
         'total_mes': total_mes,
-        'producto_top': None,
+        'producto_top': producto_top,
         'meses_labels_json': json.dumps(meses_labels),
         'meses_data_json': json.dumps(meses_data),
-        'productos_labels_json': json.dumps([]),
-        'productos_data_json': json.dumps([]),
+        'productos_labels_json': json.dumps(productos_labels),
+        'productos_data_json': json.dumps(productos_data),
         'gastos_labels_json': json.dumps(gastos_labels),
         'gastos_data_json': json.dumps(gastos_data),
         'gastos_porcentajes_json': json.dumps(gastos_porcentajes),
+        'catalogo_productos_json': json.dumps(catalogo_productos),
+        'lotes_catalogo_json': json.dumps(lotes_catalogo),
         'breadcrumb_items': [
             {'nombre': 'Proveedores', 'url': reverse('lista_proveedores')},
             {'nombre': 'Compras', 'url': None},
@@ -208,12 +309,12 @@ def cambiar_estado_compra(request, id=None):
 
     if nuevo_estado not in transiciones_validas.get(compra.estado, set()):
         messages.error(request, f'No es posible cambiar la compra de "{compra.get_estado_display()}" a "{nuevo_estado}".')
-        return redirect('lista_compras')
+        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
     compra.estado = nuevo_estado
     compra.save(update_fields=['estado'])
     messages.success(request, f'✅ Estado de la compra #{compra.codigo_compra} actualizado a "{nuevo_estado.capitalize()}".')
-    return redirect('lista_compras')
+    return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
 
 # ── REGISTRO DE PAGO / ABONO DE COMPRA ─────────────────────────────────────────
@@ -229,7 +330,7 @@ def registrar_pago_compra(request, id=None):
 
     if compra.estado == 'cancelada':
         messages.error(request, 'No se pueden registrar pagos en una compra cancelada.')
-        return redirect('lista_compras')
+        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
     try:
         monto = Decimal(str(request.POST.get('monto_pagado', '0')))
@@ -238,11 +339,11 @@ def registrar_pago_compra(request, id=None):
 
     if monto <= Decimal('0.00'):
         messages.error(request, 'El abono debe ser mayor a cero.')
-        return redirect('lista_compras')
+        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
     if monto > compra.saldo:
         messages.error(request, f'El monto (${monto:,.0f}) supera el saldo pendiente (${compra.saldo:,.0f}).')
-        return redirect('lista_compras')
+        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
     metodo = request.POST.get('metodo_pago', 'efectivo')
     numero_factura = request.POST.get('numero_factura', '').strip()
@@ -267,7 +368,7 @@ def registrar_pago_compra(request, id=None):
         f'✅ Pago de ${monto:,.0f} registrado con éxito. '
         f'Saldo restante: ${compra.saldo:,.0f}.'
     )
-    return redirect('lista_compras')
+    return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
 
 
 # ── DETALLE DE UNA COMPRA ──────────────────────────────────────────────────────
@@ -300,3 +401,12 @@ def detalle_compra(request, id):
     }
 
     return render(request, 'compras/detalle_compra.html', context)
+
+
+def ultima_compra(request):
+    """Redirige al detalle de la compra más reciente."""
+    ultima = Compra.objects.order_by('-id').first()
+    if ultima:
+        return redirect('detalle_compra', id=ultima.pk)
+    messages.info(request, 'Aún no hay compras registradas.')
+    return redirect('lista_compras')
