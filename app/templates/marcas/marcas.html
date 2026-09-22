@@ -6,11 +6,12 @@
 {% block nav_marcas %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marca/marca.css' %}">
+<link rel="stylesheet" href="{% static 'css/marca/marca.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
+
+<div class="container-fluid p-0 cys-marcas-page">
 
   <!-- Encabezado de página -->
   <section class="cys-page-header">
@@ -70,16 +71,12 @@
   <form class="cys-toolbar" id="cysFiltroForm" method="get">
     <div class="cys-search">
       <i class="bi bi-search"></i>
-      <input type="text" id="inputBuscar" name="q" placeholder="Buscar marca..." value="{{ query }}">
+      <input type="text" id="inputBuscar" name="q" placeholder="Buscar marca..." value="{{ query }}" autocomplete="off">
     </div>
 
     <div class="cys-select" id="cysEstadoSelect">
       <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
-        <span id="cysEstadoLabel">
-          {% if estado_filtro == "activo" %}Activa
-          {% elif estado_filtro == "inactivo" %}Inactiva
-          {% else %}Todos los estados{% endif %}
-        </span>
+        <span id="cysEstadoLabel">{% if estado_filtro == "activo" %}Activa{% elif estado_filtro == "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span>
         <i class="bi bi-chevron-down"></i>
       </button>
       <ul class="cys-select__menu" id="cysEstadoMenu">
@@ -122,7 +119,7 @@
             <div class="cys-row-actions">
               <button class="cys-action-btn cys-action-btn--edit" type="button" title="Editar"
                       data-id="{{ marca.codigo_marca }}" data-nombre="{{ marca.nombre }}"
-                      data-descripcion="{{ marca.descripcion }}"
+                      data-descripcion="{{ marca.descripcion|default:'' }}"
                       data-estado="{{ marca.estado }}">
                 <i class="bi bi-pencil"></i>
               </button>
@@ -152,27 +149,27 @@
     <div class="cys-pagination">
       {% if page_obj.has_previous %}
         <a class="cys-page-btn" aria-label="Página anterior"
-           href="?q={{ query }}&estado={{ estado_filtro }}&page={{ page_obj.previous_page_number }}">
+           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.previous_page_number }}">
           <i class="bi bi-chevron-left"></i>
         </a>
       {% else %}
-        <button class="cys-page-btn" disabled aria-label="Página anterior"><i class="bi bi-chevron-left"></i></button>
+        <button class="cys-page-btn" disabled aria-label="Página anterior" type="button"><i class="bi bi-chevron-left"></i></button>
       {% endif %}
 
       <div class="cys-page-numbers">
         {% for num in paginator.page_range %}
           <a class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}"
-             href="?q={{ query }}&estado={{ estado_filtro }}&page={{ num }}">{{ num }}</a>
+             href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ num }}">{{ num }}</a>
         {% endfor %}
       </div>
 
       {% if page_obj.has_next %}
         <a class="cys-page-btn" aria-label="Página siguiente"
-           href="?q={{ query }}&estado={{ estado_filtro }}&page={{ page_obj.next_page_number }}">
+           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.next_page_number }}">
           <i class="bi bi-chevron-right"></i>
         </a>
       {% else %}
-        <button class="cys-page-btn" disabled aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
+        <button class="cys-page-btn" disabled aria-label="Página siguiente" type="button"><i class="bi bi-chevron-right"></i></button>
       {% endif %}
     </div>
   </section>
@@ -272,9 +269,9 @@
 <script>
   window.CYS_URLS = {
     crear: "{% url 'crear_marca' %}",
-    editarBase: "{% url 'editar_marca' 0 %}".replace('/0/', '/'),
-    eliminarBase: "{% url 'eliminar_marca' 0 %}".replace('/0/', '/'),
+    editarBase: "{% url 'editar_marca' 0 %}".replace(/0\/$/, ""),
+    eliminarBase: "{% url 'eliminar_marca' 0 %}".replace(/0\/$/, "")
   };
 </script>
-<script src="{% static 'js/marca/marcas.js' %}"></script>
+<script src="{% static 'js/marca/marcas.js' %}?v=3"></script>
 {% endblock %}

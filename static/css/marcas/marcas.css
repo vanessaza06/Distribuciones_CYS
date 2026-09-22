@@ -24,6 +24,8 @@
   --cys-amber-border: rgba(245, 179, 1, 0.35);
 
   --cys-blue: #2f7bf5;
+  --cys-blue-soft: rgba(47, 123, 245, 0.12);
+  --cys-blue-border: rgba(47, 123, 245, 0.35);
   --cys-green: #22c55e;
   --cys-green-soft: rgba(34, 197, 94, 0.12);
   --cys-green-border: rgba(34, 197, 94, 0.35);
@@ -99,6 +101,7 @@
   font-size: 14px;
   font-weight: 600;
   border: 1px solid transparent;
+  cursor: pointer;
 }
 
 .cys-btn--primary {
@@ -123,7 +126,7 @@
 
 .cys-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -139,7 +142,7 @@
   position: relative;
 }
 
-/* Borde de color según el tipo de tarjeta (como en el boceto) */
+/* Borde de color según el tipo de tarjeta */
 .cys-stat-card:has(.cys-stat-card__icon--active) { border-color: var(--cys-green-border); }
 .cys-stat-card:has(.cys-stat-card__icon--inactive) { border-color: var(--cys-red-border); }
 
@@ -224,6 +227,7 @@
   padding: 12px 16px;
   color: var(--cys-text);
   font-size: 14px;
+  cursor: pointer;
 }
 
 .cys-select__trigger i { color: var(--cys-text-muted); font-size: 12px; transition: transform 0.15s ease; }
@@ -233,6 +237,9 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   background: var(--cys-surface-alt);
   border: 1px solid var(--cys-border);
   border-radius: var(--cys-radius-sm);
@@ -246,6 +253,7 @@
   padding: 10px 16px;
   font-size: 14px;
   color: var(--cys-text-secondary);
+  cursor: pointer;
 }
 
 .cys-select__menu li:hover { background: var(--cys-amber-soft); color: var(--cys-amber); }
@@ -326,6 +334,7 @@
   justify-content: center;
   background: transparent;
   font-size: 13px;
+  cursor: pointer;
 }
 
 .cys-action-btn--edit { border-color: rgba(245, 179, 1, 0.4); color: var(--cys-amber); }
@@ -360,7 +369,10 @@
 
 .cys-pagination { display: flex; align-items: center; gap: 8px; }
 
-.cys-page-btn, .cys-page-numbers button {
+/* Los números y las flechas son <a> (Django), por eso se estilizan también */
+.cys-page-btn,
+.cys-page-numbers a,
+.cys-page-numbers button {
   width: 34px;
   height: 34px;
   border-radius: var(--cys-radius-sm);
@@ -371,13 +383,19 @@
   align-items: center;
   justify-content: center;
   font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.cys-page-btn:hover, .cys-page-numbers button:hover { color: var(--cys-text); border-color: var(--cys-text-muted); }
+.cys-page-btn:hover,
+.cys-page-numbers a:hover,
+.cys-page-numbers button:hover { color: var(--cys-text); border-color: var(--cys-text-muted); }
+
 .cys-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .cys-page-numbers { display: flex; gap: 8px; }
 
+.cys-page-numbers a.cys-page-numbers__active,
 .cys-page-numbers button.cys-page-numbers__active {
   background: var(--cys-amber);
   border-color: var(--cys-amber);
@@ -486,94 +504,8 @@
 .cys-confirm-text { margin: 0 0 4px; color: var(--cys-text-secondary); font-size: 14px; line-height: 1.5; }
 .cys-confirm-text strong { color: var(--cys-text); }
 
-/* =========================================================
-   BLINDAJE — corrige lo que base.css estaba pisando
-   (comparar con la captura: stat cards centradas, textos en
-   mayúsculas y botón primario azul tipo píldora)
-   ========================================================= */
+/* ---------- Alertas ---------- */
 
-/* 1) Stat cards: ícono a la izquierda, texto alineado a la izquierda */
-.cys-stats .cys-stat-card {
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  text-align: left !important;
-}
-
-.cys-stats .cys-stat-card > div,
-.cys-stats .cys-stat-card__body { text-align: left !important; }
-
-.cys-stats .cys-stat-card__label {
-  text-transform: none !important;
-  letter-spacing: normal !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  color: var(--cys-text-secondary) !important;
-  text-align: left !important;
-}
-
-.cys-stats .cys-stat-card__value {
-  font-size: 26px !important;
-  text-align: left !important;
-}
-
-/* 2) Botón primario: ámbar, esquinas del sistema, sin mayúsculas forzadas */
-.cys-btn.cys-btn--primary,
-button.cys-btn--primary,
-a.cys-btn--primary {
-  background: linear-gradient(180deg, var(--cys-amber), var(--cys-amber-dark)) !important;
-  background-color: var(--cys-amber) !important;
-  color: #1a1204 !important;
-  border: 1px solid transparent !important;
-  border-radius: var(--cys-radius-sm) !important;
-  text-transform: none !important;
-  box-shadow: none !important;
-  font-weight: 600 !important;
-}
-
-/* 3) Encabezados de tabla: sin el uppercase/azul global, CENTRADOS */
-.cys-table-card .cys-table thead th {
-  color: var(--cys-text-muted) !important;
-  background: var(--cys-surface-alt) !important;
-  text-transform: none !important;
-  font-size: 12px !important;
-  letter-spacing: .03em !important;
-  text-align: center !important;
-}
-
-/* 3b) Celdas del cuerpo de la tabla: CENTRADAS (por si base.css las pisa) */
-.cys-table-card .cys-table tbody td {
-  text-align: center !important;
-}
-
-/* 4) Superficies: que no las aclare/transparente el tema global */
-.cys-table-card,
-.cys-stats .cys-stat-card,
-.cys-search,
-.cys-select__trigger { background-color: var(--cys-surface) !important; }
-.cys-select__menu { background-color: var(--cys-surface-alt) !important; }
-
-/* ---------- Responsive ---------- */
-
-@media (max-width: 960px) {
-  .cys-stats { grid-template-columns: 1fr; }
-  .cys-page-header { flex-direction: column; align-items: flex-start; }
-  .cys-page-header__right { align-items: flex-start; }
-}
-
-@media (max-width: 480px) {
-  .cys-modal-overlay { align-items: flex-end; padding: 0; }
-  .cys-modal {
-    max-width: 100%;
-    max-height: 90vh;
-    border-radius: var(--cys-radius-lg) var(--cys-radius-lg) 0 0;
-    margin: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
-}
 .cys-alert {
   padding: 12px 16px;
   border-radius: var(--cys-radius-sm);
@@ -593,10 +525,17 @@ a.cys-btn--primary {
   border-color: var(--cys-red-border);
   color: var(--cys-red);
 }
-/* Variables extra para el ícono/acento azul del modal */
-:root {
-  --cys-blue-soft: rgba(47, 123, 245, 0.12);
-  --cys-blue-border: rgba(47, 123, 245, 0.35);
+
+.cys-alert--warning {
+  background: var(--cys-amber-soft);
+  border-color: var(--cys-amber-border);
+  color: var(--cys-amber);
+}
+
+.cys-alert--info {
+  background: var(--cys-blue-soft);
+  border-color: var(--cys-blue-border);
+  color: var(--cys-blue);
 }
 
 /* ===== Modal Nueva/Editar marca (rediseño) ===== */
@@ -716,3 +655,115 @@ a.cys-btn--primary {
   color: #fff !important;
 }
 #cysMarcaForm .cys-btn--primary:hover { filter: brightness(1.08); }
+
+/* =========================================================
+   BLINDAJE — corrige lo que base.css pueda estar pisando
+   (stat cards centradas/apiladas, textos en mayúsculas y
+   botón primario azul tipo píldora)
+   ========================================================= */
+
+/* 0) Grilla de 3 columnas y tarjetas sin alturas exageradas */
+.cys-marcas-page .cys-stats {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.cys-marcas-page .cys-stats .cys-stat-card {
+  height: auto !important;
+  min-height: 0 !important;
+  width: auto !important;
+}
+
+/* 1) Stat cards: ícono a la izquierda, texto alineado a la izquierda */
+.cys-stats .cys-stat-card {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.cys-stats .cys-stat-card > div,
+.cys-stats .cys-stat-card__body { text-align: left !important; }
+
+.cys-stats .cys-stat-card__label {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--cys-text-secondary) !important;
+  text-align: left !important;
+}
+
+.cys-stats .cys-stat-card__value {
+  font-size: 26px !important;
+  text-align: left !important;
+}
+
+/* 2) Botón primario: ámbar, esquinas del sistema, sin mayúsculas forzadas */
+.cys-btn.cys-btn--primary,
+button.cys-btn--primary,
+a.cys-btn--primary {
+  background: linear-gradient(180deg, var(--cys-amber), var(--cys-amber-dark)) !important;
+  background-color: var(--cys-amber) !important;
+  color: #1a1204 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--cys-radius-sm) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+/* El botón del modal sigue siendo azul (gana por especificidad + !important) */
+#cysMarcaForm .cys-btn.cys-btn--primary {
+  background: var(--cys-blue) !important;
+  background-color: var(--cys-blue) !important;
+  color: #fff !important;
+}
+
+/* 3) Encabezados de tabla: sin el uppercase/azul global, CENTRADOS */
+.cys-table-card .cys-table thead th {
+  color: var(--cys-text-muted) !important;
+  background: var(--cys-surface-alt) !important;
+  text-transform: none !important;
+  font-size: 12px !important;
+  letter-spacing: .03em !important;
+  text-align: center !important;
+}
+
+/* 3b) Celdas del cuerpo de la tabla: CENTRADAS (por si base.css las pisa) */
+.cys-table-card .cys-table tbody td {
+  text-align: center !important;
+}
+
+/* 4) Superficies: que no las aclare/transparente el tema global */
+.cys-table-card,
+.cys-stats .cys-stat-card,
+.cys-search,
+.cys-select__trigger { background-color: var(--cys-surface) !important; }
+.cys-select__menu { background-color: var(--cys-surface-alt) !important; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 960px) {
+  .cys-marcas-page .cys-stats { grid-template-columns: 1fr !important; }
+  .cys-stats { grid-template-columns: 1fr; }
+  .cys-page-header { flex-direction: column; align-items: flex-start; }
+  .cys-page-header__right { align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .cys-modal-overlay { align-items: flex-end; padding: 0; }
+  .cys-modal {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: var(--cys-radius-lg) var(--cys-radius-lg) 0 0;
+    margin: 0;
+  }
+  .cys-estado-options { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
