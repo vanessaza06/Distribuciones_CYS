@@ -132,6 +132,62 @@
 .badge-estado-faltante { font-size: .6rem; background: rgba(207, 156, 72, .15); color: var(--inv-rojo); border: 1px solid rgba(207, 156, 72, .3); }
 .comparar-diferencia-valor { font-size: 1.15rem; }
 
+/* ── LOTES EN BODEGA (tarjetas) ── */
+.lotes-search-prefix-bodega {
+  background: var(--inv-card2);
+  border: 1px solid var(--inv-border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: var(--inv-muted);
+  padding: 0 12px;
+  display: flex; align-items: center;
+}
+#buscarLoteBodega-grupo .inv-input { border-radius: 0 8px 8px 0 !important; border-left: none !important; }
+
+.lote-card {
+  background: var(--inv-card2);
+  border: 1px solid var(--inv-azul-borde);
+  border-radius: var(--inv-radius);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform .18s, box-shadow .18s;
+}
+.lote-card:hover { transform: translateY(-4px); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
+
+.lote-card__imagen {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  background: color-mix(in srgb, var(--inv-azul) 8%, var(--inv-card));
+  overflow: hidden;
+}
+.lote-card__imagen img { width:100%; height:100%; object-fit:cover; display:block; }
+.lote-card__imagen-placeholder {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  color: color-mix(in srgb, var(--inv-azul) 55%, transparent);
+  font-size: 2.4rem;
+}
+.lote-card__badge-estado {
+  position:absolute; top:8px; right:8px;
+  font-size:.65rem; font-weight:600;
+  padding:.25rem .6rem; border-radius:20px;
+  backdrop-filter: blur(2px);
+}
+.lote-card__badge-estado--ok { background: rgba(39,174,96,.22); color:#5be08a; border:1px solid rgba(39,174,96,.4); }
+.lote-card__badge-estado--por-vencer { background: rgba(243,156,18,.22); color:#f7b955; border:1px solid rgba(243,156,18,.4); }
+.lote-card__badge-estado--vencido { background: rgba(207,156,72,.22); color:#e3b877; border:1px solid rgba(207,156,72,.4); }
+
+.lote-card__body { padding: .9rem 1rem 1.1rem; display:flex; flex-direction:column; gap:.3rem; flex-grow:1; }
+.lote-card__titulo { font-weight:600; color: var(--inv-texto); font-size:.92rem; }
+.lote-card__subtitulo { font-size:.72rem; color: var(--inv-muted); margin-bottom:.4rem; }
+.lote-card__fila { display:flex; justify-content:space-between; font-size:.78rem; padding:.15rem 0; border-top:1px dashed color-mix(in srgb, var(--inv-azul) 18%, transparent); }
+.lote-card__fila:first-of-type { border-top: none; }
+.lote-card__label { color: var(--inv-muted); }
+.lote-card__valor { color: var(--inv-texto); font-weight:600; }
+
 @media (max-width: 767px) {
   .qc-valor-teal, .qc-valor-verde, .qc-valor-azul { font-size: 1.2rem; }
   .qc-titulo { font-size: .8rem; }

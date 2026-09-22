@@ -176,23 +176,12 @@ path(
         name="agenda_completar",
     ),
     path(
-        "bodega/agenda/<int:codigo_agenda>/hallazgo/",
-        bod_views.hallazgo_create,
-        name="hallazgo_create",
-    ),
-    path("bodega/hallazgos/", bod_views.hallazgo_list, name="hallazgo_list"),
-    path(
         "bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"
     ),
 
     # REPORTES
-    path("reportes/", rep_views.reportes_home, name="reportes_home"),  # type: ignore
-    path("reportes/ventas/", rep_views.reporte_ventas, name="reporte_ventas"),  # type: ignore
-    path("reportes/compras/", rep_views.reporte_compras, name="reporte_compras"),
-    path("reportes/inventario/", rep_views.reporte_inventario, name="reporte_inventario"),
-    path("reportes/stock-bajo/", rep_views.reporte_stock_bajo, name="reporte_stock_bajo"),
-    path("reportes/proveedores/", rep_views.reporte_proveedores, name="reporte_proveedores"),
-    path("reportes/exportar/<str:tipo>/", rep_views.reporte_exportar, name="reporte_exportar"),
+    
+    path("reportes/", rep_views.reportes, name="reportes"),
 
     # CONFIGURACION
     path("configuracion/", config_views.index, name="configuracion_index"),
