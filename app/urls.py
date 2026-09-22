@@ -174,12 +174,6 @@ path(
         name="agenda_completar",
     ),
     path(
-        "bodega/agenda/<int:codigo_agenda>/hallazgo/",
-        bod_views.hallazgo_create,
-        name="hallazgo_create",
-    ),
-    path("bodega/hallazgos/", bod_views.hallazgo_list, name="hallazgo_list"),
-    path(
         "bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"
     ),
 

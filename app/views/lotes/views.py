@@ -61,7 +61,7 @@ def lote_detail(request, numero_lote):
 @login_required
 def lote_create(request):
     if request.method == 'POST':
-        form = LoteForm(request.POST)
+        form = LoteForm(request.POST, request.FILES)
         if form.is_valid():
             lote = form.save(commit=False)
             lote.stock_actual = lote.cantidad_inicial
@@ -79,7 +79,7 @@ def lote_create(request):
 def lote_update(request, numero_lote):
     lote = get_object_or_404(Lote, numero_lote=numero_lote)
     if request.method == 'POST':
-        form = LoteForm(request.POST, instance=lote)
+        form = LoteForm(request.POST, request.FILES, instance=lote)
         if form.is_valid():
             form.save()
             messages.success(request, f'Lote {lote.numero_lote} actualizado.')

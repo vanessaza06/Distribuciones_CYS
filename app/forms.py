@@ -2,7 +2,7 @@ from decimal import Decimal
 from django import forms
 from app.models import (
     Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
-    AgendaInventario, Hallazgo,
+    AgendaInventario, 
 )
 from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
 from app.models import DetalleProducto
@@ -174,17 +174,7 @@ class AgendaInventarioForm(forms.ModelForm):
         }
 
 
-class HallazgoForm(forms.ModelForm):
-    class Meta:
-        model = Hallazgo
-        # agenda la asigna la vista (hallazgo.agenda = agenda), no va aquí.
-        fields = ['producto', 'tipo_hallazgo']
-        widgets = {
-            'producto': forms.Select(attrs={'class': 'form-select'}),
-            'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
-        }
-        from .models import DetalleProducto
-        
+   
         
 #-----CATEGORIA-----#
 class CategoriaForm(forms.ModelForm):

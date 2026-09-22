@@ -87,6 +87,19 @@ class Bodega(models.Model):
     def __str__(self):
         return self.nombre
 
+    @property
+    def conteo_inventario(self):
+        """
+        Conteo total de unidades en stock dentro de esta bodega,
+        sumando el stock_actual de todos sus lotes.
+        """
+        return self.lotes.aggregate(total=Sum("stock_actual"))["total"] or 0
+
+    @property
+    def total_lotes(self):
+        """Cantidad de lotes distintos registrados en esta bodega."""
+        return self.lotes.count()
+
 
 # ── 3. CATEGORIA ──
 class Categoria(models.Model):
@@ -123,7 +136,7 @@ class Producto(models.Model):
     descripcion = models.TextField(db_column="descripcion")
     fecha_vencimiento = models.DateField(db_column="fecha_vencimiento")
     categoria = models.ForeignKey(
-        "Categoria",  # antes decía 'categorias.Categoria', ya no aplica: es una sola app
+        "Categoria",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -169,7 +182,7 @@ class PresentacionProducto(models.Model):
     observaciones = models.TextField(blank=True, null=True, db_column="observaciones")
     activo = models.BooleanField(default=True, db_column="activo")
     producto = models.ForeignKey(
-        "Producto",  # antes decía 'productos.Producto', ya no aplica
+        "Producto",
         on_delete=models.CASCADE,
         db_column="codigo_producto",
         related_name="presentaciones",
@@ -199,21 +212,24 @@ class Lote(models.Model):
     fecha_registro = models.DateTimeField(
         default=timezone.now, db_column="fecha_registro"
     )
+    imagen = models.ImageField(
+        upload_to="lotes/imagenes/", blank=True, null=True, db_column="imagen"
+    )
     producto = models.ForeignKey(
         "Producto",
-        on_delete=models.CASCADE,  # antes 'productos.Producto'
+        on_delete=models.CASCADE,
         db_column="codigo_producto",
         related_name="lotes",
     )
     presentacion = models.ForeignKey(
         "PresentacionProducto",
-        on_delete=models.CASCADE,  # antes 'presentaciones.PresentacionProducto'
+        on_delete=models.CASCADE,
         db_column="codigo_presentacion",
         related_name="lotes",
     )
     bodega = models.ForeignKey(
         "Bodega",
-        on_delete=models.CASCADE,  # antes 'bodegas.Bodega'
+        on_delete=models.CASCADE,
         db_column="codigo_bodega",
         related_name="lotes",
     )
@@ -501,6 +517,7 @@ class DetalleCompra(models.Model):
         if not self.subtotal_compra or self.subtotal_compra == Decimal("0.00"):
             self.subtotal_compra = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+
 
 # ── 12. DEVOLUCION PROVEEDORES ──
 class DevolucionProveedores(models.Model):
@@ -848,6 +865,7 @@ class Devolucion(models.Model):
     def numero(self):
         return f"DEV-{self.pk:04d}"
 
+
 # ── 16. DETALLE DEVOLUCION ──
 class DetalleDevolucion(models.Model):
     numero_devolucion = models.AutoField(
@@ -984,58 +1002,6 @@ class AgendaInventario(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.fecha.date()}"
 
-
-# ── 20. HALLAZGO ──
-class Hallazgo(models.Model):
-    TIPO_HALLAZGO_CHOICES = [
-        ("faltante", "Faltante"),
-        ("sobrante", "Sobrante"),
-        ("exacto", "Exacto"),
-    ]
-    numero_hallazgo = models.AutoField(primary_key=True, db_column="numero_hallazgo")
-    agenda = models.ForeignKey(
-        "AgendaInventario",
-        on_delete=models.CASCADE,
-        db_column="codigo_agenda",
-        related_name="hallazgos",
-    )
-    producto = models.ForeignKey(
-        "Producto",
-        on_delete=models.PROTECT,
-        db_column="codigo_producto",
-        related_name="hallazgos_bodega",
-    )
-    cantidad_sistema = models.IntegerField(db_column="cantidad_sistema")
-    cantidad_fisica = models.IntegerField(db_column="cantidad_fisica")
-    diferencia = models.IntegerField(db_column="diferencia")
-    sesion_conteo = models.CharField(max_length=50, db_column="sesion_conteo")
-    tipo_hallazgo = models.CharField(
-        max_length=20, choices=TIPO_HALLAZGO_CHOICES, db_column="tipo_hallazgo"
-    )
-    resultado_inventario = models.CharField(
-        max_length=255, blank=True, db_column="resultado_inventario"
-    )
-    observaciones = models.TextField(blank=True, db_column="observaciones")
-    fecha_hallazgo = models.DateTimeField(auto_now_add=True, db_column="fecha_hallazgo")
-
-    class Meta:
-        db_table = "hallazgo"
-        verbose_name = "Hallazgo"
-        verbose_name_plural = "Hallazgos"
-        ordering = ["-fecha_hallazgo"]
-
-    def __str__(self):
-        return f"Hallazgo {self.producto} ({self.diferencia})"
-
-    def save(self, *args, **kwargs):
-        self.diferencia = self.cantidad_fisica - self.cantidad_sistema
-        if self.diferencia > 0:
-            self.tipo_hallazgo = "sobrante"
-        elif self.diferencia < 0:
-            self.tipo_hallazgo = "faltante"
-        else:
-            self.tipo_hallazgo = "exacto"
-        super().save(*args, **kwargs)
 
 # -- CONFIGURACION DE EMPRESA --
 class ConfiguracionEmpresa(models.Model):
