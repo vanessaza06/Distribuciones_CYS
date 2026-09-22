@@ -534,7 +534,7 @@
               </div>
               <div class="cys-denom-stepper">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor }}">
+                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
@@ -558,7 +558,7 @@
               </div>
               <div class="cys-denom-stepper">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor }}">
+                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
@@ -639,7 +639,7 @@
               </div>
               <div class="cys-denom-stepper">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor }}">
+                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
@@ -663,7 +663,7 @@
               </div>
               <div class="cys-denom-stepper">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor }}">
+                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
                 <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
@@ -1125,10 +1125,11 @@ function stepDenom(btn, delta) {
   if (!container) return;
   const input = container.querySelector('input');
   if (input) {
-    let val = parseInt(input.value) || 0;
+    let val = parseInt(input.value, 10) || 0;
     val = Math.max(0, val + delta);
     input.value = val;
-    input.dispatchEvent(new Event('input'));
+    recalcApertura();
+    recalcCierre();
   }
 }
 
@@ -1139,8 +1140,8 @@ function recalcApertura() {
   let totalMonedas = 0;
 
   document.querySelectorAll('.denom-ct').forEach(d => {
-    const cant = parseInt(d.value) || 0;
-    const valor = parseInt(d.dataset.valor) || 0;
+    const cant = parseInt(d.value, 10) || 0;
+    const valor = parseInt(d.dataset.valor, 10) || 0;
     const sub = cant * valor;
     total += sub;
 
@@ -1161,27 +1162,6 @@ function recalcApertura() {
   if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
 }
 
-document.querySelectorAll('.denom-ct').forEach(i => i.addEventListener('input', recalcApertura));
-
-document.getElementById('btnConfirmarConteo').addEventListener('click', function() {
-  const denoms = {};
-  let monto = 0;
-  document.querySelectorAll('.denom-ct').forEach(d => {
-    const cant = parseInt(d.value) || 0;
-    const val  = parseInt(d.dataset.valor);
-    if (cant > 0) denoms[d.dataset.valor] = cant;
-    monto += cant * val;
-  });
-  fetch('/ventas/caja/conteo/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ monto_base: monto, observacion: document.getElementById('ctObservacion').value, denominaciones: denoms })
-  }).then(r => r.json()).then(data => {
-    if (data.ok) location.reload();
-    else alert(data.error || 'Error al registrar apertura.');
-  });
-});
-
 // ══ CIERRE DE CAJA ══
 function recalcCierre() {
   let total = 0;
@@ -1189,8 +1169,8 @@ function recalcCierre() {
   let totalMonedas = 0;
 
   document.querySelectorAll('.denom-ci').forEach(d => {
-    const cant = parseInt(d.value) || 0;
-    const valor = parseInt(d.dataset.valor) || 0;
+    const cant = parseInt(d.value, 10) || 0;
+    const valor = parseInt(d.dataset.valor, 10) || 0;
     const sub = cant * valor;
     total += sub;
 
@@ -1210,7 +1190,7 @@ function recalcCierre() {
   if (resTotEl) resTotEl.textContent = totFmt;
 
   const baseInput = document.getElementById('baseSiguiente');
-  const base = parseInt(baseInput ? baseInput.value : 0) || 0;
+  const base = parseInt(baseInput ? baseInput.value : 0, 10) || 0;
   const retEl = document.getElementById('resumenRetirar');
   if (retEl) retEl.textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
 
@@ -1220,36 +1200,97 @@ function recalcCierre() {
   if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
 }
 
-document.querySelectorAll('.denom-ci').forEach(i => i.addEventListener('input', recalcCierre));
-
-document.getElementById('baseSiguiente').addEventListener('input', function() {
-  const totalStr = document.getElementById('totalCierre') ? document.getElementById('totalCierre').textContent : '0';
-  const total = parseInt(totalStr.replace(/\D/g,'')) || 0;
-  const base  = parseInt(this.value) || 0;
-  const resBaseEl = document.getElementById('resumenBaseSig');
-  if (resBaseEl) resBaseEl.textContent = '$' + base.toLocaleString('es-CO');
-  const retEl = document.getElementById('resumenRetirar');
-  if (retEl) retEl.textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
-});
-
-document.getElementById('btnConfirmarCierre').addEventListener('click', function() {
-  const denoms = {};
-  let monto = 0;
-  document.querySelectorAll('.denom-ci').forEach(d => {
-    const cant = parseInt(d.value) || 0;
-    const val  = parseInt(d.dataset.valor);
-    if (cant > 0) denoms[d.dataset.valor] = cant;
-    monto += cant * val;
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.denom-ct').forEach(i => {
+    ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, recalcApertura));
   });
-  const base = parseInt(document.getElementById('baseSiguiente').value) || 0;
-  fetch('/ventas/caja/cierre/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ total_contado: monto, monto_base_siguiente: base, total_retirado: Math.max(0, monto - base), denominaciones: denoms })
-  }).then(r => r.json()).then(data => {
-    if (data.ok) location.reload();
-    else alert(data.error || 'Error al cerrar caja.');
+
+  document.querySelectorAll('.denom-ci').forEach(i => {
+    ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, recalcCierre));
   });
+
+  const btnConfirmarConteo = document.getElementById('btnConfirmarConteo');
+  if (btnConfirmarConteo) {
+    btnConfirmarConteo.addEventListener('click', function() {
+      const denoms = {};
+      let monto = 0;
+      document.querySelectorAll('.denom-ct').forEach(d => {
+        const cant = parseInt(d.value, 10) || 0;
+        const val  = parseInt(d.dataset.valor, 10) || 0;
+        if (cant > 0) denoms[d.dataset.valor] = cant;
+        monto += cant * val;
+      });
+      const obsEl = document.getElementById('ctObservacion');
+      const obs = obsEl ? obsEl.value : '';
+
+      fetch("{% url 'apertura_caja' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ monto_base: monto, observacion: obs, denominaciones: denoms })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) location.reload();
+        else alert(data.error || 'Error al registrar apertura.');
+      })
+      .catch(err => {
+        console.error('Error al guardar apertura:', err);
+        alert('Error al procesar la apertura de caja.');
+      });
+    });
+  }
+
+  const baseInput = document.getElementById('baseSiguiente');
+  if (baseInput) {
+    baseInput.addEventListener('input', function() {
+      const totalStr = document.getElementById('totalCierre') ? document.getElementById('totalCierre').textContent : '0';
+      const total = parseInt(totalStr.replace(/\D/g,''), 10) || 0;
+      const base  = parseInt(this.value, 10) || 0;
+      const resBaseEl = document.getElementById('resumenBaseSig');
+      if (resBaseEl) resBaseEl.textContent = '$' + base.toLocaleString('es-CO');
+      const retEl = document.getElementById('resumenRetirar');
+      if (retEl) retEl.textContent = '$' + Math.max(0, total - base).toLocaleString('es-CO');
+    });
+  }
+
+  const btnConfirmarCierre = document.getElementById('btnConfirmarCierre');
+  if (btnConfirmarCierre) {
+    btnConfirmarCierre.addEventListener('click', function() {
+      const denoms = {};
+      let monto = 0;
+      document.querySelectorAll('.denom-ci').forEach(d => {
+        const cant = parseInt(d.value, 10) || 0;
+        const val  = parseInt(d.dataset.valor, 10) || 0;
+        if (cant > 0) denoms[d.dataset.valor] = cant;
+        monto += cant * val;
+      });
+      const base = parseInt(document.getElementById('baseSiguiente') ? document.getElementById('baseSiguiente').value : 0, 10) || 0;
+      fetch("{% url 'cierre_caja' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ total_contado: monto, monto_base_siguiente: base, total_retirado: Math.max(0, monto - base), denominaciones: denoms })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) location.reload();
+        else alert(data.error || 'Error al cerrar caja.');
+      })
+      .catch(err => {
+        console.error('Error al guardar cierre:', err);
+        alert('Error al procesar el cierre de caja.');
+      });
+    });
+  }
+
+  const modalConteo = document.getElementById('modalConteo');
+  if (modalConteo) {
+    modalConteo.addEventListener('shown.bs.modal', recalcApertura);
+  }
+
+  const modalCierre = document.getElementById('modalCierre');
+  if (modalCierre) {
+    modalCierre.addEventListener('shown.bs.modal', recalcCierre);
+  }
 });
 </script>
 {% endblock %}
