@@ -235,7 +235,6 @@ $(document).ready(function () {
     dom: 'rt'
   });
 });
-
 // ── REGISTRAR CÓDIGOS ──
 (function () {
   let filaActiva   = null;
@@ -255,7 +254,6 @@ $(document).ready(function () {
     scanInput.value        = '';
     scanInput.disabled     = true;
     scanBtn.disabled       = true;
-    scanBtn.style.opacity  = '0.45';
     camBtn.disabled        = true;
     detenerCamara();
   }
@@ -314,54 +312,140 @@ $(document).ready(function () {
   }
 
   function guardarCodigo(fila, codigo) {
-    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const fd   = new FormData();
-    fd.append('codigo', codigo);
-    fd.append('csrfmiddlewaretoken', csrf);
-    fetch(fila.dataset.url, { method: 'POST', body: fd })
-      .then(r => {
-        if (r.ok || r.redirected) {
-          fila.dataset.codigo = codigo;
-          fila.querySelector('.codigo-display').textContent = codigo || '—';
-          fila.querySelector('td:nth-child(4)').innerHTML = codigo
-            ? '<span class="badge inv-badge-entrada"><i class="bi bi-check-circle me-1"></i>Registrado</span>'
-            : '<span class="badge inv-badge-salida-tbl"><i class="bi bi-x-circle me-1"></i>Sin código</span>';
-          fila.classList.add('scan-row--saved');
-          setTimeout(() => { fila.classList.remove('scan-row--saved'); resetUI(); }, 1200);
-        }
-      })
-      .catch(() => alert('Error al guardar. Intenta de nuevo.'));
+  const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const esNuevo = fila.classList.contains('fila-sin-detalle');
+  const fd = new FormData();
+  fd.append(esNuevo ? 'codigo_barras' : 'codigo', codigo);
+  fd.append('csrfmiddlewaretoken', csrf);
+
+  if (esNuevo) {
+    const marca = document.getElementById('scan-marca').value;
+    const fecha = document.getElementById('scan-fecha-venc').value;
+    if (!marca) { alert('Selecciona una marca.'); return; }
+    if (!fecha) { alert('Selecciona la fecha de vencimiento.'); return; }
+    fd.append('marca', marca);
+    fd.append('fecha_vencimiento', fecha);
   }
+  fetch(fila.dataset.url, { method: 'POST', body: fd })
+    .then(r => r.json().catch(() => ({})).then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+      if (!ok || (data && data.ok === false)) {
+        alert((data && data.error) || 'Error al guardar. Intenta de nuevo.');
+        return;
+      }
 
-  document.getElementById('tabla-codigos').addEventListener('click', function (e) {
-    const fila = e.target.closest('.scan-row');
-    if (!fila) return;
-    document.querySelectorAll('.scan-row').forEach(f => f.classList.remove('scan-row--active'));
-    filaActiva = fila;
-    fila.classList.add('scan-row--active');
-    scanNombre.textContent = fila.dataset.nombre;
-    scanInput.value        = fila.dataset.codigo;
-    scanInput.disabled     = false;
-    scanBtn.disabled       = false;
-    scanBtn.style.opacity  = '1';
-    camBtn.disabled        = false;
-    scanInput.focus();
+      fila.dataset.codigo = codigo;
+
+      const tabla = $('#tabla-codigos').DataTable();
+      const fila$ = $(fila);
+
+      fila$.find('td').eq(3).html(
+        '<span class="badge inv-badge-entrada"><i class="bi bi-check-circle me-1"></i>Registrado</span>'
+      );
+      fila$.find('td').eq(4).html(
+        '<span class="codigo-display text-info scan-codigo-texto">' + codigo + '</span>'
+      );
+
+      if (esNuevo && data.detalle_pk) {
+        fila.classList.remove('fila-sin-detalle');
+        fila.dataset.pk = data.detalle_pk;
+        fila.dataset.url = data.guardar_url;
+      }
+
+      tabla.row(fila).invalidate().draw(false);
+
+      fila.classList.add('scan-row--saved');
+      setTimeout(() => { fila.classList.remove('scan-row--saved'); resetUI(); }, 1200);
+    })
+    .catch(() => alert('Error al guardar. Intenta de nuevo.'));
+}
+
+document.getElementById('tabla-codigos').addEventListener('click', function (e) {
+  const fila = e.target.closest('.scan-row');
+  if (!fila) return;
+  document.querySelectorAll('.scan-row').forEach(f => f.classList.remove('scan-row--active'));
+  filaActiva = fila;
+  fila.classList.add('scan-row--active');
+  scanNombre.textContent = fila.dataset.nombre;
+  scanInput.value        = fila.dataset.codigo;
+  scanInput.disabled     = false;
+  scanBtn.disabled       = false;
+  camBtn.disabled        = false;
+  scanInput.focus();
+
+  const esNuevo = fila.classList.contains('fila-sin-detalle');
+  const campoMarca = document.getElementById('scan-campo-marca');
+  const campoFecha = document.getElementById('scan-campo-fecha');
+  const marcaSel = document.getElementById('scan-marca');
+  const fechaInput = document.getElementById('scan-fecha-venc');
+
+  campoMarca.classList.toggle('d-none', !esNuevo);
+  campoFecha.classList.toggle('d-none', !esNuevo);
+  marcaSel.disabled = !esNuevo;
+  fechaInput.disabled = !esNuevo;
+  if (!esNuevo) { marcaSel.value = ''; fechaInput.value = ''; }
+});
+camBtn.addEventListener('click', () => {
+  html5Scanner ? detenerCamara() : iniciarCamara();
+});
+
+scanBtn.addEventListener('click', () => {
+  if (filaActiva) guardarCodigo(filaActiva, scanInput.value.trim());
+});
+
+scanInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && filaActiva) {
+    e.preventDefault();
+    guardarCodigo(filaActiva, scanInput.value.trim());
+  }
+});
+
+modal.addEventListener('hidden.bs.modal', resetUI);
+
+// ── MASTER-DETALLE: selección, cierre y filtro (vista Detalle de Producto) ──
+window.gpSeleccionarProducto = function (pk) {
+  document.querySelectorAll('.gp-md-row').forEach(function (row) {
+    row.classList.toggle('active', row.dataset.pk === String(pk));
   });
 
-  camBtn.addEventListener('click', () => {
-    html5Scanner ? detenerCamara() : iniciarCamara();
+  document.querySelectorAll('.gp-md-panel').forEach(function (panel) {
+    panel.classList.add('d-none');
   });
 
-  scanBtn.addEventListener('click', () => {
-    if (filaActiva) guardarCodigo(filaActiva, scanInput.value.trim());
+  var panelVacio = document.getElementById('gpDetalleVacio');
+  if (panelVacio) panelVacio.classList.add('d-none');
+
+  var panel = document.getElementById('gpPanel' + pk);
+  if (panel) panel.classList.remove('d-none');
+};
+
+window.gpCerrarDetalle = function (event) {
+  if (event) event.stopPropagation();
+
+  document.querySelectorAll('.gp-md-row').forEach(function (row) {
+    row.classList.remove('active');
+  });
+  document.querySelectorAll('.gp-md-panel').forEach(function (panel) {
+    panel.classList.add('d-none');
   });
 
-  scanInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && filaActiva) {
-      e.preventDefault();
-      guardarCodigo(filaActiva, scanInput.value.trim());
-    }
+  var panelVacio = document.getElementById('gpDetalleVacio');
+  if (panelVacio) panelVacio.classList.remove('d-none');
+};
+
+window.gpFiltrarProductos = function (q) {
+  var term = q.toLowerCase().trim();
+  var visibles = 0;
+
+  document.querySelectorAll('.gp-md-row').forEach(function (row) {
+    var nombre = row.dataset.nombre || '';
+    var codigo = row.dataset.codigo || '';
+    var match = !term || nombre.includes(term) || codigo.includes(term);
+    row.style.display = match ? '' : 'none';
+    if (match) visibles++;
   });
 
-  modal.addEventListener('hidden.bs.modal', resetUI);
+  var noRes = document.getElementById('gpNoResultados');
+  if (noRes) noRes.classList.toggle('d-none', visibles > 0 || !term);
+};
 })();
