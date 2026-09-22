@@ -2,7 +2,7 @@ from decimal import Decimal
 from django import forms
 from app.models import (
     Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
-    AgendaInventario, Hallazgo,
+    AgendaInventario, 
 )
 from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
 from app.models import DetalleProducto
@@ -55,27 +55,72 @@ class ProveedorForm(forms.ModelForm):
 
 #-----COMPRA-----#
 class NuevaCompraForm(forms.Form):
+    proveedor = forms.ModelChoiceField(
+        queryset=Proveedor.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraProveedor'}),
+        label="Proveedor"
+    )
     producto = forms.ModelChoiceField(
         queryset=Producto.objects.filter(activo=True),
-        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'required': True}),
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'required': True, 'id': 'formCompraProducto'}),
         label="Producto"
     )
     lote = forms.ModelChoiceField(
         queryset=Lote.objects.all(),
         required=False,
-        widget=forms.Select(attrs={'class': 'form-select form-select-lg'}),
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraLote'}),
         label="Lote (Opcional)"
     )
     cantidad = forms.IntegerField(
         min_value=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 10', 'required': True}),
+        initial=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Ej: 10', 'required': True, 'id': 'formCompraCantidad'}),
         label="Cantidad"
     )
     precio_unitario = forms.DecimalField(
         min_value=Decimal('0.01'),
         decimal_places=2,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True}),
-        label="Precio Unitario"
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True, 'id': 'formCompraPrecio'}),
+        label="Precio Unitario ($)"
+    )
+    estado = forms.ChoiceField(
+        choices=[
+            ('pendiente', 'Pendiente de entrega'),
+            ('confirmada', 'Confirmada'),
+            ('recibida', 'Recibida (Ingresar a inventario)'),
+        ],
+        initial='recibida',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraEstado'}),
+        label="Estado de Compra"
+    )
+    numero_factura = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Ej: FAC-2026-001', 'id': 'formCompraFactura'}),
+        label="N° Factura / Referencia (Opcional)"
+    )
+    monto_pagado = forms.DecimalField(
+        min_value=Decimal('0.00'),
+        decimal_places=2,
+        required=False,
+        initial=Decimal('0.00'),
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '0.01', 'placeholder': '0 para crédito total', 'id': 'formCompraPago'}),
+        label="Abono Inicial ($)"
+    )
+    metodo_pago = forms.ChoiceField(
+        choices=[
+            ('efectivo', 'Efectivo'),
+            ('nequi', 'Nequi'),
+            ('daviplata', 'Daviplata'),
+            ('bancolombia', 'Bancolombia'),
+            ('breb', 'Bre-B'),
+        ],
+        initial='efectivo',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraMetodoPago'}),
+        label="Método de Pago"
     )
 #-----PRODUCTO-----#
 
@@ -174,17 +219,7 @@ class AgendaInventarioForm(forms.ModelForm):
         }
 
 
-class HallazgoForm(forms.ModelForm):
-    class Meta:
-        model = Hallazgo
-        # agenda la asigna la vista (hallazgo.agenda = agenda), no va aquí.
-        fields = ['producto', 'tipo_hallazgo']
-        widgets = {
-            'producto': forms.Select(attrs={'class': 'form-select'}),
-            'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
-        }
-        from .models import DetalleProducto
-        
+   
         
 #-----CATEGORIA-----#
 class CategoriaForm(forms.ModelForm):

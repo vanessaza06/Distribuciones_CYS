@@ -4,7 +4,7 @@ from .models import (
     Lote, Marca, DetalleProducto, Proveedor, Compra, DetalleCompra,
     DevolucionProveedores, Caja, Venta, DetalleVenta, PagoVenta,
     Devolucion, DetalleDevolucion, MetodoPago,
-    AgendaInventario, Hallazgo, ConfiguracionEmpresa, BackupRegistro
+    AgendaInventario, ConfiguracionEmpresa, BackupRegistro
 )
 
 admin.site.register(Usuario)
@@ -27,6 +27,5 @@ admin.site.register(Devolucion)
 admin.site.register(DetalleDevolucion)
 admin.site.register(MetodoPago)
 admin.site.register(AgendaInventario)
-admin.site.register(Hallazgo)
 admin.site.register(ConfiguracionEmpresa)
 admin.site.register(BackupRegistro)

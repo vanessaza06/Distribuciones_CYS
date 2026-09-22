@@ -1,16 +1,12 @@
 /**
  * GESTION_LOTES.JS — Gestión de Lotes de Inventario
- * Funcionalidades: gráfico de stock, dropdown de presentación, validación
+ * Funcionalidades: gráfico de stock, dropdown de presentación, dropzone de imagen, validación
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Inicializar gráfico de proveedores
   inicializarGraficoProveedores();
-
-  // Inicializar dropdown de presentación
   inicializarDropdownPresentacion();
-
-  // Inicializar validación de formulario
+  inicializarDropzoneImagen();
   inicializarValidacionFormulario();
 });
 
@@ -21,7 +17,6 @@ function inicializarGraficoProveedores() {
   const canvas = document.getElementById('chartProveedores');
   if (!canvas) return;
 
-  // Los datos vienen del servidor (Django) mediante atributos data-
   const configElement = document.getElementById('lotes-config');
   let labels = [];
   let data = [];
@@ -93,6 +88,66 @@ function inicializarDropdownPresentacion() {
       inputProducto.value = item.dataset.productoPk;
       document.getElementById('presentacion-lote-label').textContent = item.textContent.trim();
     });
+  });
+}
+
+/**
+ * Dropzone de imagen: click, drag&drop, preview y quitar
+ */
+function inicializarDropzoneImagen() {
+  const dropzone   = document.getElementById('dropzone-imagen-lote');
+  const input      = document.getElementById('input-imagen-lote');
+  const contenido  = document.getElementById('dropzone-imagen-contenido');
+  const previewWrap = document.getElementById('lote-imagen-preview-wrap');
+  const previewImg  = document.getElementById('lote-imagen-preview-img');
+  const btnQuitar   = document.getElementById('btn-quitar-imagen-lote');
+  if (!dropzone || !input) return;
+
+  function mostrarPreview(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      contenido.classList.add('d-none');
+      previewWrap.classList.remove('d-none');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  dropzone.addEventListener('click', e => {
+    if (e.target.closest('#btn-quitar-imagen-lote')) return;
+    input.click();
+  });
+
+  input.addEventListener('change', function () {
+    if (this.files && this.files[0]) mostrarPreview(this.files[0]);
+  });
+
+  ['dragenter', 'dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => {
+      e.preventDefault();
+      dropzone.classList.add('lote-imagen-dropzone--activo');
+    })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => {
+      e.preventDefault();
+      dropzone.classList.remove('lote-imagen-dropzone--activo');
+    })
+  );
+  dropzone.addEventListener('drop', e => {
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      input.files = e.dataTransfer.files;
+      mostrarPreview(file);
+    }
+  });
+
+  btnQuitar?.addEventListener('click', e => {
+    e.stopPropagation();
+    input.value = '';
+    previewImg.src = '';
+    previewWrap.classList.add('d-none');
+    contenido.classList.remove('d-none');
   });
 }
 
