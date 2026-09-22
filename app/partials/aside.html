@@ -150,13 +150,7 @@
           <i class="bi bi-bar-chart-fill"></i>
           <span>Reportes</span>
         </a>
-                    <!-- PRESENTACIONES -->
-<a href="{% url 'presentacion_lista' %}"
-   class="cys-sb-link {% block nav_presentaciones %}{% endblock %}"
-   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Presentaciones">
-  <i class="bi bi-layers-fill"></i>
-  <span>Presentaciones</span>
-</a>
+
         <!-- INVENTARIO -->
         <div class="cys-sb-inventario-wrap">
           <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
@@ -179,7 +173,11 @@
                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Productos">
               <i class="bi bi-box-seam-fill"></i> Productos
             </a>
-
+            <a href="{% url 'presentacion_lista' %}"
+              class="cys-sb-link {% block nav_presentaciones %}{% endblock %}"
+              data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Presentaciones">
+            <i class="bi bi-layers-fill"></i>Presentaciones
+          </a>
             <a href="{% url 'gestion_stock' %}"
                class="cys-sb-sublink {% block nav_stock %}{% endblock %}"
                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Stock & Productos">
