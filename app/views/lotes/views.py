@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 import json
-
+from django.urls import reverse
 from app.models import Producto, Lote, Bodega, PresentacionProducto
 from app.forms import LoteForm
 
@@ -21,6 +21,11 @@ def gestion_stock(request):
         'lotes_activos': lotes_activos,
         'lotes_por_vencer': lotes_por_vencer,
         'lotes_vencidos': lotes_vencidos,
+        'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
+            {'nombre': 'Lotes', 'url': reverse('lote_list')},
+            {'nombre': 'Stock & Productos', 'url': reverse('gestion_stock')},
+        ],
     }
     return render(request, 'lotes/gestion.html', context)
 
@@ -49,10 +54,16 @@ def lote_list(request):
         'productos': productos,
         'bodegas': bodegas,
         'hay_presentaciones': PresentacionProducto.objects.exists(),
+        'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
+            {'nombre': 'Lotes', 'url': reverse('lote_list')},
+            {'nombre': 'Stock & Productos', 'url': reverse('gestion_stock')},
+        ],
+
     })
 
 
-@login_required
+@login_required  
 def lote_detail(request, numero_lote):
     lote = get_object_or_404(Lote, numero_lote=numero_lote)
     return render(request, 'lotes/lote_detail.html', {'lote': lote})
