@@ -1,4 +1,4 @@
-﻿from django.urls import path
+from django.urls import path
 from django.shortcuts import render
 from app.views.categorias import views as cat_views
 from app.views.proveedores import views as prov_views
@@ -14,10 +14,16 @@ from app.views.principal import views as principal_views
 from app.views.ventas import views as ventas_views
 from app.views.reportes import views as rep_views
 from app.views.configuracion import views as config_views
+from app.views.metodo_de_pago import views as mp_views
 
 
 urlpatterns = [
     path("", principal_views.principal, name="principal"),
+
+    # MÉTODOS DE PAGO
+    path("metodos-pago/", mp_views.lista_metodos_pago, name="lista_metodos_pago"),
+    path("metodos-pago/crear/", mp_views.crear_metodo_pago, name="crear_metodo_pago"),
+    path("metodos-pago/eliminar/<int:pk>/", mp_views.eliminar_metodo_pago, name="eliminar_metodo_pago"),
 
     # VENTAS
     path("ventas/", ventas_views.ventas, name="ventas"),
