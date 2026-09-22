@@ -248,3 +248,67 @@ button.lote-btn-crear:active,
 .lote-cantidad-wrap .lote-cantidad-input {
   padding-right: 34px !important;
 }
+
+/* ══════════════════════════════════════════
+   DROPZONE IMAGEN DE LOTE
+   ══════════════════════════════════════════ */
+.lote-imagen-dropzone {
+  position: relative;
+  border: 2px dashed color-mix(in srgb, var(--inv-azul) 40%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--inv-azul) 4%, var(--inv-card2));
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+  overflow: hidden;
+}
+.lote-imagen-dropzone:hover,
+.lote-imagen-dropzone--activo {
+  border-color: var(--inv-azul);
+  background: color-mix(in srgb, var(--inv-azul) 10%, var(--inv-card2));
+}
+.lote-imagen-dropzone__contenido {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+.lote-imagen-dropzone__icono {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: rgba(207,156,72,.15);
+  color: #CF9C48;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 1.3rem;
+}
+.lote-imagen-dropzone__texto { display:flex; flex-direction:column; font-size:.82rem; color: var(--inv-texto); }
+.lote-imagen-dropzone__sub { font-size:.7rem; color: var(--inv-muted); margin-top:2px; }
+
+.lote-imagen-preview {
+  position: relative;
+  width: 100%;
+  height: 160px;
+}
+.lote-imagen-preview img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lote-imagen-remove-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(13,27,42,.75);
+  color: #fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.lote-imagen-remove-btn:hover { background: rgba(207,80,80,.9); }

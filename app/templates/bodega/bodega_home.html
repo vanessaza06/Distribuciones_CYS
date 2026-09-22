@@ -82,6 +82,80 @@
   </div>
 
   <div id="accordionBodega">
+
+    <!-- ② LOTES EN BODEGA -->
+    <div class="card inv-card mb-4">
+      <div class="card-header inv-card-header d-flex align-items-center justify-content-between"
+           data-bs-toggle="collapse" data-bs-target="#lotesBody" role="button">
+        <span class="fw-semibold"><i class="bi bi-boxes me-2 inv-icon-dorado"></i>
+          Lotes en Bodega
+          {% if lotes %}
+            <span class="badge inv-badge-count ms-2">{{ lotes|length }}</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="collapse show" id="lotesBody" data-bs-parent="#accordionBodega">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3" id="buscarLoteBodega-grupo">
+            <span class="lotes-search-prefix-bodega"><i class="bi bi-search"></i></span>
+            <input type="text" id="buscarLoteBodega" class="form-control inv-input" placeholder="Buscar producto, lote, bodega…">
+          </div>
+          <div class="row g-3" id="grid-lotes-bodega">
+            {% for lote in lotes %}
+            <div class="col-md-6 col-xl-4 lote-card-col"
+                 data-nombre="{{ lote.presentacion.producto.nombre|lower }}"
+                 data-lote="{{ lote.numero_lote|lower }}"
+                 data-bodega="{{ lote.bodega.nombre|lower }}">
+              <div class="lote-card">
+                <div class="lote-card__imagen">
+                  {% if lote.imagen %}
+                    <img src="{{ lote.imagen.url }}" alt="{{ lote.presentacion.producto.nombre }}">
+                  {% else %}
+                    <div class="lote-card__imagen-placeholder">
+                      <i class="bi bi-box-seam"></i>
+                    </div>
+                  {% endif %}
+                  <span class="lote-card__badge-estado {% if lote.esta_vencido %}lote-card__badge-estado--vencido{% elif lote.proximo_a_vencer %}lote-card__badge-estado--por-vencer{% else %}lote-card__badge-estado--ok{% endif %}">
+                    {% if lote.esta_vencido %}Vencido{% elif lote.proximo_a_vencer %}Por vencer{% else %}OK{% endif %}
+                  </span>
+                </div>
+                <div class="lote-card__body">
+                  <div class="lote-card__titulo">{{ lote.presentacion.producto.nombre }}</div>
+                  <div class="lote-card__subtitulo">{{ lote.presentacion.nombre }}</div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Lote</span>
+                    <span class="lote-card__valor">{{ lote.numero_lote }}</span>
+                  </div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Bodega</span>
+                    <span class="lote-card__valor">{{ lote.bodega.nombre }}</span>
+                  </div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Stock</span>
+                    <span class="lote-card__valor">{{ lote.stock_actual }} uds</span>
+                  </div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Costo unit.</span>
+                    <span class="lote-card__valor">${{ lote.costo_unitario|floatformat:0 }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted w-100">
+              <i class="bi bi-inbox d-block mb-2 fs-3"></i>
+              No hay lotes registrados todavía.
+            </div>
+            {% endfor %}
+          </div>
+          <div id="sinResultadosLotesBodega" class="text-center py-4 d-none text-muted">
+            <i class="bi bi-search fs-3 d-block mb-2 opacity-50"></i>
+            Sin resultados para tu búsqueda.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ③ INVENTARIOS PROGRAMADOS -->
     <div class="card inv-card mb-4">
       <div class="card-header inv-card-header d-flex align-items-center justify-content-between"
@@ -174,11 +248,12 @@
         </div>
       </div>
     </div>
+
   </div>
 
 </div>
 
-<!-- MODALES -->
+<!-- MODALES (idénticos a los que ya tenías: Agendar, Conteo, Comparar) -->
 
 <!-- MODAL AGENDAR -->
 <div class="modal fade" id="modalAgendar" tabindex="-1">
