@@ -12,6 +12,7 @@ def detalle_producto_lista(request):
     context = {
         'detalles': detalles,
         'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Detalle de Producto', 'url': None},
         ],
     }
