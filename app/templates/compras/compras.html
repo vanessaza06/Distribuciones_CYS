@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block page_title %}Compras{% endblock %}
@@ -117,9 +117,38 @@
             </div>
           </div>
         </div>
-        <div class="proveedor-actions">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: black;">
-            <i class="bi bi-arrow-left me-2"></i>Cambiar
+        <div class="proveedor-actions d-flex align-items-center gap-2 flex-wrap">
+          <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle fw-bold d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(207,156,72,0.18); color: #CF9C48; border: 1px solid rgba(207,156,72,0.4); padding: 0.45rem 0.9rem; border-radius: 8px;">
+              <i class="bi bi-arrow-repeat"></i>
+              <span>Cambiar Proveedor</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="max-height: 320px; overflow-y: auto; min-width: 260px; border: 1px solid rgba(207,156,72,0.3);">
+              <li class="dropdown-header text-uppercase" style="color: #CF9C48; font-size: 0.72rem; letter-spacing: 0.05em;">Proveedores Activos</li>
+              {% for p in todos_proveedores %}
+                <li>
+                  <a class="dropdown-item d-flex justify-content-between align-items-center py-2 {% if proveedor and p.pk == proveedor.pk %}active fw-bold{% endif %}" href="?proveedor={{ p.pk }}">
+                    <div>
+                      <div>{{ p.nombre_empresa }}</div>
+                      <small class="text-muted">NIT: {{ p.pk }}</small>
+                    </div>
+                    {% if proveedor and p.pk == proveedor.pk %}
+                      <i class="bi bi-check-circle-fill text-success ms-2"></i>
+                    {% endif %}
+                  </a>
+                </li>
+              {% endfor %}
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-center small py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: #4DA8DA;">
+                  <i class="bi bi-search me-1"></i>Buscar en directorio completo...
+                </a>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: #e2e8f0; border-color: rgba(255,255,255,0.2); padding: 0.45rem 0.85rem; border-radius: 8px;">
+            <i class="bi bi-grid-3x3-gap"></i>
+            <span>Ver Directorio</span>
           </button>
         </div>
       </div>
@@ -277,7 +306,7 @@
                           <li><hr class="dropdown-divider"></li>
                           {% if compra.estado == 'pendiente' %}
                             <li>
-                              <form method="POST" action="#" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="confirmada">
                                 <button type="submit" class="dropdown-item text-info" title="Cambiar a Confirmada">
@@ -287,7 +316,7 @@
                             </li>
                           {% elif compra.estado == 'confirmada' %}
                             <li>
-                              <form method="POST" action="#" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="recibida">
                                 <button type="submit" class="dropdown-item text-success" title="Cambiar a Recibida">
@@ -299,10 +328,10 @@
 
                           {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
                             <li>
-                              <form method="POST" action="#" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="cancelada">
-                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra">
+                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra" onclick="return confirm('¿Seguro que deseas cancelar esta compra?');">
                                   <i class="bi bi-x-circle me-2"></i>Cancelar
                                 </button>
                               </form>
@@ -394,68 +423,112 @@
       </div>
 
       <div class="modal-body p-4">
-        <form method="POST" action="#" id="formNuevaCompra">
+        <form method="POST" action="{% url 'lista_compras' %}" id="formNuevaCompra">
           {% csrf_token %}
 
           <!-- Proveedor -->
-          <div class="mb-4">
-            <label class="dev-form-label">Proveedor Seleccionado</label>
-            <select id="proveedorSeleccionado" name="proveedor_id" class="form-select form-select-lg" required>
-              {% if proveedor %}
-                <option value="{{ proveedor.id }}" selected>{{ proveedor.nombre_empresa }}</option>
-              {% endif %}
+          <div class="mb-3">
+            <label class="dev-form-label fw-bold d-flex align-items-center gap-1">
+              <i class="bi bi-truck text-warning"></i> Proveedor de la Compra
+            </label>
+            <select id="proveedorSeleccionado" name="proveedor" class="form-select form-select-lg" required style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
               {% for prov in todos_proveedores %}
-                {% if not proveedor or prov.id != proveedor.id %}
-                  <option value="{{ prov.id }}">{{ prov.nombre_empresa }}</option>
-                {% endif %}
+                <option value="{{ prov.pk }}" {% if proveedor and prov.pk == proveedor.pk %}selected{% endif %}>
+                  {{ prov.nombre_empresa }} (NIT: {{ prov.pk }})
+                </option>
               {% endfor %}
             </select>
           </div>
 
-          <!-- Producto (Usando formulario) -->
-          <div class="mb-4">
-            <label for="{{ form.producto.id_for_label }}" class="dev-form-label">{{ form.producto.label }}</label>
-            {{ form.producto }}
-            {% if form.producto.errors %}
-              <div class="alert alert-danger-dev mt-2">
-                {{ form.producto.errors }}
-              </div>
-            {% endif %}
+          <!-- Producto -->
+          <div class="mb-3">
+            <label for="formCompraProducto" class="dev-form-label fw-bold d-flex align-items-center gap-1">
+              <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
+            </label>
+            <select id="formCompraProducto" name="producto" class="form-select form-select-lg" required onchange="window.seleccionarProductoCompra(this)" style="background-color: #02224a; color: #fff; border: 1px solid rgba(77,168,218,0.3);">
+              <option value="" disabled selected>-- Selecciona un Producto --</option>
+              {% for p in form.producto.field.queryset %}
+                <option value="{{ p.pk }}" data-precio="{{ p.precio_base|default:0 }}" data-stock="{{ p.stock_total }}" data-categoria="{{ p.categoria.nombre|default:'General' }}">
+                  {{ p.nombre }} {% if p.categoria %}({{ p.categoria.nombre }}){% endif %} - Stock actual: {{ p.stock_total }} und.
+                </option>
+              {% endfor %}
+            </select>
           </div>
 
-          <!-- Lote (Usando formulario) -->
-          <div class="mb-4">
-            <label for="{{ form.lote.id_for_label }}" class="dev-form-label">{{ form.lote.label }}</label>
-            {{ form.lote }}
-            {% if form.lote.errors %}
-              <div class="alert alert-danger-dev mt-2">
-                {{ form.lote.errors }}
-              </div>
-            {% endif %}
+          <!-- Lote (Opcional) -->
+          <div class="mb-3">
+            <label for="formCompraLote" class="dev-form-label fw-semibold d-flex align-items-center gap-1">
+              <i class="bi bi-tags text-secondary"></i> Lote Destino <small class="text-muted">(Opcional)</small>
+            </label>
+            <select id="formCompraLote" name="lote" class="form-select form-select-lg" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+              <option value="">-- Sin lote asignado / Registrar después --</option>
+              {% for l in form.lote.field.queryset %}
+                <option value="{{ l.pk }}" data-producto="{{ l.producto_id }}">
+                  Lote: {{ l.numero_lote }} (Stock actual: {{ l.stock_actual }} und.)
+                </option>
+              {% endfor %}
+            </select>
           </div>
 
           <!-- Cantidad y Precio -->
-          <div class="row g-3 mb-2">
-            <div class="col-6">
-              <label for="{{ form.cantidad.id_for_label }}" class="dev-form-label">{{ form.cantidad.label }}</label>
-              {{ form.cantidad }}
-              {% if form.cantidad.errors %}
-                <div class="alert alert-danger-dev mt-2">
-                  {{ form.cantidad.errors }}
-                </div>
-              {% endif %}
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="formCompraCantidad" class="dev-form-label fw-bold">Cantidad (Unidades) <span class="text-danger">*</span></label>
+              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg" min="1" value="1" required oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
             </div>
-            <div class="col-6">
-              <label for="{{ form.precio_unitario.id_for_label }}" class="dev-form-label">{{ form.precio_unitario.label }}</label>
-              <div class="input-group">
-                <span class="input-group-text">$</span>
-                {{ form.precio_unitario }}
+            <div class="col-md-6">
+              <label for="formCompraPrecio" class="dev-form-label fw-bold">Precio Unitario ($) <span class="text-danger">*</span></label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text" style="background: rgba(207,156,72,0.2); color: #CF9C48; border-color: rgba(207,156,72,0.3);">$</span>
+                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg" step="any" min="0.01" placeholder="Ej: 25000" required oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
               </div>
-              {% if form.precio_unitario.errors %}
-                <div class="alert alert-danger-dev mt-2">
-                  {{ form.precio_unitario.errors }}
-                </div>
-              {% endif %}
+            </div>
+          </div>
+
+          <!-- Tarjeta de Cálculo en Vivo -->
+          <div class="p-3 mb-3 rounded" style="background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.1) 100%); border: 1px solid rgba(207,156,72,0.35);">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 0.05em; font-size: 0.72rem;">Cálculo Total</small>
+                <div class="small text-white" id="calculoDetalleTexto">1 und. × $0</div>
+              </div>
+              <div class="text-end">
+                <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 0.05em; font-size: 0.72rem;">Total Compra</small>
+                <div class="fs-4 fw-extrabold text-success" id="calculoTotalDisplay" style="color: #2ecc71 !important; font-weight: 800;">$0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opciones adicionales (Estado y Abono) en acordeón colapsable -->
+          <div class="border rounded p-3 mb-2" style="background: rgba(3,30,62,0.6); border-color: rgba(239,248,226,0.1) !important;">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="formCompraEstado" class="dev-form-label fw-semibold">Estado de la Compra</label>
+                <select id="formCompraEstado" name="estado" class="form-select" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                  <option value="recibida" selected>Recibida (Ingresar al stock ahora)</option>
+                  <option value="confirmada">Confirmada (En camino)</option>
+                  <option value="pendiente">Pendiente</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="formCompraFactura" class="dev-form-label fw-semibold">N° Factura / Referencia</label>
+                <input type="text" id="formCompraFactura" name="numero_factura" class="form-control" placeholder="Ej: FAC-2026-001" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+              </div>
+              <div class="col-md-6">
+                <label for="formCompraPago" class="dev-form-label fw-semibold">Abono Inicial ($)</label>
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <small class="text-muted d-block mt-1">Deja en 0 si es a crédito o ingresa el pago inicial.</small>
+              </div>
+              <div class="col-md-6">
+                <label for="formCompraMetodoPago" class="dev-form-label fw-semibold">Método de Pago</label>
+                <select id="formCompraMetodoPago" name="metodo_pago" class="form-select" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                  <option value="efectivo" selected>Efectivo</option>
+                  <option value="nequi">Nequi</option>
+                  <option value="daviplata">Daviplata</option>
+                  <option value="bancolombia">Bancolombia</option>
+                  <option value="breb">Bre-B</option>
+                </select>
+              </div>
             </div>
           </div>
         </form>
@@ -585,32 +658,51 @@
           <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, contacto...">
         </div>
 
-        <div id="tablaProveedores" class="table-scroll">
+        <div id="tablaProveedores" class="table-scroll" style="max-height: 400px; overflow-y: auto;">
           {% if todos_proveedores %}
             {% for prov in todos_proveedores %}
-            <a href="?proveedor={{ prov.id }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none" data-nombre="{{ prov.nombre_empresa|lower }}" data-contacto="{{ prov.nombre_contacto|lower }}" data-telefono="{{ prov.telefono|lower|default:'' }}" data-id="{{ prov.id }}" data-proveedor-name="{{ prov.nombre_empresa }}">
-              <div class="d-flex align-items-start justify-content-between">
-                <div class="d-flex gap-3">
-                  <div class="icon-bg-primary">
-                    <i class="bi bi-truck icon-primary"></i>
+            <a href="?proveedor={{ prov.pk }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none transition-all {% if proveedor and prov.pk == proveedor.pk %}border-warning bg-opacity-25 bg-warning{% endif %}" 
+               data-nombre="{{ prov.nombre_empresa|lower }}" 
+               data-nit="{{ prov.pk|lower }}" 
+               data-contacto="{{ prov.nombre_contacto|lower|default:'' }}" 
+               data-telefono="{{ prov.telefono|lower|default:'' }}" 
+               data-id="{{ prov.pk }}" 
+               data-proveedor-name="{{ prov.nombre_empresa }}"
+               style="border-radius: 10px; border: 1px solid rgba(239,248,226,0.12); transition: all 0.2s ease;">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="icon-bg-primary d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 10px; background: rgba(207,156,72,0.15); color: #CF9C48; font-size: 1.25rem;">
+                    <i class="bi bi-truck"></i>
                   </div>
                   <div>
-                    <p class="mb-1 fw-semibold">{{ prov.nombre_empresa }}</p>
-                    <small class="text-muted d-block">
-                      <i class="bi bi-person me-1"></i>{{ prov.nombre_contacto }}
-                    </small>
-                    {% if prov.telefono %}
-                    <small class="text-muted d-block">
-                      <i class="bi bi-telephone me-1"></i>{{ prov.telefono }}
-                    </small>
-                    {% endif %}
+                    <div class="d-flex align-items-center gap-2">
+                      <h6 class="mb-0 fw-bold text-white">{{ prov.nombre_empresa }}</h6>
+                      <span class="badge" style="background: rgba(207,156,72,0.25); color: #CF9C48; font-size: 0.7rem; font-family: monospace;">NIT: {{ prov.pk }}</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 mt-1 small text-muted">
+                      {% if prov.tipo_proveedor %}
+                        <span style="color: #4DA8DA;"><i class="bi bi-tag me-1"></i>{{ prov.get_tipo_proveedor_display }}</span>
+                      {% endif %}
+                      {% if prov.telefono %}
+                        <span><i class="bi bi-telephone me-1"></i>{{ prov.telefono }}</span>
+                      {% endif %}
+                      {% if prov.correo %}
+                        <span><i class="bi bi-envelope me-1"></i>{{ prov.correo }}</span>
+                      {% endif %}
+                    </div>
                   </div>
                 </div>
-                {% if proveedor and prov.id == proveedor.id %}
-                <div class="text-success">
-                  <i class="bi bi-check-circle-fill"></i>
+                <div>
+                  {% if proveedor and prov.pk == proveedor.pk %}
+                    <span class="badge bg-success px-3 py-2 d-flex align-items-center gap-1 shadow-sm">
+                      <i class="bi bi-check-circle-fill"></i> Activo
+                    </span>
+                  {% else %}
+                    <span class="btn btn-sm btn-outline-warning px-3 py-1 fw-semibold" style="border-color: #CF9C48; color: #CF9C48;">
+                      Elegir <i class="bi bi-chevron-right ms-1"></i>
+                    </span>
+                  {% endif %}
                 </div>
-                {% endif %}
               </div>
             </a>
             {% endfor %}
@@ -642,7 +734,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-        <form id="formEstadoCompra">
+        <form id="formEstadoCompra" method="POST" action="{% url 'cambiar_estado_compra' %}">
           {% csrf_token %}
           <input type="hidden" id="compraEstadoId" name="compra_id">
 
@@ -667,8 +759,6 @@
   </div>
 </div>
 
-<!-- ====== SCRIPTS ====== -->
-<script src="{% static 'js/proveedores/compras.js' %}"></script>
 
 <!-- MODAL: INFORMACIÓN DE PAGO (COMPRA) -->
 <div class="modal fade" id="modalPago" tabindex="-1">
@@ -684,7 +774,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form id="formPago" method="POST">
+            <form id="formPago" method="POST" action="{% url 'registrar_pago_compra' %}">
                 {% csrf_token %}
                 <input type="hidden" id="compraId" name="compra_id">
 
@@ -831,8 +921,105 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/proveedores/compras.js' %}"></script>
 <script>
+// ═══════════════════════════════════════════════════════════════
+// MODAL NUEVA COMPRA: FUNCIONES GLOBALES INMEDIATAS
+// ═══════════════════════════════════════════════════════════════
+window.recalcularTotalCompra = function() {
+  const cantInput = document.getElementById('formCompraCantidad');
+  const precInput = document.getElementById('formCompraPrecio');
+  const calcTexto = document.getElementById('calculoDetalleTexto');
+  const calcDisplay = document.getElementById('calculoTotalDisplay');
+
+  const cant = parseInt(cantInput ? cantInput.value : 1) || 0;
+  const precio = parseFloat(precInput ? precInput.value : 0) || 0;
+  const total = cant * precio;
+
+  if (calcTexto) {
+    calcTexto.textContent = `${cant} und. × $${precio.toLocaleString('es-CO')}`;
+  }
+  if (calcDisplay) {
+    calcDisplay.textContent = `$${total.toLocaleString('es-CO')}`;
+  }
+};
+
+window.seleccionarProductoCompra = function(selectEl) {
+  const opt = selectEl.options[selectEl.selectedIndex];
+  if (opt) {
+    const precInput = document.getElementById('formCompraPrecio');
+    const loteSel = document.getElementById('formCompraLote');
+    const precio = parseFloat(opt.getAttribute('data-precio')) || 0;
+    if (precInput) {
+      precInput.value = precio > 0 ? precio : '';
+    }
+    const prodId = selectEl.value;
+    if (loteSel) {
+      Array.from(loteSel.options).forEach((lo, idx) => {
+        if (idx === 0) return;
+        const lProd = lo.getAttribute('data-producto');
+        lo.style.display = (!lProd || lProd === prodId) ? '' : 'none';
+      });
+      loteSel.value = '';
+    }
+  }
+  window.recalcularTotalCompra();
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+  const prodSelect = document.getElementById('formCompraProducto');
+  const cantInput = document.getElementById('formCompraCantidad');
+  const precInput = document.getElementById('formCompraPrecio');
+  const modalNuevaCompraEl = document.getElementById('modalNuevaCompra');
+
+  if (prodSelect) {
+    prodSelect.addEventListener('change', function() {
+      window.seleccionarProductoCompra(this);
+    });
+  }
+
+  if (cantInput) {
+    cantInput.addEventListener('input', recalcularTotalCompra);
+    cantInput.addEventListener('change', recalcularTotalCompra);
+    cantInput.addEventListener('keyup', recalcularTotalCompra);
+  }
+
+  if (precInput) {
+    precInput.addEventListener('input', recalcularTotalCompra);
+    precInput.addEventListener('change', recalcularTotalCompra);
+    precInput.addEventListener('keyup', recalcularTotalCompra);
+  }
+
+  if (modalNuevaCompraEl) {
+    modalNuevaCompraEl.addEventListener('shown.bs.modal', function() {
+      recalcularTotalCompra();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // BÚSQUEDA DINÁMICA DE PROVEEDORES EN MODAL
+  // ═══════════════════════════════════════════════════════════════
+  const buscarProvInput = document.getElementById('buscarProveedor');
+  const sinResultadosEl = document.getElementById('sinResultados');
+  if (buscarProvInput) {
+    buscarProvInput.addEventListener('input', function() {
+      const termino = this.value.toLowerCase().trim();
+      let visible = 0;
+      document.querySelectorAll('.fila-proveedor').forEach(fila => {
+        const nombre = fila.dataset.nombre || '';
+        const nit = fila.dataset.nit || '';
+        const contacto = fila.dataset.contacto || '';
+        const telefono = fila.dataset.telefono || '';
+        const coincide = nombre.includes(termino) || nit.includes(termino) || contacto.includes(termino) || telefono.includes(termino);
+        fila.style.display = coincide ? '' : 'none';
+        if (coincide) visible++;
+      });
+      if (sinResultadosEl) {
+        sinResultadosEl.style.display = (visible === 0 && termino !== '') ? 'block' : 'none';
+      }
+    });
+  }
+
   // Formatear SUBTOTAL en tabla
   const subtotalEl = document.getElementById('subtotal-formatted');
   if (subtotalEl) {
