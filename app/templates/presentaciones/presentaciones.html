@@ -21,7 +21,11 @@
   {% endfor %}
 </div>
 {% endif %}
-
+ <div class="d-flex justify-content-end mb-3">
+  <a href="{% url 'presentacion_lista' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+    <i class="bi bi-table me-1" title="Ver Bodega"></i> Ir a Bodega
+  </a>
+</div>
 <div class="search-box d-flex justify-content-between align-items-center flex-wrap gap-2">
   <div class="d-flex flex-grow-1" style="max-width: 420px;">
     <span class="search-prefix" style="border-radius: 8px 0 0 8px;"><i class="bi bi-search"></i></span>
@@ -29,11 +33,12 @@
            style="width: 100%; border-radius: 0 8px 8px 0; border-left: none;"
            placeholder="Buscar por producto o presentación…">
   </div>
+
   <button type="button" class="btn prod-btn-primary prod-btn-nuevo px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalCrearPresentacion">
-    <i class="bi bi-plus-lg me-1"></i> Nueva Presentación
+    <i class="bi bi-plus-lg me-1" title="Crear Presentación"></i> Nueva Presentación
   </button>
 </div>
-
+   
 <div class="prod-card">
   <div class="table-responsive">
     <table class="prod-table w-100" id="tablaPresentaciones">
@@ -69,11 +74,11 @@
           <td class="text-end pe-3">
             <div class="dd-wrap">
               <button type="button" class="dd-btn" onclick="toggleDropdownPres(this)">
-                <i class="bi bi-three-dots"></i>
+                <i class="bi bi-three-dots" title=" Más Opciones"></i>
               </button>
               <div class="dd-menu">
                 <a href="#" class="dd-item" data-bs-toggle="modal" data-bs-target="#modalEditarPresentacion{{ pres.pk }}">
-                  <i class="bi bi-pencil"></i> Editar
+                  <i class="bi bi-pencil" style="color: #dcb535;"></i> Editar
                 </a>
                 <div class="dd-sep"></div>
                 <form method="POST" action="{% url 'presentacion_toggle_activo' pres.pk %}">
@@ -158,7 +163,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar Presentación</h6>
+        <h6 class="modal-title"><i class="bi bi-pencil me-2" style="color: #dcb535;"></i>Editar Presentación</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="{% url 'presentacion_editar' pres.pk %}">
