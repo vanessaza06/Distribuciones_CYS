@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
 <link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto_masterdetail.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -17,6 +18,22 @@
 
     <!-- ══ COLUMNA IZQUIERDA: ESTADÍSTICAS ══ -->
     <div class="gp-columna-izq">
+
+      <div class="inv-quick-card qc-borde-purpura" data-bs-toggle="modal" data-bs-target="#modalRegistrarCodigos" role="button">
+        <div class="d-flex justify-content-between align-items-start w-100 mb-2">
+          <div class="rounded-3 p-2 qc-icono-bg-purpura">
+            <i class="bi bi-upc-scan fs-4 qc-icono-color-purpura"></i>
+          </div>
+          <span class="badge rounded-pill qc-badge-purpura">CÓDIGOS</span>
+        </div>
+        <div class="fw-bold mt-1 qc-valor-purpura">{{ sin_codigo }}</div>
+        <div class="fw-semibold mt-1 qc-titulo">Registrar Códigos</div>
+        <div class="text-muted small mt-1 qc-desc">Asignar códigos de barras</div>
+        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-purpura">
+          <span class="qc-footer-texto-purpura">Sin código: {{ sin_codigo }}</span>
+          <i class="bi bi-arrow-right qc-footer-texto-purpura"></i>
+        </div>
+      </div>
 
       <div class="stat-box">
         <div class="stat-label mb-2"><i class="bi bi-box me-2 gp-icon-purple"></i>Productos</div>
@@ -61,215 +78,167 @@
         </div>
       </div>
 
-      <div class="inv-quick-card qc-borde-purpura" data-bs-toggle="modal" data-bs-target="#modalRegistrarCodigos" role="button">
-        <div class="d-flex justify-content-between align-items-start w-100 mb-2">
-          <div class="rounded-3 p-2 qc-icono-bg-purpura">
-            <i class="bi bi-upc-scan fs-4 qc-icono-color-purpura"></i>
-          </div>
-          <span class="badge rounded-pill qc-badge-purpura">CÓDIGOS</span>
-        </div>
-        <div class="fw-bold mt-1 qc-valor-purpura">{{ sin_codigo }}</div>
-        <div class="fw-semibold mt-1 qc-titulo">Registrar Códigos</div>
-        <div class="text-muted small mt-1 qc-desc">Asignar códigos de barras</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-purpura">
-          <span class="qc-footer-texto-purpura">Sin código: {{ sin_codigo }}</span>
-          <i class="bi bi-arrow-right qc-footer-texto-purpura"></i>
-        </div>
-      </div>
     </div>
 
-    <!-- ══ COLUMNA DERECHA: BUSCADOR + LISTA ══ -->
+    <!-- ══ COLUMNA DERECHA: MAESTRO-DETALLE ══ -->
     <div class="gp-columna-der">
 
       <div class="search-box">
         <label class="stat-label mb-2 d-block"><i class="bi bi-filter-left me-1"></i>Filtrar inventario</label>
-        <div class="d-flex">
-          <span class="search-prefix"><i class="bi bi-search"></i></span>
-          <input type="text" id="buscadorProductos" placeholder="Buscar por nombre..." oninput="filtrarProductos(this.value)">
+        <div class="gp-search-wrap">
+          <i class="bi bi-search gp-search-icon"></i>
+          <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre..." oninput="gpFiltrarProductos(this.value)">
         </div>
       </div>
 
-      <div class="gp-prod-list-wrap">
-        <div class="gp-prod-list-header d-none d-md-grid gp-row-grid">
-          <div class="gp-col gp-col-icono"></div>
-          <div class="gp-col gp-col-nombre">Producto</div>
-          <div class="gp-col gp-col-codigo">Código</div>
-          <div class="gp-col gp-col-pres">Presentaciones</div>
-          <div class="gp-col gp-col-acciones"></div>
+      <div class="gp-md-wrap">
+
+        <!-- LISTA ANGOSTA -->
+        <div class="gp-md-list" id="gpListaProductos">
+          {% for p in productos %}
+          <div class="gp-md-row{% if forloop.first %} active{% endif %}"
+               data-pk="{{ p.pk }}"
+               data-nombre="{{ p.nombre|lower }}"
+               data-codigo="{{ p.detalles.first.codigo_barras|default:''|lower }}"
+               onclick="gpSeleccionarProducto({{ p.pk }})">
+            <div class="gp-cat-icon-box gp-md-icon"></div>
+            <div class="gp-md-row-info">
+              <div class="fw-semibold text-truncate">{{ p.nombre }}</div>
+              <div class="gp-md-row-meta">
+                {% if p.categoria %}<span class="text-truncate">{{ p.categoria.nombre }}</span>{% endif %}
+                {% if p.stock_critico %}<span class="tag-crit">Crítico</span>{% endif %}
+                {% if not p.activo %}<span class="badge rounded-pill text-bg-secondary">Inactivo</span>{% endif %}
+              </div>
+            </div>
+            <i class="bi bi-chevron-right gp-md-chevron" onclick="gpCerrarDetalle(event)"></i>
+          </div>
+          {% empty %}
+          <div class="text-center p-5 rounded-4 gp-empty-state">
+            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+            <div class="gp-empty-title">No hay productos registrados aún</div>
+            <div class="gp-empty-subtitle">Empieza creando tu primer producto</div>
+            <div class="mt-3">
+              <a href="{% url 'producto_crear' %}" class="btn gp-empty-cta">
+                <i class="bi bi-plus-circle me-1"></i>Registrar primer producto
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div id="gpNoResultados" class="text-center p-4 d-none gp-empty-state">
+          <i class="bi bi-search fs-2 d-block mb-2 opacity-50"></i>
+          No se encontraron productos.
         </div>
 
-        <div class="list-group list-group-flush gp-prod-list" id="listaProductos">
+        <!-- PANEL DE DETALLE -->
+        <div class="gp-md-detail">
           {% for p in productos %}
           {% with detalle=p.detalles.first %}
-          <div class="list-group-item producto-row gp-row-grid{% if forloop.counter > 5 %} gp-row-extra gp-row-oculta{% endif %}"
-               data-nombre="{{ p.nombre|lower }}" data-codigo="{{ detalle.codigo_barras|default:''|lower }}"
-               data-categoria="{{ p.categoria.nombre|default:''|lower }}">
+          <div class="gp-md-panel{% if not forloop.first %} d-none{% endif %}" id="gpPanel{{ p.pk }}">
 
-            <div class="gp-col gp-col-icono">
-              <div class="gp-cat-icon-box" data-cat-icon></div>
+            <div class="gp-md-panel-header">
+              <div class="min-w-0">
+                <h4 class="fw-bold mb-1 text-truncate">{{ p.nombre }}</h4>
+                <div class="gp-md-row-meta">
+                  <span class="tag-info font-monospace">{{ detalle.codigo_barras|default:"—" }}</span>
+                  {% if p.categoria %}<span>{{ p.categoria.nombre }}</span>{% endif %}
+                  {% if p.stock_critico %}<span class="tag-crit">Crítico</span>{% endif %}
+                  {% if not p.activo %}<span class="badge rounded-pill text-bg-secondary">Inactivo</span>{% endif %}
+                </div>
+              </div>
+              <div class="d-flex gap-2 flex-shrink-0">
+                <button type="button" class="btn rounded-pill px-3 gp-btn-outline-blue" data-bs-toggle="modal" data-bs-target="#modalEditar{{ p.pk }}" title="Editar producto">
+                  <i class="bi bi-pencil me-1"></i>Editar
+                </button>
+                <a href="{% url 'presentacion_lista' %}?producto={{ p.pk }}" class="btn rounded-pill px-3 gp-btn-outline-blue" title="Ver presentaciones">
+                  <i class="bi bi-layers me-1"></i>Presentaciones
+                </a>
+                <div class="dropdown">
+                  <button class="gp-dots-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" title="Más opciones">
+                    <i class="bi bi-three-dots"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end prod-dropdown-menu">
+                    {% if p.activo %}
+                    <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'desactivar')"><i class="bi bi-pause-circle me-2 text-info"></i>Desactivar</a></li>
+                    {% else %}
+                    <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'activar')"><i class="bi bi-play-circle me-2 text-success"></i>Activar</a></li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
             </div>
 
-            <div class="gp-col gp-col-nombre">
-              <div class="fw-semibold text-truncate">{{ p.nombre }}</div>
-              {% if p.categoria %}
-              <small class="gp-subcategory-label">
-                {% if p.categoria.subcategoria %}<i class="bi bi-arrow-return-right me-1"></i>{{ p.categoria.subcategoria.nombre }} / {{ p.categoria.nombre }}
-                {% else %}{{ p.categoria.nombre }}{% endif %}
-              </small>
-              {% endif %}
-              {% if p.stock_critico %}
-              <span class="tag-crit mt-1 d-inline-block"><i class="bi bi-exclamation-circle me-1"></i>Crítico</span>
-              {% endif %}
-              {% if not p.activo %}
-              <span class="badge rounded-pill text-bg-secondary mt-1 d-inline-block"><i class="bi bi-pause-circle me-1"></i>Inactivo</span>
+            <div class="row g-3 mb-3">
+              <div class="col-6 col-md-3">
+                <div class="small mb-1 gp-label-muted">Stock Total</div>
+                <span class="fw-bold fs-5 {% if p.stock_critico %}text-danger{% else %}text-success{% endif %}">
+                  {{ p.stock_total }} uds
+                </span>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="small mb-1 gp-label-muted">Costo unit. (último lote)</div>
+                {% with ul=p.presentaciones.first.lotes.last %}
+                  {% if ul and ul.costo_unitario %}
+                    <span class="fw-bold fs-5 gp-value-blue">${{ ul.costo_unitario|floatformat:0 }}</span>
+                  {% else %}
+                    <span class="gp-empty-pres">—</span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+              {% if p.descripcion %}
+              <div class="col-12 col-md-6">
+                <div class="small mb-1 gp-label-muted">Descripción</div>
+                <span class="gp-md-descripcion">{{ p.descripcion }}</span>
+              </div>
               {% endif %}
             </div>
 
-            <div class="gp-col gp-col-codigo">
-              <span class="badge rounded-pill text-bg-secondary font-monospace">{{ detalle.codigo_barras|default:"—" }}</span>
+            <div class="small fw-semibold text-uppercase mb-2 gp-uppercase-label">
+              <i class="bi bi-layers me-1"></i>Presentaciones
             </div>
-
-            <div class="gp-col gp-col-pres">
+            <div class="rounded-3 overflow-hidden gp-pres-box">
               {% for pr in p.presentaciones.all %}
-              <span class="badge rounded-pill gp-badge-pres">{{ pr.nombre }} (x{{ pr.cantidad }}) — <span class="precio-fmt">${{ pr.precio_venta|floatformat:0 }}</span></span>
+              <div class="px-3 py-2 gp-pres-item">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-semibold">{{ pr.nombre }} <span class="gp-label-muted-sm">(x{{ pr.cantidad }})</span></span>
+                  <span class="fw-bold precio-fmt gp-value-blue">${{ pr.precio_venta|floatformat:0 }}</span>
+                </div>
+                {% for lote in pr.lotes.all %}
+                <div class="d-flex justify-content-between align-items-center gp-lote-line">
+                  <span><i class="bi bi-tag me-1"></i>{{ lote.numero_lote }} · {{ lote.stock_actual }} uds</span>
+                  <span>
+                    {% if lote.costo_unitario %}
+                      Costo: <strong class="gp-lote-costo">${{ lote.costo_unitario|floatformat:0 }}</strong>
+                    {% else %}
+                      Sin costo
+                    {% endif %}
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
               {% empty %}
-              <span class="badge rounded-pill text-bg-warning"><i class="bi bi-exclamation me-1"></i>Sin presentaciones</span>
+              <div class="px-3 py-2 gp-empty-pres">Sin presentaciones registradas.</div>
               {% endfor %}
             </div>
 
-            <div class="gp-col gp-col-acciones">
-              <div class="dropdown">
-                <button class="gp-dots-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed">
-                  <i class="bi bi-three-dots"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end prod-dropdown-menu">
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ p.pk }}"><i class="bi bi-eye me-2 text-primary"></i>Ver detalle</a></li>
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditar{{ p.pk }}"><i class="bi bi-pencil me-2 text-info"></i>Editar</a></li>
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalPresentaciones{{ p.pk }}"><i class="bi bi-layers me-2 text-success"></i>Presentaciones</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  {% if p.activo %}
-                  <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'desactivar')"><i class="bi bi-pause-circle me-2 text-info"></i>Desactivar</a></li>
-                  {% else %}
-                  <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'activar')"><i class="bi bi-play-circle me-2 text-success"></i>Activar</a></li>
-                  {% endif %}
-                </ul>
-              </div>
-            </div>
           </div>
           {% endwith %}
-          {% empty %}
-          <div class="text-center p-5 rounded-4 gp-empty-state">
-            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
-            No hay productos registrados aún.
-          </div>
           {% endfor %}
+
+          <div class="gp-md-empty-state{% if productos %} d-none{% endif %}" id="gpDetalleVacio">
+            <i class="bi bi-box-seam fs-1 d-block mb-3 opacity-50"></i>
+            Selecciona un producto de la lista para ver su detalle.
+          </div>
         </div>
 
-        {% if productos|length > 5 %}
-        <div class="gp-ver-mas-wrap">
-          <button type="button" class="gp-ver-mas-btn" id="gpVerMasBtn" data-expandido="false"
-                  onclick="
-                    var btn = this;
-                    var expandido = btn.getAttribute('data-expandido') === 'true';
-                    document.querySelectorAll('.gp-row-extra').forEach(function(row){
-                      row.classList.toggle('gp-row-oculta', expandido);
-                    });
-                    btn.setAttribute('data-expandido', (!expandido).toString());
-                    btn.querySelector('.gp-ver-mas-text').textContent = expandido ? 'Ver {{ productos|length|add:'-5' }} más' : 'Ver menos';
-                    btn.querySelector('.gp-ver-mas-icon').classList.toggle('gp-toggle-icon-rotado', !expandido);
-                  ">
-            <span class="gp-ver-mas-text">Ver {{ productos|length|add:"-5" }} más</span>
-            <i class="bi bi-chevron-down gp-ver-mas-icon"></i>
-          </button>
-        </div>
-        {% endif %}
-      </div>
-
-      <div id="noResultados" class="text-center p-5 d-none rounded-4 gp-empty-state">
-        <i class="bi bi-search fs-1 d-block mb-3 opacity-50"></i>
-        No se encontraron productos.
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODALES POR PRODUCTO ══ -->
+<!-- ══ MODALES POR PRODUCTO (Editar) ══ -->
 {% for p in productos %}
-{% with detalle=p.detalles.first %}
 
-<!-- Modal Detalle -->
-<div class="modal fade" id="modalDetalle{{ p.pk }}" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold"><i class="bi bi-eye me-2 gp-icon-blue"></i>Detalle del Producto</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <h4 class="fw-bold mb-3">{{ p.nombre }}</h4>
-        <div class="row g-3 mb-3">
-          <div class="col-6">
-            <div class="small mb-1 gp-label-muted">Código</div>
-            <span class="tag-info font-monospace">{{ detalle.codigo_barras|default:"—" }}</span>
-          </div>
-          <div class="col-6">
-            <div class="small mb-1 gp-label-muted">Categoría</div>
-            <span class="fw-semibold">{{ p.categoria.nombre }}</span>
-          </div>
-          <div class="col-6">
-            <div class="small mb-1 gp-label-muted">Stock Total</div>
-            <span class="fw-bold fs-5 {% if p.stock_critico %}text-danger{% else %}text-success{% endif %}">
-              {{ p.stock_total }} uds
-            </span>
-          </div>
-          <div class="col-6">
-            <div class="small mb-1 gp-label-muted">Costo unit. (último lote)</div>
-            {% with ul=p.presentaciones.first.lotes.last %}
-              {% if ul and ul.costo_unitario %}
-                <span class="fw-bold fs-5 gp-value-blue">${{ ul.costo_unitario|floatformat:0 }}</span>
-              {% else %}
-                <span class="gp-empty-pres">—</span>
-              {% endif %}
-            {% endwith %}
-          </div>
-        </div>
-
-        <div class="small fw-semibold text-uppercase mb-2 gp-uppercase-label">
-          <i class="bi bi-layers me-1"></i>Presentaciones
-        </div>
-        <div class="rounded-3 overflow-hidden gp-pres-box">
-          {% for pr in p.presentaciones.all %}
-          <div class="px-3 py-2 gp-pres-item">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="fw-semibold">{{ pr.nombre }}</span>
-              <span class="fw-bold precio-fmt gp-value-blue">${{ pr.precio_venta|floatformat:0 }}</span>
-            </div>
-            {% for lote in pr.lotes.all %}
-            <div class="d-flex justify-content-between align-items-center gp-lote-line">
-              <span><i class="bi bi-tag me-1"></i>{{ lote.numero_lote }} · {{ lote.stock_actual }} uds</span>
-              <span>
-                {% if lote.costo_unitario %}
-                  Costo: <strong class="gp-lote-costo">${{ lote.costo_unitario|floatformat:0 }}</strong>
-                {% else %}
-                  Sin costo
-                {% endif %}
-              </span>
-            </div>
-            {% endfor %}
-          </div>
-          {% empty %}
-          <div class="px-3 py-2 gp-empty-pres">Sin presentaciones.</div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn rounded-pill px-4 gp-btn-outline-blue" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Editar (sin campo código: eso vive en DetalleProducto) -->
 <div class="modal fade" id="modalEditar{{ p.pk }}" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -331,93 +300,9 @@
   </div>
 </div>
 
-<!-- Modal Presentaciones -->
-<div class="modal fade" id="modalPresentaciones{{ p.pk }}" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold"><i class="bi bi-layers me-2 gp-icon-cyan"></i>Presentaciones: {{ p.nombre }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="POST" action="{% url 'producto_editar' p.pk %}">
-        {% csrf_token %}
-        <div class="modal-body p-4">
-          <div class="small fw-semibold text-uppercase mb-3 gp-uppercase-label">Presentaciones Actuales</div>
-          {% for pr in p.presentaciones.all %}
-          <div class="rounded-3 p-3 mb-2 gp-nueva-pres-box">
-            <div class="row g-2 align-items-center">
-              <div class="col-md-4">
-                <label class="form-label small gp-label-muted">Nombre</label>
-                <input type="text" name="pres_nombre_{{ pr.pk }}" class="form-control form-control-sm prod-input"
-                       value="{{ pr.nombre }}" required>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small gp-label-muted">Cantidad</label>
-                <input type="number" name="pres_cantidad_{{ pr.pk }}" class="form-control form-control-sm prod-input"
-                       value="{{ pr.cantidad }}" min="1" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small gp-label-muted">Precio venta ($)</label>
-                <input type="number" name="pres_precio_{{ pr.pk }}" class="form-control form-control-sm prod-input"
-                       value="{{ pr.precio_venta }}" min="0" step="0.01">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small gp-label-muted">
-                  Costo lote
-                  <i class="bi bi-info-circle ms-1 gp-info-icon" title="Último lote registrado"></i>
-                </label>
-                {% with ul=pr.lotes.last %}
-                  <div class="form-control form-control-sm prod-input d-flex align-items-center gp-costo-lote-display">
-                    {% if ul and ul.costo_unitario %}
-                      <span class="gp-value-blue">${{ ul.costo_unitario|floatformat:0 }}</span>
-                      <small class="ms-1 gp-label-muted">({{ ul.numero_lote }})</small>
-                    {% else %}
-                      <span class="gp-empty-pres">Sin costo</span>
-                    {% endif %}
-                  </div>
-                {% endwith %}
-              </div>
-            </div>
-          </div>
-          {% empty %}
-          <div class="rounded-3 p-3 mb-3 text-center gp-sin-pres-box">
-            Sin presentaciones. Agrega una abajo.
-          </div>
-          {% endfor %}
-
-          <div class="small fw-semibold text-uppercase mt-4 mb-3 gp-uppercase-label">
-            <i class="bi bi-plus-circle me-1"></i>Nueva Presentación
-          </div>
-          <div class="rounded-3 p-3 gp-nueva-pres-box">
-            <div class="row g-2">
-              <div class="col-md-5">
-                <label class="form-label small gp-label-muted">Nombre</label>
-                <input type="text" name="nueva_pres_nombre[]" class="form-control form-control-sm prod-input" placeholder="Ej: Six-pack">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small gp-label-muted">Cantidad</label>
-                <input type="number" name="nueva_pres_cantidad[]" class="form-control form-control-sm prod-input" placeholder="Ej: 6" min="1">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label small gp-label-muted">Precio venta ($)</label>
-                <input type="number" name="nueva_pres_precio[]" class="form-control form-control-sm prod-input" placeholder="Ej: 19000" min="0" step="0.01">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn rounded-pill px-4 gp-btn-outline-blue" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn rounded-pill fw-bold px-4 gp-btn-fill-cyan">Guardar Presentaciones</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-{% endwith %}
 {% endfor %}
 
-<!-- MODAL REGISTRAR CÓDIGOS (Opción B: solo edita detalles ya existentes) -->
+<!-- MODAL REGISTRAR CÓDIGOS -->
 <div class="modal fade" id="modalRegistrarCodigos" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content inv-modal">
@@ -446,31 +331,51 @@
             </div>
           </div>
         </div>
+            <div class="p-3 mb-3 rounded-3 cat-card-bg">
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <div class="text-center scan-icono-col">
+      <i class="bi bi-upc-scan fs-2 comparativa-valor-sistema"></i>
+    </div>
+    <div class="flex-grow-1">
+      <div class="inv-label mb-1">Producto seleccionado</div>
+      <div id="scan-producto-nombre" class="fw-semibold scan-nombre-texto">
+        — Haz clic en una fila con detalle registrado —
+      </div>
+    </div>
+  </div>
 
-        <div class="p-3 mb-3 rounded-3 d-flex align-items-center gap-3 cat-card-bg">
-          <div class="text-center scan-icono-col">
-            <i class="bi bi-upc-scan fs-2 comparativa-valor-sistema"></i>
-          </div>
-          <div class="flex-grow-1">
-            <div class="inv-label mb-1">Producto seleccionado</div>
-            <div id="scan-producto-nombre" class="fw-semibold scan-nombre-texto">
-              — Haz clic en una fila con detalle registrado —
-            </div>
-          </div>
-          <div class="scan-input-col">
-            <input type="text" id="scan-input" class="form-control inv-input scan-input-mono"
-                   placeholder="Escanea o escribe el código…"
-                   disabled>
-          </div>
-          <button type="button" id="scan-guardar" class="btn rounded-pill fw-bold px-4 scan-guardar-btn" disabled>
-            <i class="bi bi-save2 me-1"></i>Guardar
-          </button>
-          <button type="button" id="scan-camara-btn" class="btn rounded-pill px-3 btn-outline-azul" disabled
-                  title="Escanear con cámara">
-            <i class="bi bi-camera-fill"></i>
-          </button>
-        </div>
-
+  <div class="scan-campos-row">
+    <div class="scan-campo">
+      <label class="scan-campo-label">Código</label>
+      <input type="text" id="scan-input" class="form-control inv-input scan-input-mono"
+             placeholder="Escanea o escribe…" disabled>
+    </div>
+    <div class="scan-campo d-none" id="scan-campo-marca">
+      <label class="scan-campo-label">Marca</label>
+      <select id="scan-marca" class="form-select inv-input" disabled>
+        <option value="">Marca…</option>
+        {% for m in marcas %}
+        <option value="{{ m.pk }}">{{ m.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="scan-campo d-none" id="scan-campo-fecha">
+      <label class="scan-campo-label">Vencimiento</label>
+      <input type="date" id="scan-fecha-venc" class="form-control inv-input" disabled>
+    </div>
+    <div class="scan-campo scan-campo-botones">
+      <label class="scan-campo-label">&nbsp;</label>
+      <div class="d-flex gap-2">
+        <button type="button" id="scan-guardar" class="btn rounded-pill fw-bold px-4 scan-guardar-btn" disabled>
+          <i class="bi bi-save2 me-1"></i>Guardar
+        </button>
+        <button type="button" id="scan-camara-btn" class="btn rounded-pill px-3 btn-outline-azul" disabled title="Escanear con cámara">
+          <i class="bi bi-camera-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
         <div id="scan-camara-panel" class="d-none mb-3 text-center">
           <video id="scan-video" class="rounded-3 w-100 scan-video" playsinline muted></video>
           <div id="scan-camara-estado" class="text-muted small mt-2">Apunta la cámara al código de barras…</div>
@@ -498,7 +403,11 @@
                 data-codigo="{{ detalle.codigo_barras }}"
                 data-url="{% url 'guardar_codigo' detalle.pk %}"
                 {% else %}
-                class="fila-sin-detalle"
+                class="scan-row fila-clickable fila-sin-detalle"
+                data-pk=""
+                data-nombre="{{ p.nombre }}"
+                data-codigo=""
+                data-url="{% url 'detalle_producto_crear_rapido' p.pk %}"
                 {% endif %}
               >
                 <td class="text-muted small">{{ forloop.counter }}</td>
@@ -515,9 +424,7 @@
                   {% if detalle %}
                     <span class="codigo-display text-info scan-codigo-texto">{{ detalle.codigo_barras }}</span>
                   {% else %}
-                    <a href="{% url 'producto_detalle' p.pk %}" class="btn btn-sm btn-outline-warning rounded-pill">
-                      <i class="bi bi-plus-circle me-1"></i>Crear detalle
-                    </a>
+                    <span class="text-muted small">— pendiente —</span>
                   {% endif %}
                 </td>
               </tr>
@@ -534,7 +441,7 @@
   </div>
 </div>
 
-<!-- Modal de confirmación (reemplaza confirm() nativo) -->
+<!-- Modal de confirmación -->
 <div class="modal fade" id="modalConfirmarAccion" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content prod-modal">
@@ -562,5 +469,6 @@
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script>
+<script src="{% static 'js/detalle_producto/detalle_producto_masterdetail.js' %}"></script>
 {% endblock %}
 {% endblock %}

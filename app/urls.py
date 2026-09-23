@@ -165,7 +165,7 @@ path(
         deta_views.guardar_codigo,
         name="guardar_codigo",
     ),
-
+    path("detalle/<int:producto_pk>/crear-rapido/", deta_views.detalle_producto_crear_rapido, name="detalle_producto_crear_rapido"),
     # BODEGA
     path("bodega/", bod_views.bodega_home, name="bodega_home"),
     path("bodega/agenda/", bod_views.agenda_list, name="agenda_list"),
@@ -186,13 +186,8 @@ path(
     ),
 
     # REPORTES
-    path("reportes/", rep_views.reportes_home, name="reportes_home"),  # type: ignore
-    path("reportes/ventas/", rep_views.reporte_ventas, name="reporte_ventas"),  # type: ignore
-    path("reportes/compras/", rep_views.reporte_compras, name="reporte_compras"),
-    path("reportes/inventario/", rep_views.reporte_inventario, name="reporte_inventario"),
-    path("reportes/stock-bajo/", rep_views.reporte_stock_bajo, name="reporte_stock_bajo"),
-    path("reportes/proveedores/", rep_views.reporte_proveedores, name="reporte_proveedores"),
-    path("reportes/exportar/<str:tipo>/", rep_views.reporte_exportar, name="reporte_exportar"),
+    
+    path("reportes/", rep_views.reportes, name="reportes"),
 
     # CONFIGURACION
     path("configuracion/", config_views.index, name="configuracion_index"),
