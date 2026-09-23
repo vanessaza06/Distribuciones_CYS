@@ -79,7 +79,7 @@
     {% endfor %}
   {% endif %}
  
-  {% if caja_abierta %}
+  <!-- ── PUNTO DE VENTA (POS) ── -->
   <div class="row g-4 align-items-stretch">
  
     <!-- ── COLUMNA PRODUCTOS ── -->
@@ -295,56 +295,6 @@
       </div>
     </div>
   </div>
-  {% else %}
-  <!-- ── PANTALLA DE CAJA BLOQUEADA ── -->
-  <div class="cys-lock-card my-3">
-    
-    <div class="mb-3">
-      <span class="cys-lock-badge">
-        <span class="cys-pulse-dot" style="background:#ff7675; box-shadow: 0 0 8px #ff7675;"></span>
-        CAJA BLOQUEADA
-      </span>
-    </div>
-
-    <div class="cys-lock-emblem">
-      <i class="bi bi-shield-lock-fill"></i>
-    </div>
-
-    <h2 class="fw-bold text-white mb-2" style="font-family:'Rajdhani',sans-serif; font-size: 2.2rem; letter-spacing:0.5px;">
-      CAJA BLOQUEADA
-    </h2>
-    
-    <p class="text-white mb-4" style="max-width: 580px; font-size: 1rem; line-height: 1.6; color:#ffffff !important;">
-      El punto de venta se encuentra inactivo. Debes realizar el conteo de apertura de caja para desbloquear la facturación y habilitar el catálogo de productos.
-    </p>
-
-    <div class="d-flex align-items-center justify-content-center gap-3">
-      <button class="btn btn-lg fw-bold text-white px-4 py-3 cys-btn-checkout shadow-lg d-inline-flex align-items-center gap-2"
-              data-bs-toggle="modal" data-bs-target="#modalConteo"
-              style="border-radius: 14px; font-size: 1.05rem; padding-left: 1.8rem !important; padding-right: 1.8rem !important;">
-        <i class="bi bi-unlock-fill fs-5"></i> DESBLOQUEAR Y ABRIR CAJA
-      </button>
-    </div>
-
-    <div class="cys-lock-steps">
-      <div class="cys-lock-step-chip">
-        <i class="bi bi-1-circle-fill"></i> Conteo Inicial
-      </div>
-      <i class="bi bi-chevron-right text-white" style="font-size:0.75rem; color:#ffffff !important;"></i>
-      <div class="cys-lock-step-chip">
-        <i class="bi bi-2-circle-fill"></i> Definir Base
-      </div>
-      <i class="bi bi-chevron-right text-white" style="font-size:0.75rem; color:#ffffff !important;"></i>
-      <div class="cys-lock-step-chip">
-        <i class="bi bi-check-circle-fill" style="color:#2ed573;"></i> Desbloqueo POS
-      </div>
-    </div>
-    
-    <div class="mt-5 pt-3 border-top border-secondary border-opacity-25 text-white" style="font-size:0.85rem; color:#ffffff !important;">
-      <i class="bi bi-shield-check me-1" style="color:#ffffff;"></i> Control de Caja CYS Ltda &bull; Sistema de Seguridad POS
-    </div>
-  </div>
-  {% endif %}
 
   <!-- ══════════════════════════════════════
        HISTORIAL DE VENTAS
@@ -567,15 +517,18 @@
           {% endfor %}
         </div>
 
-        <!-- Box Resumen -->
-        <div class="cys-conteo-summary-box mb-4">
-          <div class="d-flex justify-content-between align-items-center">
+        <!-- Box Resumen / Entrada Manual de Base -->
+        <div class="cys-conteo-summary-box mb-4 p-3 rounded-3" style="background:rgba(46,213,115,0.1); border:1px solid rgba(46,213,115,0.3);">
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
             <div>
-              <div style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; font-weight:800; letter-spacing:0.8px;">Base Inicial Total</div>
-              <div style="font-size:.8rem; color:rgba(255,255,255,0.7); font-weight:600;">Monto acumulado del conteo</div>
+              <div style="font-size:.72rem; color:var(--texto-muted); text-transform:uppercase; font-weight:800; letter-spacing:0.8px;">Base Inicial Total ($)</div>
+              <div style="font-size:.8rem; color:rgba(255,255,255,0.7); font-weight:600;">Monto acumulado o ingresado manualmente</div>
             </div>
-            <div style="font-family:'Rajdhani',sans-serif; font-size:2rem; font-weight:800; color:#2ed573; text-shadow:0 0 15px rgba(46,213,115,0.3);" id="totalConteo">$0</div>
+            <div class="d-flex align-items-center gap-2">
+              <input type="number" min="0" id="inputMontoBaseManual" class="form-control text-end fw-bold fs-4 text-success border-success" placeholder="0" style="max-width:200px; background:#06172b !important; color:#2ed573 !important; font-family:'Rajdhani',sans-serif;">
+            </div>
           </div>
+          <div class="mt-2 text-end" style="font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:800; color:#2ed573;" id="totalConteo">$0</div>
         </div>
 
         <!-- Observaciones -->
@@ -944,180 +897,219 @@ function cambiarCantidad(idx, delta) {
   renderCarrito();
 }
  
-document.getElementById('inputDescuento').addEventListener('input', renderCarrito);
- 
-// ══ PAGOS Y CALCULADORA DE CAMBIO/VUELTOS ══
-function actualizarPagado() {
-  let pagado = 0;
-  document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
-  document.getElementById('totalPagado').textContent = '$' + pagado.toLocaleString('es-CO');
-
-  const descPct = parseFloat(document.getElementById('inputDescuento').value) || 0;
-  let subtotal = 0;
-  carrito.forEach(item => subtotal += item.precio * item.cantidad);
-  const totalFinal = subtotal - (subtotal * descPct / 100);
-
-  const indCambio = document.getElementById('indicadorCambio');
-  const lblCambio = document.getElementById('labelCambio');
-  const mtoCambio = document.getElementById('montoCambio');
-
-  if (carrito.length > 0 && pagado > 0) {
-    indCambio.style.display = 'flex';
-    const diff = pagado - totalFinal;
-    if (diff >= 0) {
-      indCambio.className = 'cys-change-indicator cys-change-indicator--ok mt-2';
-      lblCambio.textContent = 'Cambio / Vueltos';
-      mtoCambio.textContent = '$' + diff.toLocaleString('es-CO');
-    } else {
-      indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
-      lblCambio.textContent = 'Pendiente por cobrar';
-      mtoCambio.textContent = '$' + Math.abs(diff).toLocaleString('es-CO');
-    }
-  } else {
-    indCambio.style.display = 'none';
+  const inpDesc = document.getElementById('inputDescuento');
+  if (inpDesc) {
+    inpDesc.addEventListener('input', renderCarrito);
   }
-}
-document.querySelectorAll('.pago-input').forEach(i => i.addEventListener('input', actualizarPagado));
- 
-// ══ CANCELAR ══
-document.getElementById('btnCancelarVenta').addEventListener('click', function() {
-  if (carrito.length > 0 && !confirm('¿Deseas cancelar y vaciar la orden de venta actual?')) return;
-  carrito.length = 0;
-  document.getElementById('inputDescuento').value = 0;
-  document.querySelectorAll('.pago-input').forEach(i => i.value = 0);
-  renderCarrito();
-});
- 
-// ══ BÚSQUEDA DE PRODUCTOS ══
-document.getElementById('buscadorProducto').addEventListener('input', function() {
-  const q = this.value.toLowerCase().trim();
-  if (!q) { mostrar(vistaCats); return; }
-  mostrar(vistaProds);
-  document.getElementById('catTitulo').textContent = 'Resultados de búsqueda para "' + q + '"';
-  const lista = document.getElementById('productoLista');
-  lista.innerHTML = '';
- 
-  document.querySelectorAll('.prod-item').forEach(p => {
-    if (!p.dataset.nombre.toLowerCase().includes(q)) return;
-    const div = document.createElement('div');
-    div.className = 'col-6 col-sm-4 col-lg-3';
-    const stockVal = parseInt(p.dataset.stock) || 0;
-    let stockClass = 'cys-stock-badge--ok';
-    let stockLabel = `Stock: ${stockVal}`;
-    if (stockVal <= 0) {
-      stockClass = 'cys-stock-badge--empty';
-      stockLabel = 'Sin stock';
-    } else if (stockVal <= 5) {
-      stockClass = 'cys-stock-badge--low';
-      stockLabel = `Stock bajo: ${stockVal}`;
+
+  // ══ PAGOS Y CALCULADORA DE CAMBIO/VUELTOS ══
+  function actualizarPagado() {
+    let pagado = 0;
+    document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
+    const totalPagEl = document.getElementById('totalPagado');
+    if (totalPagEl) totalPagEl.textContent = '$' + pagado.toLocaleString('es-CO');
+
+    const descInp = document.getElementById('inputDescuento');
+    const descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+    let subtotal = 0;
+    carrito.forEach(item => subtotal += item.precio * item.cantidad);
+    const totalFinal = subtotal - (subtotal * descPct / 100);
+
+    const indCambio = document.getElementById('indicadorCambio');
+    const lblCambio = document.getElementById('labelCambio');
+    const mtoCambio = document.getElementById('montoCambio');
+
+    if (indCambio && lblCambio && mtoCambio) {
+      if (carrito.length > 0 && pagado > 0) {
+        indCambio.style.display = 'flex';
+        const diff = pagado - totalFinal;
+        if (diff >= 0) {
+          indCambio.className = 'cys-change-indicator cys-change-indicator--ok mt-2';
+          lblCambio.textContent = 'Cambio / Vueltos';
+          mtoCambio.textContent = '$' + diff.toLocaleString('es-CO');
+        } else {
+          indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
+          lblCambio.textContent = 'Pendiente por cobrar';
+          mtoCambio.textContent = '$' + Math.abs(diff).toLocaleString('es-CO');
+        }
+      } else {
+        indCambio.style.display = 'none';
+      }
     }
-    div.innerHTML = `
-      <div class="cys-prod-card-item"
-           data-prod-id="${p.dataset.id}"
-           data-prod-nombre="${p.dataset.nombre}"
-           data-prod-precio="${p.dataset.precio}"
-           data-prod-stock="${p.dataset.stock}"
-           data-prod-unidad="${p.dataset.unidad}">
-        <div style="font-weight:700; font-size:.88rem; color:#fff; line-height:1.2;">${p.dataset.nombre}</div>
-        <div class="mt-2 d-flex align-items-center justify-content-between">
-          <span style="font-size:.88rem; color:var(--azul-claro, #4DA8DA); font-family:'Rajdhani',sans-serif; font-weight:800;">
-            $${parseInt(p.dataset.precio).toLocaleString('es-CO')}
-          </span>
-          <span class="cys-stock-badge ${stockClass}">${stockLabel}</span>
-        </div>
-      </div>`;
-    div.querySelector('[data-prod-id]').addEventListener('click', function() {
-      cargarPresentaciones(this.dataset.prodId, this.dataset.prodNombre, this.dataset.prodPrecio, this.dataset.prodStock, this.dataset.prodUnidad);
-    });
-    lista.appendChild(div);
-  });
- 
-  if (lista.children.length === 0) {
-    lista.innerHTML = '<div class="col-12"><div class="cys-empty-box text-center py-4"><i class="bi bi-search fs-2 d-block mb-2 text-muted"></i>Sin resultados para "' + q + '"</div></div>';
   }
-});
- 
-// ══ CLIENTES AUTOCOMPLETE ══
-document.getElementById('inputClienteNombre').addEventListener('input', function() {
-  const q   = this.value.toLowerCase();
-  const sug = document.getElementById('sugerenciasClientes');
-  if (!q) { sug.style.display = 'none'; return; }
-  let visible = false;
-  sug.querySelectorAll('button').forEach(btn => {
-    const match = btn.dataset.nombre.toLowerCase().includes(q);
-    btn.style.display = match ? 'block' : 'none';
-    if (match) visible = true;
-  });
-  sug.style.display = visible ? 'block' : 'none';
-});
-document.getElementById('sugerenciasClientes').querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.getElementById('inputClienteNombre').value = this.dataset.nombre;
-    document.getElementById('inputClienteId').value     = this.dataset.id;
-    document.getElementById('sugerenciasClientes').style.display = 'none';
-  });
-});
- 
-// ══ FILTRO DE FECHAS Y BÚSQUEDA EN HISTORIAL ══
-function aplicarFiltroHistorial() {
-  const desde = document.getElementById('filtroDesde').value;
-  const hasta = document.getElementById('filtroHasta').value;
-  const q     = (document.getElementById('buscadorHistorial') ? document.getElementById('buscadorHistorial').value : '').toLowerCase().trim();
-  const filas = document.querySelectorAll('.fila-venta');
-  let visibles = 0;
+  document.querySelectorAll('.pago-input').forEach(i => i.addEventListener('input', actualizarPagado));
 
-  // Actualizar URLs de exportación
-  const params = new URLSearchParams();
-  if (desde) params.set('fecha_inicio', desde);
-  if (hasta) params.set('fecha_fin', hasta);
-  if (q) params.set('q', q);
-  const qStr = params.toString() ? ('?' + params.toString()) : '';
-
-  const btnExcel = document.getElementById('btnExportExcelHistorial');
-  const btnPdf   = document.getElementById('btnExportPdfHistorial');
-  if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + qStr;
-  if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + qStr;
-
-  const grupos = {};
-  filas.forEach(fila => {
-    const vid = fila.dataset.ventaId;
-    if (!grupos[vid]) grupos[vid] = [];
-    grupos[vid].push(fila);
-  });
-
-  Object.values(grupos).forEach(grupo => {
-    const fecha = grupo[0].dataset.fecha;
-    let mostrarFila = true;
-    if (desde && fecha < desde) mostrarFila = false;
-    if (hasta && fecha > hasta) mostrarFila = false;
-
-    if (mostrarFila && q) {
-      let textoGrupo = '';
-      grupo.forEach(f => textoGrupo += f.textContent.toLowerCase() + ' ');
-      if (!textoGrupo.includes(q)) mostrarFila = false;
-    }
-
-    grupo.forEach(fila => {
-      fila.style.display = mostrarFila ? '' : 'none';
+  // ══ CANCELAR ══
+  const btnCanc = document.getElementById('btnCancelarVenta');
+  if (btnCanc) {
+    btnCanc.addEventListener('click', function() {
+      if (carrito.length > 0 && !confirm('¿Deseas cancelar y vaciar la orden de venta actual?')) return;
+      carrito.length = 0;
+      const descInp = document.getElementById('inputDescuento');
+      if (descInp) descInp.value = 0;
+      document.querySelectorAll('.pago-input').forEach(i => i.value = 0);
+      renderCarrito();
     });
-    if (mostrarFila) visibles++;
-  });
+  }
 
-  const sinRes = document.getElementById('sinResultadosFiltro');
-  if (sinRes) sinRes.style.display = visibles === 0 ? 'block' : 'none';
-}
+  // ══ BÚSQUEDA DE PRODUCTOS ══
+  const busqProd = document.getElementById('buscadorProducto');
+  if (busqProd) {
+    busqProd.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      if (!q) { mostrar(vistaCats); return; }
+      mostrar(vistaProds);
+      const catTit = document.getElementById('catTitulo');
+      if (catTit) catTit.textContent = 'Resultados de búsqueda para "' + q + '"';
+      const lista = document.getElementById('productoLista');
+      if (!lista) return;
+      lista.innerHTML = '';
 
-document.getElementById('filtroDesde').addEventListener('change', aplicarFiltroHistorial);
-document.getElementById('filtroHasta').addEventListener('change', aplicarFiltroHistorial);
-if (document.getElementById('buscadorHistorial')) {
-  document.getElementById('buscadorHistorial').addEventListener('input', aplicarFiltroHistorial);
-}
-document.getElementById('btnLimpiarFiltro').addEventListener('click', function() {
-  document.getElementById('filtroDesde').value = '';
-  document.getElementById('filtroHasta').value = '';
-  if (document.getElementById('buscadorHistorial')) document.getElementById('buscadorHistorial').value = '';
-  aplicarFiltroHistorial();
-});
+      document.querySelectorAll('.prod-item').forEach(p => {
+        if (!p.dataset.nombre.toLowerCase().includes(q)) return;
+        const div = document.createElement('div');
+        div.className = 'col-6 col-sm-4 col-lg-3';
+        const stockVal = parseInt(p.dataset.stock, 10) || 0;
+        let stockClass = 'cys-stock-badge--ok';
+        let stockLabel = `Stock: ${stockVal}`;
+        if (stockVal <= 0) {
+          stockClass = 'cys-stock-badge--empty';
+          stockLabel = 'Sin stock';
+        } else if (stockVal <= 5) {
+          stockClass = 'cys-stock-badge--low';
+          stockLabel = `Stock bajo: ${stockVal}`;
+        }
+        div.innerHTML = `
+          <div class="cys-prod-card-item"
+               data-prod-id="${p.dataset.id}"
+               data-prod-nombre="${p.dataset.nombre}"
+               data-prod-precio="${p.dataset.precio}"
+               data-prod-stock="${p.dataset.stock}"
+               data-prod-unidad="${p.dataset.unidad}">
+            <div style="font-weight:700; font-size:.88rem; color:#fff; line-height:1.2;">${p.dataset.nombre}</div>
+            <div class="mt-2 d-flex align-items-center justify-content-between">
+              <span style="font-size:.88rem; color:var(--azul-claro, #4DA8DA); font-family:'Rajdhani',sans-serif; font-weight:800;">
+                $${parseInt(p.dataset.precio, 10).toLocaleString('es-CO')}
+              </span>
+              <span class="cys-stock-badge ${stockClass}">${stockLabel}</span>
+            </div>
+          </div>`;
+        div.querySelector('[data-prod-id]').addEventListener('click', function() {
+          cargarPresentaciones(this.dataset.prodId, this.dataset.prodNombre, this.dataset.prodPrecio, this.dataset.prodStock, this.dataset.prodUnidad);
+        });
+        lista.appendChild(div);
+      });
+
+      if (lista.children.length === 0) {
+        lista.innerHTML = '<div class="col-12"><div class="cys-empty-box text-center py-4"><i class="bi bi-search fs-2 d-block mb-2 text-muted"></i>Sin resultados para "' + q + '"</div></div>';
+      }
+    });
+  }
+
+  // ══ CLIENTES AUTOCOMPLETE ══
+  const inputCli = document.getElementById('inputClienteNombre');
+  if (inputCli) {
+    inputCli.addEventListener('input', function() {
+      const q   = this.value.toLowerCase();
+      const sug = document.getElementById('sugerenciasClientes');
+      if (!sug) return;
+      if (!q) { sug.style.display = 'none'; return; }
+      let visible = false;
+      sug.querySelectorAll('button').forEach(btn => {
+        const match = btn.dataset.nombre.toLowerCase().includes(q);
+        btn.style.display = match ? 'block' : 'none';
+        if (match) visible = true;
+      });
+      sug.style.display = visible ? 'block' : 'none';
+    });
+  }
+
+  const sugBox = document.getElementById('sugerenciasClientes');
+  if (sugBox) {
+    sugBox.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const inName = document.getElementById('inputClienteNombre');
+        const inId = document.getElementById('inputClienteId');
+        if (inName) inName.value = this.dataset.nombre;
+        if (inId) inId.value = this.dataset.id;
+        sugBox.style.display = 'none';
+      });
+    });
+  }
+
+  // ══ FILTRO DE FECHAS Y BÚSQUEDA EN HISTORIAL ══
+  function aplicarFiltroHistorial() {
+    const fDesde = document.getElementById('filtroDesde');
+    const fHasta = document.getElementById('filtroHasta');
+    const fBusc  = document.getElementById('buscadorHistorial');
+
+    const desde = fDesde ? fDesde.value : '';
+    const hasta = fHasta ? fHasta.value : '';
+    const q     = fBusc ? fBusc.value.toLowerCase().trim() : '';
+    const filas = document.querySelectorAll('.fila-venta');
+    let visibles = 0;
+
+    const params = new URLSearchParams();
+    if (desde) params.set('fecha_inicio', desde);
+    if (hasta) params.set('fecha_fin', hasta);
+    if (q) params.set('q', q);
+    const qStr = params.toString() ? ('?' + params.toString()) : '';
+
+    const btnExcel = document.getElementById('btnExportExcelHistorial');
+    const btnPdf   = document.getElementById('btnExportPdfHistorial');
+    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + qStr;
+    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + qStr;
+
+    const grupos = {};
+    filas.forEach(fila => {
+      const vid = fila.dataset.ventaId;
+      if (!grupos[vid]) grupos[vid] = [];
+      grupos[vid].push(fila);
+    });
+
+    Object.values(grupos).forEach(grupo => {
+      const fecha = grupo[0].dataset.fecha;
+      let mostrarFila = true;
+      if (desde && fecha < desde) mostrarFila = false;
+      if (hasta && fecha > hasta) mostrarFila = false;
+
+      if (mostrarFila && q) {
+        let textoGrupo = '';
+        grupo.forEach(f => textoGrupo += f.textContent.toLowerCase() + ' ');
+        if (!textoGrupo.includes(q)) mostrarFila = false;
+      }
+
+      grupo.forEach(fila => {
+        fila.style.display = mostrarFila ? '' : 'none';
+      });
+      if (mostrarFila) visibles++;
+    });
+
+    const sinRes = document.getElementById('sinResultadosFiltro');
+    if (sinRes) sinRes.style.display = visibles === 0 ? 'block' : 'none';
+  }
+
+  const fDesde = document.getElementById('filtroDesde');
+  if (fDesde) fDesde.addEventListener('change', aplicarFiltroHistorial);
+
+  const fHasta = document.getElementById('filtroHasta');
+  if (fHasta) fHasta.addEventListener('change', aplicarFiltroHistorial);
+
+  const fBusc = document.getElementById('buscadorHistorial');
+  if (fBusc) fBusc.addEventListener('input', aplicarFiltroHistorial);
+
+  const btnLimp = document.getElementById('btnLimpiarFiltro');
+  if (btnLimp) {
+    btnLimp.addEventListener('click', function() {
+      const f1 = document.getElementById('filtroDesde');
+      const f2 = document.getElementById('filtroHasta');
+      const f3 = document.getElementById('buscadorHistorial');
+      if (f1) f1.value = '';
+      if (f2) f2.value = '';
+      if (f3) f3.value = '';
+      aplicarFiltroHistorial();
+    });
+  }
  
 // ══ STEPPER HELPER PARA DENOMINACIONES ══
 function stepDenom(btn, delta) {
@@ -1134,7 +1126,7 @@ function stepDenom(btn, delta) {
 }
 
 // ══ APERTURA DE CAJA ══
-function recalcApertura() {
+function recalcApertura(e) {
   let total = 0;
   let totalBilletes = 0;
   let totalMonedas = 0;
@@ -1153,6 +1145,15 @@ function recalcApertura() {
       else totalMonedas += sub;
     }
   });
+
+  const manualInput = document.getElementById('inputMontoBaseManual');
+  if (manualInput) {
+    if (e && e.target === manualInput) {
+      manualInput.dataset.userEdited = 'true';
+    } else if (!manualInput.dataset.userEdited || total > 0) {
+      manualInput.value = total || '';
+    }
+  }
 
   const totEl = document.getElementById('totalConteo');
   if (totEl) totEl.textContent = '$' + total.toLocaleString('es-CO');
@@ -1205,6 +1206,11 @@ document.addEventListener('DOMContentLoaded', function() {
     ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, recalcApertura));
   });
 
+  const manualInput = document.getElementById('inputMontoBaseManual');
+  if (manualInput) {
+    ['input', 'change', 'keyup'].forEach(evt => manualInput.addEventListener(evt, recalcApertura));
+  }
+
   document.querySelectorAll('.denom-ci').forEach(i => {
     ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, recalcCierre));
   });
@@ -1213,28 +1219,42 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnConfirmarConteo) {
     btnConfirmarConteo.addEventListener('click', function() {
       const denoms = {};
-      let monto = 0;
+      let montoCalculado = 0;
       document.querySelectorAll('.denom-ct').forEach(d => {
         const cant = parseInt(d.value, 10) || 0;
         const val  = parseInt(d.dataset.valor, 10) || 0;
         if (cant > 0) denoms[d.dataset.valor] = cant;
-        monto += cant * val;
+        montoCalculado += cant * val;
       });
+
+      const manualVal = parseFloat(document.getElementById('inputMontoBaseManual')?.value || 0);
+      const montoFinal = (manualVal > 0) ? manualVal : montoCalculado;
+
       const obsEl = document.getElementById('ctObservacion');
       const obs = obsEl ? obsEl.value : '';
+
+      btnConfirmarConteo.disabled = true;
+      btnConfirmarConteo.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Abriendo caja...';
 
       fetch("{% url 'apertura_caja' %}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-        body: JSON.stringify({ monto_base: monto, observacion: obs, denominaciones: denoms })
+        body: JSON.stringify({ monto_base: montoFinal, observacion: obs, denominaciones: denoms })
       })
       .then(r => r.json())
       .then(data => {
-        if (data.ok) location.reload();
-        else alert(data.error || 'Error al registrar apertura.');
+        if (data.ok) {
+          window.location.reload();
+        } else {
+          btnConfirmarConteo.disabled = false;
+          btnConfirmarConteo.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno';
+          alert(data.error || 'Error al registrar apertura.');
+        }
       })
       .catch(err => {
         console.error('Error al guardar apertura:', err);
+        btnConfirmarConteo.disabled = false;
+        btnConfirmarConteo.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno';
         alert('Error al procesar la apertura de caja.');
       });
     });

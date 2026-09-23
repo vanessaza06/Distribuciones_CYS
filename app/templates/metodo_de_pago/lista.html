@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Métodos de Pago — CYS Ltda{% endblock %}
+{% block page_title %}Gestión de Métodos de Pago{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --mp-bg-card: rgba(18, 24, 38, 0.85);
+    --mp-border: rgba(255, 255, 255, 0.08);
+    --mp-accent: #3b82f6;
+    --mp-accent-glow: rgba(59, 130, 246, 0.25);
+    --mp-green: #10b981;
+    --mp-purple: #8b5cf6;
+    --mp-amber: #f59e0b;
+    --mp-text-main: #f3f4f6;
+    --mp-text-muted: #9ca3af;
+  }
+
+  .mp-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Header Banner */
+  .mp-header-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid var(--mp-border);
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .mp-header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .mp-header-subtitle {
+    color: var(--mp-text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  /* KPI Grid */
+  .mp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .mp-kpi-card {
+    background: var(--mp-bg-card);
+    border: 1px solid var(--mp-border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mp-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .mp-kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mp-kpi-val {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  .mp-kpi-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: var(--mp-text-muted);
+  }
+
+  /* Filter Bar */
+  .mp-filter-card {
+    background: var(--mp-bg-card);
+    border: 1px solid var(--mp-border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .mp-input-group {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--mp-border);
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .mp-input-group input, .mp-input-group select {
+    background: transparent !important;
+    border: none !important;
+    color: #fff !important;
+  }
+
+  .mp-input-group input::placeholder {
+    color: #6b7280 !important;
+  }
+
+  /* Table Card */
+  .mp-table-card {
+    background: var(--mp-bg-card);
+    border: 1px solid var(--mp-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .mp-table {
+    width: 100%;
+    margin-bottom: 0;
+    color: var(--mp-text-main);
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .mp-table th {
+    background: rgba(15, 23, 42, 0.9);
+    padding: 1rem 1.25rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    color: #94a3b8;
+    border-bottom: 1px solid var(--mp-border);
+  }
+
+  .mp-table td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.9rem;
+  }
+
+  .mp-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  /* Badges */
+  .mp-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .mp-badge-efectivo {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .mp-badge-transaccion {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .mp-badge-compra {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  /* Modal Dark Customization */
+  .modal-content-dark {
+    background: #0f172a;
+    border: 1px solid var(--mp-border);
+    color: #fff;
+    border-radius: 16px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mp-container">
+
+  <!-- Header Banner -->
+  <div class="mp-header-card">
+    <div>
+      <h1 class="mp-header-title">
+        <i class="bi bi-wallet2 text-primary"></i> Métodos de Pago
+      </h1>
+      <p class="mp-header-subtitle">
+        Registro centralizado de transacciones, abonos y efectivo del módulo <code>metodo_pago</code>
+      </p>
+    </div>
+    <div>
+      <button class="btn btn-primary px-4 py-2 fw-semibold rounded-3 shadow-sm d-flex align-items-center gap-2"
+              data-bs-toggle="modal" data-bs-target="#modalNuevoPago">
+        <i class="bi bi-plus-lg"></i> Registrar Nuevo Pago
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages Alert -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-dismissible fade show mb-4 {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- KPI Cards -->
+  <div class="mp-kpi-grid">
+    <div class="mp-kpi-card">
+      <div class="mp-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+      <div class="mp-kpi-val">${{ total_recaudado|floatformat:0 }}</div>
+      <div class="mp-kpi-label">Total Registrado</div>
+    </div>
+
+    <div class="mp-kpi-card">
+      <div class="mp-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+        <i class="bi bi-cash-stack"></i>
+      </div>
+      <div class="mp-kpi-val">${{ total_efectivo|floatformat:0 }}</div>
+      <div class="mp-kpi-label">Total en Efectivo</div>
+    </div>
+
+    <div class="mp-kpi-card">
+      <div class="mp-kpi-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+        <i class="bi bi-credit-card-2-front"></i>
+      </div>
+      <div class="mp-kpi-val">${{ total_transaccion|floatformat:0 }}</div>
+      <div class="mp-kpi-label">Total Transferencias / Banco</div>
+    </div>
+
+    <div class="mp-kpi-card">
+      <div class="mp-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+        <i class="bi bi-receipt-cutoff"></i>
+      </div>
+      <div class="mp-kpi-val">{{ total_registros }}</div>
+      <div class="mp-kpi-label">Total Registros</div>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="mp-filter-card">
+    <form method="GET" class="row g-3 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group mp-input-group">
+          <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" class="form-control" placeholder="Buscar por referencia, observación o compra..." value="{{ q }}">
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <select name="tipo" class="form-select mp-input-group">
+          <option value="">— Todos los tipos —</option>
+          <option value="efectivo" {% if tipo == 'efectivo' %}selected{% endif %}>Efectivo</option>
+          <option value="transaccion" {% if tipo == 'transaccion' %}selected{% endif %}>Transacción / Banco</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <input type="date" name="fecha_inicio" class="form-control mp-input-group" value="{{ fecha_inicio }}" title="Fecha inicio">
+      </div>
+
+      <div class="col-md-2">
+        <input type="date" name="fecha_fin" class="form-control mp-input-group" value="{{ fecha_fin }}" title="Fecha fin">
+      </div>
+
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-funnel-fill"></i> Filtrar</button>
+        <a href="{% url 'lista_metodos_pago' %}" class="btn btn-outline-secondary" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Table Card -->
+  <div class="mp-table-card">
+    <div class="table-responsive">
+      <table class="mp-table">
+        <thead>
+          <tr>
+            <th>CÓDIGO</th>
+            <th>FECHA</th>
+            <th>VALOR TOTAL</th>
+            <th>EFECTIVO</th>
+            <th>TRANSACCIÓN</th>
+            <th>REFERENCIA</th>
+            <th>COMPRA VINCULADA</th>
+            <th>OBSERVACIÓN</th>
+            <th class="text-end">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pagos %}
+            <tr>
+              <td><span class="fw-bold text-white">#{{ p.codigo_metodo }}</span></td>
+              <td class="text-muted"><i class="bi bi-clock me-1"></i>{{ p.fecha|date:"d/m/Y H:i" }}</td>
+              <td class="fw-bold text-success" style="font-size: 1rem;">${{ p.valor|floatformat:0 }}</td>
+              <td>
+                {% if p.efectivo > 0 %}
+                  <span class="mp-badge mp-badge-efectivo"><i class="bi bi-cash me-1"></i>${{ p.efectivo|floatformat:0 }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.transaccion > 0 %}
+                  <span class="mp-badge mp-badge-transaccion"><i class="bi bi-bank me-1"></i>${{ p.transaccion|floatformat:0 }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="text-light">{{ p.referencia|default:"Sin referencia" }}</span>
+              </td>
+              <td>
+                {% if p.compra %}
+                  <span class="mp-badge mp-badge-compra">
+                    <i class="bi bi-cart3 me-1"></i>Compra #{{ p.compra.codigo_compra }}
+                    {% if p.compra.proveedor %}({{ p.compra.proveedor.nombre_proveedor }}){% endif %}
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary opacity-50">General / N/A</span>
+                {% endif %}
+              </td>
+              <td class="text-muted" style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                {{ p.observacion|default:"—" }}
+              </td>
+              <td class="text-end">
+                <form method="POST" action="{% url 'eliminar_metodo_pago' p.pk %}" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro de pago #{{ p.codigo_metodo }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Eliminar registro">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-wallet2 display-4 d-block mb-2 opacity-50"></i>
+                No se encontraron registros de métodos de pago.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Registrar Pago -->
+<div class="modal fade" id="modalNuevoPago" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-content-dark">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title fw-bold text-white"><i class="bi bi-wallet2 text-primary me-2"></i>Registrar Pago en Método de Pago</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'crear_metodo_pago' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label text-muted small text-uppercase fw-bold">Valor del Pago ($)</label>
+            <input type="number" step="0.01" min="1" name="valor" class="form-control mp-input-group py-2" placeholder="Ej: 50000" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small text-uppercase fw-bold">Tipo de Método de Pago</label>
+            <select name="tipo_pago" class="form-select mp-input-group py-2" required>
+              <option value="efectivo">Efectivo</option>
+              <option value="transaccion">Transacción / Transferencia Banco</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small text-uppercase fw-bold">Referencia / Comprobante</label>
+            <input type="text" name="referencia" class="form-control mp-input-group py-2" placeholder="Ej: N° Transacción 98765 o N° Recibo">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small text-uppercase fw-bold">Vincular a Compra (Opcional)</label>
+            <select name="compra_id" class="form-select mp-input-group py-2">
+              <option value="">— Ninguna (Pago Independiente) —</option>
+              {% for c in compras_disponibles %}
+                <option value="{{ c.pk }}">Compra #{{ c.codigo_compra }} - Saldo: ${{ c.saldo|floatformat:0 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small text-uppercase fw-bold">Observación</label>
+            <textarea name="observacion" class="form-control mp-input-group py-2" rows="2" placeholder="Detalles u observaciones del pago..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary">
+          <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
