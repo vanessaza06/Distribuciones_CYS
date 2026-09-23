@@ -412,7 +412,7 @@
   display: none;
   align-items: flex-start;
   justify-content: center;
-  z-index: 100;
+  z-index: 2000; /* por encima del header y del menú lateral */
   padding: 20px;
   padding-top: 140px;
   overflow-y: auto;

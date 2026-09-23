@@ -7,9 +7,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from app.models import (
     Venta, DetalleVenta, Caja, Devolucion, DetalleDevolucion,
@@ -38,11 +39,9 @@ def session_required(view_func):
 # ════════════════════════════════════════
 
 def obtener_caja_abierta(hoy=None):
-    if hoy is None:
-        hoy = timezone.localdate()
-    caja_hoy = Caja.objects.filter(fecha_hora__date=hoy).order_by('-fecha_hora').first()
-    if caja_hoy and '[CERRADO]' not in (caja_hoy.observacion or ''):
-        return caja_hoy
+    caja_ultima = Caja.objects.order_by('-codigo_caja').first()
+    if caja_ultima and '[CERRADO]' not in (caja_ultima.observacion or ''):
+        return caja_ultima
     return None
 
 
@@ -78,9 +77,18 @@ def nueva_venta(request):
     if request.method != 'POST':
         return redirect('ventas')
 
-    if not obtener_caja_abierta():
-        messages.error(request, "La caja se encuentra cerrada. Debes realizar la apertura de caja antes de registrar ventas.")
-        return redirect('ventas')
+    vendedor = obtener_usuario_actual(request)
+
+    caja_actual = obtener_caja_abierta()
+    if not caja_actual:
+        caja_actual = Caja.objects.create(
+            monto_base=Decimal('0'),
+            total_efectivo=Decimal('0'),
+            total_transferencias=Decimal('0'),
+            total_retirado=Decimal('0'),
+            usuario=vendedor,
+            observacion='Turno iniciado automáticamente al registrar venta',
+        )
 
     producto_ids = request.POST.getlist('producto_id[]')
     presentacion_ids = request.POST.getlist('presentacion_id[]')
@@ -103,10 +111,6 @@ def nueva_venta(request):
     if not producto_ids:
         messages.error(request, "El carrito está vacío.")
         return redirect('ventas')
-
-    vendedor = request.user if request.user.is_authenticated else None
-    if not vendedor and request.session.get('usuario_id'):
-        vendedor = Usuario.objects.filter(pk=request.session.get('usuario_id')).first()
 
     items_validados = []
     subtotal_venta = Decimal('0')
@@ -166,7 +170,8 @@ def nueva_venta(request):
     venta = Venta.objects.create(
         total_venta=total_final,
         metodo_pago=metodo_pago,
-        usuario=vendedor or Usuario.objects.first(),
+        usuario=vendedor,
+        caja=caja_actual,
     )
 
     for item in items_validados:
@@ -238,7 +243,7 @@ def ventas_dia(request):
     else:
         ventas_qs = Venta.objects.filter(fecha__date=hoy).order_by('-fecha')
 
-    ventas_list = list(ventas_qs.select_related('vendedor', 'cliente').prefetch_related('detalles__producto'))
+    ventas_list = list(ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'))
     total_dia = float(sum(v.total_venta for v in ventas_list))
     total_productos = sum(det.cantidad for v in ventas_list for det in v.detalles.all())
 
@@ -361,70 +366,276 @@ def ventas_dia(request):
 
 @session_required
 def caja(request):
-    hoy = timezone.localdate()
+    cajas_asc = list(Caja.objects.all().order_by('fecha_hora'))
+    turnos = []
+    turnos_dict_for_js = {}
+
+    for i, item in enumerate(cajas_asc):
+        inicio_turno = item.fecha_hora
+        if i < len(cajas_asc) - 1:
+            fin_turno = cajas_asc[i+1].fecha_hora
+        else:
+            fin_turno = timezone.now()
+
+        # Obtener ventas asociadas al turno (por FK o por intervalo de fecha)
+        ventas_turno = Venta.objects.filter(
+            Q(caja=item) | (Q(fecha__gte=inicio_turno) & Q(fecha__lte=fin_turno))
+        ).distinct()
+
+        total_ventas_turno = Decimal('0')
+        cant_ventas = ventas_turno.count()
+
+        pago_efectivo = Decimal('0')
+        pago_tarjeta = Decimal('0')
+        pago_transferencia = Decimal('0')
+        pago_nequi = Decimal('0')
+        pago_daviplata = Decimal('0')
+
+        for v in ventas_turno:
+            monto_v = Decimal(str(v.total_con_descuento if (v.total_con_descuento and v.total_con_descuento > 0) else (v.total_venta or 0)))
+            total_ventas_turno += monto_v
+
+            pe = Decimal(str(v.pago_efectivo or 0))
+            pt = Decimal(str(v.pago_tarjeta or 0))
+            ptr = Decimal(str(v.pago_transferencia or 0))
+            pn = Decimal(str(v.pago_nequi or 0))
+            pd = Decimal(str(v.pago_daviplata or 0))
+
+            if pe > 0 or pt > 0 or ptr > 0 or pn > 0 or pd > 0:
+                pago_efectivo += pe
+                pago_tarjeta += pt
+                pago_transferencia += ptr
+                pago_nequi += pn
+                pago_daviplata += pd
+            else:
+                mp = (v.metodo_pago or 'efectivo').lower()
+                if 'efectivo' in mp:
+                    pago_efectivo += monto_v
+                elif 'tarjeta' in mp:
+                    pago_tarjeta += monto_v
+                elif 'nequi' in mp:
+                    pago_nequi += monto_v
+                elif 'daviplata' in mp:
+                    pago_daviplata += monto_v
+                else:
+                    pago_transferencia += monto_v
+
+        # Productos top en este turno
+        detalles_turno = DetalleVenta.objects.filter(venta__in=ventas_turno).select_related('producto', 'presentacion')
+        productos_dict = {}
+        for d in detalles_turno:
+            p_nombre = d.producto.nombre if d.producto else (d.presentacion.nombre if d.presentacion else 'Producto Sin Nombre')
+            cant = d.cantidad or 0
+            subt = float((d.cantidad or 0) * (d.precio_unitario or 0)) if hasattr(d, 'precio_unitario') else float(d.subtotal() if callable(getattr(d, 'subtotal', None)) else 0)
+
+            if p_nombre not in productos_dict:
+                productos_dict[p_nombre] = {'nombre': p_nombre, 'cantidad': 0, 'total': 0.0}
+            productos_dict[p_nombre]['cantidad'] += cant
+            productos_dict[p_nombre]['total'] += subt
+
+        total_cant_prods = sum(p['cantidad'] for p in productos_dict.values())
+        productos_top_turno = sorted(productos_dict.values(), key=lambda x: x['cantidad'], reverse=True)[:5]
+
+        max_cant_prod = productos_top_turno[0]['cantidad'] if productos_top_turno else 1
+        for pos, p in enumerate(productos_top_turno, start=1):
+            p['posicion'] = pos
+            p['porcentaje_total'] = round((p['cantidad'] / total_cant_prods * 100), 1) if total_cant_prods > 0 else 0
+            p['porcentaje_relativo'] = round((p['cantidad'] / max_cant_prod * 100), 1) if max_cant_prod > 0 else 0
+
+        # Estado del turno
+        es_cerrado = '[CERRADO]' in (item.observacion or '')
+        es_ultimo = (i == len(cajas_asc) - 1)
+        estado_label = 'CERRADO' if es_cerrado else ('ACTIVO' if es_ultimo else 'FINALIZADO')
+
+        # Operador
+        if item.usuario:
+            operador_nombre = getattr(item.usuario, 'nombre', None) or item.usuario.get_full_name() or item.usuario.username or str(item.usuario.documento_usuario or '')
+        else:
+            operador_nombre = 'Administrador / Sistema'
+
+        monto_base_val = float(item.monto_base or 0)
+        total_ventas_val = float(total_ventas_turno)
+        monto_total_acumulado = monto_base_val + total_ventas_val
+
+        pct_base = round((monto_base_val / monto_total_acumulado * 100), 1) if monto_total_acumulado > 0 else (100.0 if monto_base_val > 0 else 0.0)
+        pct_generado = round((total_ventas_val / monto_total_acumulado * 100), 1) if monto_total_acumulado > 0 else 0.0
+
+        pct_efectivo = round((float(pago_efectivo) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+        pct_nequi = round((float(pago_nequi) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+        pct_daviplata = round((float(pago_daviplata) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+        pct_tarjeta = round((float(pago_tarjeta) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+        pct_transferencia = round((float(pago_transferencia) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+
+        turno_dict = {
+            'id': item.codigo_caja,
+            'caja_obj': item,
+            'fecha_inicio': inicio_turno,
+            'fecha_fin': fin_turno if es_cerrado or not es_ultimo else None,
+            'monto_base': item.monto_base or Decimal('0'),
+            'total_ventas': total_ventas_turno,
+            'monto_total_acumulado': Decimal(str(monto_total_acumulado)),
+            'pct_base': pct_base,
+            'pct_generado': pct_generado,
+            'cant_ventas': cant_ventas,
+            'total_efectivo_arqueo': item.total_efectivo or Decimal('0'),
+            'total_transferencias_arqueo': item.total_transferencias or Decimal('0'),
+            'total_retirado': item.total_retirado or Decimal('0'),
+            'pago_efectivo': pago_efectivo,
+            'pago_tarjeta': pago_tarjeta,
+            'pago_transferencia': pago_transferencia,
+            'pago_nequi': pago_nequi,
+            'pago_daviplata': pago_daviplata,
+            'pct_efectivo': pct_efectivo,
+            'pct_nequi': pct_nequi,
+            'pct_daviplata': pct_daviplata,
+            'pct_tarjeta': pct_tarjeta,
+            'pct_transferencia': pct_transferencia,
+            'productos_top': productos_top_turno,
+            'denominaciones': item.denominaciones or {},
+            'observacion': (item.observacion or '').replace('[CERRADO]', '').strip(),
+            'operador': operador_nombre,
+            'estado': estado_label
+        }
+
+        turnos.append(turno_dict)
+
+        # Copia JSON para el modal interactivo
+        turnos_dict_for_js[str(item.codigo_caja)] = {
+            'id': item.codigo_caja,
+            'fecha_inicio': inicio_turno.strftime('%d/%m/%Y %I:%M %p') if inicio_turno else '',
+            'fecha_fin': fin_turno.strftime('%d/%m/%Y %I:%M %p') if (es_cerrado or not es_ultimo) and fin_turno else ('En Curso' if es_ultimo and not es_cerrado else ''),
+            'monto_base': float(item.monto_base or 0),
+            'total_ventas': float(total_ventas_turno),
+            'monto_total_acumulado': float(monto_total_acumulado),
+            'pct_base': pct_base,
+            'pct_generado': pct_generado,
+            'cant_ventas': cant_ventas,
+            'total_efectivo_arqueo': float(item.total_efectivo or 0),
+            'total_transferencias_arqueo': float(item.total_transferencias or 0),
+            'total_retirado': float(item.total_retirado or 0),
+            'pago_efectivo': float(pago_efectivo),
+            'pago_tarjeta': float(pago_tarjeta),
+            'pago_transferencia': float(pago_transferencia),
+            'pago_nequi': float(pago_nequi),
+            'pago_daviplata': float(pago_daviplata),
+            'pct_efectivo': pct_efectivo,
+            'pct_nequi': pct_nequi,
+            'pct_daviplata': pct_daviplata,
+            'pct_tarjeta': pct_tarjeta,
+            'pct_transferencia': pct_transferencia,
+            'productos_top': productos_top_turno,
+            'denominaciones': item.denominaciones or {},
+            'observacion': (item.observacion or '').replace('[CERRADO]', '').strip(),
+            'operador': operador_nombre,
+            'estado': estado_label
+        }
+
+    turnos.reverse()
+
+    total_turnos = len(turnos)
+    turno_activo = next((t for t in turnos if t['estado'] == 'ACTIVO'), None)
+    caja_abierta = obtener_caja_abierta()
     ultimo_cierre = Caja.objects.order_by('-fecha_hora').first()
-    hay_cierre_hoy = Caja.objects.filter(fecha_hora__date=hoy).exists()
+    ventas_totales_historicas = sum(t['total_ventas'] for t in turnos)
+    promedio_base = (sum(t['monto_base'] for t in turnos) / total_turnos) if total_turnos > 0 else 0
 
     return render(request, 'ventas/caja.html', {
+        'turnos': turnos,
+        'turnos_js': json.dumps(turnos_dict_for_js),
+        'total_turnos': total_turnos,
+        'turno_activo': turno_activo,
+        'caja_abierta': caja_abierta,
         'ultimo_cierre': ultimo_cierre,
-        'hay_cierre_hoy': hay_cierre_hoy,
+        'ventas_totales_historicas': ventas_totales_historicas,
+        'promedio_base': promedio_base,
+        'billetes_denom': BILLETES_DENOM,
+        'monedas_denom': MONEDAS_DENOM,
     })
 
 
-@require_POST
+def obtener_usuario_actual(request):
+    vendedor = None
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+        try:
+            vendedor = Usuario.objects.get(pk=request.user.pk)
+        except (AttributeError, Usuario.DoesNotExist):
+            if hasattr(request.user, '_wrapped') and isinstance(request.user._wrapped, Usuario):
+                vendedor = request.user._wrapped
+
+    if not vendedor and request.session.get('usuario_id'):
+        vendedor = Usuario.objects.filter(pk=request.session.get('usuario_id')).first()
+
+    if not vendedor or not isinstance(vendedor, Usuario):
+        vendedor = Usuario.objects.first()
+
+    return vendedor
+
+
+@csrf_exempt
 @session_required
 def apertura_caja(request):
-    try:
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, ValueError):
-        return JsonResponse({'ok': False, 'error': 'JSON inválido.'}, status=400)
-
-    hoy = timezone.localdate()
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
 
     try:
-        monto_base = float(data.get('monto_base', 0) or data.get('monto_contado', 0))
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f'JSON inválido: {str(e)}'}, status=400)
+
+    try:
+        monto_base = float(data.get('monto_base', 0) or data.get('monto_contado', 0) or 0)
         if monto_base < 0:
             monto_base = 0.0
     except (TypeError, ValueError):
         monto_base = 0.0
 
-    usuario = request.user if request.user.is_authenticated else Usuario.objects.first()
+    vendedor = obtener_usuario_actual(request)
+    observacion_clean = (data.get('observacion', '') or '').replace('[CERRADO]', '').strip()
 
-    caja_existente = obtener_caja_abierta(hoy)
-    if caja_existente:
-        caja_existente.monto_base = monto_base
-        caja_existente.observacion = data.get('observacion', '')
-        caja_existente.denominaciones = data.get('denominaciones', {})
-        caja_existente.save()
-    else:
-        Caja.objects.create(
-            monto_base=monto_base,
-            total_efectivo=0,
-            total_transferencias=0,
-            total_retirado=0,
-            usuario=usuario,
-            observacion=data.get('observacion', ''),
-            denominaciones=data.get('denominaciones', {}),
-        )
-    return JsonResponse({'ok': True})
+    try:
+        caja_existente = obtener_caja_abierta()
+        if caja_existente:
+            caja_existente.monto_base = Decimal(str(monto_base))
+            caja_existente.observacion = observacion_clean
+            caja_existente.denominaciones = data.get('denominaciones', {})
+            if vendedor:
+                caja_existente.usuario = vendedor
+            caja_existente.save()
+            codigo_caja = caja_existente.codigo_caja
+        else:
+            nueva_caja = Caja.objects.create(
+                fecha_hora=timezone.now(),
+                monto_base=Decimal(str(monto_base)),
+                total_efectivo=Decimal('0'),
+                total_transferencias=Decimal('0'),
+                total_retirado=Decimal('0'),
+                usuario=vendedor,
+                observacion=observacion_clean,
+                denominaciones=data.get('denominaciones', {}),
+            )
+            codigo_caja = nueva_caja.codigo_caja
+        return JsonResponse({'ok': True, 'monto_base': monto_base, 'codigo_caja': codigo_caja})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f'Error al guardar apertura: {str(e)}'}, status=500)
 
 
-@require_POST
+@csrf_exempt
 @session_required
 def cierre_caja(request):
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+
     try:
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, ValueError):
-        return JsonResponse({'ok': False, 'error': 'JSON inválido.'}, status=400)
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f'JSON inválido: {str(e)}'}, status=400)
 
-    hoy = timezone.localdate()
-    caja_reg = obtener_caja_abierta(hoy)
+    caja_reg = obtener_caja_abierta()
+    if not caja_reg:
+        caja_reg = Caja.objects.order_by('-fecha_hora').first()
 
     if not caja_reg:
-        caja_reg = Caja.objects.filter(fecha_hora__date=hoy).order_by('-fecha_hora').first()
-
-    if not caja_reg:
-        return JsonResponse({'ok': False, 'error': 'No hay registro de caja disponible para cerrar hoy.'}, status=400)
+        return JsonResponse({'ok': False, 'error': 'No hay registro de caja disponible para cerrar.'}, status=400)
 
     try:
         total_contado = float(data.get('total_contado', 0))
@@ -433,17 +644,20 @@ def cierre_caja(request):
         total_contado = 0.0
         total_retirado = 0.0
 
-    caja_reg.total_efectivo = total_contado
-    caja_reg.total_retirado = total_retirado
-    obs = (caja_reg.observacion or '').strip()
-    if '[CERRADO]' not in obs:
-        caja_reg.observacion = (obs + ' [CERRADO]').strip()
+    try:
+        caja_reg.total_efectivo = total_contado
+        caja_reg.total_retirado = total_retirado
+        obs = (caja_reg.observacion or '').strip()
+        if '[CERRADO]' not in obs:
+            caja_reg.observacion = (obs + ' [CERRADO]').strip()
 
-    if 'denominaciones' in data:
-        caja_reg.denominaciones = data['denominaciones']
-    caja_reg.save()
+        if 'denominaciones' in data:
+            caja_reg.denominaciones = data['denominaciones']
+        caja_reg.save()
 
-    return JsonResponse({'ok': True})
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f'Error al guardar cierre: {str(e)}'}, status=500)
 
 
 @require_POST
@@ -633,7 +847,7 @@ def exportar_ventas_excel(request):
 
     total_acreditado = Decimal('0')
 
-    for v in ventas_qs.select_related('vendedor', 'cliente').prefetch_related('detalles__producto'):
+    for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
         detalles = list(v.detalles.all())
         cliente_nombre = v.cliente.nombre if v.cliente else "Consumidor Final"
         vendedor_nombre = str(v.vendedor.username if v.vendedor else "Sistema")
@@ -776,7 +990,7 @@ def exportar_ventas_pdf(request):
 
     total_general = Decimal('0')
 
-    for v in ventas_qs.select_related('vendedor', 'cliente').prefetch_related('detalles__producto'):
+    for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
         detalles = list(v.detalles.all())
         cliente_nombre = v.cliente.nombre if v.cliente else "Consumidor Final"
         fecha_str = v.fecha.strftime("%d/%m/%Y %H:%M")

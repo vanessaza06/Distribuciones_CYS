@@ -282,7 +282,7 @@ class DetalleProducto(models.Model):
         max_length=100, unique=True, db_column="codigo_barras"
     )
     fecha_vencimiento = models.DateField(db_column="fecha_vencimiento")
-    descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
+    descripcion = models.TextField(blank=True, null=True, db_column="descripcion")
     marca = models.ForeignKey(
         "Marca",
         on_delete=models.CASCADE,
@@ -546,7 +546,9 @@ class DevolucionProveedores(models.Model):
     numero_proveedor = models.AutoField(primary_key=True, db_column="numero_proveedor")
     fecha = models.DateTimeField(default=timezone.now, db_column="fecha")
     motivo = models.TextField(db_column="motivo")
-    estado = models.CharField(max_length=20, db_column="estado")  # ej: pendiente, aprobada, rechazada
+    estado = models.CharField(
+        max_length=20, db_column="estado"
+    )  # ej: pendiente, aprobada, rechazada
     observaciones = models.TextField(blank=True, null=True, db_column="observaciones")
     proveedor = models.ForeignKey(
         "Proveedor", on_delete=models.CASCADE, db_column="nit_proveedores"
@@ -557,35 +559,6 @@ class DevolucionProveedores(models.Model):
 
     def __str__(self):
         return f"Devolución Proveedor #{self.numero_proveedor} - {self.proveedor}"
-
-
-# ── CLIENTE ──
-class Cliente(models.Model):
-    TIPO_ID_CHOICES = [
-        ("CC", "Cédula de Ciudadanía"),
-        ("CE", "Cédula de Extranjería"),
-        ("TI", "Tarjeta de Identidad"),
-        ("PA", "Pasaporte"),
-        ("PT", "Permiso de Permanencia Temporal"),
-        ("NIT", "NIT"),
-    ]
-
-    tipo_id = models.CharField(max_length=5, choices=TIPO_ID_CHOICES, default="CC")
-    identificacion = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    nombre = models.CharField(max_length=100)
-    telefono = models.CharField(max_length=15, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    direccion = models.CharField(max_length=200, blank=True, null=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "cliente"
-        verbose_name = "Cliente"
-        verbose_name_plural = "Clientes"
-        ordering = ["nombre"]
-
-    def __str__(self):
-        return self.nombre
 
 
 # ── 18. CAJA ──
@@ -609,7 +582,11 @@ class Caja(models.Model):
     )
     observacion = models.TextField(blank=True, null=True, db_column="observacion")
     usuario = models.ForeignKey(
-        "Usuario", on_delete=models.PROTECT, db_column="documento_usuario"
+        "Usuario",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="documento_usuario",
     )
 
     class Meta:
@@ -666,14 +643,22 @@ class CierreCaja(models.Model):
 # ── 13. VENTA ──
 class Venta(models.Model):
     codigo_venta = models.AutoField(primary_key=True, db_column="codigo_venta")
-    cliente = models.ForeignKey(
-        Cliente,
-        on_delete=models.PROTECT,
-        related_name="ventas",
-        verbose_name="Cliente",
-        null=True,
-        blank=True,
+    cliente_nombre = models.CharField(
+        max_length=150, default="Consumidor final", blank=True, null=True, db_column="cliente_nombre"
     )
+    cliente_email = models.CharField(
+        max_length=150, blank=True, null=True, db_column="cliente_email"
+    )
+
+    @property
+    def cliente(self):
+        class ClienteDummy:
+            def __init__(self, nombre, email):
+                self.nombre = nombre or "Consumidor final"
+                self.email = email or ""
+            def __str__(self):
+                return self.nombre
+        return ClienteDummy(self.cliente_nombre, self.cliente_email)
     vendedor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -1025,21 +1010,74 @@ class AgendaInventario(models.Model):
         return f"{self.titulo} - {self.fecha.date()}"
 
 
+# ── 20. HALLAZGO ──
+class Hallazgo(models.Model):
+    TIPO_HALLAZGO_CHOICES = [
+        ("faltante", "Faltante"),
+        ("sobrante", "Sobrante"),
+        ("exacto", "Exacto"),
+    ]
+    numero_hallazgo = models.AutoField(primary_key=True, db_column="numero_hallazgo")
+    agenda = models.ForeignKey(
+        "AgendaInventario",
+        on_delete=models.CASCADE,
+        db_column="codigo_agenda",
+        related_name="hallazgos",
+    )
+    producto = models.ForeignKey(
+        "Producto",
+        on_delete=models.PROTECT,
+        db_column="codigo_producto",
+        related_name="hallazgos_bodega",
+    )
+    cantidad_sistema = models.IntegerField(db_column="cantidad_sistema")
+    cantidad_fisica = models.IntegerField(db_column="cantidad_fisica")
+    diferencia = models.IntegerField(db_column="diferencia")
+    sesion_conteo = models.CharField(max_length=50, db_column="sesion_conteo")
+    tipo_hallazgo = models.CharField(
+        max_length=20, choices=TIPO_HALLAZGO_CHOICES, db_column="tipo_hallazgo"
+    )
+    resultado_inventario = models.CharField(
+        max_length=255, blank=True, db_column="resultado_inventario"
+    )
+    observaciones = models.TextField(blank=True, db_column="observaciones")
+    fecha_hallazgo = models.DateTimeField(auto_now_add=True, db_column="fecha_hallazgo")
+
+    class Meta:
+        db_table = "hallazgo"
+        verbose_name = "Hallazgo"
+        verbose_name_plural = "Hallazgos"
+        ordering = ["-fecha_hallazgo"]
+
+    def __str__(self):
+        return f"Hallazgo {self.producto} ({self.diferencia})"
+
+    def save(self, *args, **kwargs):
+        self.diferencia = self.cantidad_fisica - self.cantidad_sistema
+        if self.diferencia > 0:
+            self.tipo_hallazgo = "sobrante"
+        elif self.diferencia < 0:
+            self.tipo_hallazgo = "faltante"
+        else:
+            self.tipo_hallazgo = "exacto"
+        super().save(*args, **kwargs)
+
+
 # -- CONFIGURACION DE EMPRESA --
 class ConfiguracionEmpresa(models.Model):
-    nombre_empresa  = models.CharField(max_length=200, default='CYS Ltda')
-    nit             = models.CharField(max_length=50,  blank=True, default='')
-    direccion       = models.CharField(max_length=300, blank=True, default='')
-    telefono        = models.CharField(max_length=50,  blank=True, default='')
-    email           = models.EmailField(blank=True, default='')
-    iva_porcentaje  = models.DecimalField(max_digits=5, decimal_places=2, default=19)
-    moneda          = models.CharField(max_length=10, default='COP')
+    nombre_empresa = models.CharField(max_length=200, default="CYS Ltda")
+    nit = models.CharField(max_length=50, blank=True, default="")
+    direccion = models.CharField(max_length=300, blank=True, default="")
+    telefono = models.CharField(max_length=50, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19)
+    moneda = models.CharField(max_length=10, default="COP")
     unidades_medida = models.JSONField(default=list)
 
     class Meta:
-        db_table             = 'configuracion_empresa'
-        verbose_name         = 'Configuracion de Empresa'
-        verbose_name_plural  = 'Configuracion de Empresa'
+        db_table = "configuracion_empresa"
+        verbose_name = "Configuracion de Empresa"
+        verbose_name_plural = "Configuracion de Empresa"
 
     def __str__(self):
         return self.nombre_empresa
@@ -1051,16 +1089,16 @@ class ConfiguracionEmpresa(models.Model):
 
 
 class BackupRegistro(models.Model):
-    nombre    = models.CharField(max_length=200)
-    ruta      = models.CharField(max_length=500, blank=True)
-    fecha     = models.DateTimeField(auto_now_add=True)
+    nombre = models.CharField(max_length=200)
+    ruta = models.CharField(max_length=500, blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
     tamaño_mb = models.FloatField(default=0)
 
     class Meta:
-        db_table            = 'backup_registro'
-        verbose_name        = 'Respaldo'
-        verbose_name_plural  = 'Respaldos'
-        ordering            = ['-fecha']
+        db_table = "backup_registro"
+        verbose_name = "Respaldo"
+        verbose_name_plural = "Respaldos"
+        ordering = ["-fecha"]
 
     def __str__(self):
         return self.nombre

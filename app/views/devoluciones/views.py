@@ -75,7 +75,7 @@ def buscar_venta_devolucion(request):
     if not q:
         return JsonResponse({'ventas': []})
 
-    ventas = Venta.objects.select_related('vendedor', 'cliente').all().order_by('-fecha')
+    ventas = Venta.objects.select_related('vendedor').all().order_by('-fecha')
     if q.isdigit():
         ventas = ventas.filter(pk=int(q))[:10]
     else:
@@ -418,7 +418,7 @@ def devoluciones_flujo(request):
             return redirect('lista_devoluciones')
 
     # ── RENDERIZADO DEL TEMPLATE ──
-    ventas = Venta.objects.select_related('vendedor', 'cliente').prefetch_related('detalles__producto').order_by('-fecha')[:50]
+    ventas = Venta.objects.select_related('vendedor').prefetch_related('detalles__producto').order_by('-fecha')[:50]
     devoluciones = Devolucion.objects.select_related('venta', 'usuario').order_by('-fecha')[:50]
 
     venta = None

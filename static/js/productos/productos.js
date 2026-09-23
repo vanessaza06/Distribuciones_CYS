@@ -211,3 +211,13 @@ function enviarCrearProducto() {
       feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">Error de conexión.</div>`;
     });
 }
+window.addEventListener('load', function () {
+  const btnNuevo = document.querySelector('.prod-btn-nuevo');
+  if (btnNuevo) {
+    new bootstrap.Tooltip(btnNuevo, {
+      title: 'Crear producto',
+      placement: 'top',
+      customClass: 'cys-tooltip'
+    });
+  }
+});

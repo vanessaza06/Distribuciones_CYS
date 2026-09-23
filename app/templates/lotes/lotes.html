@@ -25,7 +25,7 @@
 
 <div class="d-flex justify-content-end mb-3">
   <a href="{% url 'gestion_stock' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
-    <i class="bi bi-table me-1"></i> Ver Stock y Vencimientos
+    <i class="bi bi-table me-1" title="Ver Stock"></i> Ver Stock
   </a>
 </div>
 
@@ -179,13 +179,13 @@
           </div>
           <p class="precio-hint">
             <i class="bi bi-info-circle me-1"></i>
-            Este valor se actualizará en la presentación y será visible en Stock y Gestión de Productos.
+            Este valor se actualizará en la presentación y será visible en Stock y Detalle de Productos.
           </p>
         </div>
 
         <button type="submit" class="btn fw-bold rounded-pill px-4 py-2 w-100 lote-btn-crear"
               {% if not hay_presentaciones %}disabled{% endif %}>
-          <i class="bi bi-plus-circle me-2"></i>Crear Lote
+          <i class="bi bi-plus-circle me-2" title="Crear Lotes"></i> Nuevo Lote
         </button>
       </form>
     </div>
