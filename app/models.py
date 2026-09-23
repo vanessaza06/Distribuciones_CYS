@@ -87,6 +87,19 @@ class Bodega(models.Model):
     def __str__(self):
         return self.nombre
 
+    @property
+    def conteo_inventario(self):
+        """
+        Conteo total de unidades en stock dentro de esta bodega,
+        sumando el stock_actual de todos sus lotes.
+        """
+        return self.lotes.aggregate(total=Sum("stock_actual"))["total"] or 0
+
+    @property
+    def total_lotes(self):
+        """Cantidad de lotes distintos registrados en esta bodega."""
+        return self.lotes.count()
+
 
 # ── 3. CATEGORIA ──
 class Categoria(models.Model):
@@ -123,7 +136,7 @@ class Producto(models.Model):
     descripcion = models.TextField(db_column="descripcion")
     fecha_vencimiento = models.DateField(db_column="fecha_vencimiento")
     categoria = models.ForeignKey(
-        "Categoria",  # antes decía 'categorias.Categoria', ya no aplica: es una sola app
+        "Categoria",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -169,7 +182,7 @@ class PresentacionProducto(models.Model):
     observaciones = models.TextField(blank=True, null=True, db_column="observaciones")
     activo = models.BooleanField(default=True, db_column="activo")
     producto = models.ForeignKey(
-        "Producto",  # antes decía 'productos.Producto', ya no aplica
+        "Producto",
         on_delete=models.CASCADE,
         db_column="codigo_producto",
         related_name="presentaciones",
@@ -199,21 +212,24 @@ class Lote(models.Model):
     fecha_registro = models.DateTimeField(
         default=timezone.now, db_column="fecha_registro"
     )
+    imagen = models.ImageField(
+        upload_to="lotes/imagenes/", blank=True, null=True, db_column="imagen"
+    )
     producto = models.ForeignKey(
         "Producto",
-        on_delete=models.CASCADE,  # antes 'productos.Producto'
+        on_delete=models.CASCADE,
         db_column="codigo_producto",
         related_name="lotes",
     )
     presentacion = models.ForeignKey(
         "PresentacionProducto",
-        on_delete=models.CASCADE,  # antes 'presentaciones.PresentacionProducto'
+        on_delete=models.CASCADE,
         db_column="codigo_presentacion",
         related_name="lotes",
     )
     bodega = models.ForeignKey(
         "Bodega",
-        on_delete=models.CASCADE,  # antes 'bodegas.Bodega'
+        on_delete=models.CASCADE,
         db_column="codigo_bodega",
         related_name="lotes",
     )
@@ -483,6 +499,24 @@ class DetalleCompra(models.Model):
         related_name="detalles",
         verbose_name="Compra",
     )
+    producto = models.ForeignKey(
+        "Producto",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="codigo_producto",
+        related_name="detalles_compra",
+        verbose_name="Producto",
+    )
+    lote = models.ForeignKey(
+        "Lote",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="codigo_lote",
+        related_name="detalles_compra",
+        verbose_name="Lote",
+    )
 
     class Meta:
         db_table = "detalle_compra"
@@ -495,6 +529,10 @@ class DetalleCompra(models.Model):
     @property
     def subtotal(self):
         return self.subtotal_compra or (self.cantidad * self.precio_unitario)
+
+    @property
+    def numero_lote(self):
+        return self.lote.numero_lote if self.lote else None
 
     def save(self, *args, **kwargs):
         # Calcula automáticamente el subtotal si no viene definido

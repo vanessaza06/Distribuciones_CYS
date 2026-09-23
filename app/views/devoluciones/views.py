@@ -186,6 +186,16 @@ def detalle_devolucion(request, pk):
 
 
 @login_required
+def ultima_devolucion(request):
+    """Redirige al detalle de la devolución más reciente."""
+    ultima = Devolucion.objects.order_by('-codigo_devolucion').first()
+    if ultima:
+        return redirect('detalle_devolucion', pk=ultima.pk)
+    messages.info(request, 'Aún no hay devoluciones registradas.')
+    return redirect('lista_devoluciones')
+
+
+@login_required
 def devoluciones_flujo(request):
     """Flujo paso a paso para el registro guiado de devoluciones."""
     paso = request.session.get('dev_paso', 1)

@@ -40,6 +40,7 @@ urlpatterns = [
     path( "devoluciones/venta/<int:venta_id>/registrar/",dev_views.registrar_devolucion,name="registrar_devolucion",),
     path( "devoluciones/detalle/<int:venta_id>/",dev_views.detalle_venta_devolucion,name="detalle_venta_devolucion",),
     path("devoluciones/comprobante/<int:pk>/",dev_views.comprobante_devolucion,name="comprobante_devolucion",),
+    path("devoluciones/ultima/", dev_views.ultima_devolucion, name="ultima_devolucion"),
     path("devoluciones/<int:pk>/", dev_views.detalle_devolucion, name="detalle_devolucion",),
     path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
     path("ventas/exportar/excel/", ventas_views.exportar_ventas_excel, name="exportar_ventas_excel"),
@@ -124,6 +125,7 @@ path(
 ),
         # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
+    path("compras/ultima/", compra_views.ultima_compra, name="ultima_compra"),
     path("compras/<int:id>/", compra_views.detalle_compra, name="detalle_compra",),
     path("compras/estado/",compra_views.cambiar_estado_compra, name="cambiar_estado_compra", ),
     path("compras/estado/<int:id>/",compra_views.cambiar_estado_compra,name="cambiar_estado_compra_id",),
@@ -179,12 +181,6 @@ path(
         bod_views.agenda_completar,
         name="agenda_completar",
     ),
-    path(
-        "bodega/agenda/<int:codigo_agenda>/hallazgo/",
-        bod_views.hallazgo_create,
-        name="hallazgo_create",
-    ),
-    path("bodega/hallazgos/", bod_views.hallazgo_list, name="hallazgo_list"),
     path(
         "bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"
     ),

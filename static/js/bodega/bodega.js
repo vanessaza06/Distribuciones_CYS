@@ -85,3 +85,23 @@ document.querySelectorAll('.conteo-prod-item').forEach(function(item) {
     document.getElementById('conteo-prod-hidden').value = this.dataset.value;
   });
 });
+
+// ── BUSCADOR DE LOTES EN BODEGA ──
+(function () {
+  const input = document.getElementById('buscarLoteBodega');
+  if (!input) return;
+  const cols = document.querySelectorAll('.lote-card-col');
+  const sinResultados = document.getElementById('sinResultadosLotesBodega');
+
+  input.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    let visibles = 0;
+    cols.forEach(col => {
+      const texto = `${col.dataset.nombre} ${col.dataset.lote} ${col.dataset.bodega}`;
+      const coincide = texto.includes(q);
+      col.style.display = coincide ? '' : 'none';
+      if (coincide) visibles++;
+    });
+    if (sinResultados) sinResultados.classList.toggle('d-none', visibles !== 0 || q === '');
+  });
+})(); 

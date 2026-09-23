@@ -1,4 +1,5 @@
 /* ── Presentaciones: tabla ── */
+body { background: red !important; }
 .pres-table-wrap {
   background: var(--cys-card-bg, #1b2735);
   border-radius: 12px;

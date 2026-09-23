@@ -44,8 +44,31 @@
         </div>
       </div>
 
-      <form method="POST" action="{% url 'lote_create' %}" id="form-lote">
+      <form method="POST" action="{% url 'lote_create' %}" id="form-lote" enctype="multipart/form-data">
         {% csrf_token %}
+
+        <!-- Imagen del lote (opcional) -->
+        <div class="mb-4">
+          <label class="inv-label">Imagen del producto <span class="lote-label-hint">(opcional)</span></label>
+          <div class="lote-imagen-dropzone" id="dropzone-imagen-lote">
+            <input type="file" name="imagen" id="input-imagen-lote" accept="image/*" class="d-none">
+            <div class="lote-imagen-dropzone__contenido" id="dropzone-imagen-contenido">
+              <div class="lote-imagen-dropzone__icono">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+              </div>
+              <div class="lote-imagen-dropzone__texto">
+                <span class="fw-semibold">Arrastra una imagen aquí</span>
+                <span class="lote-imagen-dropzone__sub">o haz clic para seleccionarla · JPG, PNG o WEBP</span>
+              </div>
+            </div>
+            <div class="lote-imagen-preview d-none" id="lote-imagen-preview-wrap">
+              <img src="" alt="" id="lote-imagen-preview-img">
+              <button type="button" class="lote-imagen-remove-btn" id="btn-quitar-imagen-lote" title="Quitar imagen">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Presentación -->
         <div class="mb-3">

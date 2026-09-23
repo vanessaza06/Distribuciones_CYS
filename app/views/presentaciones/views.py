@@ -72,6 +72,7 @@ def presentacion_lista(request):
         'presentaciones': presentaciones,
         'productos': productos,
         'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Presentaciones', 'url': None},
         ],
     }

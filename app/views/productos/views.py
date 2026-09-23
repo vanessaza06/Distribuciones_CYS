@@ -49,7 +49,9 @@ def lista_productos(request):
         'resumen_categorias': resumen_categorias,
         'form': form,
         'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Productos', 'url': None},
+
         ],
     }
 
@@ -111,6 +113,7 @@ def producto_detalle(request, pk):
         'producto': producto,
         'lotes': lotes,
         'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Productos', 'url': reverse('lista_productos')},
             {'nombre': producto.nombre, 'url': None},
         ],

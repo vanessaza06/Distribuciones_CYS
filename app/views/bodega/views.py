@@ -1,13 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from app.models import Producto, PresentacionProducto, AgendaInventario, Hallazgo
-from app.forms import AgendaInventarioForm, HallazgoForm
+from app.models import Producto, PresentacionProducto, AgendaInventario, Lote
+from app.forms import AgendaInventarioForm
 
 
 @login_required
 def bodega_home(request):
     agendas = AgendaInventario.objects.all()
+    lotes = Lote.objects.select_related('presentacion__producto', 'bodega').all()
+
     if request.method == 'POST' and 'Agendar' in request.POST:
         titulo = request.POST.get('titulo')
         fecha_programada = request.POST.get('fecha_programada')
@@ -22,6 +24,7 @@ def bodega_home(request):
     context = {
         'agendas': agendas,
         'productos': Producto.objects.all(),
+        'lotes': lotes,
         'conteos': [],
         'discrepancias': [],
         'sesion': None,
@@ -77,7 +80,7 @@ def agenda_update(request, codigo):
 @login_required
 def agenda_detail(request, codigo):
     agenda = get_object_or_404(AgendaInventario, pk=codigo)
-    return render(request, 'bodega/agenda_detail.html', {'agenda': agenda, 'hallazgos': agenda.hallazgos.all()})
+    return render(request, 'bodega/agenda_detail.html', {'agenda': agenda})
 
 
 @login_required
@@ -88,31 +91,6 @@ def agenda_completar(request, codigo):
     agenda.save()
     messages.success(request, f'Agenda "{agenda.titulo}" completada.')
     return redirect('bodega_home')
-
-
-@login_required
-def hallazgo_create(request, codigo_agenda):
-    agenda = get_object_or_404(AgendaInventario, pk=codigo_agenda)
-    if request.method == 'POST':
-        form = HallazgoForm(request.POST)
-        if form.is_valid():
-            hallazgo = form.save(commit=False)
-            hallazgo.agenda = agenda
-            hallazgo.save()
-            messages.success(request, 'Hallazgo registrado correctamente.')
-            return redirect('agenda_detail', codigo=agenda.pk)
-    else:
-        form = HallazgoForm()
-    return render(request, 'bodega/hallazgo_form.html', {'form': form, 'agenda': agenda})
-
-
-@login_required
-def hallazgo_list(request):
-    tipo = request.GET.get('tipo')
-    hallazgos = Hallazgo.objects.select_related('agenda', 'producto')
-    if tipo:
-        hallazgos = hallazgos.filter(tipo_hallazgo=tipo)
-    return render(request, 'bodega/hallazgo_list.html', {'hallazgos': hallazgos, 'tipo': tipo})
 
 
 @login_required
