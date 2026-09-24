@@ -164,7 +164,6 @@ def lista_compras(request):
 
         # Adecuar atributos para compras.html
         for c in compras_qs:
-            c.id = c.codigo_compra
             primer_detalle = c.detalles.first()
             if primer_detalle:
                 c.cantidad = primer_detalle.cantidad
@@ -328,9 +327,11 @@ def registrar_pago_compra(request, id=None):
     compra_id = id or request.POST.get('compra_id')
     compra = get_object_or_404(Compra, pk=compra_id)
 
+    redirect_url = request.POST.get('next') or request.GET.get('next') or f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}"
+
     if compra.estado == 'cancelada':
         messages.error(request, 'No se pueden registrar pagos en una compra cancelada.')
-        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
+        return redirect(redirect_url)
 
     try:
         monto = Decimal(str(request.POST.get('monto_pagado', '0')))
@@ -339,11 +340,11 @@ def registrar_pago_compra(request, id=None):
 
     if monto <= Decimal('0.00'):
         messages.error(request, 'El abono debe ser mayor a cero.')
-        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
+        return redirect(redirect_url)
 
     if monto > compra.saldo:
-        messages.error(request, f'El monto (${monto:,.0f}) supera el saldo pendiente (${compra.saldo:,.0f}).')
-        return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
+        messages.error(request, f'El monto ingresado (${monto:,.0f}) supera el saldo pendiente (${compra.saldo:,.0f}).')
+        return redirect(redirect_url)
 
     metodo = request.POST.get('metodo_pago', 'efectivo')
     numero_factura = request.POST.get('numero_factura', '').strip()
@@ -363,12 +364,19 @@ def registrar_pago_compra(request, id=None):
             fecha=timezone.now(),
         )
 
-    messages.success(
-        request,
-        f'✅ Pago de ${monto:,.0f} registrado con éxito. '
-        f'Saldo restante: ${compra.saldo:,.0f}.'
-    )
-    return redirect(f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}")
+    if compra.saldo <= Decimal('0.00'):
+        messages.success(
+            request,
+            f'✅ ¡Pago de ${monto:,.0f} registrado con éxito! La compra #{compra.codigo_compra} ha quedado completamente PAGADA.'
+        )
+    else:
+        messages.success(
+            request,
+            f'✅ Abono de ${monto:,.0f} registrado con éxito en Compra #{compra.codigo_compra}. '
+            f'Plata restante que falta por pagar: ${compra.saldo:,.0f}.'
+        )
+
+    return redirect(redirect_url)
 
 
 # ── DETALLE DE UNA COMPRA ──────────────────────────────────────────────────────
@@ -386,8 +394,6 @@ def detalle_compra(request, id):
     if primer_detalle:
         compra.cantidad = primer_detalle.cantidad
         compra.precio_unitario = primer_detalle.precio_unitario
-        compra.total = primer_detalle.subtotal_compra or (Decimal(str(primer_detalle.cantidad)) * primer_detalle.precio_unitario)
-        compra.monto_pagado = compra.valor - compra.saldo
         compra.numero_lote = primer_detalle.numero_lote
         compra.producto = primer_detalle.producto
 
@@ -403,10 +409,13 @@ def detalle_compra(request, id):
     return render(request, 'compras/detalle_compra.html', context)
 
 
+
 def ultima_compra(request):
     """Redirige al detalle de la compra más reciente."""
-    ultima = Compra.objects.order_by('-id').first()
+    ultima = Compra.objects.order_by('-codigo_compra').first()
+    # O alternativamente: ultima = Compra.objects.order_by('-pk').first()
     if ultima:
         return redirect('detalle_compra', id=ultima.pk)
     messages.info(request, 'Aún no hay compras registradas.')
     return redirect('lista_compras')
+
