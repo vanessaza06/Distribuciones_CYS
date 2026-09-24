@@ -780,7 +780,7 @@
               </div>
               <div class="dc-timeline-content">
                 <div class="dc-timeline-title">Registrado por</div>
-                <div class="dc-timeline-sub">{{ compra.usuario.get_full_name|default:compra.usuario.username }}</div>
+                <div class="dc-timeline-sub">{{ compra.usuario.get_full_name|default:compra.usuario.correo }}</div>
               </div>
             </div>
             {% endif %}
@@ -795,9 +795,9 @@
   <div class="dc-section mt-2">
     <div class="dc-actions">
       {% if compra.estado_pago != 'pagada' and compra.estado != 'cancelada' %}
-      <a href="{% url 'lista_compras' %}?proveedor={{ compra.proveedor.pk }}" class="dc-btn-primary">
+      <button type="button" class="dc-btn-primary" data-bs-toggle="modal" data-bs-target="#modalPagoDetalle">
         <i class="bi bi-credit-card"></i> Registrar Pago
-      </a>
+      </button>
       {% endif %}
 
       {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
@@ -812,11 +812,132 @@
       </form>
       {% endif %}
 
-      <a href="{% url 'compras' %}" class="dc-btn-outline">
+      <a href="{% url 'lista_compras' %}" class="dc-btn-outline">
         <i class="bi bi-arrow-left"></i> Volver a Compras
       </a>
     </div>
   </div>
 
 </div>
+
+{# ─── MODAL DE PAGO PARA DETALLE DE COMPRA ─── #}
+{% if compra.estado_pago != 'pagada' and compra.estado != 'cancelada' %}
+<div class="modal fade" id="modalPagoDetalle" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#02224a; border:1px solid rgba(207,156,72,0.3); color:#e2e8f0;">
+      <div class="modal-header" style="border-bottom:1px solid rgba(239,248,226,0.1);">
+        <h5 class="modal-title" style="color:#CF9C48;">
+          <i class="bi bi-credit-card me-2"></i>Registrar Pago - Compra #{{ compra.codigo_compra }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'detalle_compra' compra.codigo_compra %}">
+
+        <div class="modal-body p-4">
+          <!-- Tarjeta Financiera -->
+          <div class="p-3 mb-4 rounded" style="background: rgba(3, 30, 62, 0.7); border: 1px solid rgba(207,156,72,0.2);">
+            <div class="row g-2 text-center">
+              <div class="col-4 border-end border-secondary border-opacity-25">
+                <small class="text-muted d-block" style="font-size:0.75rem;">Total Compra</small>
+                <span class="fw-bold text-light">${{ compra.total|floatformat:0 }}</span>
+              </div>
+              <div class="col-4 border-end border-secondary border-opacity-25">
+                <small class="text-muted d-block" style="font-size:0.75rem;">Ya Pagado</small>
+                <span class="fw-bold text-success">${{ compra.monto_pagado|floatformat:0 }}</span>
+              </div>
+              <div class="col-4">
+                <small class="text-warning fw-semibold d-block" style="font-size:0.75rem;">Plata que Falta</small>
+                <span class="fw-bold text-danger fs-5">${{ compra.saldo|floatformat:0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monto a pagar -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label mb-0 fw-semibold">Monto a Pagar Ahora ($) <span class="text-danger">*</span></label>
+              <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" style="font-size:0.78rem;" onclick="document.getElementById('inputMontoDetalle').value = '{{ compra.saldo|stringformat:'.2f' }}'; recalcularPagoDetalle();">
+                <i class="bi bi-check2-all me-1"></i>Pagar Todo (${{ compra.saldo|floatformat:0 }})
+              </button>
+            </div>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text" style="background:#011936; border-color:rgba(255,255,255,0.15); color:#CF9C48;">$</span>
+              <input type="number" id="inputMontoDetalle" name="monto_pagado" class="form-control form-control-lg" step="0.01" min="0.01" max="{{ compra.saldo|stringformat:'.2f' }}" placeholder="Ingresa cuánto vas a pagar" required style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);" oninput="recalcularPagoDetalle()">
+            </div>
+          </div>
+
+          <!-- Saldo resultante -->
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <small class="text-muted d-block mb-1">Saldo restante después:</small>
+              <div id="saldoRestanteDetalleTexto" class="fw-bold text-danger fs-6">${{ compra.saldo|floatformat:0 }}</div>
+            </div>
+            <div class="col-6">
+              <small class="text-muted d-block mb-1">Estado que quedará:</small>
+              <span id="badgeEstadoDetalle" class="badge badge-pending-custom px-2 py-1">Sin abono</span>
+            </div>
+          </div>
+
+          <!-- Método de pago -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Método de Pago</label>
+            <select name="metodo_pago" class="form-select" style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);">
+              <option value="efectivo" selected>Efectivo</option>
+              <option value="nequi">Nequi</option>
+              <option value="daviplata">Daviplata</option>
+              <option value="bancolombia">Bancolombia a la Mano</option>
+              <option value="breb">Bre-B</option>
+            </select>
+          </div>
+
+          <!-- Factura / referencia -->
+          <div class="mb-2">
+            <label class="form-label fw-semibold">N° Factura / Referencia (Opcional)</label>
+            <input type="text" name="numero_factura" class="form-control" placeholder="Ej: RECIBO-001" style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);">
+          </div>
+        </div>
+
+        <div class="modal-footer" style="border-top:1px solid rgba(239,248,226,0.1);">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="dc-btn-primary py-2 px-4">
+            <i class="bi bi-check-circle me-1"></i>Confirmar Pago
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function recalcularPagoDetalle() {
+  const saldoActual = parseFloat('{{ compra.saldo|stringformat:".2f" }}') || 0;
+  const inputEl = document.getElementById('inputMontoDetalle');
+  const abono = parseFloat(inputEl ? inputEl.value : 0) || 0;
+  const nuevoSaldo = Math.max(0, saldoActual - abono);
+
+  const saldoTexto = document.getElementById('saldoRestanteDetalleTexto');
+  if (saldoTexto) {
+    saldoTexto.textContent = '$' + nuevoSaldo.toLocaleString('es-CO');
+    saldoTexto.className = nuevoSaldo === 0 ? 'fw-bold text-success fs-6' : 'fw-bold text-danger fs-6';
+  }
+
+  const badgeEl = document.getElementById('badgeEstadoDetalle');
+  if (badgeEl) {
+    if (abono >= saldoActual && saldoActual > 0) {
+      badgeEl.className = 'badge badge-success-custom px-2 py-1';
+      badgeEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
+    } else if (abono > 0) {
+      badgeEl.className = 'badge badge-warning-custom px-2 py-1';
+      badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Quedará PARCIAL';
+    } else {
+      badgeEl.className = 'badge badge-pending-custom px-2 py-1';
+      badgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono';
+    }
+  }
+}
+</script>
+{% endif %}
 {% endblock %}

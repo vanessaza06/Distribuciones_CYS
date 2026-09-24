@@ -72,6 +72,21 @@ class Usuario(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}".strip() or self.correo
+
+    def get_full_name(self):
+        return f"{self.nombre} {self.apellido}".strip() or self.correo
+
+    @property
+    def username(self):
+        return self.correo
+
+    @property
+    def nombre_completo(self):
+        return f"{self.nombre} {self.apellido}".strip() or self.correo
+
+
 
 # ── 2. BODEGA ──
 class Bodega(models.Model):
@@ -388,9 +403,12 @@ class Compra(models.Model):
         ("cancelada", "Cancelada"),
     ]
 
+    # app/models.py
     codigo_compra = models.AutoField(
-        primary_key=True, db_column="codigo_compra", verbose_name="Código de Compra"
-    )
+    primary_key=True, db_column="codigo_compra", verbose_name="Código de Compra"
+)
+
+
     fecha = models.DateTimeField(
         default=timezone.now, db_column="fecha", verbose_name="Fecha de Compra"
     )
@@ -440,6 +458,15 @@ class Compra(models.Model):
         return f"Compra #{self.codigo_compra} - {self.proveedor.nombre_empresa}"
 
     # ── Propiedades dinámicas para templates (compras.html) ──
+    @property
+    def id(self):
+        """Compatibilidad con compras.html y URLs."""
+        return self.codigo_compra
+
+    @id.setter
+    def id(self, value):
+        pass
+
     @property
     def total(self):
         """Compatibilidad con compras.html."""
