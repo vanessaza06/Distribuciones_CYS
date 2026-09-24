@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* El aside no es texto para seleccionar: evita el resaltado azul
+   (sobre todo visible en los flyouts del modo compacto) */
+#sidebarRight,
+#sidebarRight * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* ============================================================
    USUARIO — WRAPPER Y BOTÓN
    ============================================================ */
@@ -178,7 +186,7 @@
 }
 
 /* ============================================================
-   LINKS NAV
+   LINKS NAV & ESTILOS FLEX CORREGIDOS
    ============================================================ */
 .cys-sb-link {
   display: flex;
@@ -213,19 +221,53 @@
   border-color: rgba(77,168,218,.2);
 }
 
+/* Contenedores flex para links padres */
+.sb-link-parent-flex {
+  display: flex;
+  align-items: center;
+  padding: 0 !important;
+}
+
+/* Botones chevron para submenús */
+.sb-submenu-toggle {
+  background: none !important;
+  border: none !important;
+  color: inherit !important;
+  padding: calc(.7rem * var(--density-scale, 1)) .9rem !important;
+  cursor: pointer !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Links flex-grow corregidos (gap con unidad correcta) */
+.sb-link-flex-grow {
+  display: flex !important;
+  align-items: center !important;
+  gap: .65rem !important;
+  flex-grow: 1 !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  padding: calc(.7rem * var(--density-scale, 1)) calc(.9rem * var(--density-scale, 1)) !important;
+}
+
+.sb-link-flex-grow > span {
+  flex-grow: 1;
+}
+
 /* ============================================================
-   SUBMENÚ
+   SUBMENÚ (Sin sombras pesadas)
    ============================================================ */
 .cys-sb-link--parent { cursor: pointer; user-select: none; }
 
 .cys-chevron {
   font-size: .7rem;
-  margin-left: auto;
   transition: transform .25s ease;
   flex-shrink: 0;
 }
 
-.cys-sb-link.abierto .cys-chevron {
+.cys-sb-link.abierto .cys-chevron,
+.sb-submenu-toggle.abierto .cys-chevron {
   transform: rotate(180deg);
 }
 
@@ -236,6 +278,7 @@
   max-height: 0;
   overflow: hidden;
   padding-left: 1.4rem;
+  padding-right: .5rem;   /* deja espacio para el desplazamiento del hover */
   margin-top: .1rem;
   opacity: 0;
   transform: translateY(-4px);
@@ -243,6 +286,8 @@
   pointer-events: none;
   position: relative;
   box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 .cys-sb-submenu::before {
@@ -265,6 +310,7 @@
 }
 
 .cys-sb-sublink {
+  position: relative;
   display: flex;
   align-items: center;
   gap: .55rem;
@@ -276,20 +322,51 @@
   text-decoration: none;
   transition: background .2s, color .2s, transform .15s, padding .25s ease;
   border: 1px solid transparent;
+  box-shadow: none !important;
 }
 
+/* Corrección de tamaño y ancho para los íconos de los submenús (incluyendo caja) */
 .cys-sb-sublink i {
-  font-size: .82rem;
-  width: 14px;
+  font-size: .85rem;
+  width: 16px;
   text-align: center;
+  flex-shrink: 0;
 }
 
-.cys-sb-sublink:hover,
-.cys-sb-sublink.active {
+.cys-sb-sublink:hover {
   background: rgba(77,168,218,.08);
   color: var(--azul-claro);
   border-color: rgba(77,168,218,.15);
   transform: translateX(3px);
+}
+
+/* Sublink de la página actual: sin caja (para no confundirse con el padre),
+   solo texto resaltado y una marca sobre la línea guía del submenú */
+.cys-sb-sublink.active,
+.cys-sb-sublink.active:hover {
+  background: rgba(77,168,218,.05);
+  color: var(--azul-claro);
+  border-color: transparent;
+  font-weight: 600;
+  transform: none;
+}
+
+.cys-sb-sublink.active::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--azul-claro);
+  box-shadow: 0 0 8px rgba(77,168,218,.55);
+}
+
+/* Padre cuando la página actual es uno de sus hijos: solo cambia el color,
+   sin caja ni borde (la caja queda para cuando estás en la página del propio padre) */
+.cys-sb-link.activo-hijo {
+  color: var(--azul-claro);
 }
 
 /* ============================================================
@@ -413,7 +490,7 @@
 }
 
 /* ============================================================
-   HEADER — ACCIONES (botón modo mini + botón cerrar)
+   HEADER — ACCIONES
    ============================================================ */
 .cys-sb-header-actions {
   display: flex;
@@ -443,81 +520,71 @@
   transform: scale(0.95);
 }
 
-.cys-sb-mini-toggle:focus,
-.cys-sb-close:focus {
-  outline: none;
-}
-
-.cys-sb-mini-toggle:focus-visible,
-.cys-sb-close:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(77,168,218,.35);
-}
-
 /* ============================================================
-   MODO MINI — SOLO ÍCONOS
+   MODO MINI — SOLO ÍCONOS (Prioridad absoluta con .cys-sb-mini)
    ============================================================ */
-.cys-sb-mini {
+div.offcanvas.offcanvas-end.cys-sb-mini {
   width: 84px !important;
 }
 
-.cys-sb-mini .cys-sb-brand {
-  justify-content: center;
+.offcanvas.cys-sb-mini .cys-sb-brand {
+  justify-content: center !important;
 }
 
-.cys-sb-mini .cys-sb-brand > div {
-  display: none;
-}
-
-.cys-sb-mini .cys-sb-label,
-.cys-sb-mini .cys-sb-user-info,
-.cys-sb-mini .cys-sb-link span,
-.cys-sb-mini .sb-link-flex-grow span,
-.cys-sb-mini .sb-submenu-toggle,
-.cys-sb-mini #cys-sb-resumen-wrap,
-.cys-sb-mini .cys-sb-footer,
-.cys-sb-mini .cys-sb-link--usuarios span {
+.offcanvas.cys-sb-mini .cys-sb-brand > div {
   display: none !important;
 }
 
-.cys-sb-mini .cys-sb-link,
-.cys-sb-mini .cys-sb-user-info-btn,
-.cys-sb-mini .cys-sb-link--usuarios {
-  justify-content: center;
-  gap: 0;
-  padding-left: 0;
-  padding-right: 0;
+.offcanvas.cys-sb-mini .cys-sb-label,
+.offcanvas.cys-sb-mini .cys-sb-user-info,
+.offcanvas.cys-sb-mini .cys-sb-link span,
+.offcanvas.cys-sb-mini .sb-link-flex-grow span,
+.offcanvas.cys-sb-mini .sb-submenu-toggle,
+.offcanvas.cys-sb-mini #cys-sb-resumen-wrap,
+.offcanvas.cys-sb-mini .cys-sb-footer,
+.offcanvas.cys-sb-mini .cys-sb-link--usuarios span {
+  display: none !important;
 }
 
-.cys-sb-mini .sb-link-flex-grow {
+.offcanvas.cys-sb-mini .cys-sb-link,
+.offcanvas.cys-sb-mini .cys-sb-user-info-btn,
+.offcanvas.cys-sb-mini .cys-sb-link--usuarios {
+  justify-content: center !important;
+  gap: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.offcanvas.cys-sb-mini .sb-link-flex-grow {
   justify-content: center !important;
   padding: calc(.7rem * var(--density-scale, 1)) 0 !important;
 }
 
-.cys-sb-mini .cys-sb-link i,
-.cys-sb-mini .sb-link-flex-grow i,
-.cys-sb-mini .cys-sb-link--usuarios i {
-  width: auto;
-  font-size: 1.05rem;
+.offcanvas.cys-sb-mini .cys-sb-link i,
+.offcanvas.cys-sb-mini .sb-link-flex-grow i,
+.offcanvas.cys-sb-mini .cys-sb-link--usuarios i {
+  width: auto !important;
+  font-size: 1.05rem !important;
 }
 
-.cys-sb-mini .cys-sb-user-row {
-  display: flex;
-  justify-content: center;
+.offcanvas.cys-sb-mini .cys-sb-user-row {
+  display: flex !important;
+  justify-content: center !important;
 }
 
-.cys-sb-mini .cys-sb-user-info-btn {
-  width: auto;
-  padding: calc(.6rem * var(--density-scale, 1));
+.offcanvas.cys-sb-mini .cys-sb-user-info-btn {
+  width: auto !important;
+  padding: calc(.6rem * var(--density-scale, 1)) !important;
 }
 
-.cys-sb-mini .cys-sb-link--usuarios {
-  padding-top: calc(.6rem * var(--density-scale, 1));
-  padding-bottom: calc(.6rem * var(--density-scale, 1));
+.offcanvas.cys-sb-mini .cys-sb-link--usuarios {
+  padding-top: calc(.6rem * var(--density-scale, 1)) !important;
+  padding-bottom: calc(.6rem * var(--density-scale, 1)) !important;
 }
 
 /* ============================================================
-   INVENTARIO — apertura con hover (modo expandido)
+   INVENTARIO / DESPLEGABLES — MODO NORMAL
+   (abre con hover o con .abierto; la URL activa deja el grupo abierto)
    ============================================================ */
 .cys-sb-inventario-wrap {
   position: relative;
@@ -528,101 +595,133 @@
 }
 
 /* ============================================================
-   MODO MINI — INVENTARIO COMO FLYOUT LATERAL
+   INVENTARIO / DESPLEGABLES — MODO MINI (flyout hacia la izquierda)
+   - El flyout SOLO aparece con hover. Que un grupo esté ".abierto"
+     (por la URL actual) no lo muestra en modo compacto.
+   - Animación: fade + deslizamiento con visibility, sin max-height.
+   - Un "puente" invisible cubre el hueco entre el ícono y el flyout
+     para que no se cierre al mover el mouse.
    ============================================================ */
 
-/* Evita que el body/scroll del aside recorte el flyout que sale
-   fuera del ancho de 84px. Si tu aside.css tiene overflow-y en
-   .cys-sb-body u otro contenedor scrollable, esta regla puede no
-   ser suficiente por sí sola — avísame y ajusto ese selector puntual. */
-.cys-sb-mini,
-.cys-sb-mini .cys-sb-body {
-  overflow-x: visible;
+/* Regla original: NO se toca el scroll vertical del aside.
+   El flyout es "position: fixed" y lo coloca aside.js, así que el
+   overflow del aside no lo recorta. */
+.offcanvas.cys-sb-mini,
+.offcanvas.cys-sb-mini .cys-sb-body {
+  overflow-x: visible !important;
 }
 
-.cys-sb-mini .cys-sb-submenu {
-  position: absolute;
-  left: calc(100% + .5rem);
-  top: 0;
-  width: max-content;
-  min-width: 190px;
-  padding-left: .35rem;
-  margin-top: 0;
-  z-index: 1060;
+/* En modo compacto no se ven los hijos: el padre sí lleva indicador */
+.offcanvas.cys-sb-mini .cys-sb-link.activo-hijo {
+  background: rgba(77,168,218,.08);
+  border-color: rgba(77,168,218,.2);
 }
 
-.cys-sb-mini .cys-sb-submenu::before {
-  display: none;
+/* Marca del sublink activo dentro del flyout */
+.offcanvas.cys-sb-mini .cys-sb-sublink.active::before {
+  left: 3px;
 }
 
-.cys-sb-mini .cys-sb-inventario-wrap:hover .cys-sb-submenu,
-.cys-sb-mini .cys-sb-submenu.abierto {
-  max-height: 400px;
+/* Estado cerrado */
+.offcanvas.cys-sb-mini .cys-sb-submenu {
+  position: fixed !important;
+  left: var(--fly-left, 0px) !important;
+  top: var(--fly-top, 0px) !important;
+  right: auto !important;
+  width: max-content !important;
+  min-width: 190px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin: 0 !important;
+  padding: 0 .35rem .4rem !important;
+  z-index: 1060 !important;
+  background: rgba(4,14,28,.92) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(77,168,218,.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateX(8px) !important;
+  pointer-events: none !important;
+  transition: opacity .1s ease, transform .1s ease, visibility 0s linear .1s !important;
+}
+
+/* Título del flyout (lo pone aside.js en data-titulo) */
+.offcanvas.cys-sb-mini .cys-sb-submenu::before {
+  content: attr(data-titulo);
+  display: block !important;
+  position: static;
+  width: auto;
+  background: transparent;
   opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
+  padding: .55rem .85rem .35rem;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--azul-claro);
+}
+
+/* Estado abierto: solo hover */
+.offcanvas.cys-sb-mini .cys-sb-inventario-wrap:hover > .cys-sb-submenu {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateX(0) !important;
+  pointer-events: auto !important;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s !important;
+}
+
+/* Puente invisible entre el flyout y el ícono, para que el hover no se corte
+   al cruzar el hueco (el flyout es hijo del wrap, así que cuenta como hover) */
+.offcanvas.cys-sb-mini .cys-sb-submenu::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 14px;
 }
 
 /* ============================================================
-   INVENTARIO — hereda el look "glass"
+   TOOLTIPS — colores personalizados (Ayuda / Configuración / Cerrar Sesión)
    ============================================================ */
-#submenuInventario {
-  background: rgba(4,14,28,.58) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(77,168,218,.13) !important;
-  border-radius: 10px;
-  padding: .35rem;
-  margin-top: .3rem;
-  box-shadow: none !important;
-}
-
-/* ============================================================
-   AYUDA / CONFIGURACIÓN / CERRAR SESIÓN — tres colores distintos
-   ============================================================ */
-.cys-sb-link--ayuda {
+.tooltip.cys-tip-ayuda .tooltip-inner {
+  background: rgba(4,14,28,.92);
   color: #4dd0e1;
-  border-color: rgba(77,208,225,.35);
-  background: rgba(77,208,225,.10);
-  margin-top: .25rem;
-  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+  border: 1px solid rgba(77,208,225,.4);
+  box-shadow: 0 0 12px rgba(77,208,225,.35);
 }
-.cys-sb-link--ayuda i { text-shadow: 0 0 10px rgba(77,208,225,.5); }
-.cys-sb-link--ayuda:hover {
-  background: rgba(77,208,225,.22);
-  border-color: rgba(77,208,225,.55);
-  color: #4dd0e1;
-  box-shadow: 0 0 14px rgba(77,208,225,.35);
+.tooltip.cys-tip-ayuda .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
 }
 
-.cys-sb-link--config {
+.tooltip.cys-tip-config .tooltip-inner {
+  background: rgba(4,14,28,.92);
   color: #f1c40f;
-  border-color: rgba(241,196,15,.35);
-  background: rgba(241,196,15,.10);
-  margin-top: .25rem;
-  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+  border: 1px solid rgba(241,196,15,.4);
+  box-shadow: 0 0 12px rgba(241,196,15,.35);
 }
-.cys-sb-link--config i { text-shadow: 0 0 10px rgba(241,196,15,.5); }
-.cys-sb-link--config:hover {
-  background: rgba(241,196,15,.22);
-  border-color: rgba(241,196,15,.55);
-  color: #f1c40f;
-  box-shadow: 0 0 14px rgba(241,196,15,.35);
+.tooltip.cys-tip-config .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
 }
 
-.cys-sb-link--logout {
+.tooltip.cys-tip-logout .tooltip-inner {
+  background: rgba(4,14,28,.92);
   color: #ff8a8a;
-  border-color: rgba(232,112,112,.35);
-  background: rgba(232,112,112,.10);
-  margin-top: .25rem;
-  transition: background .2s, color .2s, border-color .2s, box-shadow .25s ease;
+  border: 1px solid rgba(232,112,112,.4);
+  box-shadow: 0 0 12px rgba(232,112,112,.35);
 }
-.cys-sb-link--logout i { text-shadow: 0 0 10px rgba(232,112,112,.5); }
-.cys-sb-link--logout:hover {
-  background: rgba(232,112,112,.22);
-  border-color: rgba(232,112,112,.55);
-  color: #ff8a8a;
-  box-shadow: 0 0 14px rgba(232,112,112,.35);
+.tooltip.cys-tip-logout .tooltip-arrow::before {
+  border-right-color: rgba(4,14,28,.92) !important;
+}
+
+/* Los tooltips del aside salen a la izquierda: la flecha usa border-left */
+.tooltip.cys-tip-ayuda[data-popper-placement^="left"] .tooltip-arrow::before,
+.tooltip.cys-tip-config[data-popper-placement^="left"] .tooltip-arrow::before,
+.tooltip.cys-tip-logout[data-popper-placement^="left"] .tooltip-arrow::before {
+  border-left-color: rgba(4,14,28,.92) !important;
 }
 
 /* ============================================================
