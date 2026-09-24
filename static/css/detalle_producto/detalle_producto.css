@@ -679,3 +679,12 @@
   filter: invert(1);
   cursor: pointer;
 }
+/* Fix: asegurar espacio para el ícono de búsqueda */
+#buscadorProductos.gp-search-input {
+  padding-left: 2.75rem;
+}
+
+.gp-search-wrap .gp-search-icon {
+  left: 1rem;
+  pointer-events: none;
+}
