@@ -54,17 +54,20 @@
     <div class="d-flex gap-2 flex-wrap align-items-center">
       {% if not caja_abierta %}
         <button class="btn btn-sm fw-bold cys-btn-checkout"
-                data-bs-toggle="modal" data-bs-target="#modalConteo">
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir Caja"
+                data-bs-target="#modalConteo">
           <i class="bi bi-unlock me-1"></i> Abrir Caja
         </button>
       {% endif %}
       {% if caja_abierta %}
         <button class="btn btn-sm fw-bold" style="background:rgba(235,77,75,.15); color:#ff7675; border:1px solid rgba(235,77,75,.35); border-radius:10px; padding:.45rem 1.1rem;"
-                data-bs-toggle="modal" data-bs-target="#modalCierre">
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cerrar Caja"
+                data-bs-target="#modalCierre">
           <i class="bi bi-lock me-1"></i> Cerrar Caja
         </button>
       {% endif %}
       <a href="{% url 'ventas_dia' %}" class="btn btn-sm"
+         data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Ventas del Día"
          style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:var(--texto-muted); border-radius:10px; padding:.45rem 1.1rem; font-weight:700;">
         <i class="bi bi-bar-chart me-1"></i> Ventas del día
       </a>
@@ -107,6 +110,7 @@
               {% for cat in categorias %}
               <div class="col-6 col-sm-4 col-lg-3">
                 <div class="cys-cat-card-item"
+                     data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Ver Categoría"
                      data-cat-id="{{ cat.id }}" data-cat-nombre="{{ cat.nombre }}">
                   <div class="cys-cat-icon-circle">
                     <i class="bi bi-tag-fill"></i>
@@ -282,10 +286,12 @@
             </div>
 
             <div class="d-flex gap-2">
-              <button type="submit" class="btn flex-fill fw-bold cys-btn-checkout" id="btnRegistrar" disabled>
+              <button type="submit" class="btn flex-fill fw-bold cys-btn-checkout" id="btnRegistrar" disabled
+                      data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cobrar Venta">
                 <i class="bi bi-check-circle-fill me-1"></i> Registrar Venta
               </button>
-              <button type="button" class="btn fw-bold" id="btnCancelarVenta" title="Cancelar venta"
+              <button type="button" class="btn fw-bold" id="btnCancelarVenta"
+                      data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Venta"
                       style="background:rgba(235,77,75,.15); color:#ff7675; border:1px solid rgba(235,77,75,.35); border-radius:12px; padding:.75rem 1rem;">
                 <i class="bi bi-trash"></i>
               </button>

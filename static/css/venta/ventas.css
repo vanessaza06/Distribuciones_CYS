@@ -1754,3 +1754,64 @@ body,
   background: rgba(235, 77, 75, 0.25);
   color: var(--texto, #fff);
 }
+
+/* ════════════════════════════════════════════════════════════════
+   TOOLTIPS PERSONALIZADOS ESTILO CYS (POPUP OSCURO CON BORDE CYAN)
+   ════════════════════════════════════════════════════════════════ */
+.tooltip {
+  opacity: 1 !important;
+  z-index: 1080 !important;
+  pointer-events: none;
+}
+
+.tooltip .tooltip-inner {
+  background-color: #091d36 !important;
+  color: #4DA8DA !important;
+  border: 1.5px solid #4DA8DA !important;
+  border-radius: 10px !important;
+  padding: 6px 14px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 12px rgba(77, 168, 218, 0.4) !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.3 !important;
+}
+
+/* Flechas de Tooltip en Cyan */
+.bs-tooltip-top .tooltip-arrow::before,
+.bs-tooltip-auto[data-popper-placement^="top"] .tooltip-arrow::before {
+  border-top-color: #4DA8DA !important;
+}
+
+.bs-tooltip-bottom .tooltip-arrow::before,
+.bs-tooltip-auto[data-popper-placement^="bottom"] .tooltip-arrow::before {
+  border-bottom-color: #4DA8DA !important;
+}
+
+.bs-tooltip-start .tooltip-arrow::before,
+.bs-tooltip-auto[data-popper-placement^="left"] .tooltip-arrow::before {
+  border-left-color: #4DA8DA !important;
+}
+
+.bs-tooltip-end .tooltip-arrow::before,
+.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
+  border-right-color: #4DA8DA !important;
+}
+
+/* Transiciones de Elevación e Interacción para Tarjetas */
+.cys-cat-card-item,
+.cys-top-product-card,
+.cys-top-sales-card,
+.cys-pos-card,
+.cys-prod-card-item {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+
+.cys-cat-card-item:hover,
+.cys-top-product-card:hover,
+.cys-top-sales-card:hover,
+.cys-prod-card-item:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(77, 168, 218, 0.3) !important;
+  border-color: rgba(77, 168, 218, 0.6) !important;
+}

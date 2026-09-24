@@ -220,22 +220,28 @@
       <p class="text-white opacity-85 small mb-0">Monitoreo de Base Inicial, Dinero Generado en Turno, Top Productos y Análisis Estadístico Visual.</p>
     </div>
 
-    <!-- Botones de Acción Acomodados Armoniosamente -->
-    <div class="d-flex align-items-center gap-3 flex-wrap">
+    <!-- Botones de Acción Estilizados estilo Ventas -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
       {% if caja_abierta %}
-        <button type="button" class="cys-btn-header-action cys-btn-cerrar-turno"
-                data-bs-toggle="modal" data-bs-target="#modalCierre">
-          <i class="bi bi-lock-fill fs-5"></i> Cerrar Turno / Arqueo
+        <button type="button" class="btn btn-sm fw-bold"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cerrar Caja"
+                data-bs-target="#modalCierre"
+                style="background:rgba(235,77,75,.15); color:#ff7675; border:1px solid rgba(235,77,75,.35); border-radius:10px; padding:.55rem 1.2rem; font-size:.92rem;">
+          <i class="bi bi-lock me-1"></i> Cerrar Turno / Arqueo
         </button>
       {% else %}
-        <button type="button" class="cys-btn-header-action cys-btn-abrir-turno"
-                data-bs-toggle="modal" data-bs-target="#modalConteo">
-          <i class="bi bi-unlock-fill fs-5"></i> Abrir Nuevo Turno
+        <button type="button" class="btn btn-sm fw-bold cys-btn-checkout"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir Caja"
+                data-bs-target="#modalConteo"
+                style="padding:.55rem 1.2rem !important; font-size:.92rem !important;">
+          <i class="bi bi-unlock me-1"></i> Abrir Nuevo Turno
         </button>
       {% endif %}
 
-      <a href="{% url 'punto_venta' %}" class="cys-btn-header-action cys-btn-pos-link">
-        <i class="bi bi-cart-check-fill fs-5"></i> Ir a POS
+      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold"
+         data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Volver a POS"
+         style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem; font-size:.92rem;">
+        <i class="bi bi-cart-check me-1"></i> Ir a POS
       </a>
     </div>
   </div>
@@ -582,7 +588,9 @@
     </div>
     <h5 class="fw-bold text-white mb-2">No hay registro de turnos de caja</h5>
     <p class="text-white opacity-85 small mb-4">Haz clic en el botón de abajo para iniciar la apertura del primer turno de caja.</p>
-    <button type="button" class="cys-btn-header-action cys-btn-abrir-turno px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalConteo">
+    <button type="button" class="btn btn-sm fw-bold cys-btn-checkout px-4 py-2"
+            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir Caja"
+            data-bs-target="#modalConteo">
       <i class="bi bi-unlock-fill me-1"></i> Abrir Primer Turno
     </button>
   </div>
@@ -631,9 +639,9 @@
                 <span class="cys-denom-val text-white fw-bold">${{ valor|floatformat:0 }}</span>
               </div>
               <div class="cys-denom-stepper input-group input-group-sm mb-1">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, -1)">−</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, -1)">−</button>
                 <input type="number" min="0" value="0" class="form-control denom-ct text-center text-white border-secondary fw-bold" style="background:#06172b !important;" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, 1)">+</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.78rem;">Subtotal: <span class="text-white fw-bold">$0</span></div>
             </div>
@@ -655,9 +663,9 @@
                 <span class="cys-denom-val text-white fw-bold">${{ valor|floatformat:0 }}</span>
               </div>
               <div class="cys-denom-stepper input-group input-group-sm mb-1">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, -1)">−</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, -1)">−</button>
                 <input type="number" min="0" value="0" class="form-control denom-ct text-center text-white border-secondary fw-bold" style="background:#06172b !important;" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, 1)">+</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.78rem;">Subtotal: <span class="text-white fw-bold">$0</span></div>
             </div>
@@ -677,9 +685,13 @@
         </div>
       </div>
 
-      <div class="modal-footer border-top-0 p-3">
-        <button type="button" class="btn btn-outline-light text-white" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="cys-btn-header-action cys-btn-abrir-turno px-4" id="btnConfirmarConteo">
+      <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación"
+                style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+        <button type="button" class="btn btn-sm fw-bold cys-btn-checkout px-4 py-2" id="btnConfirmarConteo"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Iniciar Turno"
+                style="padding:.55rem 1.4rem !important;">
           <i class="bi bi-check-circle-fill me-1"></i> Confirmar e Iniciar Turno
         </button>
       </div>
@@ -729,9 +741,9 @@
                 <span class="cys-denom-val text-white fw-bold">${{ valor|floatformat:0 }}</span>
               </div>
               <div class="cys-denom-stepper input-group input-group-sm mb-1">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, -1)">−</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, -1)">−</button>
                 <input type="number" min="0" value="0" class="form-control denom-ci text-center text-white border-secondary fw-bold" style="background:#06172b !important;" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, 1)">+</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.78rem;">Subtotal: <span class="text-white fw-bold">$0</span></div>
             </div>
@@ -753,9 +765,9 @@
                 <span class="cys-denom-val text-white fw-bold">${{ valor|floatformat:0 }}</span>
               </div>
               <div class="cys-denom-stepper input-group input-group-sm mb-1">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, -1)">−</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, -1)">−</button>
                 <input type="number" min="0" value="0" class="form-control denom-ci text-center text-white border-secondary fw-bold" style="background:#06172b !important;" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="btn btn-outline-secondary text-white fw-bold" onclick="stepDenom(this, 1)">+</button>
+                <button type="button" class="cys-qty-btn" onclick="stepDenom(this, 1)">+</button>
               </div>
               <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.78rem;">Subtotal: <span class="text-white fw-bold">$0</span></div>
             </div>
@@ -784,9 +796,13 @@
         </div>
       </div>
 
-      <div class="modal-footer border-top-0 p-3">
-        <button type="button" class="btn btn-outline-light text-white" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="cys-btn-header-action cys-btn-cerrar-turno px-4" id="btnConfirmarCierre">
+      <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación"
+                style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+        <button type="button" class="btn btn-sm fw-bold" id="btnConfirmarCierre"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Confirmar Cierre"
+                style="background:rgba(235,77,75,.15); color:#ff7675; border:1px solid rgba(235,77,75,.35); border-radius:10px; padding:.55rem 1.4rem;">
           <i class="bi bi-lock-fill me-1"></i> Confirmar y Cerrar Turno
         </button>
       </div>
@@ -877,6 +893,10 @@ function recalcCierre() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar tooltips de Bootstrap
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+
   document.querySelectorAll('.denom-ct').forEach(i => {
     ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, recalcApertura));
   });
