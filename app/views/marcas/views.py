@@ -70,17 +70,16 @@ def editar_marca(request, codigo_marca):
     return redirect('lista_marcas')
 
 
-def eliminar_marca(request, codigo_marca):
+def cambiar_estado_marca(request, codigo_marca):
     marca = get_object_or_404(Marca, codigo_marca=codigo_marca)
 
     if request.method == 'POST':
-        if marca.productos.exists():
+        if marca.estado == 'activo':
             marca.estado = 'inactivo'
-            marca.save()
-            messages.success(request, f'La marca "{marca.nombre}" tiene productos asociados, se desactivó en su lugar.')
+            messages.success(request, f'La marca "{marca.nombre}" se desactivó correctamente.')
         else:
-            nombre = marca.nombre
-            marca.delete()
-            messages.success(request, f'La marca "{nombre}" se eliminó correctamente.')
+            marca.estado = 'activo'
+            messages.success(request, f'La marca "{marca.nombre}" se activó correctamente.')
+        marca.save()
 
     return redirect('lista_marcas')
