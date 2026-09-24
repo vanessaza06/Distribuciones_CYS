@@ -1,5 +1,8 @@
 /* ============================================================
    HOME.HTML — CARRUSEL CATEGORÍAS
+   Los colores siguen las variables de tema de base.js.
+   Los textos del tablero pasan por tokens propios (--tb-*),
+   así cada tema puede tener su tono sin tocar el resto del CSS.
    ============================================================ */
 
 /* Tipografía global de la página — Outfit */
@@ -7,6 +10,7 @@
 .cys-card__title,
 .cys-stat-card,
 .cys-stat-card__label,
+.cys-stat-card__sub,
 .cys-stat-card__val,
 .cys-seccion-titulo,
 .cys-carousel-btn,
@@ -14,21 +18,91 @@
   font-family: 'Outfit', sans-serif;
 }
 
-/* Dorado tomado de Inventario (.qc-badge-teal / .qc-footer-texto-teal, etc.) */
+/* Dorado de marca (Inventario). Fijo a propósito: es acento. */
 :root {
-  --cys-dorado: #CF9C48;
-  --cys-dorado-dim: rgba(207,156,72,.15);
-  --cys-dorado-borde: rgba(207,156,72,.35);
-  --cys-dorado-glow: rgba(207,156,72,.35);
+  --cys-dorado:       var(--dorado, #CF9C48);
+  --cys-dorado-dim:   color-mix(in srgb, var(--cys-dorado) 15%, transparent);
+  --cys-dorado-borde: color-mix(in srgb, var(--cys-dorado) 35%, transparent);
+  --cys-dorado-glow:  color-mix(in srgb, var(--cys-dorado) 35%, transparent);
+
+  /* Tokens de texto del tablero — valores por defecto (temas oscuros) */
+  --tb-num:        var(--texto);
+  --tb-num-shadow: 0 0 20px color-mix(in srgb, var(--texto) 25%, transparent);
+  --tb-label:      var(--gris-claro);
+  --tb-sub:        var(--texto-muted);
+  --tb-titulo:     var(--texto);
+  --tb-icono:      var(--texto);
+  --tb-btn-texto:  #fff;
+  --tb-btn-dorado-texto: #2A1E05;
 }
 
+/* ── TEMA CLARO: tonos suaves y cálidos, sin negro ni navy pesado ── */
+html[data-theme="claro"] {
+  --tb-num:        #B9791F;   /* ámbar dorado: combina con el botón y la barrita */
+  --tb-num-shadow: none;
+  --tb-label:      #6F819A;   /* gris azulado suave */
+  --tb-sub:        #93A1B3;   /* más claro aún para "tipos de producto" */
+  --tb-titulo:     #56708F;   /* azul acero suave */
+  --tb-icono:      #B9791F;
+}
+
+/* ── TEMA SEPIA: tonos cálidos ── */
+html[data-theme="sepia"] {
+  --tb-num:        #8A5A2B;
+  --tb-num-shadow: none;
+  --tb-label:      #7A6448;
+  --tb-sub:        #8F7B60;
+  --tb-titulo:     #4A3826;
+  --tb-icono:      #8A5A2B;
+}
+
+/* ============================================================
+   BOTONES DE ACCIÓN (Registrar entrada / Registrar venta)
+   - Rojo (venta): texto siempre blanco, en cualquier tema
+   - Amarillo (entrada): dorado de marca con texto oscuro
+   ============================================================ */
+.cys-btn--danger,
+.cys-btn--danger i,
+.cys-btn--danger span {
+  color: var(--tb-btn-texto) !important;
+}
+
+/* Botón amarillo: usa la clase .cys-btn--dorado, o cualquier enlace
+   cuyo href contenga "entrada" (por si aún no tiene la clase) */
+.cys-btn--dorado,
+a.cys-btn[href*="entrada" i] {
+  background: var(--cys-dorado) !important;
+  border-color: var(--cys-dorado) !important;
+  box-shadow: 0 4px 14px var(--cys-dorado-glow) !important;
+}
+
+.cys-btn--dorado,
+.cys-btn--dorado i,
+.cys-btn--dorado span,
+a.cys-btn[href*="entrada" i],
+a.cys-btn[href*="entrada" i] i,
+a.cys-btn[href*="entrada" i] span {
+  color: var(--tb-btn-dorado-texto) !important;
+}
+
+.cys-btn--dorado:hover,
+a.cys-btn[href*="entrada" i]:hover {
+  background: color-mix(in srgb, var(--cys-dorado) 82%, white) !important;
+  border-color: color-mix(in srgb, var(--cys-dorado) 82%, white) !important;
+  box-shadow: 0 6px 22px var(--cys-dorado-glow) !important;
+  transform: scale(1.04);
+}
+
+/* ============================================================
+   BOTONES DEL CARRUSEL
+   ============================================================ */
 .cys-carousel-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   background: var(--fondo-card2);
   border: 1px solid var(--azul-borde);
-  color: var(--texto-muted);
+  color: var(--tb-label);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,6 +112,10 @@
   flex-shrink: 0;
 }
 
+.cys-carousel-btn * {
+  color: inherit;
+}
+
 .cys-carousel-btn:hover {
   background: var(--azul-claro);
   color: var(--azul-oscuro);
@@ -45,21 +123,20 @@
   box-shadow: 0 0 12px var(--azul-glow);
 }
 
-.cys-carousel-btn,
-.cys-carousel-btn * {
-  color: #fff;
-}
-
+/* ============================================================
+   TARJETAS DE ESTADÍSTICAS
+   ============================================================ */
 .cys-stat-card {
   background: var(--fondo-card2);
   border: 1px solid var(--azul-borde);
   border-radius: var(--radius);
-  padding: 2rem 1rem;
+  padding: calc(2rem * var(--density-scale, 1)) calc(1rem * var(--density-scale, 1));
   text-align: center;
   transition: var(--trans);
   cursor: default;
   box-shadow: 0 2px 12px rgba(0,0,0,.2);
   min-height: 160px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -77,72 +154,92 @@
 .cys-stat-card__label {
   font-size: .72rem;
   font-weight: 600;
-  color: var(--gris-claro);
+  color: var(--tb-label);
   letter-spacing: .12em;
   text-transform: uppercase;
   margin-bottom: .4rem;
+  overflow-wrap: anywhere;
 }
 
+/* Texto pequeño "tipos de producto": cualquier hijo que no sea
+   la etiqueta ni el valor, sin importar qué clase tenga */
+.cys-stat-card > :not(.cys-stat-card__label):not(.cys-stat-card__val) {
+  color: var(--tb-sub);
+  overflow-wrap: anywhere;
+}
+
+/* Valor grande: se adapta al ancho para que las cifras largas no se salgan */
 .cys-stat-card__val {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
-  font-size: 2rem;
-  color: #fff;
-  line-height: 1;
-  text-shadow: 0 0 20px rgba(255,255,255,.25);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  color: var(--tb-num);
+  line-height: 1.1;
+  text-shadow: var(--tb-num-shadow);
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
+/* ============================================================
+   TÍTULO DE SECCIÓN
+   ============================================================ */
 .cys-seccion-titulo {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   width: 100%;
-  border: 1px solid rgba(77,168,218,0.18);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
   border-radius: 12px;
-  background: rgba(77,168,218,0.04);
+  background: color-mix(in srgb, var(--azul-claro) 4%, transparent);
   padding: 14px 24px;
   margin-bottom: 1.5rem;
   font-family: 'Outfit', sans-serif;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--tb-titulo);
   letter-spacing: .18em;
   text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
   transition: box-shadow 0.4s ease, background 0.4s ease, border-color 0.4s ease;
   cursor: default;
 }
 
 .cys-seccion-titulo:hover {
-  background: rgba(77,168,218,0.08);
-  border-color: rgba(77,168,218,0.35);
-  box-shadow: 0 0 28px rgba(77,168,218,0.25), 0 0 8px rgba(77,168,218,0.12);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 35%, transparent);
+  box-shadow:
+    0 0 28px color-mix(in srgb, var(--azul-claro) 25%, transparent),
+    0 0 8px  color-mix(in srgb, var(--azul-claro) 12%, transparent);
 }
 
 .cys-seccion-titulo::before,
 .cys-seccion-titulo::after {
   content: '';
   flex: 1;
+  min-width: 12px;
   height: 1px;
-  background: rgba(77,168,218,0.15);
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
   transition: background 0.4s ease;
 }
 
 .cys-seccion-titulo:hover::before,
 .cys-seccion-titulo:hover::after {
-  background: rgba(77,168,218,0.35);
+  background: color-mix(in srgb, var(--azul-claro) 35%, transparent);
 }
 
-/* Ícono de barras — blanco */
+/* Ícono del título */
 .cys-seccion-titulo i {
-  color: #fff;
+  color: var(--tb-icono);
+  flex-shrink: 0;
   transition: transform 0.4s ease, color 0.4s ease;
 }
 
 .cys-seccion-titulo:hover i {
   transform: rotate(-15deg);
-  color: #fff;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.4));
+  color: var(--tb-icono);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tb-icono) 40%, transparent));
 }
 
 .cys-carousel-pad {
@@ -160,6 +257,11 @@
   box-shadow: 0 8px 28px rgba(0,0,0,.3), 0 0 20px var(--cys-dorado-glow) !important;
 }
 
+/* Título de tarjeta (ej. "Resumen de inventario por categoría") */
+.cys-card__title {
+  color: var(--tb-titulo);
+}
+
 /* ============================================================
    FIX: transición suave de altura al cambiar de slide
    (carrusel de categorías). NO poner min-height fijo en
@@ -173,4 +275,21 @@
 
 #inventarioCarousel .carousel-item {
   min-height: unset;
+}
+
+/* ============================================================
+   RESPONSIVE — pantallas angostas o con aumento alto
+   ============================================================ */
+@media (max-width: 768px) {
+  .cys-seccion-titulo {
+    font-size: 1rem;
+    letter-spacing: .1em;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .cys-stat-card {
+    min-height: 110px;
+    padding: 1rem .75rem;
+  }
 }

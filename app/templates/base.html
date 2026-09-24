@@ -7,161 +7,180 @@
     <title>{% block title %}CYS Ltda{% endblock %}</title>
 
     <link rel="icon" type="image/jpeg" href="{% static 'img/logo.jpeg' %}" />
-<link rel="icon" type="image/jpeg" href="{% static 'img/logo.20.png' %}" />
+    <link rel="icon" type="image/jpeg" href="{% static 'img/logo.20.png' %}" />
 
-<link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
 
-<link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" />
-<link rel="stylesheet" href="{% static 'css/cuerpo/base.css' %}" />
-<link rel="stylesheet" href="{% static 'css/cuerpo/breadcrumb.css' %}" />
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/cuerpo/base.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/cuerpo/breadcrumb.css' %}" />
 
     {% block extra_css %}{% endblock %}
+
+    <!-- htmx: navegación por AJAX acotada solo al contenido de cada página -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/head-support.js"></script>
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/base.js' %}"></script>
   </head>
 
-  <body>
+  <body hx-boost="true"
+        hx-ext="head-support"
+        hx-target="#cys-page-wrap"
+        hx-select="#cys-page-wrap"
+        hx-swap="outerHTML">
     <div id="cys-layout">
       {% include 'partials/header.html' %}
 
-      <nav class="cys-subnav">
-        <span class="cys-subnav__page"
-          >{% block page_title %}Tablero{% endblock %}</span
-        >
-        <div class="d-flex align-items-center gap-2">
-          <button class="cys-menu-btn" id="menuBtn" title="Abrir menú">
-            <i class="bi bi-list"></i>
-          </button>
-        </div>
-      </nav>
+      <!--
+        Todo lo que cambia de una página a otra (título del subnav,
+        breadcrumb, contenido) vive dentro de #cys-page-wrap. htmx
+        solo toca esto en cada navegación — el aside, el header y el
+        widget de accesibilidad, al estar fuera de este contenedor,
+        nunca se tocan ni se re-renderizan.
+      -->
+      <div id="cys-page-wrap">
+        <nav class="cys-subnav">
+          <span class="cys-subnav__page"
+            >{% block page_title %}Tablero{% endblock %}</span
+          >
+          <div class="d-flex align-items-center gap-2">
+            <button class="cys-menu-btn" id="menuBtn" title="Abrir menú">
+              <i class="bi bi-list"></i>
+            </button>
+          </div>
+        </nav>
+
+        <main class="cys-main">
+          {% include 'partials/breadcrumb.html' %}
+          {% block content %}{% endblock %}
+        </main>
+      </div>
 
       {% include 'partials/aside.html' %}
-
-      <main class="cys-main">
-        {% include 'partials/breadcrumb.html' %}
-        {% block content %}{% endblock %}
-</main>
     </div>
 
     <!-- ===== WIDGET DE ACCESIBILIDAD (global, en todas las páginas) ===== -->
-    <button
-      type="button"
-      class="cys-a11y-toggle"
-      id="cysA11yToggle"
-      title="Accesibilidad"
-      aria-label="Abrir panel de accesibilidad"
-    >
-      <i class="bi bi-universal-access-circle"></i>
-    </button>
+    <div id="cys-a11y-widget" hx-preserve="true">
+      <button
+        type="button"
+        class="cys-a11y-toggle"
+        id="cysA11yToggle"
+        title="Accesibilidad"
+        aria-label="Abrir panel de accesibilidad"
+      >
+        <i class="bi bi-universal-access-circle"></i>
+      </button>
 
-    <div
-      class="cys-a11y-panel"
-      id="cysA11yPanel"
-      role="dialog"
-      aria-label="Panel de accesibilidad"
-    >
-      <div class="cys-a11y-panel__header">
-        <span class="cys-a11y-panel__title">Accesibilidad</span>
-        <button
-          type="button"
-          class="cys-a11y-panel__close"
-          id="cysA11yClose"
-          aria-label="Cerrar panel"
-        >
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <div class="cys-a11y-panel__body">
-        <div class="cys-a11y-block">
-          <span class="cys-a11y-block__label">Tamaño de texto</span>
-          <div class="cys-a11y-fontsize">
-            <button
-              type="button"
-              class="cys-a11y-fontsize__btn"
-              id="cysA11yFontMinus"
-              aria-label="Disminuir texto"
-            >
-              A-
-            </button>
-            <span class="cys-a11y-fontsize__val" id="cysA11yFontVal">100%</span>
-            <button
-              type="button"
-              class="cys-a11y-fontsize__btn"
-              id="cysA11yFontPlus"
-              aria-label="Aumentar texto"
-            >
-              A+
-            </button>
-          </div>
+      <div
+        class="cys-a11y-panel"
+        id="cysA11yPanel"
+        role="dialog"
+        aria-label="Panel de accesibilidad"
+      >
+        <div class="cys-a11y-panel__header">
+          <span class="cys-a11y-panel__title">Accesibilidad</span>
+          <button
+            type="button"
+            class="cys-a11y-panel__close"
+            id="cysA11yClose"
+            aria-label="Cerrar panel"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
 
-        <div class="cys-a11y-block">
-          <span class="cys-a11y-block__label">Modo de color</span>
-          <div class="cys-a11y-colormode">
-            <button
-              type="button"
-              class="cys-a11y-colormode__btn"
-              data-modo="predeterminado"
-              aria-label="Modo predeterminado"
-            >
-              <i class="bi bi-circle-half"></i><span>Predeterminado</span>
-            </button>
-            <button
-              type="button"
-              class="cys-a11y-colormode__btn"
-              data-modo="alto-contraste"
-              aria-label="Alto contraste"
-            >
-              <i class="bi bi-brightness-high"></i><span>Alto contraste</span>
-            </button>
-            <button
-              type="button"
-              class="cys-a11y-colormode__btn"
-              data-modo="claro"
-              aria-label="Modo claro"
-            >
-              <i class="bi bi-sun"></i><span>Claro</span>
-            </button>
+        <div class="cys-a11y-panel__body">
+          <div class="cys-a11y-block">
+            <span class="cys-a11y-block__label">Tamaño de texto</span>
+            <div class="cys-a11y-fontsize">
+              <button
+                type="button"
+                class="cys-a11y-fontsize__btn"
+                id="cysA11yFontMinus"
+                aria-label="Disminuir texto"
+              >
+                A-
+              </button>
+              <span class="cys-a11y-fontsize__val" id="cysA11yFontVal">100%</span>
+              <button
+                type="button"
+                class="cys-a11y-fontsize__btn"
+                id="cysA11yFontPlus"
+                aria-label="Aumentar texto"
+              >
+                A+
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="cys-a11y-block">
-          <div class="cys-a11y-switch-row">
-            <span>Alto contraste</span>
-            <label class="cys-a11y-switch">
-              <input type="checkbox" id="cysA11yContraste" />
-              <span class="cys-a11y-switch__track"></span>
-            </label>
+          <div class="cys-a11y-block">
+            <span class="cys-a11y-block__label">Modo de color</span>
+            <div class="cys-a11y-colormode">
+              <button
+                type="button"
+                class="cys-a11y-colormode__btn"
+                data-modo="predeterminado"
+                aria-label="Modo predeterminado"
+              >
+                <i class="bi bi-circle-half"></i><span>Predeterminado</span>
+              </button>
+              <button
+                type="button"
+                class="cys-a11y-colormode__btn"
+                data-modo="alto-contraste"
+                aria-label="Alto contraste"
+              >
+                <i class="bi bi-brightness-high"></i><span>Alto contraste</span>
+              </button>
+              <button
+                type="button"
+                class="cys-a11y-colormode__btn"
+                data-modo="claro"
+                aria-label="Modo claro"
+              >
+                <i class="bi bi-sun"></i><span>Claro</span>
+              </button>
+            </div>
           </div>
-          <div class="cys-a11y-switch-row">
-            <span>Espaciado de texto</span>
-            <label class="cys-a11y-switch">
-              <input type="checkbox" id="cysA11yEspaciado" />
-              <span class="cys-a11y-switch__track"></span>
-            </label>
-          </div>
-          <div class="cys-a11y-switch-row">
-            <span>Resaltar enlaces</span>
-            <label class="cys-a11y-switch">
-              <input type="checkbox" id="cysA11yEnlaces" />
-              <span class="cys-a11y-switch__track"></span>
-            </label>
-          </div>
-          <div class="cys-a11y-switch-row">
-            <span>Fuente legible</span>
-            <label class="cys-a11y-switch">
-              <input type="checkbox" id="cysA11yFuente" />
-              <span class="cys-a11y-switch__track"></span>
-            </label>
-          </div>
-        </div>
 
-        <button type="button" class="cys-a11y-reset" id="cysA11yReset">
-          <i class="bi bi-arrow-counterclockwise"></i> Restablecer configuración
-        </button>
+          <div class="cys-a11y-block">
+            <div class="cys-a11y-switch-row">
+              <span>Alto contraste</span>
+              <label class="cys-a11y-switch">
+                <input type="checkbox" id="cysA11yContraste" />
+                <span class="cys-a11y-switch__track"></span>
+              </label>
+            </div>
+            <div class="cys-a11y-switch-row">
+              <span>Espaciado de texto</span>
+              <label class="cys-a11y-switch">
+                <input type="checkbox" id="cysA11yEspaciado" />
+                <span class="cys-a11y-switch__track"></span>
+              </label>
+            </div>
+            <div class="cys-a11y-switch-row">
+              <span>Resaltar enlaces</span>
+              <label class="cys-a11y-switch">
+                <input type="checkbox" id="cysA11yEnlaces" />
+                <span class="cys-a11y-switch__track"></span>
+              </label>
+            </div>
+            <div class="cys-a11y-switch-row">
+              <span>Fuente legible</span>
+              <label class="cys-a11y-switch">
+                <input type="checkbox" id="cysA11yFuente" />
+                <span class="cys-a11y-switch__track"></span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" class="cys-a11y-reset" id="cysA11yReset">
+            <i class="bi bi-arrow-counterclockwise"></i> Restablecer configuración
+          </button>
+        </div>
       </div>
     </div>
     <!-- ===== FIN WIDGET DE ACCESIBILIDAD ===== -->
@@ -171,5 +190,23 @@
     <script src="{% static 'js/cuerpo/sidebar-init.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
+
+    <!-- ══════════════════════════════════════════
+         SOPORTE HTMX: re-inicializar tooltips de
+         Bootstrap dentro del contenido nuevo tras
+         cada navegación por AJAX.
+    ═══════════════════════════════════════════ -->
+    <script>
+      document.body.addEventListener('htmx:afterSettle', function (evt) {
+        if (window.bootstrap) {
+          evt.target.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+            var existente = bootstrap.Tooltip.getInstance(el);
+            if (!existente) {
+              try { new bootstrap.Tooltip(el); } catch (e) {}
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
