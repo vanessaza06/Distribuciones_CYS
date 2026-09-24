@@ -23,6 +23,7 @@ urlpatterns = [
     # MÉTODOS DE PAGO
     path("metodos-pago/", mp_views.lista_metodos_pago, name="lista_metodos_pago"),
     path("metodos-pago/crear/", mp_views.crear_metodo_pago, name="crear_metodo_pago"),
+    path("metodos-pago/editar/<int:pk>/", mp_views.editar_metodo_pago, name="editar_metodo_pago"),
     path("metodos-pago/eliminar/<int:pk>/", mp_views.eliminar_metodo_pago, name="eliminar_metodo_pago"),
 
     # VENTAS
