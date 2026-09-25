@@ -10,6 +10,15 @@ def bodega_home(request):
     agendas = AgendaInventario.objects.all()
     lotes = Lote.objects.select_related('presentacion__producto', 'bodega').all()
 
+    # Presentaciones activas que todavía no tienen ningún lote registrado.
+    # Al crear una presentación nueva, aparecerá aquí automáticamente.
+    presentaciones_sin_lote = (
+        PresentacionProducto.objects
+        .filter(activo=True, lotes__isnull=True)
+        .select_related('producto', 'producto__categoria')
+        .order_by('producto__nombre', 'nombre')
+    )
+
     if request.method == 'POST' and 'Agendar' in request.POST:
         titulo = request.POST.get('titulo')
         fecha_programada = request.POST.get('fecha_programada')
@@ -25,6 +34,7 @@ def bodega_home(request):
         'agendas': agendas,
         'productos': Producto.objects.all(),
         'lotes': lotes,
+        'presentaciones_sin_lote': presentaciones_sin_lote,
         'conteos': [],
         'discrepancias': [],
         'sesion': None,
@@ -98,9 +108,15 @@ def ajustar_stock(request, pk):
     """Referenciada desde el modal 'Comparar Inventario' de bodega_home.html."""
     presentacion = get_object_or_404(PresentacionProducto, pk=pk)
     if request.method == 'POST':
-        nueva_cantidad = request.POST.get('nueva_cantidad')
-        if nueva_cantidad is not None:
-            presentacion.cantidad = nueva_cantidad
-            presentacion.save()
-            messages.success(request, f'Stock de "{presentacion.producto.nombre}" ajustado correctamente.')
+        try:
+            nueva_cantidad = int(request.POST.get('nueva_cantidad', ''))
+            if nueva_cantidad < 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            messages.error(request, 'La cantidad ingresada no es válida.')
+            return redirect('bodega_home')
+
+        presentacion.cantidad = nueva_cantidad
+        presentacion.save()
+        messages.success(request, f'Stock de "{presentacion.producto.nombre}" ajustado correctamente.')
     return redirect('bodega_home')

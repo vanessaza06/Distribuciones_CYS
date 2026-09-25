@@ -23,17 +23,21 @@ document.addEventListener('DOMContentLoaded', function () {
     todoProductos = [];
   }
 
-  dtInstance = $('#tablaProductosCat').DataTable({
-    paging: false,
-    searching: false,
-    info: false,
-    ordering: true,
-    responsive: true,
-    language: {
-      zeroRecords: "Sin resultados.",
-      emptyTable: "No hay productos en esta categoría."
-    }
-  });
+  try {
+    dtInstance = $('#tablaProductosCat').DataTable({
+      paging: false,
+      searching: false,
+      info: false,
+      ordering: true,
+      responsive: true,
+      language: {
+        zeroRecords: "Sin resultados.",
+        emptyTable: "No hay productos en esta categoría."
+      }
+    });
+  } catch (e) {
+    console.error('No se pudo inicializar DataTable:', e);
+  }
 
   // Protegido: si inicializarGraficos() no existe todavía en ningún archivo
   // cargado, esto ya NO detiene la ejecución del resto del script.
@@ -102,6 +106,7 @@ function filtrarCategoria(btn) {
   tabla.classList.add('cat-panel-visible');
   tabla.classList.remove('cat-panel-oculto');
 
+  if (!dtInstance) return;
   dtInstance.clear();
   if (filtrados.length) {
     dtInstance.rows.add($(filasHtmlDe(filtrados)));
@@ -163,22 +168,34 @@ function inicializarDropdownCategorias() {
 }
 
 // ═══════ ENVÍO DEL FORMULARIO NUEVO PRODUCTO ═══════
+function mostrarErrorCrear(feedback, mensaje) {
+  feedback.classList.remove('d-none');
+  feedback.innerHTML = '';
+  const alerta = document.createElement('div');
+  alerta.className = 'alert alert-danger py-2 mb-0';
+  alerta.textContent = mensaje;
+  feedback.appendChild(alerta);
+}
+
 function enviarCrearProducto() {
   const nombre           = document.getElementById('crear-nombre').value.trim();
   const categoria        = document.getElementById('crear-categoria').value;
   const descripcion      = document.getElementById('crear-descripcion').value.trim();
   const fechaVencimiento = document.getElementById('crear-fecha-venc').value;
   const feedback         = document.getElementById('crear-feedback');
+  const btnGuardar       = document.getElementById('btn-crear-solo');
 
   feedback.classList.add('d-none');
   feedback.innerHTML = '';
 
   if (!nombre || !categoria || !fechaVencimiento) {
-    feedback.classList.remove('d-none');
-    feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">
-      Completa nombre, categoría y fecha de vencimiento antes de guardar.</div>`;
+    mostrarErrorCrear(feedback, 'Completa nombre, categoría y fecha de vencimiento antes de guardar.');
     return;
   }
+
+  // Token tomado del propio formulario (más confiable que el data-attribute)
+  const tokenInput = document.querySelector('#form-nuevo-producto-modal [name=csrfmiddlewaretoken]');
+  const token = (tokenInput && tokenInput.value) || CSRF_TOKEN;
 
   const formData = new FormData();
   formData.append('nombre', nombre);
@@ -187,33 +204,55 @@ function enviarCrearProducto() {
   formData.append('fecha_vencimiento', fechaVencimiento);
   formData.append('next', NEXT_PATH);
 
+  if (btnGuardar) btnGuardar.disabled = true;
+
   fetch(CREAR_URL, {
     method: 'POST',
     headers: {
-      'X-CSRFToken': CSRF_TOKEN,
+      'X-CSRFToken': token,
       'X-Requested-With': 'XMLHttpRequest'
     },
     body: formData
   })
-    .then(res => res.json())
-    .then(data => {
-      if (data.ok) {
+    .then(async res => {
+      const texto = await res.text();
+      let data = null;
+      try { data = JSON.parse(texto); } catch (e) { /* no era JSON */ }
+
+      if (res.ok && data && data.ok) {
         location.reload();
-      } else {
-        feedback.classList.remove('d-none');
+        return;
+      }
+
+      if (data) {
         const mensajes = Object.values(data.errores || {}).flat().join(' ');
-        feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">${mensajes || 'Error al guardar.'}</div>`;
+        mostrarErrorCrear(feedback, mensajes || data.error || 'Error al guardar.');
+      } else if (res.redirected) {
+        mostrarErrorCrear(feedback, 'Tu sesión expiró. Recarga la página e inicia sesión de nuevo.');
+      } else {
+        // El servidor devolvió HTML (error 500/403/404). Con DEBUG=True sacamos el motivo real.
+        const doc = new DOMParser().parseFromString(texto, 'text/html');
+        const titulo = doc.querySelector('title');
+        const detalle = doc.querySelector('.exception_value');
+        let mensaje = 'Error del servidor (' + res.status + ').';
+        if (titulo && titulo.textContent.trim()) mensaje += ' ' + titulo.textContent.trim();
+        if (detalle && detalle.textContent.trim()) mensaje += ' — ' + detalle.textContent.trim();
+        console.error('Respuesta del servidor al crear producto:', texto);
+        mostrarErrorCrear(feedback, mensaje);
       }
     })
     .catch(err => {
       console.error('Error creando producto:', err);
-      feedback.classList.remove('d-none');
-      feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">Error de conexión.</div>`;
+      mostrarErrorCrear(feedback, 'No se pudo contactar al servidor: ' + err.message);
+    })
+    .finally(() => {
+      if (btnGuardar) btnGuardar.disabled = false;
     });
 }
+
 window.addEventListener('load', function () {
   const btnNuevo = document.querySelector('.prod-btn-nuevo');
-  if (btnNuevo) {
+  if (btnNuevo && typeof bootstrap !== 'undefined') {
     new bootstrap.Tooltip(btnNuevo, {
       title: 'Crear producto',
       placement: 'top',
