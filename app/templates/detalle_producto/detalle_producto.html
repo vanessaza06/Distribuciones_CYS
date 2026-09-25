@@ -8,7 +8,6 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
 <link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto_masterdetail.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -84,7 +83,7 @@
     <div class="gp-columna-der">
 
       <div class="search-box">
-        <label class="stat-label mb-2 d-block"><i class="bi bi-filter-left me-1"></i>Filtrar inventario</label>
+        <label class="stat-label mb-2 d-block"><i class="bi bi-filter-left me-1"></i>Filtrar</label>
         <div class="gp-search-wrap">
           <i class="bi bi-search gp-search-icon"></i>
           <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre..." oninput="gpFiltrarProductos(this.value)">
@@ -154,7 +153,7 @@
                   <i class="bi bi-layers me-1"></i>Presentaciones
                 </a>
                 <div class="dropdown">
-                  <button class="gp-dots-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" title="Más opciones">
+                  <button class="gp-dots-btn dropdown-toggle " type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" title="Más opciones">
                     <i class="bi bi-three-dots"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end prod-dropdown-menu">
