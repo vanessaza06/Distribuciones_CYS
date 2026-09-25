@@ -64,7 +64,7 @@ def lista_metodos_pago(request):
     total_registros = len(pagos_list)
 
     # Lista de compras abiertas para el modal de creación
-    compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'aprobada']).order_by('-fecha_compra')[:30]
+    compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'aprobada']).order_by('-fecha')[:30]
 
     context = {
         'pagos': pagos_list,
@@ -138,3 +138,40 @@ def eliminar_metodo_pago(request, pk):
         pago.delete()
         messages.success(request, f'🗑️ Registro de Pago #{codigo} (${monto:,.0f}) eliminado.')
     return redirect('lista_metodos_pago')
+
+
+@login_required
+def editar_metodo_pago(request, pk):
+    """Edita un registro existente en la tabla metodo_pago."""
+    pago = get_object_or_404(MetodoPago, pk=pk)
+    if request.method == 'POST':
+        monto_raw = request.POST.get('valor', '0').replace(',', '.').strip()
+        referencia = request.POST.get('referencia', '').strip()
+        tipo_pago = request.POST.get('tipo_pago', 'efectivo').strip()
+        observacion = request.POST.get('observacion', '').strip()
+
+        try:
+            monto = Decimal(monto_raw)
+            if monto <= Decimal('0.00'):
+                messages.error(request, '⚠️ El valor del pago debe ser mayor a 0.')
+                return redirect('lista_metodos_pago')
+        except Exception:
+            messages.error(request, '⚠️ Formato de monto inválido.')
+            return redirect('lista_metodos_pago')
+
+        pago.valor = monto
+        pago.referencia = referencia
+        pago.observacion = observacion
+        if tipo_pago == 'efectivo':
+            pago.efectivo = monto
+            pago.transaccion = Decimal('0.00')
+        else:
+            pago.efectivo = Decimal('0.00')
+            pago.transaccion = monto
+
+        pago.save()
+        messages.success(request, f'✏️ Registro de Pago #{pago.codigo_metodo} actualizado con éxito.')
+        return redirect('lista_metodos_pago')
+
+    return redirect('lista_metodos_pago')
+

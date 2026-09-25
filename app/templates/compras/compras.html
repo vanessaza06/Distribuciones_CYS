@@ -254,10 +254,16 @@
                         <span class="badge badge-warning-custom">
                           <i class="bi bi-dash-circle me-1"></i>Parcial
                         </span>
+                        <div class="small fw-semibold text-danger mt-1" title="Plata que falta por pagar">
+                          Falta: ${{ compra.saldo|floatformat:0 }}
+                        </div>
                       {% else %}
                         <span class="badge badge-pending-custom">
                           <i class="bi bi-hourglass-split me-1"></i>Pendiente
                         </span>
+                        <div class="small fw-semibold text-muted mt-1" title="Plata pendiente de pago">
+                          Falta: ${{ compra.saldo|floatformat:0 }}
+                        </div>
                       {% endif %}
                     </td>
                     <td class="text-center small">
@@ -295,11 +301,17 @@
                           <li>
                             {% if compra.estado_pago == 'pagada' %}
                               <button type="button" class="dropdown-item text-muted" disabled title="Esta compra ya fue pagada completamente">
-                                <i class="bi bi-check-circle-fill me-2"></i>Pagada
+                                <i class="bi bi-check-circle-fill me-2 text-success"></i>Pagada ($0 pendiente)
                               </button>
                             {% else %}
-                              <button type="button" class="dropdown-item btn-abrir-pago text-success" data-compra-id="{{ compra.id }}" data-compra-total="{{ compra.total }}" data-compra-pagado="{{ compra.monto_pagado }}" data-bs-toggle="modal" data-bs-target="#modalPago">
-                                <i class="bi bi-credit-card me-2"></i>Pago
+                              <button type="button" class="dropdown-item btn-abrir-pago text-success" 
+                                data-compra-id="{{ compra.id }}" 
+                                data-compra-codigo="{{ compra.codigo_compra }}"
+                                data-compra-total="{{ compra.total }}" 
+                                data-compra-pagado="{{ compra.monto_pagado }}" 
+                                data-compra-saldo="{{ compra.saldo }}"
+                                data-bs-toggle="modal" data-bs-target="#modalPago">
+                                <i class="bi bi-credit-card me-2"></i>Registrar Pago
                               </button>
                             {% endif %}
                           </li>
@@ -515,9 +527,17 @@
                 <input type="text" id="formCompraFactura" name="numero_factura" class="form-control" placeholder="Ej: FAC-2026-001" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
               </div>
               <div class="col-md-6">
-                <label for="formCompraPago" class="dev-form-label fw-semibold">Abono Inicial ($)</label>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
-                <small class="text-muted d-block mt-1">Deja en 0 si es a crédito o ingresa el pago inicial.</small>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="pagarTotalNuevaCompra()">100% Total</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="creditoNuevaCompra()">Crédito ($0)</button>
+                  </div>
+                </div>
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);" oninput="recalcularSaldoNuevaCompra()">
+                <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
+                  Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
+                </div>
               </div>
               <div class="col-md-6">
                 <label for="formCompraMetodoPago" class="dev-form-label fw-semibold">Método de Pago</label>
@@ -846,54 +866,67 @@
                         </div>
                     </div>
 
-                    <!-- Monto Total de la Compra -->
-                    <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-receipt me-2"></i>Monto Total de la Compra
-                        </label>
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="montoTotal" name="monto_total" class="form-control" readonly style="background-color: rgba(77, 168, 218, 0.1); cursor: not-allowed;">
+                    <!-- Tarjeta de Estado Financiero de la Compra -->
+                    <div class="p-3 mb-4 rounded" style="background: rgba(2, 34, 74, 0.6); border: 1px solid rgba(77, 168, 218, 0.2);">
+                        <div class="row g-2 text-center">
+                            <div class="col-4 border-end border-secondary border-opacity-25">
+                                <small class="text-muted d-block" style="font-size:0.75rem;">Total Compra</small>
+                                <span class="fw-bold text-light fs-6" id="resumenMontoTotal">$0</span>
+                            </div>
+                            <div class="col-4 border-end border-secondary border-opacity-25">
+                                <small class="text-muted d-block" style="font-size:0.75rem;">Ya Pagado</small>
+                                <span class="fw-bold text-success fs-6" id="resumenMontoPagado">$0</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block text-warning fw-semibold" style="font-size:0.75rem;">Plata que Falta</small>
+                                <span class="fw-bold text-danger fs-5" id="resumenSaldoPendiente">$0</span>
+                            </div>
                         </div>
-                        <small class="text-muted">Este valor se calcula automáticamente</small>
                     </div>
 
-                    <!-- Monto Pagado -->
+                    <input type="hidden" id="montoTotal" name="monto_total">
+                    <input type="hidden" id="montoYaPagado" name="monto_ya_pagado">
+                    <input type="hidden" id="saldoActual" name="saldo_actual">
+
+                    <!-- Monto a Abonar / Pagar Ahora -->
                     <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-cash me-2"></i>Monto Pagado
-                            <span class="text-danger">*</span>
-                        </label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label mb-0 fw-bold">
+                                <i class="bi bi-cash-stack me-1 text-success"></i>Monto a Pagar Ahora
+                                <span class="text-danger">*</span>
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" id="btnPagarTodoSaldo" style="font-size:0.8rem;">
+                                <i class="bi bi-check2-all me-1"></i>Pagar Todo el Saldo
+                            </button>
+                        </div>
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">$</span>
-                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa el monto que pagaste" required>
+                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa cuánto vas a pagar" required>
                         </div>
-                        <small class="text-muted">Ingresa cuánto dinero enviaste al proveedor</small>
+                        <small id="montoPagadoAyuda" class="text-muted">Ingresa el valor del abono o pago que vas a registrar.</small>
                     </div>
 
-                    <!-- Saldo Pendiente (calculado automáticamente) -->
-                    <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-hourglass-split me-2"></i>Saldo Pendiente
-                        </label>
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="saldoPendiente" name="saldo_pendiente" class="form-control" readonly style="background-color: rgba(231, 76, 60, 0.1); cursor: not-allowed; color: #e74c3c; font-weight: bold;">
+                    <!-- Saldo que quedará después de este pago -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">
+                                <i class="bi bi-hourglass-split me-1"></i>Saldo que Quedará Faltando
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="text" id="saldoPendiente" class="form-control fw-bold" readonly style="background-color: rgba(231, 76, 60, 0.1); cursor: not-allowed; color: #e74c3c;">
+                            </div>
                         </div>
-                        <small class="text-muted">Se calcula automáticamente: Total - Pagado</small>
-                    </div>
-
-                    <!-- Estado de Pago (automático) -->
-                    <div class="mb-4">
-                        <label class="form-label">
-                            <i class="bi bi-check-circle me-2"></i>Estado de Pago
-                        </label>
-                        <select id="estadoPago" name="estado_pago" class="form-select form-select-lg" readonly style="background-color: rgba(77, 168, 218, 0.1); cursor: not-allowed;">
-                            <option value="pendiente">Pendiente de Pago</option>
-                            <option value="parcial">Pago Parcial</option>
-                            <option value="pagada">Pagada</option>
-                        </select>
-                        <small class="text-muted">Se actualiza automáticamente según el monto pagado</small>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">
+                                <i class="bi bi-tag me-1"></i>Estado tras este Pago
+                            </label>
+                            <div id="badgeNuevoEstadoWrap" class="d-flex align-items-center mt-1">
+                                <span id="badgeNuevoEstado" class="badge badge-pending-custom px-3 py-2 w-100 text-center" style="font-size: 0.95rem;">
+                                    Sin abono
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Fecha de Pago -->
@@ -941,6 +974,48 @@ window.recalcularTotalCompra = function() {
   }
   if (calcDisplay) {
     calcDisplay.textContent = `$${total.toLocaleString('es-CO')}`;
+  }
+  window.recalcularSaldoNuevaCompra();
+};
+
+window.pagarTotalNuevaCompra = function() {
+  const cant = parseInt(document.getElementById('formCompraCantidad')?.value || 1) || 0;
+  const precio = parseFloat(document.getElementById('formCompraPrecio')?.value || 0) || 0;
+  const total = cant * precio;
+  const pagoInput = document.getElementById('formCompraPago');
+  if (pagoInput) {
+    pagoInput.value = total;
+    window.recalcularSaldoNuevaCompra();
+  }
+};
+
+window.creditoNuevaCompra = function() {
+  const pagoInput = document.getElementById('formCompraPago');
+  if (pagoInput) {
+    pagoInput.value = 0;
+    window.recalcularSaldoNuevaCompra();
+  }
+};
+
+window.recalcularSaldoNuevaCompra = function() {
+  const cant = parseInt(document.getElementById('formCompraCantidad')?.value || 1) || 0;
+  const precio = parseFloat(document.getElementById('formCompraPrecio')?.value || 0) || 0;
+  const total = cant * precio;
+  const pagoInput = document.getElementById('formCompraPago');
+  const abono = parseFloat(pagoInput ? pagoInput.value : 0) || 0;
+  const saldoFalta = Math.max(0, total - abono);
+
+  const feedback = document.getElementById('formCompraSaldoFeedback');
+  if (feedback) {
+    if (total === 0) {
+      feedback.innerHTML = '<span class="text-muted">Ingresa producto, cantidad y precio.</span>';
+    } else if (abono >= total) {
+      feedback.innerHTML = `<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>`;
+    } else if (abono > 0) {
+      feedback.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago Parcial</span> Falta por pagar: <strong class="text-danger">$${saldoFalta.toLocaleString('es-CO')}</strong>`;
+    } else {
+      feedback.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">$${total.toLocaleString('es-CO')}</strong>`;
+    }
   }
 };
 
@@ -1047,107 +1122,101 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const montoPagadoInput = document.getElementById('montoPagado');
   const saldoPendienteInput = document.getElementById('saldoPendiente');
-  const estadoPagoSelect = document.getElementById('estadoPago');
   const montoTotalInput = document.getElementById('montoTotal');
+  const montoYaPagadoInput = document.getElementById('montoYaPagado');
+  const saldoActualInput = document.getElementById('saldoActual');
   const modalPago = document.getElementById('modalPago');
   const alertaPagada = document.getElementById('alertaPagada');
   const btnAbrirPago = document.querySelectorAll('.btn-abrir-pago');
+  const btnPagarTodoSaldo = document.getElementById('btnPagarTodoSaldo');
 
-  // Función para formatear números
-  // Cuando se hace clic en "Pago", cargar los datos
+  // Cuando se hace clic en "Registrar Pago", cargar los datos de la compra
   btnAbrirPago.forEach(btn => {
     btn.addEventListener('click', function() {
       const compraId = this.getAttribute('data-compra-id');
       const totalCompra = parseFloat(this.getAttribute('data-compra-total')) || 0;
       const montoPagadoAnterior = parseFloat(this.getAttribute('data-compra-pagado')) || 0;
+      const rawSaldo = this.getAttribute('data-compra-saldo');
+      const saldoActual = (rawSaldo !== null && !isNaN(parseFloat(rawSaldo)))
+        ? parseFloat(rawSaldo)
+        : Math.max(0, totalCompra - montoPagadoAnterior);
 
       document.getElementById('compraId').value = compraId;
-      montoTotalInput.value = totalCompra;
-      montoPagadoInput.value = '';
+      if (montoTotalInput) montoTotalInput.value = totalCompra;
+      if (montoYaPagadoInput) montoYaPagadoInput.value = montoPagadoAnterior;
+      if (saldoActualInput) saldoActualInput.value = saldoActual;
 
-      // Mostrar alerta si está pagada
-      if (montoPagadoAnterior >= totalCompra) {
+      const resTotal = document.getElementById('resumenMontoTotal');
+      const resPagado = document.getElementById('resumenMontoPagado');
+      const resSaldo = document.getElementById('resumenSaldoPendiente');
+
+      if (resTotal) resTotal.textContent = `$${totalCompra.toLocaleString('es-CO')}`;
+      if (resPagado) resPagado.textContent = `$${montoPagadoAnterior.toLocaleString('es-CO')}`;
+      if (resSaldo) resSaldo.textContent = `$${saldoActual.toLocaleString('es-CO')}`;
+
+      if (montoPagadoInput) {
+        montoPagadoInput.value = '';
+        montoPagadoInput.max = saldoActual;
+      }
+
+      if (btnPagarTodoSaldo) {
+        btnPagarTodoSaldo.innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar Todo ($${saldoActual.toLocaleString('es-CO')})`;
+      }
+
+      // Mostrar alerta si ya está pagada completamente
+      if (saldoActual <= 0) {
         alertaPagada.classList.remove('d-none');
         document.getElementById('formPago').style.display = 'none';
-        // Deshabilitar botón de envío
         document.getElementById('formPago').querySelector('button[type="submit"]').disabled = true;
       } else {
         alertaPagada.classList.add('d-none');
         document.getElementById('formPago').style.display = 'block';
-        // Habilitar botón de envío
         document.getElementById('formPago').querySelector('button[type="submit"]').disabled = false;
       }
 
-      actualizarCalculos();
+      actualizarCalculosPago();
     });
   });
 
-  // También verificar cuando se abre el modal directamente
-  if (modalPago) {
-    modalPago.addEventListener('show.bs.modal', function() {
-      const compraId = document.getElementById('compraId').value;
-      if (compraId) {
-        const btn = document.querySelector(`[data-compra-id="${compraId}"]`);
-        if (btn) {
-          const totalCompra = parseFloat(btn.getAttribute('data-compra-total')) || 0;
-          const montoPagadoAnterior = parseFloat(btn.getAttribute('data-compra-pagado')) || 0;
-
-          if (montoPagadoAnterior >= totalCompra) {
-            alertaPagada.classList.remove('d-none');
-            document.getElementById('formPago').style.display = 'none';
-            document.getElementById('formPago').querySelector('button[type="submit"]').disabled = true;
-          } else {
-            alertaPagada.classList.add('d-none');
-            document.getElementById('formPago').style.display = 'block';
-            document.getElementById('formPago').querySelector('button[type="submit"]').disabled = false;
-          }
-        }
+  if (btnPagarTodoSaldo) {
+    btnPagarTodoSaldo.addEventListener('click', function() {
+      const saldoActual = parseFloat(document.getElementById('saldoActual')?.value || 0);
+      if (montoPagadoInput) {
+        montoPagadoInput.value = saldoActual > 0 ? saldoActual.toFixed(2) : 0;
+        actualizarCalculosPago();
       }
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // CERRAR DROPDOWN AL HACER CLIC EN CUALQUIER ITEM
-  // ═══════════════════════════════════════════════════════════════
+  // Calcular saldo pendiente en tiempo real según el monto a abonar
+  function actualizarCalculosPago() {
+    const saldoActual = parseFloat(document.getElementById('saldoActual')?.value || 0);
+    const montoAbono = parseFloat(montoPagadoInput ? montoPagadoInput.value : 0) || 0;
+    const nuevoSaldo = Math.max(0, saldoActual - montoAbono);
 
-  document.querySelectorAll('.dropdown-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-      // Cerrar el dropdown más cercano
-      const dropdown = this.closest('.dropdown');
-      if (dropdown) {
-        const toggleBtn = dropdown.querySelector('[data-bs-toggle="dropdown"]');
-        if (toggleBtn) {
-          const dropdownInstance = bootstrap.Dropdown.getInstance(toggleBtn);
-          if (dropdownInstance) {
-            dropdownInstance.hide();
-          }
-        }
+    if (saldoPendienteInput) {
+      saldoPendienteInput.value = `$${nuevoSaldo.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    }
+
+    const badgeNuevo = document.getElementById('badgeNuevoEstado');
+    if (badgeNuevo) {
+      if (montoAbono >= saldoActual && saldoActual > 0) {
+        badgeNuevo.className = 'badge badge-success-custom px-3 py-2 w-100 text-center';
+        badgeNuevo.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
+      } else if (montoAbono > 0) {
+        badgeNuevo.className = 'badge badge-warning-custom px-3 py-2 w-100 text-center';
+        badgeNuevo.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Quedará PARCIAL';
+      } else {
+        badgeNuevo.className = 'badge badge-pending-custom px-3 py-2 w-100 text-center';
+        badgeNuevo.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono nuevo';
       }
-    });
-  });
-
-  // Calcular saldo pendiente en tiempo real
-  function actualizarCalculos() {
-    const montoTotal = parseFloat(montoTotalInput.value) || 0;
-    const montoPagado = parseFloat(montoPagadoInput.value) || 0;
-    const saldoPendiente = montoTotal - montoPagado;
-
-    // Formatear números con separadores
-    saldoPendienteInput.value = Math.max(0, saldoPendiente).toFixed(2);
-
-    // Actualizar estado automáticamente
-    if (montoPagado === 0) {
-      estadoPagoSelect.value = 'pendiente';
-    } else if (montoPagado >= montoTotal) {
-      estadoPagoSelect.value = 'pagada';
-    } else {
-      estadoPagoSelect.value = 'parcial';
     }
   }
 
-  // Formatear monto total al cargar
-  montoPagadoInput.addEventListener('input', actualizarCalculos);
-  montoPagadoInput.addEventListener('change', actualizarCalculos);
+  if (montoPagadoInput) {
+    montoPagadoInput.addEventListener('input', actualizarCalculosPago);
+    montoPagadoInput.addEventListener('change', actualizarCalculosPago);
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // DROPDOWN - CERRAR OTROS AL ABRIR UNO

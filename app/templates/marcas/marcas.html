@@ -6,15 +6,14 @@
 {% block nav_marcas %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=8">
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid p-0 cys-marcas-page"
      data-url-crear="{% url 'crear_marca' %}"
-     data-url-editar-base="{% url 'editar_marca' 0 %}"
-     data-url-eliminar-base="{% url 'eliminar_marca' 0 %}">
+     data-url-editar-base="{% url 'editar_marca' 0 %}">
 
   <!-- Encabezado de página -->
   <section class="cys-page-header">
@@ -126,10 +125,19 @@
                       data-estado="{{ marca.estado }}">
                 <i class="bi bi-pencil"></i>
               </button>
-              <button class="cys-action-btn cys-action-btn--delete" type="button" title="Eliminar"
-                      data-id="{{ marca.codigo_marca }}" data-nombre="{{ marca.nombre }}">
-                <i class="bi bi-trash"></i>
-              </button>
+
+              <form method="post" action="{% url 'cambiar_estado_marca' marca.codigo_marca %}">
+                {% csrf_token %}
+                {% if marca.estado == "activo" %}
+                  <button class="cys-action-btn cys-action-btn--deactivate" type="submit" title="Desactivar">
+                    <i class="bi bi-toggle-on"></i>
+                  </button>
+                {% else %}
+                  <button class="cys-action-btn cys-action-btn--activate" type="submit" title="Activar">
+                    <i class="bi bi-toggle-off"></i>
+                  </button>
+                {% endif %}
+              </form>
             </div>
           </td>
         </tr>
@@ -246,42 +254,19 @@
   </div>
 </div>
 
-<!-- ===== MODAL: Confirmar eliminación ===== -->
-<div class="cys-modal-overlay" id="cysDeleteOverlay">
-  <div class="cys-modal cys-modal--sm">
-    <header class="cys-modal__header">
-      <h2>Eliminar marca</h2>
-      <button class="cys-icon-btn" id="cysDeleteClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
-    </header>
-    <form method="post" id="cysDeleteForm" action="">
-      {% csrf_token %}
-      <div class="cys-modal__body">
-        <p class="cys-confirm-text">¿Seguro que deseas eliminar <strong id="cysDeleteName">esta marca</strong>? Esta acción no se puede deshacer.</p>
-        <footer class="cys-modal__footer">
-          <button type="button" class="cys-btn cys-btn--ghost" id="cysDeleteCancel">Cancelar</button>
-          <button type="submit" class="cys-btn cys-btn--danger">Eliminar</button>
-        </footer>
-      </div>
-    </form>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
   window.CYS_URLS = {
     crear: "{% url 'crear_marca' %}",
-    editarBase: "{% url 'editar_marca' 0 %}".replace(/0\/$/, ""),
-    eliminarBase: "{% url 'eliminar_marca' 0 %}".replace(/0\/$/, "")
+    editarBase: "{% url 'editar_marca' 0 %}".replace(/0\/$/, "")
   };
 </script>
 
-<!-- Si la carpeta js/marcas/ no existe, prueba automáticamente js/marca/ -->
-<script src="{% static 'js/marcas/marcas.js' %}?v=6"
+<script src="{% static 'js/marcas/marcas.js' %}?v=8"
         onerror="var s=document.createElement('script');s.src=this.src.replace('/js/marcas/','/js/marca/');document.body.appendChild(s);"></script>
 
-<!-- Aviso visible si marcas.js no cargó desde ninguna de las dos rutas -->
 <script>
   window.addEventListener("load", function () {
     if (window.CYS_MARCAS_OK) return;

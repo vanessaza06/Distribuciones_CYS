@@ -23,6 +23,7 @@ urlpatterns = [
     # MÉTODOS DE PAGO
     path("metodos-pago/", mp_views.lista_metodos_pago, name="lista_metodos_pago"),
     path("metodos-pago/crear/", mp_views.crear_metodo_pago, name="crear_metodo_pago"),
+    path("metodos-pago/editar/<int:pk>/", mp_views.editar_metodo_pago, name="editar_metodo_pago"),
     path("metodos-pago/eliminar/<int:pk>/", mp_views.eliminar_metodo_pago, name="eliminar_metodo_pago"),
 
     # VENTAS
@@ -88,7 +89,7 @@ urlpatterns = [
     path("marcas/", mar_views.lista_marcas, name="lista_marcas"),  # type: ignore
     path("marcas/crear/", mar_views.crear_marca, name="crear_marca"),  # type: ignore
     path("marcas/editar/<str:codigo_marca>/", mar_views.editar_marca, name="editar_marca"),  # type: ignore
-    path("marcas/eliminar/<str:codigo_marca>/", mar_views.eliminar_marca, name="eliminar_marca"),  # type: ignore
+    path('marcas/<int:codigo_marca>/cambiar-estado/', mar_views.cambiar_estado_marca, name='cambiar_estado_marca'),
 
     # PRODUCTOS
     path("productos/", prod_views.lista_productos, name="lista_productos"),
