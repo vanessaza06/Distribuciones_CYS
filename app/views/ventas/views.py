@@ -247,83 +247,50 @@ def ventas_dia(request):
     total_dia = float(sum(v.total_venta for v in ventas_list))
     total_productos = sum(det.cantidad for v in ventas_list for det in v.detalles.all())
 
-    # Tope de ventas por periodo (Día, Semana, Mes, Año)
-    inicio_semana = hoy - timedelta(days=hoy.weekday())
-    inicio_mes = hoy.replace(day=1)
-    inicio_ano = hoy.replace(month=1, day=1)
-
-    v_dia_agg = Venta.objects.filter(fecha__date=hoy).aggregate(total=Sum('total_venta'), cant=Count('pk'))
-    total_dia_val = float(v_dia_agg['total'] or 0)
-    cant_dia = v_dia_agg['cant'] or 0
-
-    v_sem_agg = Venta.objects.filter(fecha__date__range=[inicio_semana, hoy]).aggregate(total=Sum('total_venta'), cant=Count('pk'))
-    total_semana_val = float(v_sem_agg['total'] or 0)
-    cant_semana = v_sem_agg['cant'] or 0
-
-    v_mes_agg = Venta.objects.filter(fecha__date__range=[inicio_mes, hoy]).aggregate(total=Sum('total_venta'), cant=Count('pk'))
-    total_mes_val = float(v_mes_agg['total'] or 0)
-    cant_mes = v_mes_agg['cant'] or 0
-
-    v_ano_agg = Venta.objects.filter(fecha__date__range=[inicio_ano, hoy]).aggregate(total=Sum('total_venta'), cant=Count('pk'))
-    total_ano_val = float(v_ano_agg['total'] or 0)
-    cant_ano = v_ano_agg['cant'] or 0
-
-    meses_es = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    nombre_mes = meses_es[hoy.month]
-
-    base_tope = max(total_ano_val, 1)
-
-    topes_ventas = [
-        {
-            'key': 'dia',
-            'label': 'Ventas Hoy',
-            'sublabel': hoy.strftime('%d/%m/%Y'),
-            'icon': 'bi-sun-fill',
-            'color': '#2ed573',
-            'badge_bg': 'rgba(46,213,115,0.15)',
-            'monto': total_dia_val,
-            'cantidad': cant_dia,
-            'porcentaje': round((total_dia_val / base_tope * 100), 1) if base_tope > 0 else 0,
-        },
-        {
-            'key': 'semana',
-            'label': 'Esta Semana',
-            'sublabel': f"{inicio_semana.strftime('%d/%m')} - {hoy.strftime('%d/%m')}",
-            'icon': 'bi-calendar-week-fill',
-            'color': '#4DA8DA',
-            'badge_bg': 'rgba(77,168,218,0.15)',
-            'monto': total_semana_val,
-            'cantidad': cant_semana,
-            'porcentaje': round((total_semana_val / base_tope * 100), 1) if base_tope > 0 else 0,
-        },
-        {
-            'key': 'mes',
-            'label': 'Este Mes',
-            'sublabel': f"{nombre_mes} {hoy.year}",
-            'icon': 'bi-calendar-month-fill',
-            'color': '#a55eea',
-            'badge_bg': 'rgba(165,94,234,0.15)',
-            'monto': total_mes_val,
-            'cantidad': cant_mes,
-            'porcentaje': round((total_mes_val / base_tope * 100), 1) if base_tope > 0 else 0,
-        },
-        {
-            'key': 'ano',
-            'label': 'Este Año',
-            'sublabel': f"Año {hoy.year}",
-            'icon': 'bi-trophy-fill',
-            'color': '#ffab00',
-            'badge_bg': 'rgba(255,171,0,0.15)',
-            'monto': total_ano_val,
-            'cantidad': cant_ano,
-            'porcentaje': 100.0 if total_ano_val > 0 else 0,
-        },
+    # Rendimiento por Franjas Horarias (Madrugada 12am-6am, Mañana 6am-12pm, Tarde 12pm-6pm, Noche 6pm-12am)
+    total_acumulado_franjas = max(total_dia, 1.0)
+    franjas_config = [
+        ('madrugada', 'Madrugada', '12am - 6am', 'bi-moon-stars-fill', '#a55eea', 'rgba(165,94,234,0.15)', 0, 6),
+        ('manana', 'Mañana', '6am - 12pm', 'bi-sun-fill', '#ffab00', 'rgba(255,171,0,0.15)', 6, 12),
+        ('tarde', 'Tarde', '12pm - 6pm', 'bi-brightness-high-fill', '#4DA8DA', 'rgba(77,168,218,0.15)', 12, 18),
+        ('noche', 'Noche', '6pm - 12am', 'bi-cloud-moon-fill', '#2ed573', 'rgba(46,213,115,0.15)', 18, 24),
     ]
+
+    franjas_horarias_resumen = []
+    max_monto_franja = -1.0
+    hora_pico_nombre = 'Sin ventas'
+
+    for key, label, sublabel, icon, color, bg, h_ini, h_fin in franjas_config:
+        ventas_franja = [
+            v for v in ventas_list 
+            if v.fecha and h_ini <= timezone.localtime(v.fecha).hour < h_fin
+        ]
+        monto_f = sum(float(v.total_venta or 0) for v in ventas_list if v.fecha and h_ini <= timezone.localtime(v.fecha).hour < h_fin)
+        cant_f = len(ventas_franja)
+        pct_f = round((monto_f / total_acumulado_franjas * 100), 1) if total_dia > 0 else 0.0
+
+        if monto_f > max_monto_franja and monto_f > 0:
+            max_monto_franja = monto_f
+            hora_pico_nombre = f"{label} ({sublabel})"
+
+        franjas_horarias_resumen.append({
+            'key': key,
+            'label': label,
+            'sublabel': sublabel,
+            'icon': icon,
+            'color': color,
+            'badge_bg': bg,
+            'monto': monto_f,
+            'cantidad': cant_f,
+            'porcentaje': pct_f,
+        })
 
     # Ranking de productos más vendidos
     prods_map = {}
     for v in ventas_list:
         for det in v.detalles.all():
+            if not det.producto:
+                continue
             p_id = det.producto.pk
             p_nombre = det.producto.nombre
             if p_id not in prods_map:
@@ -346,15 +313,38 @@ def ventas_dia(request):
     caja_abierta = obtener_caja_abierta(hoy)
     ultimo_cierre = Caja.objects.order_by('-fecha_hora').first()
 
+    # Ventas Tope del Día (Mayores transacciones individuales del día)
+    ventas_sorted = sorted(ventas_list, key=lambda v: float(v.total_venta or 0), reverse=True)[:4]
+    colores_top = ['#ffffff', '#64748b', '#4DA8DA', '#2ed573']
+    ventas_tope_data = []
+    total_base_dia = max(total_dia, 1.0)
+    for idx, v in enumerate(ventas_sorted):
+        monto_v = float(v.total_venta or 0)
+        pct_v = round((monto_v / total_base_dia * 100), 1) if total_dia > 0 else 0.0
+        r_val = 38 - (idx * 11)  # concentric rings: 38, 27, 16, ...
+        c_val = 2 * 3.14159265 * r_val
+        dash_offset = c_val - (c_val * (pct_v / 100.0))
+        ventas_tope_data.append({
+            'codigo': getattr(v, 'codigo_venta', v.pk),
+            'monto': monto_v,
+            'porcentaje': pct_v,
+            'color': colores_top[idx % len(colores_top)],
+            'r': r_val,
+            'c': round(c_val, 2),
+            'dash_offset': round(dash_offset, 2),
+        })
+
     return render(request, 'ventas/ventas_dia.html', {
-        'ventas': ventas_qs,
+        'ventas': ventas_list,
         'total_dia': total_dia,
         'total_productos': total_productos,
         'hoy': hoy,
         'fecha_inicio': fecha_inicio_str,
         'fecha_fin': fecha_fin_str,
-        'topes_ventas': topes_ventas,
+        'franjas_horarias_resumen': franjas_horarias_resumen,
+        'hora_pico_nombre': hora_pico_nombre,
         'productos_top': productos_top,
+        'ventas_tope_data': ventas_tope_data,
         'caja_abierta': caja_abierta,
         'ultimo_cierre': ultimo_cierre,
     })
