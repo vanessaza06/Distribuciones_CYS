@@ -63,33 +63,32 @@
     gap: 1.25rem;
   }
 
-  /* Botones estilo píldora azul con borde blanco */
+  /* Botones estilo Ventas (Gradiante Cyan/Azul y Borde 10px) */
   .mp-btn-action {
-    height: 48px;
-    padding: 0 1.6rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border-radius: 50px;
-    border: 2px solid #ffffff !important;
-    background: linear-gradient(135deg, #0d6efd 0%, #054a91 100%) !important;
+    height: 44px;
+    padding: 0 1.4rem;
+    font-size: 0.92rem;
+    font-weight: 800;
+    border-radius: 10px;
+    border: none !important;
+    background: linear-gradient(135deg, #4DA8DA, #2979a8) !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.65rem;
+    gap: 0.55rem;
     white-space: nowrap;
     line-height: 1;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #ffffff !important;
+    transition: all 0.2s ease;
+    color: #0A2A52 !important;
     text-decoration: none;
-    box-shadow: 0 4px 18px rgba(13, 110, 253, 0.4);
+    box-shadow: 0 4px 15px rgba(77, 168, 218, 0.3);
     cursor: pointer;
   }
   .mp-btn-action:hover {
-    background: linear-gradient(135deg, #2b7fff 0%, #0d6efd 100%) !important;
-    border-color: #ffffff !important;
+    background: linear-gradient(135deg, #5db5e5, #3187bb) !important;
     transform: translateY(-2px);
-    color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6), 0 0 15px rgba(255, 255, 255, 0.4);
+    color: #051833 !important;
+    box-shadow: 0 6px 20px rgba(77, 168, 218, 0.45);
   }
   .mp-btn-action:active {
     transform: translateY(0);
@@ -98,9 +97,9 @@
   .mp-btn-outline {
     height: 44px;
     padding: 0 1.25rem;
-    border-radius: 50px;
-    border: 1px solid rgba(77, 168, 218, 0.5) !important;
-    background: rgba(10, 34, 62, 0.8) !important;
+    border-radius: 10px;
+    border: 1px solid rgba(77, 168, 218, 0.3) !important;
+    background: rgba(10, 42, 82, 0.8) !important;
     color: #ffffff !important;
     font-weight: 700;
     font-size: 0.9rem;
@@ -245,7 +244,7 @@
       </p>
     </div>
     <div>
-      <button class="mp-btn-action" data-bs-toggle="modal" data-bs-target="#modalNuevoPago">
+      <button class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Registrar Pago" data-bs-target="#modalNuevoPago">
         <i class="bi bi-plus-lg fs-5"></i> Registrar Nuevo Pago
       </button>
     </div>
@@ -331,8 +330,8 @@
       </div>
 
       <div class="col-md-2 d-flex gap-2">
-        <button type="submit" class="mp-btn-action flex-grow-1" style="height: 44px; font-size:0.88rem;"><i class="bi bi-funnel-fill"></i> Filtrar</button>
-        <a href="{% url 'lista_metodos_pago' %}" class="mp-btn-outline" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+        <button type="submit" class="mp-btn-action flex-grow-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas" style="height: 44px; font-size:0.88rem;"><i class="bi bi-funnel-fill"></i> Filtrar</button>
+        <a href="{% url 'lista_metodos_pago' %}" class="mp-btn-outline" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"><i class="bi bi-arrow-counterclockwise"></i></a>
       </div>
     </form>
   </div>
@@ -401,13 +400,15 @@
               </td>
               <td style="text-align: center;">
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                  <button class="btn btn-sm btn-outline-info border-0" title="Editar registro"
-                          data-bs-toggle="modal" data-bs-target="#modalEditarPago_{{ p.pk }}">
+                  <button class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Editar Pago"
+                          style="background:rgba(77,168,218,0.15); color:#4DA8DA; border:1px solid rgba(77,168,218,0.3); border-radius:8px; padding:.35rem .65rem;"
+                          data-bs-target="#modalEditarPago_{{ p.pk }}">
                     <i class="bi bi-pencil-square fs-6"></i>
                   </button>
                   <form method="POST" action="{% url 'eliminar_metodo_pago' p.pk %}" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro de pago #{{ p.codigo_metodo }}?');">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Eliminar registro">
+                    <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Eliminar Pago"
+                            style="background:rgba(235,77,75,0.15); color:#ff7675; border:1px solid rgba(235,77,75,0.35); border-radius:8px; padding:.35rem .65rem;">
                       <i class="bi bi-trash3-fill fs-6"></i>
                     </button>
                   </form>
@@ -447,9 +448,9 @@
                             <textarea name="observacion" class="form-control py-2" rows="2">{{ p.observacion|default:'' }}</textarea>
                           </div>
                         </div>
-                        <div class="modal-footer border-top border-secondary p-3">
-                          <button type="button" class="btn btn-secondary px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
+                        <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
+                          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+                          <button type="submit" class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Guardar Cambios" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
                         </div>
                       </form>
                     </div>
@@ -525,12 +526,21 @@
             <textarea name="observacion" class="form-control py-2" rows="2" placeholder="Detalles u observaciones del pago..."></textarea>
           </div>
         </div>
-        <div class="modal-footer border-top border-secondary p-3">
-          <button type="button" class="btn btn-secondary px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
+        <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+          <button type="submit" class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Guardar Pago" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+});
+</script>
 {% endblock %}
