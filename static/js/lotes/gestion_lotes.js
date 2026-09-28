@@ -1,13 +1,17 @@
 /**
  * GESTION_LOTES.JS — Gestión de Lotes de Inventario
- * Funcionalidades: gráfico de stock, dropdown de presentación, dropzone de imagen, validación
+ * Funcionalidades: gráfico de stock, dropdown de presentación, validación
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  inicializarGraficoProveedores();
+  try {
+    inicializarGraficoProveedores();
+  } catch (e) {
+    console.error('No se pudo inicializar el gráfico de proveedores:', e);
+  }
   inicializarDropdownPresentacion();
-  inicializarDropzoneImagen();
   inicializarValidacionFormulario();
+  aplicarPreseleccionPresentacion();
 });
 
 /**
@@ -16,6 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
 function inicializarGraficoProveedores() {
   const canvas = document.getElementById('chartProveedores');
   if (!canvas) return;
+
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js no está disponible; se omite el gráfico de proveedores.');
+    return;
+  }
 
   const configElement = document.getElementById('lotes-config');
   let labels = [];
@@ -92,63 +101,25 @@ function inicializarDropdownPresentacion() {
 }
 
 /**
- * Dropzone de imagen: click, drag&drop, preview y quitar
+ * Si llegamos desde Bodega con ?presentacion=<pk>, selecciona esa
+ * presentación automáticamente y lleva al usuario directo al formulario.
  */
-function inicializarDropzoneImagen() {
-  const dropzone   = document.getElementById('dropzone-imagen-lote');
-  const input      = document.getElementById('input-imagen-lote');
-  const contenido  = document.getElementById('dropzone-imagen-contenido');
-  const previewWrap = document.getElementById('lote-imagen-preview-wrap');
-  const previewImg  = document.getElementById('lote-imagen-preview-img');
-  const btnQuitar   = document.getElementById('btn-quitar-imagen-lote');
-  if (!dropzone || !input) return;
+function aplicarPreseleccionPresentacion() {
+  const contenedor = document.getElementById('lotes-preseleccion');
+  if (!contenedor) return;
 
-  function mostrarPreview(file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      previewImg.src = e.target.result;
-      contenido.classList.add('d-none');
-      previewWrap.classList.remove('d-none');
-    };
-    reader.readAsDataURL(file);
+  const pk = contenedor.dataset.presentacion;
+  if (!pk) return;
+
+  const item = document.querySelector(`.presentacion-lote-item[data-value="${pk}"]`);
+  if (!item) return;
+
+  item.click();
+
+  const formulario = document.getElementById('form-lote');
+  if (formulario) {
+    formulario.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-
-  dropzone.addEventListener('click', e => {
-    if (e.target.closest('#btn-quitar-imagen-lote')) return;
-    input.click();
-  });
-
-  input.addEventListener('change', function () {
-    if (this.files && this.files[0]) mostrarPreview(this.files[0]);
-  });
-
-  ['dragenter', 'dragover'].forEach(evt =>
-    dropzone.addEventListener(evt, e => {
-      e.preventDefault();
-      dropzone.classList.add('lote-imagen-dropzone--activo');
-    })
-  );
-  ['dragleave', 'drop'].forEach(evt =>
-    dropzone.addEventListener(evt, e => {
-      e.preventDefault();
-      dropzone.classList.remove('lote-imagen-dropzone--activo');
-    })
-  );
-  dropzone.addEventListener('drop', e => {
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      input.files = e.dataTransfer.files;
-      mostrarPreview(file);
-    }
-  });
-
-  btnQuitar?.addEventListener('click', e => {
-    e.stopPropagation();
-    input.value = '';
-    previewImg.src = '';
-    previewWrap.classList.add('d-none');
-    contenido.classList.remove('d-none');
-  });
 }
 
 /**
@@ -164,21 +135,24 @@ function inicializarValidacionFormulario() {
     if (!selLote.value) {
       e.preventDefault();
       const btn = document.getElementById('presentacion-lote-btn');
-      btn.style.borderColor = '#e74c3c';
-      btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (btn) {
+        btn.style.borderColor = '#e74c3c';
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   });
-}
-document.querySelectorAll('.lote-spin-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const input = document.getElementById(btn.dataset.target);
-    if (!input) return;
-    const step = parseFloat(input.step) || 1;
-    const min = input.min !== '' ? parseFloat(input.min) : -Infinity;
-    let valor = parseFloat(input.value) || 0;
-    valor = btn.classList.contains('lote-spin-up') ? valor + step : valor - step;
-    if (valor < min) valor = min;
-    input.value = valor;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+  document.querySelectorAll('.lote-spin-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      const step = parseFloat(input.step) || 1;
+      const min = input.min !== '' ? parseFloat(input.min) : -Infinity;
+      let valor = parseFloat(input.value) || 0;
+      valor = btn.classList.contains('lote-spin-up') ? valor + step : valor - step;
+      if (valor < min) valor = min;
+      input.value = valor;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
   });
-});
+}

@@ -47,6 +47,10 @@
       <form method="POST" action="{% url 'lote_create' %}" id="form-lote" enctype="multipart/form-data">
         {% csrf_token %}
 
+        <!-- Dato usado por gestion_lotes.js para preseleccionar la presentación
+             cuando se llega desde Bodega con ?presentacion=<pk> -->
+        <div id="lotes-preseleccion" data-presentacion="{{ presentacion_preseleccionada|default:'' }}" class="d-none"></div>
+
         <!-- Imagen del lote (opcional) -->
         <div class="mb-4">
           <label class="inv-label">Imagen del producto <span class="lote-label-hint">(opcional)</span></label>
@@ -126,11 +130,13 @@
 
         <!-- Bodega -->
         <div class="mb-3">
-          <label class="inv-label">Bodega <span class="text-danger">*</span></label>
-          <select name="bodega" class="form-select inv-input" required>
-            <option value="">— Selecciona bodega —</option>
+          <label class="inv-label">Bodega</label>
+          <select name="bodega" class="form-select inv-input">
+            {% if bodegas|length != 1 %}
+            <option value="">— Bodega por defecto —</option>
+            {% endif %}
             {% for b in bodegas %}
-            <option value="{{ b.pk }}">{{ b.nombre }}</option>
+            <option value="{{ b.pk }}" {% if bodegas|length == 1 %}selected{% endif %}>{{ b.nombre }}</option>
             {% endfor %}
           </select>
         </div>
