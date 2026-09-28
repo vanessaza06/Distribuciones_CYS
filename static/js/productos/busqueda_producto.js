@@ -123,7 +123,7 @@ window.bpBuscarDetalle = async function (q) {
     const filasPresentaciones = p.presentaciones.map(pr => `
       <tr>
         <td class="bp-td-nombre">${pr.nombre}</td>
-        <td class="bp-td-centro">${pr.unidades}</td>
+        <td class="bp-td-centro">${pr.cantidad}</td>
         <td class="bp-td-centro bp-td-stock">${pr.stock_actual}</td>
         <td class="bp-td-precio">$${parseInt(pr.precio || 0).toLocaleString('es-CO')}</td>
       </tr>

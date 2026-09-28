@@ -19,6 +19,16 @@ from app.forms import NuevaCompraForm
 logger = logging.getLogger(__name__)
 
 
+def cop(valor):
+    """Formatea un monto como pesos colombianos: $80.000 (sin decimales, punto de miles)."""
+    return f"${int(valor):,}".replace(",", ".")
+
+
+def _breadcrumb_compras(proveedor):
+    """Migas de pan para las vistas de compras: Tablero > Compras [> Compra #X]."""
+    return [{'nombre': 'Compras', 'url': None}]
+
+
 # ── VISTA PRINCIPAL: LISTADO Y REGISTRO DE COMPRAS ─────────────────────────────
 @login_required
 def lista_compras(request):
@@ -145,7 +155,7 @@ def lista_compras(request):
                 messages.success(
                     request,
                     f'✅ Compra #{nueva_compra.codigo_compra} registrada exitosamente: '
-                    f'{cantidad} und. de "{producto.nombre}" (${total:,.0f}) para {proveedor_compra.nombre_empresa}.'
+                    f'{cantidad} und. de "{producto.nombre}" ({cop(total)}) para {proveedor_compra.nombre_empresa}.'
                 )
                 return redirect(f"{reverse('lista_compras')}?proveedor={proveedor_compra.pk}")
             except Exception as e:
@@ -277,10 +287,7 @@ def lista_compras(request):
         'gastos_porcentajes_json': json.dumps(gastos_porcentajes),
         'catalogo_productos_json': json.dumps(catalogo_productos),
         'lotes_catalogo_json': json.dumps(lotes_catalogo),
-        'breadcrumb_items': [
-            {'nombre': 'Proveedores', 'url': reverse('lista_proveedores')},
-            {'nombre': 'Compras', 'url': None},
-        ],
+        'breadcrumb_items': _breadcrumb_compras(proveedor),
     }
 
     return render(request, 'compras/compras.html', context)
@@ -343,7 +350,7 @@ def registrar_pago_compra(request, id=None):
         return redirect(redirect_url)
 
     if monto > compra.saldo:
-        messages.error(request, f'El monto ingresado (${monto:,.0f}) supera el saldo pendiente (${compra.saldo:,.0f}).')
+        messages.error(request, f'El monto ingresado ({cop(monto)}) supera el saldo pendiente ({cop(compra.saldo)}).')
         return redirect(redirect_url)
 
     metodo = request.POST.get('metodo_pago', 'efectivo')
@@ -367,13 +374,13 @@ def registrar_pago_compra(request, id=None):
     if compra.saldo <= Decimal('0.00'):
         messages.success(
             request,
-            f'✅ ¡Pago de ${monto:,.0f} registrado con éxito! La compra #{compra.codigo_compra} ha quedado completamente PAGADA.'
+            f'✅ ¡Pago de {cop(monto)} registrado con éxito! La compra #{compra.codigo_compra} ha quedado completamente PAGADA.'
         )
     else:
         messages.success(
             request,
-            f'✅ Abono de ${monto:,.0f} registrado con éxito en Compra #{compra.codigo_compra}. '
-            f'Plata restante que falta por pagar: ${compra.saldo:,.0f}.'
+            f'✅ Abono de {cop(monto)} registrado con éxito en Compra #{compra.codigo_compra}. '
+            f'Plata restante que falta por pagar: {cop(compra.saldo)}.'
         )
 
     return redirect(redirect_url)
@@ -397,13 +404,14 @@ def detalle_compra(request, id):
         compra.numero_lote = primer_detalle.numero_lote
         compra.producto = primer_detalle.producto
 
+    breadcrumb_items = _breadcrumb_compras(compra.proveedor)
+    breadcrumb_items[-1]['url'] = f"{reverse('lista_compras')}?proveedor={compra.proveedor.pk}"
+    breadcrumb_items.append({'nombre': f'Compra #{compra.codigo_compra}', 'url': None})
+
     context = {
         'compra': compra,
         'proveedor': compra.proveedor,
-        'breadcrumb_items': [
-            {'nombre': 'Compras', 'url': reverse('lista_compras')},
-            {'nombre': f'Compra #{compra.codigo_compra}', 'url': None},
-        ],
+        'breadcrumb_items': breadcrumb_items,
     }
 
     return render(request, 'compras/detalle_compra.html', context)

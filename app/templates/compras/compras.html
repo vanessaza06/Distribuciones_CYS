@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
+{% load money_filters %}
 
 {% block page_title %}Compras{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script>
   // Variables globales para los gráficos (datos del servidor)
@@ -29,7 +31,7 @@
         <div class="alert {% if message.tags == 'success' %}alert-success-dev{% elif message.tags == 'error' %}alert-danger-dev{% else %}alert-info-dev{% endif %} alert-dismissible fade show" role="alert">
           <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
           {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" title="Cerrar mensaje"></button>
         </div>
       {% endfor %}
     </div>
@@ -38,29 +40,29 @@
   <!-- ====== TARJETAS KPI (ESTILO INVENTARIO) ====== -->
   <div class="kpi-cards-grid mb-4">
     <!-- Gasto Total -->
-    <div class="kpi-card kpi-card-cyan">
+    <div class="kpi-card kpi-card-cyan" title="Suma del valor total de todas las compras hechas a este proveedor">
       <div class="kpi-card-top">
         <div class="kpi-icon-box cyan"><i class="bi bi-receipt"></i></div>
         <span class="kpi-badge cyan">SUBTOTAL</span>
       </div>
-      <div class="kpi-value cyan" id="subtotal-principal">$<span class="subtotal-kpi">{{ subtotal_compras|default:0|floatformat:0 }}</span></div>
+      <div class="kpi-value cyan" id="subtotal-principal"><span class="subtotal-kpi">{{ subtotal_compras|default:0|cop }}</span></div>
       <p class="kpi-title">Subtotal de Compras</p>
-      <p class="kpi-sub">Gasto: ${{ total_gastado|default:0|floatformat:0 }}</p>
+      <p class="kpi-sub">Gasto: {{ total_gastado|default:0|cop }}</p>
     </div>
 
     <!-- Compras Mes -->
-    <div class="kpi-card kpi-card-green">
+    <div class="kpi-card kpi-card-green" title="Cantidad y valor de las compras registradas este mes">
       <div class="kpi-card-top">
         <div class="kpi-icon-box green"><i class="bi bi-bag"></i></div>
         <span class="kpi-badge green">MES</span>
       </div>
       <div class="kpi-value green">{{ count_mes|default:0 }}</div>
       <p class="kpi-title">Compras Mes</p>
-      <p class="kpi-sub">${{ total_mes|default:0|floatformat:0 }} total</p>
+      <p class="kpi-sub">{{ total_mes|default:0|cop }} total</p>
     </div>
 
     <!-- Producto Top -->
-    <div class="kpi-card kpi-card-purple">
+    <div class="kpi-card kpi-card-purple" title="Producto con más unidades compradas a este proveedor">
       <div class="kpi-card-top">
         <div class="kpi-icon-box purple"><i class="bi bi-star"></i></div>
         <span class="kpi-badge purple">TOP</span>
@@ -71,7 +73,7 @@
     </div>
 
     <!-- Nueva Compra (Acción → abre modal) -->
-    <div class="kpi-card kpi-card-pink" role="button" tabindex="0" aria-label="Registrar nueva compra" data-bs-toggle="modal" data-bs-target="#modalNuevaCompra">
+    <div class="kpi-card kpi-card-pink" role="button" tabindex="0" aria-label="Registrar nueva compra" data-bs-toggle="modal" data-bs-target="#modalNuevaCompra" title="Abrir formulario para registrar una nueva compra">
       <div class="kpi-card-top">
         <div class="kpi-icon-box pink"><i class="bi bi-plus-circle"></i></div>
         <span class="kpi-badge pink">ACCIÓN</span>
@@ -119,7 +121,7 @@
         </div>
         <div class="proveedor-actions d-flex align-items-center gap-2 flex-wrap">
           <div class="dropdown">
-            <button class="btn btn-sm dropdown-toggle fw-bold d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(207,156,72,0.18); color: #CF9C48; border: 1px solid rgba(207,156,72,0.4); padding: 0.45rem 0.9rem; border-radius: 8px;">
+            <button class="btn btn-sm dropdown-toggle fw-bold d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver historial de compras de otro proveedor" style="background: rgba(207,156,72,0.18); color: #CF9C48; border: 1px solid rgba(207,156,72,0.4); padding: 0.45rem 0.9rem; border-radius: 8px;">
               <i class="bi bi-arrow-repeat"></i>
               <span>Cambiar Proveedor</span>
             </button>
@@ -146,7 +148,7 @@
               </li>
             </ul>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: #e2e8f0; border-color: rgba(255,255,255,0.2); padding: 0.45rem 0.85rem; border-radius: 8px;">
+          <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalProveedores" title="Abrir el directorio completo de proveedores" style="color: #e2e8f0; border-color: rgba(255,255,255,0.2); padding: 0.45rem 0.85rem; border-radius: 8px;">
             <i class="bi bi-grid-3x3-gap"></i>
             <span>Ver Directorio</span>
           </button>
@@ -187,10 +189,10 @@
                       title="Nueva compra">
                 <i class="bi bi-plus-circle me-2"></i>Nueva compra
               </button>
-              <span class="badge badge-cyan">{{ compras_count|default:0 }}</span>
+              <span class="badge badge-cyan" title="Total de compras registradas para este proveedor">{{ compras_count|default:0 }}</span>
               <!-- Solo el chevron controla el collapse -->
               <i class="bi bi-chevron-down" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
-                
+                 title="Mostrar u ocultar historial de compras"
                  data-bs-toggle="collapse"
                  data-bs-target="#collapseHistorial"
                  aria-expanded="true"
@@ -202,7 +204,7 @@
         <!-- Contenido desplegable -->
         <div class="collapse show" id="collapseHistorial">
           <div class="table-responsive table-scroll">
-            <table class="table table-sm align-middle mb-0">
+            <table id="tablaHistorialCompras" class="table table-sm align-middle mb-0">
               <thead>
                 <tr>
                   <th class="text-center small header-th">#</th>
@@ -224,68 +226,68 @@
                       <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-box icon-primary"></i>
                         <div>
-                          <div class="fw-semibold small">{{ compra.producto.nombre }}</div>
+                          <div class="fw-semibold small text-truncate" style="max-width: 180px;" title="{{ compra.producto.nombre }}">{{ compra.producto.nombre }}</div>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
                       <span class="badge badge-cyan">{{ compra.cantidad }}</span>
                     </td>
-                    <td class="text-end small">
+                    <td class="text-end small" data-order="{{ compra.precio_unitario|default:0|stringformat:'f' }}">
                       {% if compra.precio_unitario %}
-                        ${{ compra.precio_unitario|floatformat:0 }}
+                        {{ compra.precio_unitario|cop }}
                       {% else %}
                         <span class="text-muted">—</span>
                       {% endif %}
                     </td>
-                    <td class="text-end small fw-bold text-success">
+                    <td class="text-end small fw-bold text-success" data-order="{{ compra.total|default:0|stringformat:'f' }}">
                       {% if compra.precio_unitario %}
-                        ${{ compra.total|floatformat:0 }}
+                        {{ compra.total|cop }}
                       {% else %}
                         <span class="text-muted">—</span>
                       {% endif %}
                     </td>
                     <td class="text-center small">
                       {% if compra.estado_pago == 'pagada' %}
-                        <span class="badge badge-success-custom">
+                        <span class="badge badge-success-custom" title="Compra pagada en su totalidad">
                           <i class="bi bi-check-circle me-1"></i>Pagada
                         </span>
                       {% elif compra.estado_pago == 'parcial' %}
-                        <span class="badge badge-warning-custom">
+                        <span class="badge badge-warning-custom" title="Se ha abonado una parte del total">
                           <i class="bi bi-dash-circle me-1"></i>Parcial
                         </span>
                         <div class="small fw-semibold text-danger mt-1" title="Plata que falta por pagar">
-                          Falta: ${{ compra.saldo|floatformat:0 }}
+                          Falta: {{ compra.saldo|cop }}
                         </div>
                       {% else %}
-                        <span class="badge badge-pending-custom">
+                        <span class="badge badge-pending-custom" title="Aún no se ha registrado ningún pago">
                           <i class="bi bi-hourglass-split me-1"></i>Pendiente
                         </span>
                         <div class="small fw-semibold text-muted mt-1" title="Plata pendiente de pago">
-                          Falta: ${{ compra.saldo|floatformat:0 }}
+                          Falta: {{ compra.saldo|cop }}
                         </div>
                       {% endif %}
                     </td>
                     <td class="text-center small">
                       {% if compra.estado == 'confirmada' %}
-                        <span class="badge badge-estado-confirmada">
+                        <span class="badge badge-estado-confirmada" title="El proveedor confirmó el pedido, aún no llega">
                           <i class="bi bi-check-circle me-1"></i>Confirmada
                         </span>
                       {% elif compra.estado == 'recibida' %}
-                        <span class="badge badge-estado-recibida">
+                        <span class="badge badge-estado-recibida" title="La mercancía ya entró al inventario">
                           <i class="bi bi-box-seam me-1"></i>Recibida
                         </span>
                       {% elif compra.estado == 'cancelada' %}
-                        <span class="badge badge-estado-cancelada">
+                        <span class="badge badge-estado-cancelada" title="Compra cancelada, no afecta el inventario">
                           <i class="bi bi-x-circle me-1"></i>Cancelada
                         </span>
                       {% else %}
-                        <span class="badge badge-estado-pendiente">
+                        <span class="badge badge-estado-pendiente" title="Compra registrada, esperando confirmación">
                           <i class="bi bi-clock-history me-1"></i>Pendiente
                         </span>
                       {% endif %}
                     </td>
-                    <td class="text-center small text-muted">{{ compra.fecha_registro|date:"d/m H:i" }}</td>
+                    <td class="text-center small text-muted" data-order="{{ compra.fecha_registro|date:'c' }}">{{ compra.fecha_registro|date:"d/m H:i" }}</td>
                     <td class="text-center">
                       <div class="dropdown">
                         <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
@@ -293,7 +295,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
                           <li>
-                            <a class="dropdown-item" href="{% url 'detalle_compra' compra.id %}">
+                            <a class="dropdown-item" href="{% url 'detalle_compra' compra.id %}" title="Ver toda la información de esta compra">
                               <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
                             </a>
                           </li>
@@ -371,7 +373,7 @@
                     <td colspan="5" class="text-end fw-bold text-uppercase small">
                       <i class="bi bi-calculator me-1"></i>Subtotal
                     </td>
-                    <td class="text-end fw-bold text-success" style="white-space: nowrap;">$<span id="subtotal-formatted">{{ subtotal_compras|default:0|floatformat:0 }}</span></td>
+                    <td class="text-end fw-bold text-success" style="white-space: nowrap;"><span id="subtotal-formatted">{{ subtotal_compras|default:0|cop }}</span></td>
                     <td colspan="3"></td>
                   </tr>
                 </tfoot>
@@ -389,7 +391,7 @@
   <div class="row g-3 mt-4">
     <div class="col-12">
       <div class="card card-dev card-header-top">
-        <div class="card-header border-bottom gradient-header">
+        <div class="card-header border-bottom gradient-header" title="Valor total comprado a este proveedor en los últimos 6 meses">
           <h5 class="mb-0 fw-bold">
             <i class="bi bi-graph-up me-2"></i>Compras por Mes
           </h5>
@@ -402,7 +404,7 @@
 
     <div class="col-12">
       <div class="card card-dev card-header-top">
-        <div class="card-header border-bottom gradient-header">
+        <div class="card-header border-bottom gradient-header" title="Los 5 productos con más unidades compradas a este proveedor">
           <h5 class="mb-0 fw-bold">
             <i class="bi bi-bar-chart-fill me-2"></i>Productos Más Comprados
           </h5>
@@ -443,7 +445,7 @@
             <label class="dev-form-label fw-bold d-flex align-items-center gap-1">
               <i class="bi bi-truck text-warning"></i> Proveedor de la Compra
             </label>
-            <select id="proveedorSeleccionado" name="proveedor" class="form-select form-select-lg" required style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
+            <select id="proveedorSeleccionado" name="proveedor" class="form-select form-select-lg" required title="Proveedor al que se le está comprando" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
               {% for prov in todos_proveedores %}
                 <option value="{{ prov.pk }}" {% if proveedor and prov.pk == proveedor.pk %}selected{% endif %}>
                   {{ prov.nombre_empresa }} (NIT: {{ prov.pk }})
@@ -457,7 +459,7 @@
             <label for="formCompraProducto" class="dev-form-label fw-bold d-flex align-items-center gap-1">
               <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
             </label>
-            <select id="formCompraProducto" name="producto" class="form-select form-select-lg" required onchange="window.seleccionarProductoCompra(this)" style="background-color: #02224a; color: #fff; border: 1px solid rgba(77,168,218,0.3);">
+            <select id="formCompraProducto" name="producto" class="form-select form-select-lg" required title="Producto que estás comprando" onchange="window.seleccionarProductoCompra(this)" style="background-color: #02224a; color: #fff; border: 1px solid rgba(77,168,218,0.3);">
               <option value="" disabled selected>-- Selecciona un Producto --</option>
               {% for p in form.producto.field.queryset %}
                 <option value="{{ p.pk }}" data-precio="{{ p.precio_base|default:0 }}" data-stock="{{ p.stock_total }}" data-categoria="{{ p.categoria.nombre|default:'General' }}">
@@ -472,7 +474,7 @@
             <label for="formCompraLote" class="dev-form-label fw-semibold d-flex align-items-center gap-1">
               <i class="bi bi-tags text-secondary"></i> Lote Destino <small class="text-muted">(Opcional)</small>
             </label>
-            <select id="formCompraLote" name="lote" class="form-select form-select-lg" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+            <select id="formCompraLote" name="lote" class="form-select form-select-lg" title="Lote donde entrará esta mercancía al recibirla" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
               <option value="">-- Sin lote asignado / Registrar después --</option>
               {% for l in form.lote.field.queryset %}
                 <option value="{{ l.pk }}" data-producto="{{ l.producto_id }}">
@@ -486,13 +488,13 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label for="formCompraCantidad" class="dev-form-label fw-bold">Cantidad (Unidades) <span class="text-danger">*</span></label>
-              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg" min="1" value="1" required oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg" min="1" value="1" required title="Cuántas unidades estás comprando" oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
             </div>
             <div class="col-md-6">
               <label for="formCompraPrecio" class="dev-form-label fw-bold">Precio Unitario ($) <span class="text-danger">*</span></label>
               <div class="input-group input-group-lg">
                 <span class="input-group-text" style="background: rgba(207,156,72,0.2); color: #CF9C48; border-color: rgba(207,156,72,0.3);">$</span>
-                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg" step="any" min="0.01" placeholder="Ej: 25000" required oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
+                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg" step="any" min="0.01" placeholder="Ej: 25000" required title="Precio de compra por cada unidad" oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
               </div>
             </div>
           </div>
@@ -516,7 +518,7 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="formCompraEstado" class="dev-form-label fw-semibold">Estado de la Compra</label>
-                <select id="formCompraEstado" name="estado" class="form-select" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <select id="formCompraEstado" name="estado" class="form-select" title="En qué punto del proceso está esta compra" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
                   <option value="recibida" selected>Recibida (Ingresar al stock ahora)</option>
                   <option value="confirmada">Confirmada (En camino)</option>
                   <option value="pendiente">Pendiente</option>
@@ -530,18 +532,18 @@
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
                   <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="pagarTotalNuevaCompra()">100% Total</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="creditoNuevaCompra()">Crédito ($0)</button>
+                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" title="Pagar el total de la compra de una vez" onclick="pagarTotalNuevaCompra()">100% Total</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" title="Registrar la compra sin pagar nada todavía" onclick="creditoNuevaCompra()">Crédito ($0)</button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);" oninput="recalcularSaldoNuevaCompra()">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" title="Cuánto vas a pagar ahora de esta compra" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);" oninput="recalcularSaldoNuevaCompra()">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
                   Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
               </div>
               <div class="col-md-6">
                 <label for="formCompraMetodoPago" class="dev-form-label fw-semibold">Método de Pago</label>
-                <select id="formCompraMetodoPago" name="metodo_pago" class="form-select" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <select id="formCompraMetodoPago" name="metodo_pago" class="form-select" title="Cómo se pagó el abono inicial" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
                   <option value="efectivo" selected>Efectivo</option>
                   <option value="nequi">Nequi</option>
                   <option value="daviplata">Daviplata</option>
@@ -555,8 +557,8 @@
       </div>
 
       <div class="modal-footer gradient-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" form="formNuevaCompra" class="btn btn-primary fw-bold">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" title="Cerrar sin guardar esta compra">Cancelar</button>
+        <button type="submit" form="formNuevaCompra" class="btn btn-primary fw-bold" title="Guardar esta compra en el historial">
           <i class="bi bi-bag-check me-2"></i>Registrar compra
         </button>
       </div>
@@ -625,7 +627,7 @@
               <div class="detalle-card h-100">
                 <div class="detalle-icon"><i class="bi bi-cash-coin"></i></div>
                 <p class="detalle-label">Precio Unitario</p>
-                <p class="detalle-value">{% if compra.precio_unitario %}${{ compra.precio_unitario|floatformat:0 }}{% else %}Sin precio{% endif %}</p>
+                <p class="detalle-value">{% if compra.precio_unitario %}{{ compra.precio_unitario|cop }}{% else %}Sin precio{% endif %}</p>
               </div>
             </div>
 
@@ -633,7 +635,7 @@
               <div class="detalle-card detalle-card-total h-100">
                 <div class="detalle-icon detalle-icon-total"><i class="bi bi-receipt"></i></div>
                 <p class="detalle-label">Total Compra</p>
-                <p class="detalle-value detalle-total">{% if compra.precio_unitario %}${{ compra.total|floatformat:0 }}{% else %}Sin precio{% endif %}</p>
+                <p class="detalle-value detalle-total">{% if compra.precio_unitario %}{{ compra.total|cop }}{% else %}Sin precio{% endif %}</p>
               </div>
             </div>
 
@@ -675,7 +677,7 @@
       <div class="modal-body p-4">
         <div class="dev-search-wrapper mb-3">
           <i class="dev-search-icon bi bi-search"></i>
-          <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, contacto...">
+          <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, contacto..." title="Filtra la lista de proveedores mientras escribes">
         </div>
 
         <div id="tablaProveedores" class="table-scroll" style="max-height: 400px; overflow-y: auto;">
@@ -688,6 +690,7 @@
                data-telefono="{{ prov.telefono|lower|default:'' }}" 
                data-id="{{ prov.pk }}" 
                data-proveedor-name="{{ prov.nombre_empresa }}"
+               title="Ver historial de compras de {{ prov.nombre_empresa }}"
                style="border-radius: 10px; border: 1px solid rgba(239,248,226,0.12); transition: all 0.2s ease;">
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
@@ -817,7 +820,7 @@
                             <i class="bi bi-file-earmark me-2"></i>Número de Factura
                         </label>
                         <input type="text" id="numeroFactura" name="numero_factura" class="form-control form-control-lg"
-                               placeholder="Ej: FAC-2026-001">
+                               placeholder="Ej: FAC-2026-001" title="Referencia opcional de esta transacción">
                     </div>
 
                     <!-- Método de Pago -->
@@ -836,27 +839,27 @@
                             </div>
                             <div class="collapse show" id="otrosMetodos">
                                 <div class="metodos-pago-list">
-                                    <label class="metodo-pago-item">
+                                    <label class="metodo-pago-item" title="Pagar por transferencia Nequi">
                                         <input type="radio" name="metodo_pago" value="nequi" class="form-check-input">
                                         <i class="bi bi-wallet2"></i>
                                         <span>Nequi</span>
                                     </label>
-                                    <label class="metodo-pago-item">
+                                    <label class="metodo-pago-item" title="Pagar por transferencia Daviplata">
                                         <input type="radio" name="metodo_pago" value="daviplata" class="form-check-input">
                                         <i class="bi bi-wallet2"></i>
                                         <span>Daviplata</span>
                                     </label>
-                                    <label class="metodo-pago-item">
+                                    <label class="metodo-pago-item" title="Pagar por transferencia Bancolombia a la Mano">
                                         <input type="radio" name="metodo_pago" value="bancolombia" class="form-check-input">
                                         <i class="bi bi-bank"></i>
                                         <span>Bancolombia a la Mano</span>
                                     </label>
-                                    <label class="metodo-pago-item">
+                                    <label class="metodo-pago-item" title="Pagar por transferencia Bre-B">
                                         <input type="radio" name="metodo_pago" value="breb" class="form-check-input">
                                         <i class="bi bi-lightning"></i>
                                         <span>Bre-B</span>
                                     </label>
-                                    <label class="metodo-pago-item">
+                                    <label class="metodo-pago-item" title="Pagar en efectivo">
                                         <input type="radio" name="metodo_pago" value="efectivo" class="form-check-input">
                                         <i class="bi bi-cash-coin"></i>
                                         <span>Efectivo</span>
@@ -895,13 +898,13 @@
                                 <i class="bi bi-cash-stack me-1 text-success"></i>Monto a Pagar Ahora
                                 <span class="text-danger">*</span>
                             </label>
-                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" id="btnPagarTodoSaldo" style="font-size:0.8rem;">
+                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" id="btnPagarTodoSaldo" title="Llenar el monto con todo lo que falta pagar" style="font-size:0.8rem;">
                                 <i class="bi bi-check2-all me-1"></i>Pagar Todo el Saldo
                             </button>
                         </div>
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">$</span>
-                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa cuánto vas a pagar" required>
+                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa cuánto vas a pagar" required title="Valor del abono o pago que vas a registrar">
                         </div>
                         <small id="montoPagadoAyuda" class="text-muted">Ingresa el valor del abono o pago que vas a registrar.</small>
                     </div>
@@ -934,15 +937,15 @@
                         <label class="form-label">
                             <i class="bi bi-calendar me-2"></i>Fecha de Pago
                         </label>
-                        <input type="datetime-local" id="fechaPago" name="fecha_pago" class="form-control form-control-lg">
+                        <input type="datetime-local" id="fechaPago" name="fecha_pago" class="form-control form-control-lg" title="Fecha en la que se realizó este pago (opcional)">
                     </div>
                 </div>
 
                 <div class="modal-footer modal-custom-footer">
-                    <button type="button" class="btn btn-lg btn-modal-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-lg btn-modal-secondary" data-bs-dismiss="modal" title="Cerrar sin registrar el pago">
                         <i class="bi bi-x-circle me-2"></i>Cancelar
                     </button>
-                    <button type="submit" class="btn btn-lg btn-modal-primary">
+                    <button type="submit" class="btn btn-lg btn-modal-primary" title="Registrar este pago en la compra">
                         <i class="bi bi-check-circle me-2"></i>Guardar Pago
                     </button>
                 </div>
@@ -954,7 +957,37 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'js/proveedores/compras.js' %}"></script>
+<script>
+$(document).ready(function() {
+  if ($.fn.DataTable.isDataTable('#tablaHistorialCompras')) {
+    $('#tablaHistorialCompras').DataTable().destroy();
+  }
+
+  var tablaCompras = $('#tablaHistorialCompras').DataTable({
+    paging: true,
+    searching: false,
+    info: true,
+    lengthChange: false,
+    pageLength: 10,
+    ordering: true,
+    order: [],
+    columnDefs: [
+      { orderable: false, targets: 8 },
+      { orderable: false, targets: 0 }
+    ],
+    language: {
+      info: "Mostrando _START_ a _END_ de _TOTAL_ compras",
+      infoEmpty: "Mostrando 0 a 0 de 0 compras",
+      emptyTable: "Sin compras registradas aún.",
+      paginate: { first: '«', previous: '‹', next: '›', last: '»' }
+    },
+    dom: 'rt<"d-flex justify-content-center align-items-center mt-3"ip>'
+  });
+});
+</script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // MODAL NUEVA COMPRA: FUNCIONES GLOBALES INMEDIATAS
@@ -1095,25 +1128,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Formatear SUBTOTAL en tabla
-  const subtotalEl = document.getElementById('subtotal-formatted');
-  if (subtotalEl) {
-    const num = parseInt(subtotalEl.textContent) || 0;
-    subtotalEl.textContent = num.toLocaleString('es-CO');
-  }
-
-  // Formatear SUBTOTAL en tarjeta KPI
-  const subtotalKpi = document.querySelector('.subtotal-kpi');
-  if (subtotalKpi) {
-    const num = parseInt(subtotalKpi.textContent) || 0;
-    subtotalKpi.textContent = num.toLocaleString('es-CO');
-  }
-
-  // Formatear KPI values
-  document.querySelectorAll('.kpi-formatted').forEach(el => {
-    const num = parseInt(el.getAttribute('data-value')) || 0;
-    el.textContent = '$' + num.toLocaleString('es-CO');
-  });
+  // Nota: SUBTOTAL y KPIs ya llegan formateados en pesos colombianos
+  // desde el servidor (filtro `cop`), no requieren reformateo por JS.
 
   // Auto-reload después de registrar compra
   // ═══════════════════════════════════════════════════════════════
@@ -1130,15 +1146,24 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnAbrirPago = document.querySelectorAll('.btn-abrir-pago');
   const btnPagarTodoSaldo = document.getElementById('btnPagarTodoSaldo');
 
+  // Convierte montos con formato es-CO ("50.000,00") a número JS válido.
+  function parseMontoLocalizado(raw) {
+    if (raw === null || raw === undefined) return NaN;
+    const str = String(raw).trim();
+    if (!str) return NaN;
+    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+  }
+
   // Cuando se hace clic en "Registrar Pago", cargar los datos de la compra
   btnAbrirPago.forEach(btn => {
     btn.addEventListener('click', function() {
       const compraId = this.getAttribute('data-compra-id');
-      const totalCompra = parseFloat(this.getAttribute('data-compra-total')) || 0;
-      const montoPagadoAnterior = parseFloat(this.getAttribute('data-compra-pagado')) || 0;
+      const totalCompra = parseMontoLocalizado(this.getAttribute('data-compra-total')) || 0;
+      const montoPagadoAnterior = parseMontoLocalizado(this.getAttribute('data-compra-pagado')) || 0;
       const rawSaldo = this.getAttribute('data-compra-saldo');
-      const saldoActual = (rawSaldo !== null && !isNaN(parseFloat(rawSaldo)))
-        ? parseFloat(rawSaldo)
+      const saldoParseado = parseMontoLocalizado(rawSaldo);
+      const saldoActual = !isNaN(saldoParseado)
+        ? saldoParseado
         : Math.max(0, totalCompra - montoPagadoAnterior);
 
       document.getElementById('compraId').value = compraId;

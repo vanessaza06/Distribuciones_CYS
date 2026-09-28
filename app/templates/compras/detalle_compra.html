@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load money_filters %}
 
 {% block page_title %}Detalle de Compra{% endblock %}
 {% block nav_compras %}active{% endblock %}
@@ -501,9 +502,9 @@
     <div class="dc-kpi dc-kpi--gold">
       <div class="dc-kpi__label"><i class="bi bi-cash-stack"></i> Total Compra</div>
       <div class="dc-kpi__value dc-kpi__value--gold">
-        {% if compra.precio_unitario %}${{ compra.total|floatformat:0 }}{% else %}<span style="color:#8FA3B1;">—</span>{% endif %}
+        {% if compra.precio_unitario %}{{ compra.total|cop }}{% else %}<span style="color:#8FA3B1;">—</span>{% endif %}
       </div>
-      <div class="dc-kpi__sub">{{ compra.cantidad|default:0 }} und. × ${{ compra.precio_unitario|default:0|floatformat:0 }}/und.</div>
+      <div class="dc-kpi__sub">{{ compra.cantidad|default:0 }} und. × {{ compra.precio_unitario|default:0|cop }}/und.</div>
     </div>
 
     {# Estado de Pago #}
@@ -517,7 +518,7 @@
         <div class="dc-pago-badge dc-pago-badge--pendiente"><i class="bi bi-hourglass"></i>Pendiente</div>
       {% endif %}
       <div class="dc-kpi__sub">
-        Saldo: ${{ compra.saldo|default:0|floatformat:0 }}
+        Saldo: {{ compra.saldo|default:0|cop }}
       </div>
     </div>
 
@@ -608,7 +609,7 @@
               <div class="dc-field__label">Precio Unitario</div>
               <div class="dc-field__value dc-field__value--gold" style="font-size:1.3rem;font-weight:800;">
                 {% if compra.precio_unitario %}
-                  ${{ compra.precio_unitario|floatformat:0 }}
+                  {{ compra.precio_unitario|cop }}
                 {% else %}
                   <span class="dc-field__value--muted" style="font-size:1rem;">No especificado</span>
                 {% endif %}
@@ -618,7 +619,7 @@
               <div class="dc-field__label">Total Compra</div>
               <div class="dc-field__value dc-field__value--gold" style="font-size:1.6rem;font-weight:800;">
                 {% if compra.precio_unitario %}
-                  ${{ compra.total|floatformat:0 }}
+                  {{ compra.total|cop }}
                 {% else %}
                   <span class="dc-field__value--muted" style="font-size:1rem;">—</span>
                 {% endif %}
@@ -627,13 +628,13 @@
             <div class="dc-field">
               <div class="dc-field__label">Monto Pagado</div>
               <div class="dc-field__value" style="color:#27ae60;font-size:1.2rem;font-weight:700;">
-                ${{ compra.monto_pagado|default:0|floatformat:0 }}
+                {{ compra.monto_pagado|default:0|cop }}
               </div>
             </div>
             <div class="dc-field">
               <div class="dc-field__label">Saldo Pendiente</div>
               <div class="dc-field__value" style="color:{% if compra.saldo <= 0 %}#27ae60{% else %}#e74c3c{% endif %};font-size:1.2rem;font-weight:700;">
-                ${{ compra.saldo|default:0|floatformat:0 }}
+                {{ compra.saldo|default:0|cop }}
               </div>
             </div>
           </div>
@@ -645,8 +646,8 @@
               <span>Progreso de pago</span>
               <span>
                 {% if compra.monto_pagado %}
-                  {{ compra.monto_pagado|floatformat:0 }} / {{ compra.total|floatformat:0 }}
-                {% else %}0 / {{ compra.total|floatformat:0 }}{% endif %}
+                  {{ compra.monto_pagado|cop }} / {{ compra.total|cop }}
+                {% else %}$0 / {{ compra.total|cop }}{% endif %}
               </span>
             </div>
             <div class="dc-progress-bar-bg">
@@ -842,15 +843,15 @@
             <div class="row g-2 text-center">
               <div class="col-4 border-end border-secondary border-opacity-25">
                 <small class="text-muted d-block" style="font-size:0.75rem;">Total Compra</small>
-                <span class="fw-bold text-light">${{ compra.total|floatformat:0 }}</span>
+                <span class="fw-bold text-light">{{ compra.total|cop }}</span>
               </div>
               <div class="col-4 border-end border-secondary border-opacity-25">
                 <small class="text-muted d-block" style="font-size:0.75rem;">Ya Pagado</small>
-                <span class="fw-bold text-success">${{ compra.monto_pagado|floatformat:0 }}</span>
+                <span class="fw-bold text-success">{{ compra.monto_pagado|cop }}</span>
               </div>
               <div class="col-4">
                 <small class="text-warning fw-semibold d-block" style="font-size:0.75rem;">Plata que Falta</small>
-                <span class="fw-bold text-danger fs-5">${{ compra.saldo|floatformat:0 }}</span>
+                <span class="fw-bold text-danger fs-5">{{ compra.saldo|cop }}</span>
               </div>
             </div>
           </div>
@@ -860,7 +861,7 @@
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label class="form-label mb-0 fw-semibold">Monto a Pagar Ahora ($) <span class="text-danger">*</span></label>
               <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" style="font-size:0.78rem;" onclick="document.getElementById('inputMontoDetalle').value = '{{ compra.saldo|stringformat:'.2f' }}'; recalcularPagoDetalle();">
-                <i class="bi bi-check2-all me-1"></i>Pagar Todo (${{ compra.saldo|floatformat:0 }})
+                <i class="bi bi-check2-all me-1"></i>Pagar Todo ({{ compra.saldo|cop }})
               </button>
             </div>
             <div class="input-group input-group-lg">
@@ -873,7 +874,7 @@
           <div class="row g-2 mb-3">
             <div class="col-6">
               <small class="text-muted d-block mb-1">Saldo restante después:</small>
-              <div id="saldoRestanteDetalleTexto" class="fw-bold text-danger fs-6">${{ compra.saldo|floatformat:0 }}</div>
+              <div id="saldoRestanteDetalleTexto" class="fw-bold text-danger fs-6">{{ compra.saldo|cop }}</div>
             </div>
             <div class="col-6">
               <small class="text-muted d-block mb-1">Estado que quedará:</small>
