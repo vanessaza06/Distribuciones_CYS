@@ -15,6 +15,7 @@ from app.views.ventas import views as ventas_views
 from app.views.reportes import views as rep_views
 from app.views.configuracion import views as config_views
 from app.views.metodo_de_pago import views as mp_views
+from app.views.ayuda import views as ayuda_views
 
 
 urlpatterns = [
@@ -197,4 +198,7 @@ path(
     path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
     path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
     path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
+    
+        # AYUDA
+       path("ayuda/", ayuda_views.index, name="ayuda_index"),
 ]
