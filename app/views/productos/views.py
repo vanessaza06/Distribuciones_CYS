@@ -307,7 +307,7 @@ def buscar_producto(request):
     for pres in producto.presentaciones.all():
         stock_pres = pres.lotes.aggregate(total=Sum('stock_actual'))['total'] or 0
         presentaciones.append({
-            'id':           pres.id,
+            'id':           pres.pk,
             'nombre':       pres.nombre,
             'cantidad':     pres.cantidad,
             'precio':       str(pres.precio_venta),

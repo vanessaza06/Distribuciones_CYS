@@ -217,10 +217,7 @@ window.addEventListener('load', function () {
   });
 })();
 $(document).ready(function () {
-  if ($.fn.DataTable.isDataTable('#tabla-codigos')) {
-    $('#tabla-codigos').DataTable().destroy();
-  }
-  $('#tabla-codigos').DataTable({
+  window.tablaCodigosDT = $('#tabla-codigos').DataTable({
     paging: false,
     searching: false,
     info: false,
@@ -408,6 +405,9 @@ window.gpSeleccionarProducto = function (pk) {
     row.classList.toggle('active', row.dataset.pk === String(pk));
   });
 
+  var detalleBox = document.querySelector('.gp-md-detail');
+  if (detalleBox) detalleBox.classList.remove('d-none');
+
   document.querySelectorAll('.gp-md-panel').forEach(function (panel) {
     panel.classList.add('d-none');
   });
@@ -425,12 +425,9 @@ window.gpCerrarDetalle = function (event) {
   document.querySelectorAll('.gp-md-row').forEach(function (row) {
     row.classList.remove('active');
   });
-  document.querySelectorAll('.gp-md-panel').forEach(function (panel) {
-    panel.classList.add('d-none');
-  });
 
-  var panelVacio = document.getElementById('gpDetalleVacio');
-  if (panelVacio) panelVacio.classList.remove('d-none');
+  var detalleBox = document.querySelector('.gp-md-detail');
+  if (detalleBox) detalleBox.classList.add('d-none');
 };
 
 window.gpFiltrarProductos = function (q) {
@@ -449,3 +446,9 @@ window.gpFiltrarProductos = function (q) {
   if (noRes) noRes.classList.toggle('d-none', visibles > 0 || !term);
 };
 })();
+document.getElementById('modalRegistrarCodigos')
+  .addEventListener('shown.bs.modal', function () {
+    if (window.tablaCodigosDT) {
+      window.tablaCodigosDT.columns.adjust().responsive.recalc();
+    }
+  });
