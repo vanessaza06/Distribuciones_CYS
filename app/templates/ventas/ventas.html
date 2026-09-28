@@ -1317,6 +1317,19 @@ document.addEventListener('DOMContentLoaded', function() {
   if (modalCierre) {
     modalCierre.addEventListener('shown.bs.modal', recalcCierre);
   }
+
+  // ── TOOLTIPS DINÁMICOS SOLO HOVER ──
+  function initCYSTooltips() {
+    if (!window.bootstrap || !bootstrap.Tooltip) return;
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+      const existing = bootstrap.Tooltip.getInstance(el);
+      if (existing) existing.dispose();
+      const instance = new bootstrap.Tooltip(el, { trigger: 'hover', container: 'body' });
+      el.addEventListener('click', function () { instance.hide(); el.blur(); });
+      el.addEventListener('mouseleave', function () { instance.hide(); });
+    });
+  }
+  initCYSTooltips();
 });
 </script>
 {% endblock %}
