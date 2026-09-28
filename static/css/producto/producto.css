@@ -838,3 +838,52 @@ button#crear-categoria-btn {
 .prod-input[type="date"] {
   color-scheme: white;
 }
+/* ── Fix: la tabla puede scrollear internamente, pero la página no se debe correr ── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+}
+
+.prod-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* La tabla sí puede ser más ancha que su contenedor, para eso existe el scroll interno */
+.prod-table {
+  min-width: 600px;
+}
+/* ── Fix: buscador + botón "Nueva Presentación" en la misma fila ── */
+.search-box {
+  flex-wrap: nowrap;
+}
+
+/* El buscador se encoge en vez de mantener los 420px fijos del inline style */
+.search-box > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: none !important; /* anula el max-width:420px inline del HTML */
+}
+
+/* El botón nunca se encoge, y en pantallas muy angostas se puede reducir el texto */
+.search-box .prod-btn-nuevo {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* En pantallas muy angostas, dejamos solo el ícono "+" para que quepa */
+@media (max-width: 420px) {
+  .search-box .prod-btn-nuevo .btn-texto {
+    display: none;
+  }
+  .search-box .prod-btn-nuevo {
+    padding: .5rem .75rem;
+  }
+}
