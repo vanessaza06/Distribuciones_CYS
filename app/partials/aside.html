@@ -157,6 +157,7 @@
           <span>Reportes</span>
         </a>
 
+      
         <!-- INVENTARIO -->
         <div class="cys-sb-inventario-wrap">
           <div class="cys-sb-link cys-sb-link--parent sb-link-parent-flex">
@@ -290,12 +291,12 @@
 
     <hr class="cys-sb-divider">
 
-    <a href="#"
-       class="cys-sb-link cys-sb-link--ayuda"
-       data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ayuda">
-      <i class="bi bi-question-circle-fill"></i>
-      <span>Ayuda</span>
-    </a>
+    <a href="{% url 'ayuda_index' %}"
+   class="cys-sb-link cys-sb-link--ayuda"
+   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Ayuda">
+  <i class="bi bi-question-circle-fill"></i>
+  <span>Ayuda</span>
+</a>
 
     <a href="{% url 'configuracion_index' %}"
        class="cys-sb-link cys-sb-link--config"
@@ -323,5 +324,7 @@
     <div class="cys-logout-text">Cerrando sesión...</div>
   </div>
 </div>
+
+
 
 <script src="{% static 'js/cuerpo/aside.js' %}" id="cys-aside-script" hx-preserve="true"></script>
