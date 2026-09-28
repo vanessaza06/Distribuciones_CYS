@@ -941,5 +941,85 @@ select:-webkit-autofill {
   color: var(--azul-claro, #4DA8DA);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   SISTEMA DE TABLAS HOMOLOGADO — VENTAS Y MÉTODOS DE PAGO
+   ════════════════════════════════════════════════════════════════ */
+
+.cys-inv-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+}
+
+.cys-inv-table thead th {
+  background: rgba(10, 42, 82, 0.85) !important;
+  color: var(--azul-claro, #4DA8DA) !important;
+  font-weight: 800 !important;
+  font-size: 0.78rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  padding: 0.85rem 1rem !important;
+  border-top: 1px solid rgba(77, 168, 218, 0.25) !important;
+  border-bottom: 1px solid rgba(77, 168, 218, 0.3) !important;
+  white-space: nowrap;
+}
+
+.cys-inv-table thead th:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.cys-inv-table thead th:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.cys-inv-table tbody tr {
+  background: rgba(10, 34, 62, 0.6);
+  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.cys-inv-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(15, 59, 108, 0.85), rgba(10, 42, 82, 0.95)) !important;
+  transform: translateY(-1px);
+  box-shadow: inset 3px 0 0 #4DA8DA, 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cys-inv-table tbody td {
+  padding: 0.85rem 1rem !important;
+  border-top: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-bottom: 1px solid rgba(77, 168, 218, 0.15) !important;
+  vertical-align: middle;
+  font-size: 0.88rem;
+}
+
+.cys-inv-table tbody td:first-child {
+  border-left: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.cys-inv-table tbody td:last-child {
+  border-right: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Badges estilizados */
+.cys-stock-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cys-stock-badge--ok {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.35);
+}
+
 
 

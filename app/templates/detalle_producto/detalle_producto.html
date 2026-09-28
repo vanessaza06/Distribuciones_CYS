@@ -8,11 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
-{% endblock %}
-
-{% block extra_js %}
 <link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto.css' %}">
-
 {% endblock %}
 
 {% block content %}
@@ -469,12 +465,12 @@
   {% csrf_token %}
 </form>
 
+{% endblock %}
+
 {% block extra_js %}
-1
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto_masterdetail.js' %}"></script>
-{% endblock %}
 {% endblock %}
