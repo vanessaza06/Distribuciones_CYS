@@ -7,6 +7,16 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/bodega/bodega.css' %}">
+<style>
+  /* Variante dorada para la tarjeta "Nuevo Lote" (usa el mismo patrón que teal/verde/azul) */
+  .qc-borde-dorado { border-left: 4px solid #dcb535; }
+  .qc-icono-bg-dorado { background: rgba(220, 181, 53, 0.15); }
+  .qc-icono-color-dorado { color: #dcb535; }
+  .qc-badge-dorado { background: rgba(220, 181, 53, 0.15); color: #dcb535; }
+  .qc-valor-dorado { color: #dcb535; }
+  .qc-footer-borde-dorado { border-top: 1px solid rgba(220, 181, 53, 0.25); }
+  .qc-footer-texto-dorado { color: #dcb535; font-size: .85rem; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -24,7 +34,7 @@
   <!-- ① ACCESO RÁPIDO — Módulo Bodega -->
   <div class="row g-3 mb-4">
     <!-- Tarjeta Agendar -->
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="inv-quick-card qc-borde-teal" data-bs-toggle="modal" data-bs-target="#modalAgendar" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-teal">
@@ -43,7 +53,7 @@
     </div>
 
     <!-- Tarjeta Conteo -->
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="inv-quick-card qc-borde-verde" data-bs-toggle="modal" data-bs-target="#modalConteo" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-verde">
@@ -62,7 +72,7 @@
     </div>
 
     <!-- Tarjeta Comparar -->
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="inv-quick-card qc-borde-azul" data-bs-toggle="modal" data-bs-target="#modalComparar" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-teal">
@@ -79,11 +89,76 @@
         </div>
       </div>
     </div>
+
+    <!-- Tarjeta Nuevo Lote (link directo a la página de Lotes) -->
+    <div class="col-md-3">
+      <a href="{% url 'lote_list' %}" class="inv-quick-card qc-borde-dorado text-decoration-none d-block">
+        <div class="d-flex justify-content-between align-items-start w-100 mb-2">
+          <div class="rounded-3 p-2 qc-icono-bg-dorado">
+            <i class="bi bi-box-seam-fill fs-4 qc-icono-color-dorado"></i>
+          </div>
+          <span class="badge rounded-pill qc-badge-dorado">LOTE</span>
+        </div>
+        <div class="fw-bold mt-1 qc-valor-dorado">{{ presentaciones_sin_lote|length|default:"0" }}</div>
+        <div class="fw-semibold mt-1 qc-titulo">Nuevo Lote</div>
+        <div class="text-muted small mt-1 qc-desc">Registrar un lote de inventario</div>
+        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-dorado">
+          <span class="qc-footer-texto-dorado">Ir a Lotes</span>
+          <i class="bi bi-arrow-right qc-footer-texto-dorado"></i>
+        </div>
+      </a>
+    </div>
   </div>
 
   <div id="accordionBodega">
 
-    <!-- ② LOTES EN BODEGA -->
+    <!-- ② PRESENTACIONES SIN LOTE -->
+    <div class="card inv-card mb-4">
+      <div class="card-header inv-card-header d-flex align-items-center justify-content-between"
+           data-bs-toggle="collapse" data-bs-target="#presSinLoteBody" role="button">
+        <span class="fw-semibold"><i class="bi bi-clipboard-x me-2 inv-icon-dorado"></i>
+          Presentaciones sin Lote
+          {% if presentaciones_sin_lote %}
+            <span class="badge inv-badge-count ms-2">{{ presentaciones_sin_lote|length }}</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="collapse show" id="presSinLoteBody" data-bs-parent="#accordionBodega">
+        <div class="card-body">
+          <div class="row g-3">
+            {% for pres in presentaciones_sin_lote %}
+            <div class="col-md-6 col-xl-4">
+              <div class="lote-card">
+                <div class="lote-card__body">
+                  <div class="lote-card__titulo">{{ pres.producto.nombre }}</div>
+                  <div class="lote-card__subtitulo">{{ pres.nombre }}</div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Cantidad</span>
+                    <span class="lote-card__valor">{{ pres.cantidad }}</span>
+                  </div>
+                  <div class="lote-card__fila">
+                    <span class="lote-card__label">Precio venta</span>
+                    <span class="lote-card__valor">${{ pres.precio_venta|floatformat:0 }}</span>
+                  </div>
+                  <a href="{% url 'lote_list' %}?presentacion={{ pres.pk }}"
+                     class="btn btn-sm rounded-pill fw-semibold w-100 mt-3 btn-solido-azul">
+                    <i class="bi bi-plus-circle me-1"></i>Crear Lote
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted w-100">
+              <i class="bi bi-check2-circle d-block mb-2 fs-3"></i>
+              Todas las presentaciones activas ya tienen lote registrado.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ LOTES EN BODEGA -->
     <div class="card inv-card mb-4">
       <div class="card-header inv-card-header d-flex align-items-center justify-content-between"
            data-bs-toggle="collapse" data-bs-target="#lotesBody" role="button">
@@ -105,16 +180,12 @@
             <div class="col-md-6 col-xl-4 lote-card-col"
                  data-nombre="{{ lote.presentacion.producto.nombre|lower }}"
                  data-lote="{{ lote.numero_lote|lower }}"
-                 data-bodega="{{ lote.bodega.nombre|lower }}">
+                 data-bodega="{{ lote.bodega.nombre|lower|default:'' }}">
               <div class="lote-card">
                 <div class="lote-card__imagen">
-                  {% if lote.imagen %}
-                    <img src="{{ lote.imagen.url }}" alt="{{ lote.presentacion.producto.nombre }}">
-                  {% else %}
-                    <div class="lote-card__imagen-placeholder">
-                      <i class="bi bi-box-seam"></i>
-                    </div>
-                  {% endif %}
+                  <div class="lote-card__imagen-placeholder">
+                    <i class="bi bi-box-seam"></i>
+                  </div>
                   <span class="lote-card__badge-estado {% if lote.esta_vencido %}lote-card__badge-estado--vencido{% elif lote.proximo_a_vencer %}lote-card__badge-estado--por-vencer{% else %}lote-card__badge-estado--ok{% endif %}">
                     {% if lote.esta_vencido %}Vencido{% elif lote.proximo_a_vencer %}Por vencer{% else %}OK{% endif %}
                   </span>
@@ -128,7 +199,7 @@
                   </div>
                   <div class="lote-card__fila">
                     <span class="lote-card__label">Bodega</span>
-                    <span class="lote-card__valor">{{ lote.bodega.nombre }}</span>
+                    <span class="lote-card__valor">{{ lote.bodega.nombre|default:"—" }}</span>
                   </div>
                   <div class="lote-card__fila">
                     <span class="lote-card__label">Stock</span>
@@ -156,7 +227,7 @@
       </div>
     </div>
 
-    <!-- ③ INVENTARIOS PROGRAMADOS -->
+    <!-- ④ INVENTARIOS PROGRAMADOS -->
     <div class="card inv-card mb-4">
       <div class="card-header inv-card-header d-flex align-items-center justify-content-between"
            data-bs-toggle="collapse" data-bs-target="#agendaBody" role="button">
@@ -204,7 +275,7 @@
                         {% if agenda.estado == val %}inv-estado-{{ val }}{% else %}inv-tracker-inactive{% endif %} agenda-stepper-badge"
                         >{{ label }}</span>
                     {% else %}
-                      <form class="agenda-form-inline" method="POST" action="{% url 'bodega:agenda_update' agenda.pk %}">
+                      <form class="agenda-form-inline" method="POST" action="{% url 'agenda_update' agenda.pk %}">
                         {% csrf_token %}
                         <input type="hidden" name="estado" value="{{ val }}">
                         <button type="submit"
@@ -252,8 +323,6 @@
   </div>
 
 </div>
-
-<!-- MODALES (idénticos a los que ya tenías: Agendar, Conteo, Comparar) -->
 
 <!-- MODAL AGENDAR -->
 <div class="modal fade" id="modalAgendar" tabindex="-1">
@@ -474,7 +543,7 @@
               </div>
               <div class="comparativa-badge-col">
                 {% if d.estado != 'ok' %}
-                  <form method="POST" action="{% url 'bodega:ajustar_stock' d.presentacion.pk %}">
+                  <form method="POST" action="{% url 'ajustar_stock' d.presentacion.pk %}">
                     {% csrf_token %}
                     <input type="hidden" name="nueva_cantidad" value="{{ d.fisico }}">
                     <button type="submit" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center comparar-ajustar-btn"

@@ -211,6 +211,11 @@ class PresentacionProducto(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} - {self.cantidad} "
 
+    @property
+    def stock_real(self):
+        """Suma del stock_actual de todos los lotes asociados a esta presentación."""
+        return self.lotes.aggregate(total=Sum("stock_actual"))["total"] or 0
+
 
 # ── 6. LOTE ──
 class Lote(models.Model):
@@ -229,9 +234,6 @@ class Lote(models.Model):
     fecha_registro = models.DateTimeField(
         default=timezone.now, db_column="fecha_registro"
     )
-    imagen = models.ImageField(
-        upload_to="lotes/imagenes/", blank=True, null=True, db_column="imagen"
-    )
     producto = models.ForeignKey(
         "Producto",
         on_delete=models.CASCADE,
@@ -246,9 +248,11 @@ class Lote(models.Model):
     )
     bodega = models.ForeignKey(
         "Bodega",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         db_column="codigo_bodega",
         related_name="lotes",
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -273,7 +277,6 @@ class Lote(models.Model):
     def proximo_a_vencer(self):
         d = self.dias_para_vencer
         return d is not None and 0 <= d <= 30
-
 
 # ── 7. MARCA ──
 class Marca(models.Model):

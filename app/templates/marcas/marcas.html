@@ -6,7 +6,8 @@
 {% block nav_marcas %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=10">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 {% endblock %}
 
 {% block content %}
@@ -72,7 +73,7 @@
   <!-- Búsqueda y filtros (GET real al servidor) -->
   <form class="cys-toolbar" id="cysFiltroForm" method="get">
     <div class="cys-search">
-      <i class="bi bi-search"></i>
+      <span class="cys-search__icon"><i class="bi bi-search"></i></span>
       <input type="text" id="inputBuscar" name="q" placeholder="Buscar marca..." value="{{ query }}" autocomplete="off">
     </div>
 
@@ -92,7 +93,7 @@
 
   <!-- Tabla -->
   <section class="cys-table-card {% if not marcas %}cys-table-card--empty{% endif %}" id="cysTableCard">
-    <table class="cys-table">
+    <table class="cys-table" id="tablaMarcas">
       <thead>
         <tr>
           <th class="cys-col-num">#</th>
@@ -264,7 +265,7 @@
   };
 </script>
 
-<script src="{% static 'js/marcas/marcas.js' %}?v=8"
+<script src="{% static 'js/marcas/marcas.js' %}?v=10"
         onerror="var s=document.createElement('script');s.src=this.src.replace('/js/marcas/','/js/marca/');document.body.appendChild(s);"></script>
 
 <script>
@@ -277,6 +278,31 @@
     aviso.textContent = "No se pudo cargar marcas.js: por eso los botones no funcionan. " +
       "Revisa que el archivo esté en static/js/marcas/marcas.js (o static/js/marca/marcas.js).";
     page.insertBefore(aviso, page.firstChild);
+  });
+</script>
+
+<!-- DataTables: solo para orden (flechas), paginación/búsqueda las maneja Django -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    if ($.fn.DataTable.isDataTable('#tablaMarcas')) {
+      $('#tablaMarcas').DataTable().destroy();
+    }
+    $('#tablaMarcas').DataTable({
+      paging: false,
+      searching: false,
+      info: false,
+      ordering: true,
+      language: {
+        url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+      },
+      columnDefs: [
+        { orderable: false, targets: [0, 5] } // # y Acciones sin orden
+      ]
+    });
   });
 </script>
 {% endblock %}

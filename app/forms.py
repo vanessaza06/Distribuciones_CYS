@@ -182,6 +182,7 @@ class PresentacionForm(forms.ModelForm):
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
 
+
 #-----LOTE-----#
 
 class LoteForm(forms.ModelForm):
@@ -204,6 +205,9 @@ class LoteForm(forms.ModelForm):
             'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['bodega'].required = False
 #-----BODEGA-----#
 
 class AgendaInventarioForm(forms.ModelForm):

@@ -21,11 +21,13 @@
   {% endfor %}
 </div>
 {% endif %}
- <div class="d-flex justify-content-end mb-3">
-  <a href="{% url 'presentacion_lista' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
-    <i class="bi bi-table me-1" title="Ver Bodega"></i> Ir a Bodega
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="{% url 'bodega_home' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+    <i class="bi bi-boxes me-1" title="Ver Bodega"></i> Ir a Bodega
   </a>
 </div>
+
 <div class="search-box d-flex justify-content-between align-items-center flex-wrap gap-2">
   <div class="d-flex flex-grow-1" style="max-width: 420px;">
     <span class="search-prefix" style="border-radius: 8px 0 0 8px;"><i class="bi bi-search"></i></span>
@@ -38,7 +40,7 @@
   <i class="bi bi-plus-lg me-1" title="Crear Presentación"></i> <span class="btn-texto">Nueva Presentación</span>
 </button>
 </div>
-   
+
 <div class="prod-card">
   <div class="table-responsive">
     <table class="prod-table w-100" id="tablaPresentaciones">
@@ -83,6 +85,7 @@
                 <div class="dd-sep"></div>
                 <form method="POST" action="{% url 'presentacion_toggle_activo' pres.pk %}">
                   {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}">
                   <button type="submit" class="dd-item {% if pres.activo %}danger{% endif %}" style="width:100%; border:none; background:none; text-align:left;">
                     {% if pres.activo %}
                       <i class="bi bi-pause-circle"></i> Desactivar
@@ -116,13 +119,14 @@
         <h6 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Presentación</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" id="form-crear-presentacion" action="">
+      <form method="POST" id="form-crear-presentacion" action=""
+            data-url-template="{% url 'presentacion_crear' 0 %}">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
         <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label prod-label">Producto <span class="text-danger">*</span></label>
-            <select id="crear-pres-producto" class="form-select prod-input" required
-                    onchange="document.getElementById('form-crear-presentacion').action = '/presentacion/' + this.value + '/crear/';">
+            <select id="crear-pres-producto" class="form-select prod-input" required>
               <option value="">— Selecciona producto —</option>
               {% for p in productos %}
               <option value="{{ p.pk }}">{{ p.nombre }}</option>
@@ -168,6 +172,7 @@
       </div>
       <form method="POST" action="{% url 'presentacion_editar' pres.pk %}">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
         <div class="modal-body p-4">
           <p class="prod-label mb-3">{{ pres.producto.nombre }}</p>
           <div class="mb-3">
