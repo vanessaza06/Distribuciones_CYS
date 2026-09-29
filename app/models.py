@@ -149,7 +149,9 @@ class Producto(models.Model):
     codigo_producto = models.AutoField(primary_key=True, db_column="codigo_producto")
     nombre = models.CharField(max_length=150, db_column="nombre")
     descripcion = models.TextField(db_column="descripcion")
-    fecha_vencimiento = models.DateField(db_column="fecha_vencimiento")
+    fecha_vencimiento = models.DateField(
+        db_column="fecha_vencimiento", null=True, blank=True
+    )
     categoria = models.ForeignKey(
         "Categoria",
         on_delete=models.SET_NULL,
