@@ -1,61 +1,106 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+
+from decimal import Decimal, InvalidOperation
+from itertools import zip_longest
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Prefetch, Sum
 from django.http import JsonResponse
-from django.db.models import Sum, Prefetch
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from app.models import Categoria
-from app.models import PresentacionProducto
-from app.models import Producto
+from django.utils.http import url_has_allowed_host_and_scheme
+
 from app.forms import ProductoRegistroForm
-from app.models import Lote
+from app.models import Categoria, PresentacionProducto, Producto
+
+UMBRAL_STOCK_CRITICO = 5
+
+
+# ===============================
+# HELPERS
+# ===============================
+def _es_ajax(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+def _destino_seguro(request, destino):
+    """Evita open redirect: solo acepta rutas del mismo sitio."""
+    if destino and url_has_allowed_host_and_scheme(
+        destino,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return destino
+    return reverse('lista_productos')
+
+
+def _entero_positivo(valor):
+    """Devuelve un entero >= 1, o None si no es válido."""
+    try:
+        n = int(str(valor).strip())
+    except (TypeError, ValueError):
+        return None
+    return n if n >= 1 else None
+
+
+def _decimal_positivo(valor):
+    """Devuelve un Decimal > 0 con 2 decimales, o None si no es válido."""
+    try:
+        d = Decimal(str(valor).strip().replace(',', '.'))
+    except (InvalidOperation, ValueError, AttributeError):
+        return None
+    if not d.is_finite() or d <= 0:
+        return None
+    return d.quantize(Decimal('0.01'))
+
 
 # ===============================
 # LISTA / VISTA PRINCIPAL
 # ===============================
 @login_required
 def lista_productos(request):
-    productos_qs = Producto.objects.select_related('categoria').prefetch_related('presentaciones__lotes').all()
+    productos_qs = (
+        Producto.objects.select_related('categoria')
+        .prefetch_related('presentaciones__lotes', 'detalles')
+        .all()
+    )
 
     categorias = Categoria.objects.filter(subcategoria__isnull=True).prefetch_related(
         Prefetch(
             'productos',
-            queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria')
+            queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria'),
         ),
         Prefetch(
             'subcategorias',
             queryset=Categoria.objects.prefetch_related(
                 Prefetch(
                     'productos',
-                    queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria')
+                    queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria'),
                 )
-            )
+            ),
         ),
     )
 
     resumen_categorias = []
     for cat in Categoria.objects.filter(subcategoria__isnull=True):
-        total  = Producto.objects.filter(categoria=cat).count()
+        total = Producto.objects.filter(categoria=cat).count()
         total += Producto.objects.filter(categoria__subcategoria=cat).count()
         resumen_categorias.append({'pk': cat.pk, 'nombre': cat.nombre, 'total': total})
-
-    todas_cats = Categoria.objects.all()
-    form       = ProductoRegistroForm()
 
     context = {
         'productos': productos_qs,
         'categorias': categorias,
-        'todas_cats': todas_cats,
+        'todas_cats': Categoria.objects.all(),
         'resumen_categorias': resumen_categorias,
-        'form': form,
+        'form': ProductoRegistroForm(),
         'breadcrumb_items': [
             {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Productos', 'url': None},
-
         ],
     }
-
     return render(request, 'productos/productos.html', context)
+
 
 # ===============================
 # CREAR PRODUCTO
@@ -65,61 +110,60 @@ def crear_producto(request):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
 
-    is_ajax  = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    next_url = request.POST.get('next') or request.GET.get('next') or 'lista_productos'
+    ajax = _es_ajax(request)
+    destino = _destino_seguro(request, request.POST.get('next') or request.GET.get('next'))
 
-    # DESPUÉS
-    nombre             = request.POST.get('nombre', '').strip()
-    categoria          = request.POST.get('categoria')
-    descripcion        = request.POST.get('descripcion', '').strip()
-    fecha_vencimiento  = request.POST.get('fecha_vencimiento', '').strip()
+    nombre = request.POST.get('nombre', '').strip()
+    categoria_pk = request.POST.get('categoria', '').strip()
+    descripcion = request.POST.get('descripcion', '').strip()
 
     errores = {}
     if not nombre:
         errores['nombre'] = ['El nombre es obligatorio.']
-    if not categoria:
+
+    categoria = None
+    if not categoria_pk:
         errores['categoria'] = ['La categoría es obligatoria.']
-    if not fecha_vencimiento:
-        errores['fecha_vencimiento'] = ['La fecha de vencimiento es obligatoria.']
+    elif not categoria_pk.isdigit():
+        errores['categoria'] = ['Categoría no válida.']
+    else:
+        categoria = Categoria.objects.filter(pk=int(categoria_pk), activo=True).first()
+        if categoria is None:
+            errores['categoria'] = ['La categoría no existe o está desactivada.']
 
     if errores:
-        if is_ajax:
+        if ajax:
             return JsonResponse({'ok': False, 'errores': errores}, status=400)
         messages.error(request, 'Corrige los errores del formulario.')
-        return redirect('lista_productos')
+        return redirect(destino)
 
+    # La fecha de vencimiento se registra después, en Detalle de Producto.
     producto = Producto.objects.create(
         nombre=nombre,
-        categoria_id=categoria,
+        categoria=categoria,
         descripcion=descripcion,
-        fecha_vencimiento=fecha_vencimiento,
     )
 
     messages.success(request, f'✅ Producto "{producto.nombre}" creado correctamente.')
 
-    if is_ajax:
+    if ajax:
         return JsonResponse({'ok': True, 'pk': producto.pk, 'nombre': producto.nombre})
+    return redirect(destino)
 
-    return redirect(next_url)
 
 # ===============================
 # DETALLE PRODUCTO
 # ===============================
 @login_required
 def producto_detalle(request, pk):
-    producto = get_object_or_404(Producto, pk=pk)
-    lotes = producto.lotes.select_related('presentacion', 'bodega').order_by('-fecha_registro')
-    context = {
-        'producto': producto,
-        'lotes': lotes,
-        'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
-            {'nombre': 'Productos', 'url': reverse('lista_productos')},
-            {'nombre': producto.nombre, 'url': None},
-        ],
-    }
+    """
+    Antes renderizaba productos.html sin contexto (página vacía).
+    Ahora vuelve a la lista; ?producto=<pk> queda disponible para que el
+    frontend resalte o abra ese producto.
+    """
+    get_object_or_404(Producto, pk=pk)
+    return redirect(f"{reverse('lista_productos')}?producto={pk}")
 
-    return render(request, 'productos/productos.html', context)
 
 # ===============================
 # EDITAR PRODUCTO
@@ -127,155 +171,163 @@ def producto_detalle(request, pk):
 @login_required
 def producto_editar(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
-    if request.method == 'POST':
-        cambios = []
+    if request.method != 'POST':
+        return redirect('lista_productos')
 
-        nombre       = request.POST.get('nombre', '').strip()
-        descripcion  = request.POST.get('descripcion', '').strip()
-        categoria_pk = request.POST.get('categoria')
+    cambios = []
+    avisos = []
 
+    with transaction.atomic():
+        # ── Datos básicos ──
+        nombre = request.POST.get('nombre', '').strip()
         if nombre and nombre != producto.nombre:
-            cambios.append(f'📝 Nombre: "{producto.nombre}" → "{nombre}"')
-        if nombre:
             producto.nombre = nombre
+            cambios.append('nombre')
 
-        if descripcion != (producto.descripcion or ''):
-            cambios.append('📄 Descripción actualizada')
-        producto.descripcion = descripcion
+        descripcion = request.POST.get('descripcion')
+        if descripcion is not None:
+            descripcion = descripcion.strip()
+            if descripcion != (producto.descripcion or ''):
+                producto.descripcion = descripcion
+                cambios.append('descripción')
 
-        if categoria_pk:
-            try:
-                nueva_cat_id = int(categoria_pk)
-                if nueva_cat_id != producto.categoria_id:
-                    nueva_cat = Categoria.objects.get(pk=nueva_cat_id)
-                    cambios.append(f'🏷️ Categoría: "{producto.categoria.nombre}" → "{nueva_cat.nombre}"')
-                producto.categoria_id = nueva_cat_id
-            except (ValueError, TypeError, Categoria.DoesNotExist):
-                pass
+        categoria_pk = request.POST.get('categoria', '').strip()
+        if categoria_pk.isdigit() and int(categoria_pk) != producto.categoria_id:
+            nueva_cat = Categoria.objects.filter(pk=int(categoria_pk)).first()
+            if nueva_cat:
+                producto.categoria = nueva_cat
+                cambios.append('categoría')
+            else:
+                avisos.append('La categoría elegida no existe.')
 
-        producto.save()
+        if cambios:
+            producto.save()
 
-        # ── Presentaciones existentes ──────────────────────────────────
+        # ── Presentaciones existentes ──
+        # OJO: ya NO se copia el precio de venta al costo de los lotes.
         for key, valor in request.POST.items():
-            if key.startswith('pres_nombre_'):
-                pres_id = key.replace('pres_nombre_', '')
-                try:
-                    pres         = PresentacionProducto.objects.get(pk=int(pres_id), producto=producto)
-                    nuevo_nombre = valor.strip()
-                    nueva_cant   = request.POST.get(f'pres_cantidad_{pres_id}', '').strip()
-                    nuevo_precio = request.POST.get(f'pres_precio_{pres_id}', '').strip()
+            if not key.startswith('pres_nombre_'):
+                continue
+            pres_id = key.replace('pres_nombre_', '')
+            if not pres_id.isdigit():
+                continue
+            pres = PresentacionProducto.objects.filter(pk=int(pres_id), producto=producto).first()
+            if pres is None:
+                continue
 
-                    if nuevo_nombre and nuevo_nombre != pres.nombre:
-                        cambios.append(f'📦 Presentación: "{pres.nombre}" → "{nuevo_nombre}"')
-                        pres.nombre = nuevo_nombre
+            modificado = False
 
-                    if nueva_cant:
-                        try:
-                            nc = max(1, int(nueva_cant))
-                            if nc != pres.cantidad:
-                                cambios.append(f'📦 Cantidad "{pres.nombre}": {pres.cantidad} → {nc}')
-                                pres.cantidad = nc
-                        except (ValueError, TypeError):
-                            pass
+            nuevo_nombre = valor.strip()
+            if nuevo_nombre and nuevo_nombre != pres.nombre:
+                pres.nombre = nuevo_nombre
+                modificado = True
 
-                    if nuevo_precio:
-                        try:
-                            np_ = float(nuevo_precio)
-                            if np_ != float(pres.precio_venta):
-                                cambios.append(f'💲 Precio "{pres.nombre}": ${pres.precio_venta} → ${np_}')
-                                pres.precio_venta = np_
-                                pres.lotes.all().update(costo_unitario=np_)
-                        except (ValueError, TypeError):
-                            pass
+            cant_raw = request.POST.get(f'pres_cantidad_{pres_id}', '').strip()
+            if cant_raw:
+                nueva_cant = _entero_positivo(cant_raw)
+                if nueva_cant is None:
+                    avisos.append(f'Cantidad inválida en "{pres.nombre}" (debe ser 1 o más).')
+                elif nueva_cant != pres.cantidad:
+                    pres.cantidad = nueva_cant
+                    modificado = True
 
-                    pres.save()
+            precio_raw = request.POST.get(f'pres_precio_{pres_id}', '').strip()
+            if precio_raw:
+                nuevo_precio = _decimal_positivo(precio_raw)
+                if nuevo_precio is None:
+                    avisos.append(f'Precio inválido en "{pres.nombre}" (debe ser mayor a 0).')
+                elif nuevo_precio != pres.precio_venta:
+                    pres.precio_venta = nuevo_precio
+                    modificado = True
 
-                except PresentacionProducto.DoesNotExist:
-                    pass
+            if modificado:
+                pres.save()
+                cambios.append(f'presentación "{pres.nombre}"')
 
-        # ── Nuevas presentaciones ──────────────────────────────────────
-        nuevos_nombres = request.POST.getlist('nueva_pres_nombre[]')
-        nuevas_cants   = request.POST.getlist('nueva_pres_cantidad[]')
-        nuevos_precios = request.POST.getlist('nueva_pres_precio[]')
+        # ── Nuevas presentaciones ──
+        nombres = request.POST.getlist('nueva_pres_nombre[]')
+        cantidades = request.POST.getlist('nueva_pres_cantidad[]')
+        precios = request.POST.getlist('nueva_pres_precio[]')
 
-        for i, nombre_pres in enumerate(nuevos_nombres):
+        for nombre_pres, cant_raw, precio_raw in zip_longest(nombres, cantidades, precios, fillvalue=''):
             nombre_pres = nombre_pres.strip()
             if not nombre_pres:
                 continue
 
-            try:
-                cantidad_pres = max(1, int(nuevas_cants[i])) if i < len(nuevas_cants) else 1
-            except (ValueError, TypeError, IndexError):
-                cantidad_pres = 1
+            cantidad_pres = _entero_positivo(cant_raw)
+            precio_pres = _decimal_positivo(precio_raw)
+            if cantidad_pres is None or precio_pres is None:
+                avisos.append(
+                    f'Presentación "{nombre_pres}" no creada: cantidad y precio deben ser mayores a 0.'
+                )
+                continue
 
-            try:
-                precio_pres = float(nuevos_precios[i]) if i < len(nuevos_precios) and nuevos_precios[i].strip() else 0.0
-            except (ValueError, TypeError):
-                precio_pres = 0.0
+            if producto.presentaciones.filter(nombre__iexact=nombre_pres).exists():
+                avisos.append(f'Presentación "{nombre_pres}" no creada: ya existe en este producto.')
+                continue
 
-            nueva_pres = PresentacionProducto.objects.create(
+            PresentacionProducto.objects.create(
                 producto=producto,
                 nombre=nombre_pres,
                 cantidad=cantidad_pres,
                 precio_venta=precio_pres,
             )
-            if precio_pres > 0:
-                nueva_pres.lotes.all().update(costo_unitario=precio_pres)
+            cambios.append(f'nueva presentación "{nombre_pres}"')
 
-            cambios.append(f'➕ Nueva presentación: "{nombre_pres}" · {cantidad_pres} uds')
+    for aviso in avisos:
+        messages.warning(request, f'⚠️ {aviso}')
 
-        if cambios:
-            messages.success(request, f"✅ Producto '{producto.nombre}' actualizado.")
-        else:
-            messages.info(request, 'ℹ️ No se detectaron cambios en el producto.')
+    if cambios:
+        messages.success(request, f"✅ Producto '{producto.nombre}' actualizado.")
+    elif not avisos:
+        messages.info(request, 'ℹ️ No se detectaron cambios en el producto.')
 
     return redirect('lista_productos')
+
 
 # ===============================
 # REGISTRO PRODUCTO
 # ===============================
 @login_required
 def producto_registro(request):
-    form = ProductoRegistroForm()
+    """Antes renderizaba productos.html sin contexto. Ahora guarda y vuelve a la lista."""
     if request.method == 'POST':
         form = ProductoRegistroForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, '✅ Producto registrado correctamente.')
-    context = {
-        'form': form,
-        'breadcrumb_items': [
-            {'nombre': 'Productos', 'url': reverse('lista_productos')},
-            {'nombre': 'Registrar Producto', 'url': None},
-        ],
-    }
+        else:
+            for campo, errs in form.errors.items():
+                messages.error(request, f'{campo}: {", ".join(errs)}')
+    return redirect('lista_productos')
 
-    return render(request, 'productos/productos.html', context)
 
 # ===============================
 # STOCK STATUS
 # ===============================
 @login_required
 def stock_status(request):
-    """Sin propiedad stock_critico en el modelo: se calcula todo aquí,
-    directo sobre Lote, con umbral fijo de 5."""
-    criticos = []
-    for producto in Producto.objects.filter(activo=True):
-        total = Lote.objects.filter(producto=producto).aggregate(total=Sum('stock_actual'))['total'] or 0
-        if total <= 5:
-            criticos.append({'nombre': producto.nombre, 'total_stock': total})
+    """Una sola consulta; el umbral está en UMBRAL_STOCK_CRITICO."""
+    productos = Producto.objects.filter(activo=True).annotate(total=Sum('lotes__stock_actual'))
+
+    criticos = [
+        {'nombre': p.nombre, 'total_stock': p.total or 0}
+        for p in productos
+        if (p.total or 0) <= UMBRAL_STOCK_CRITICO
+    ]
 
     return JsonResponse({
         'criticos': criticos,
         'total_alertas': len(criticos),
     })
 
+
 # ===============================
 # BUSCAR PRODUCTO
 # ===============================
 @login_required
 def buscar_producto(request):
-    q    = request.GET.get('q', '').strip()
+    q = request.GET.get('q', '').strip()
     modo = request.GET.get('modo', '')
 
     if not q:
@@ -285,16 +337,14 @@ def buscar_producto(request):
 
     if modo == 'sugerencias':
         productos = Producto.objects.filter(nombre__icontains=q).select_related('categoria')[:8]
-
         resultados = [{
-            'pk':        p.pk,
-            'nombre':    p.nombre,
+            'pk': p.pk,
+            'nombre': p.nombre,
             'categoria': p.categoria.nombre if p.categoria else '—',
         } for p in productos]
-
         return JsonResponse({'resultados': resultados})
 
-    producto = Producto.objects.filter(nombre__icontains=q).first()
+    producto = Producto.objects.filter(nombre__icontains=q).order_by('nombre').first()
 
     if not producto:
         return JsonResponse({'encontrado': False, 'mensaje': f'No se encontró "{q}".'})
@@ -307,32 +357,37 @@ def buscar_producto(request):
     for pres in producto.presentaciones.all():
         stock_pres = pres.lotes.aggregate(total=Sum('stock_actual'))['total'] or 0
         presentaciones.append({
-            'id':           pres.pk,
-            'nombre':       pres.nombre,
-            'cantidad':     pres.cantidad,
-            'precio':       str(pres.precio_venta),
+            'id': pres.pk,
+            'nombre': pres.nombre,
+            'cantidad': pres.cantidad,
+            'precio': str(pres.precio_venta),
             'stock_actual': stock_pres,
         })
 
     return JsonResponse({
         'encontrado': True,
         'producto': {
-            'pk':           producto.pk,
-            'nombre':       producto.nombre,
-            'categoria':    producto.categoria.nombre if producto.categoria else '—',
-            'stock_total':  stock_total,
-            'descripcion':  producto.descripcion or '',
+            'pk': producto.pk,
+            'nombre': producto.nombre,
+            'categoria': producto.categoria.nombre if producto.categoria else '—',
+            'stock_total': stock_total,
+            'descripcion': producto.descripcion or '',
             'presentaciones': presentaciones,
-        }
+        },
     })
-    
+
+
+# ===============================
+# ACTIVAR / DESACTIVAR
+# ===============================
 @login_required
 def producto_toggle_activo(request, pk):
+    # TODO: pasar a @require_POST cuando el template/JS envíe POST con CSRF.
     producto = get_object_or_404(Producto, pk=pk)
     producto.activo = not producto.activo
     producto.save(update_fields=['activo'])
     estado = 'activado' if producto.activo else 'desactivado'
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    if _es_ajax(request):
         return JsonResponse({'ok': True, 'nombre': producto.nombre, 'activo': producto.activo})
     messages.success(request, f'Producto "{producto.nombre}" {estado}.')
     return redirect('lista_productos')
