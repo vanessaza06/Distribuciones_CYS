@@ -1,8 +1,9 @@
 from decimal import Decimal
 from django import forms
+from django.utils import timezone
 from app.models import (
     Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
-    AgendaInventario, 
+    AgendaInventario,
 )
 from app.models import Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto
 from app.models import DetalleProducto
@@ -31,6 +32,29 @@ class DetalleProductoForm(forms.ModelForm):
                 'placeholder': 'Descripción del detalle (opcional)…',
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo marcas activas para elegir
+        if 'marca' in self.fields:
+            self.fields['marca'].queryset = self.fields['marca'].queryset.model.objects.filter(estado='activo')
+
+    def clean_fecha_vencimiento(self):
+        fecha = self.cleaned_data.get('fecha_vencimiento')
+        if fecha and fecha < timezone.now().date():
+            raise forms.ValidationError('La fecha de vencimiento no puede estar en el pasado.')
+        return fecha
+
+    def clean_codigo_barras(self):
+        codigo = self.cleaned_data.get('codigo_barras', '').strip()
+        if not codigo:
+            raise forms.ValidationError('El código de barras es obligatorio.')
+        qs = DetalleProducto.objects.filter(codigo_barras=codigo)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Ese código de barras ya está registrado.')
+        return codigo
 
 #-----PROVEEDOR-----#
 class ProveedorForm(forms.ModelForm):
@@ -127,7 +151,7 @@ class NuevaCompraForm(forms.Form):
 class ProductoRegistroForm(forms.ModelForm):
     class Meta:
         model  = Producto
-        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
+        fields = ['nombre', 'descripcion', 'categoria']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class':       'np-input',
@@ -136,10 +160,6 @@ class ProductoRegistroForm(forms.ModelForm):
             'descripcion': forms.Textarea(attrs={
                 'class': 'np-input',
                 'rows':  2,
-            }),
-            'fecha_vencimiento': forms.DateInput(attrs={
-                'class': 'np-input',
-                'type':  'date',
             }),
             'categoria': forms.Select(attrs={
                 'class': 'np-input',
@@ -150,7 +170,7 @@ class ProductoRegistroForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model  = Producto
-        fields = ['nombre', 'descripcion', 'fecha_vencimiento', 'categoria']
+        fields = ['nombre', 'descripcion','categoria']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class':       'gp-input',
@@ -160,10 +180,6 @@ class ProductoForm(forms.ModelForm):
                 'class':       'gp-input',
                 'rows':        2,
                 'placeholder': 'Descripción opcional…',
-            }),
-            'fecha_vencimiento': forms.DateInput(attrs={
-                'class': 'gp-input',
-                'type':  'date',
             }),
             'categoria': forms.Select(attrs={
                 'class': 'gp-input',
@@ -178,9 +194,20 @@ class PresentacionForm(forms.ModelForm):
         widgets = {
             'nombre':        forms.TextInput(attrs={'class': 'gp-input', 'placeholder': 'Ej: Six-pack'}),
             'cantidad':      forms.NumberInput(attrs={'class': 'gp-input', 'min': '1'}),
-            'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0', 'step': '0.01'}),
+            'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0.01', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
+    def clean_cantidad(self):
+        cantidad = self.cleaned_data.get('cantidad')
+        if cantidad is None or cantidad < 1:
+            raise forms.ValidationError('La cantidad debe ser 1 o más.')
+        return cantidad
+
+    def clean_precio_venta(self):
+        precio = self.cleaned_data.get('precio_venta')
+        if precio is None or precio <= 0:
+            raise forms.ValidationError('El precio debe ser mayor a 0.')
+        return precio
 
 
 #-----LOTE-----#
@@ -201,13 +228,33 @@ class LoteForm(forms.ModelForm):
             'producto': forms.Select(attrs={'class': 'form-select'}),
             'presentacion': forms.Select(attrs={'class': 'form-select'}),
             'bodega': forms.Select(attrs={'class': 'form-select'}),
-            'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'costo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['bodega'].required = False
+        
+    def clean_cantidad_inicial(self):
+        cantidad = self.cleaned_data.get('cantidad_inicial')
+        if cantidad is None or cantidad < 1:
+            raise forms.ValidationError('La cantidad inicial debe ser 1 o más.')
+        return cantidad
+
+    def clean_costo_unitario(self):
+        costo = self.cleaned_data.get('costo_unitario')
+        if costo is None or costo <= 0:
+            raise forms.ValidationError('El costo unitario debe ser mayor a 0.')
+        return costo
+
+    def clean(self):
+        cleaned = super().clean()
+        producto = cleaned.get('producto')
+        presentacion = cleaned.get('presentacion')
+        if producto and presentacion and presentacion.producto_id != producto.pk:
+            self.add_error('presentacion', 'Esta presentación no pertenece al producto seleccionado.')
+        return cleaned
 #-----BODEGA-----#
 
 class AgendaInventarioForm(forms.ModelForm):

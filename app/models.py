@@ -262,21 +262,27 @@ class Lote(models.Model):
     def __str__(self):
         return f"{self.numero_lote} - {self.presentacion}"
 
-    @property
-    def dias_para_vencer(self):
-        if not self.producto.fecha_vencimiento:
-            return None
-        return (self.producto.fecha_vencimiento - timezone.now().date()).days
+@property
+def _fecha_vencimiento_real(self):
+    detalle = self.producto.detalles.first() if self.producto_id else None
+    return detalle.fecha_vencimiento if detalle else None
 
-    @property
-    def esta_vencido(self):
-        d = self.dias_para_vencer
-        return d is not None and d < 0
+@property
+def dias_para_vencer(self):
+    fecha = self._fecha_vencimiento_real
+    if not fecha:
+        return None
+    return (fecha - timezone.now().date()).days
 
-    @property
-    def proximo_a_vencer(self):
-        d = self.dias_para_vencer
-        return d is not None and 0 <= d <= 30
+@property
+def esta_vencido(self):
+    d = self.dias_para_vencer
+    return d is not None and d < 0
+
+@property
+def proximo_a_vencer(self):
+    d = self.dias_para_vencer
+    return d is not None and 0 <= d <= 30
 
 # ── 7. MARCA ──
 class Marca(models.Model):
