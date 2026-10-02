@@ -8,13 +8,41 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+
+<!-- ══════════════════════════════════════
+     OPTIMIZACIÓN: apertura instantánea de modales
+     - Sin animación fade/slide
+     - Sin blur en backdrop (muy costoso de renderizar)
+     - Aislamiento de layout para no repintar toda la página
+══════════════════════════════════════ -->
+<style>
+  .modal,
+  .modal.fade,
+  .modal.fade .modal-dialog,
+  .modal-backdrop,
+  .modal-backdrop.fade,
+  .tab-pane.fade {
+    transition: none !important;
+    animation: none !important;
+  }
+  .modal.fade .modal-dialog { transform: none !important; }
+  .modal-backdrop,
+  .modal-backdrop.show,
+  .cys-modal,
+  .cys-modal__header {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .modal-backdrop.show { opacity: .6; }
+  .cys-modal { will-change: auto; contain: layout paint; }
+  .cys-modal__body { contain: content; }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
   <div class="cys-snap-section">
 
-  
   <!-- ══════════════════════════════════════
        TARJETAS DE REPORTES
   ══════════════════════════════════════ -->
@@ -239,6 +267,7 @@
     </div>
 
   </div>
+  </div><!-- /cys-snap-section (tarjetas) -->
 
   <div class="cys-snap-section">
     <!-- ══════════════════════════════════════
@@ -442,13 +471,13 @@
         </table>
       </div>
     </section>
-  </div>
+  </div><!-- /cys-snap-section (historiales) -->
 
 
 <!-- ═══════════════════════════════════════════
      MODAL — HISTORIAL DE REPORTES (vista ampliada)
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalHistorialReportes" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalHistorialReportes" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -513,7 +542,7 @@
 </div>
 
 <!-- Modal de confirmación (reemplaza confirm() nativo) -->
-<div class="modal fade" id="modalConfirmarAccion" tabindex="-1" data-bs-backdrop="static">
+<div class="modal" id="modalConfirmarAccion" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content prod-modal">
       <div class="modal-header prod-modal-header">
@@ -534,7 +563,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — INVENTARIO
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalInventario" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalInventario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-xl">
     <div class="modal-content cys-modal">
 
@@ -613,22 +642,21 @@
 
         <div class="table-responsive cys-modal-table-wrap">
           <table class="cys-inv-table" id="tabla-modal-stock">
-           <thead>
-          <tr>
-          <th class="cys-col-num">#</th>
-          <th class="cys-col-producto">PRODUCTO</th>
-        <th class="cys-col-stock">STOCK</th>
-        <th class="cys-col-estado">ESTADO</th>
-      </tr>
-</thead>
+            <thead>
+              <tr>
+                <th class="cys-col-num">#</th>
+                <th class="cys-col-producto">PRODUCTO</th>
+                <th class="cys-col-stock">STOCK</th>
+                <th class="cys-col-estado">ESTADO</th>
+              </tr>
+            </thead>
             <tbody>
               {% for p in productos %}
               <tr class="cys-tr inv-row">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                <td data-label="Producto"
-    class="cys-td cys-td--bold cys-col-producto">
-    {{ p.nombre }}
-</td>
+                <td data-label="Producto" class="cys-td cys-td--bold cys-col-producto">
+                  {{ p.nombre }}
+                </td>
                 <td data-label="Stock" class="cys-col-stock">
                   {% if p.cantidad_disponible == 0 %}
                     <span class="cys-qty cys-qty--out">{{ p.cantidad_disponible }}</span>
@@ -765,7 +793,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — PROVEEDORES
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalProveedores" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalProveedores" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -836,16 +864,16 @@
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                 <td class="cys-prov-name-text" data-label="Nombre">
                   {{ prov.nombre_contacto }}
-              </td>
-                
-               <td class="cys-prov-company" data-label="Empresa">
-               {{ prov.nombre_empresa }}
-              </td> 
+                </td>
+                <td class="cys-prov-company" data-label="Empresa">
+                  {{ prov.nombre_empresa }}
+                </td>
                 <td class="cys-prov-phone" data-label="Teléfono">
-                {{ prov.telefono }}
-                  <td class="cys-prov-email" data-label="Correo">
-                {{ prov.email }}
-              </td>
+                  {{ prov.telefono }}
+                </td>
+                <td class="cys-prov-email" data-label="Correo">
+                  {{ prov.email }}
+                </td>
               </tr>
               {% empty %}
               <tr>
@@ -887,7 +915,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — COMPRAS
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalCompras" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalCompras" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -978,7 +1006,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — RESUMEN DIARIO
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalResumenDiario" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalResumenDiario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -1073,7 +1101,7 @@
             <div class="tab-content cys-rd-tab-content">
 
               <!-- Tab Entradas -->
-              <div class="tab-pane fade show active" id="rdPanelEntradas" role="tabpanel">
+              <div class="tab-pane show active" id="rdPanelEntradas" role="tabpanel">
                 <div class="cys-av-table-card__header cys-av-table-card__header--search">
                   <span class="cys-av-table-card__dot cys-av-table-card__dot--amarillo"></span>
                   <span class="cys-av-table-card__title">ENTRADAS DE HOY</span>
@@ -1124,7 +1152,7 @@
               </div>
 
               <!-- Tab Salidas -->
-              <div class="tab-pane fade" id="rdPanelSalidas" role="tabpanel">
+              <div class="tab-pane" id="rdPanelSalidas" role="tabpanel">
                 <div class="cys-av-table-card__header cys-av-table-card__header--search">
                   <span class="cys-av-table-card__dot cys-av-table-card__dot--rojo"></span>
                   <span class="cys-av-table-card__title">SALIDAS DE HOY</span>
@@ -1173,7 +1201,7 @@
               </div>
 
               <!-- Tab Ventas -->
-              <div class="tab-pane fade" id="rdPanelVentas" role="tabpanel">
+              <div class="tab-pane" id="rdPanelVentas" role="tabpanel">
                 <div class="cys-av-table-card__header cys-av-table-card__header--search">
                   <span class="cys-av-table-card__dot cys-av-table-card__dot--azul"></span>
                   <span class="cys-av-table-card__title">VENTAS DE HOY</span>
@@ -1271,7 +1299,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — ANÁLISIS DE VENTAS
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalAnalisisVentas" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalAnalisisVentas" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -1356,18 +1384,19 @@
 
               </div>
 
-              <!-- Ventas por fecha (resumen) -->
+              <!-- Ventas por fecha (resumen) — OPTIMIZADO: solo las 10 ventas más recientes.
+                   La lista completa está en la pestaña "Por fecha". -->
               <div class="cys-av-table-card">
                 <div class="cys-av-table-card__header">
                   <span class="cys-av-table-card__dot cys-av-table-card__dot--morado"></span>
-                  <span class="cys-av-table-card__title">VENTAS POR FECHA</span>
+                  <span class="cys-av-table-card__title">VENTAS RECIENTES</span>
                 </div>
                 <table class="cys-inv-table">
                   <thead>
                     <tr><th>FECHA</th><th>CLIENTE</th><th>PRODUCTO</th><th>CANTIDAD</th><th>TOTAL</th></tr>
                   </thead>
                   <tbody>
-                    {% for venta in ventas %}
+                    {% for venta in ventas|slice:":10" %}
                       {% for det in venta.detalles.all %}
                       <tr class="cys-tr">
                         <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"d/m/Y" }}</td>
@@ -1527,7 +1556,7 @@
 <!-- ═══════════════════════════════════════════
      MODAL — DEVOLUCIONES
 ═══════════════════════════════════════════ -->
-<div class="modal fade" id="modalDevoluciones" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalDevoluciones" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content cys-modal">
 
@@ -1669,8 +1698,21 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
-<script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script>
-<script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script>
+{# Estos dos scripts no se usan en la página de reportes y retrasan la carga.
+   Si algo dejara de funcionar, quita los comentarios. #}
+{# <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script> #}
+{# <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script> #}
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/reportes/reportes.js' %}"></script>
+
+<script>
+  /* Pre-crear las instancias de los modales al cargar la página,
+     así el primer clic no tiene que inicializar nada. */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.bootstrap) return;
+    document.querySelectorAll('.modal').forEach(function (el) {
+      bootstrap.Modal.getOrCreateInstance(el);
+    });
+  });
+</script>
 {% endblock %}
