@@ -1,9 +1,10 @@
 from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import F, Sum
 
 
 # ── MANAGER DE USUARIO ────────────────────────────────────────────────────────
@@ -465,27 +466,39 @@ class Compra(models.Model):
         verbose_name_plural = "Compras"
         ordering = ["-fecha"]
 
+    # Flujo permitido de estados y medios de pago aceptados
+    TRANSICIONES = {
+        "pendiente": {"confirmada", "cancelada"},
+        "confirmada": {"recibida", "cancelada"},
+        "recibida": set(),
+        "cancelada": set(),
+    }
+    METODOS_PAGO = ("efectivo", "nequi", "daviplata", "bancolombia", "breb")
+
     def __str__(self):
         return f"Compra #{self.codigo_compra} - {self.proveedor.nombre_empresa}"
 
-    # ── Propiedades dinámicas para templates (compras.html) ──
+    def clean(self):
+        super().clean()
+        if self.valor is not None and self.valor < 0:
+            raise ValidationError({"valor": "El valor de la compra no puede ser negativo."})
+        if self.saldo is not None and self.saldo < 0:
+            raise ValidationError({"saldo": "El saldo no puede ser negativo."})
+        if self.valor is not None and self.saldo is not None and self.saldo > self.valor:
+            raise ValidationError({"saldo": "El saldo no puede superar el valor de la compra."})
+
+    # ── Propiedades de compatibilidad con los templates ──
     @property
     def id(self):
         """Compatibilidad con compras.html y URLs."""
         return self.codigo_compra
 
-    @id.setter
-    def id(self, value):
-        pass
-
     @property
     def total(self):
-        """Compatibilidad con compras.html."""
         return self.valor
 
     @property
     def fecha_registro(self):
-        """Compatibilidad con compras.html."""
         return self.fecha
 
     @property
@@ -498,9 +511,123 @@ class Compra(models.Model):
         """Calcula el estado de pago dinámicamente."""
         if self.saldo <= Decimal("0.00"):
             return "pagada"
-        elif self.monto_pagado > Decimal("0.00"):
+        if self.monto_pagado > Decimal("0.00"):
             return "parcial"
         return "pendiente"
+
+    # ── Detalle principal (las compras se registran con un único ítem) ──
+    @property
+    def detalle_principal(self):
+        """Primer detalle; usa el prefetch de `detalles` si existe (sin consulta extra)."""
+        if not hasattr(self, "_detalle_principal"):
+            detalles = list(self.detalles.all())
+            self._detalle_principal = detalles[0] if detalles else None
+        return self._detalle_principal
+
+    @property
+    def producto(self):
+        d = self.detalle_principal
+        return d.producto if d else None
+
+    @property
+    def cantidad(self):
+        d = self.detalle_principal
+        return d.cantidad if d else 1
+
+    @property
+    def precio_unitario(self):
+        d = self.detalle_principal
+        return d.precio_unitario if d else self.valor
+
+    @property
+    def numero_lote(self):
+        d = self.detalle_principal
+        return d.numero_lote if d else None
+
+    # ── Reglas de negocio ──
+    def puede_cambiar_a(self, nuevo_estado):
+        return nuevo_estado in self.TRANSICIONES.get(self.estado, set())
+
+    @classmethod
+    @transaction.atomic
+    def registrar(cls, *, proveedor, usuario, producto, cantidad, precio_unitario,
+                  lote=None, estado="recibida", monto_pagado=Decimal("0.00"),
+                  metodo_pago="efectivo", referencia=""):
+        """Crea la compra con su detalle, el pago inicial y, si ya llegó, el ingreso a stock."""
+        if estado not in cls.TRANSICIONES or estado == "cancelada":
+            raise ValidationError("Estado de compra no válido.")
+        if lote is not None and lote.producto_id != producto.pk:
+            raise ValidationError("El lote seleccionado no pertenece al producto elegido.")
+
+        total = Decimal(cantidad) * precio_unitario
+        compra = cls.objects.create(
+            proveedor=proveedor, usuario=usuario, fecha=timezone.now(),
+            valor=total, saldo=total, estado=estado,
+        )
+        DetalleCompra.objects.create(
+            compra=compra, producto=producto, lote=lote, cantidad=cantidad,
+            precio_unitario=precio_unitario,
+        )
+        abono = min(total, max(Decimal("0.00"), monto_pagado or Decimal("0.00")))
+        if abono > 0:
+            compra._aplicar_pago(abono, metodo_pago, referencia, etiqueta="Pago inicial")
+        if estado == "recibida":
+            compra.ingresar_stock()
+        return compra
+
+    def ingresar_stock(self):
+        """Suma al stock de cada lote las unidades de la compra (solo detalles con lote)."""
+        for detalle in self.detalles.all():
+            if detalle.lote_id:
+                Lote.objects.filter(pk=detalle.lote_id).update(
+                    stock_actual=F("stock_actual") + detalle.cantidad
+                )
+
+    @transaction.atomic
+    def cambiar_estado(self, nuevo_estado):
+        """Aplica una transición válida; al recibir, la mercancía entra al stock."""
+        # Bloquea la fila para evitar doble ingreso de stock con clics repetidos
+        actual = Compra.objects.select_for_update().get(pk=self.pk)
+        if not actual.puede_cambiar_a(nuevo_estado):
+            destino = dict(self.ESTADO_CHOICES).get(nuevo_estado, nuevo_estado)
+            raise ValidationError(
+                f'No es posible cambiar la compra de "{actual.get_estado_display()}" a "{destino}".'
+            )
+        actual.estado = nuevo_estado
+        actual.save(update_fields=["estado"])
+        if nuevo_estado == "recibida":
+            actual.ingresar_stock()
+        self.estado = nuevo_estado
+
+    @transaction.atomic
+    def registrar_pago(self, monto, metodo="efectivo", referencia="", fecha=None):
+        """Registra un abono validando estado, monto y saldo (con bloqueo de fila)."""
+        actual = Compra.objects.select_for_update().get(pk=self.pk)
+        if actual.estado == "cancelada":
+            raise ValidationError("No se pueden registrar pagos en una compra cancelada.")
+        if monto is None or monto <= 0:
+            raise ValidationError("El abono debe ser mayor a cero.")
+        if monto > actual.saldo:
+            raise ValidationError("El monto ingresado supera el saldo pendiente.")
+        actual._aplicar_pago(monto, metodo, referencia, fecha=fecha)
+        self.saldo = actual.saldo
+
+    def _aplicar_pago(self, monto, metodo, referencia, fecha=None, etiqueta="Abono"):
+        if metodo not in self.METODOS_PAGO:
+            metodo = "efectivo"
+        referencia = (referencia or "").strip()
+        self.saldo = max(Decimal("0.00"), self.saldo - monto)
+        self.save(update_fields=["saldo"])
+        MetodoPago.objects.create(
+            compra=self,
+            valor=monto,
+            referencia=referencia or f"{etiqueta} Compra #{self.codigo_compra}",
+            efectivo=monto if metodo == "efectivo" else Decimal("0.00"),
+            transaccion=monto if metodo != "efectivo" else Decimal("0.00"),
+            observacion=f"{etiqueta} vía {metodo.capitalize()}"
+            + (f" - Factura {referencia}" if referencia else ""),
+            fecha=fecha or timezone.now(),
+        )
 
 
 # ── 11. DETALLE COMPRA ──
@@ -566,16 +693,15 @@ class DetalleCompra(models.Model):
 
     @property
     def subtotal(self):
-        return self.subtotal_compra or (self.cantidad * self.precio_unitario)
+        return self.subtotal_compra
 
     @property
     def numero_lote(self):
         return self.lote.numero_lote if self.lote else None
 
     def save(self, *args, **kwargs):
-        # Calcula automáticamente el subtotal si no viene definido
-        if not self.subtotal_compra or self.subtotal_compra == Decimal("0.00"):
-            self.subtotal_compra = self.cantidad * self.precio_unitario
+        # El subtotal siempre se deriva de cantidad × precio
+        self.subtotal_compra = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
 

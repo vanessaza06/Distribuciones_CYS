@@ -475,7 +475,7 @@
         {{ compra.fecha|date:"d/m/Y" }}
       </div>
     </div>
-    <a href="{% url 'lista_compras' %}" class="btn-volver">
+    <a href="{{ url_lista }}" class="btn-volver">
       <i class="bi bi-arrow-left"></i> Volver a Compras
     </a>
   </div>
@@ -525,20 +525,8 @@
     {# Fecha Registro #}
     <div class="dc-kpi dc-kpi--purple">
       <div class="dc-kpi__label"><i class="bi bi-calendar-check"></i> Fecha</div>
-      <div class="dc-kpi__value" style="font-size:1.1rem; color:#9b5de5;">
-        {% if compra.detalles.first %}
-          {{ compra.detalles.first.fecha_registro|date:"d/m/Y" }}
-        {% else %}
-          {{ compra.fecha|date:"d/m/Y" }}
-        {% endif %}
-      </div>
-      <div class="dc-kpi__sub">
-        {% if compra.detalles.first %}
-          {{ compra.detalles.first.fecha_registro|time:"H:i" }} hrs
-        {% else %}
-          {{ compra.fecha|time:"H:i" }} hrs
-        {% endif %}
-      </div>
+      <div class="dc-kpi__value" style="font-size:1.1rem; color:#9b5de5;">{{ compra.fecha|date:"d/m/Y" }}</div>
+      <div class="dc-kpi__sub">{{ compra.fecha|time:"H:i" }} hrs</div>
     </div>
   </div>
 
@@ -571,12 +559,6 @@
               <div class="dc-field__label">Cantidad Comprada</div>
               <div class="dc-field__value dc-field__value--blue" style="font-size:1.5rem;font-weight:800;">{{ compra.cantidad|default:0 }} <span style="font-size:0.9rem;font-weight:600;">und.</span></div>
             </div>
-            {% if compra.producto.codigo %}
-            <div class="dc-field">
-              <div class="dc-field__label">Código Producto</div>
-              <div class="dc-field__value dc-field__value--muted" style="font-family:monospace;">{{ compra.producto.codigo }}</div>
-            </div>
-            {% endif %}
           </div>
           {% else %}
           <div class="text-center py-3" style="color:#8FA3B1;">
@@ -691,8 +673,8 @@
 
           <div style="display:flex;flex-direction:column;gap:0.85rem;">
             <div class="dc-field">
-              <div class="dc-field__label"><i class="bi bi-person me-1"></i>Contacto</div>
-              <div class="dc-field__value">{{ compra.proveedor.nombre_contacto|default:"No especificado" }}</div>
+              <div class="dc-field__label"><i class="bi bi-hash me-1"></i>NIT</div>
+              <div class="dc-field__value">{{ compra.proveedor.pk }}</div>
             </div>
             <div class="dc-field">
               <div class="dc-field__label"><i class="bi bi-telephone me-1"></i>Teléfono</div>
@@ -709,8 +691,8 @@
             <div class="dc-field">
               <div class="dc-field__label"><i class="bi bi-envelope me-1"></i>Correo</div>
               <div class="dc-field__value">
-                {% if compra.proveedor.email %}
-                  <a href="mailto:{{ compra.proveedor.email }}" style="color:#4DA8DA;text-decoration:none;">{{ compra.proveedor.email }}</a>
+                {% if compra.proveedor.correo %}
+                  <a href="mailto:{{ compra.proveedor.correo }}" style="color:#4DA8DA;text-decoration:none;">{{ compra.proveedor.correo }}</a>
                 {% else %}
                   <span class="dc-field__value--muted">No especificado</span>
                 {% endif %}
@@ -723,6 +705,30 @@
             Sin información de proveedor
           </div>
           {% endif %}
+        </div>
+      </div>
+
+      {# HISTORIAL DE PAGOS #}
+      <div class="dc-section">
+        <div class="dc-section__head">
+          <div class="dc-section__head-icon"><i class="bi bi-wallet2"></i></div>
+          <h2 class="dc-section__head-title">Pagos registrados</h2>
+        </div>
+        <div class="dc-section__body">
+          {% for pago in pagos %}
+          <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom border-secondary border-opacity-25{% endif %}">
+            <div>
+              <div class="fw-semibold small text-light">{{ pago.referencia|default:"Pago" }}</div>
+              <small class="text-muted">{{ pago.fecha|date:"d/m/Y H:i" }} · {% if pago.efectivo %}Efectivo{% else %}Transferencia{% endif %}</small>
+            </div>
+            <span class="fw-bold text-success">{{ pago.valor|cop }}</span>
+          </div>
+          {% empty %}
+          <div class="text-center py-3" style="color:#8FA3B1;">
+            <i class="bi bi-wallet2" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+            Aún no hay pagos registrados
+          </div>
+          {% endfor %}
         </div>
       </div>
 
@@ -813,7 +819,7 @@
       </form>
       {% endif %}
 
-      <a href="{% url 'lista_compras' %}" class="dc-btn-outline">
+      <a href="{{ url_lista }}" class="dc-btn-outline">
         <i class="bi bi-arrow-left"></i> Volver a Compras
       </a>
     </div>
@@ -850,7 +856,7 @@
                 <span class="fw-bold text-success">{{ compra.monto_pagado|cop }}</span>
               </div>
               <div class="col-4">
-                <small class="text-warning fw-semibold d-block" style="font-size:0.75rem;">Plata que Falta</small>
+                <small class="text-warning fw-semibold d-block" style="font-size:0.75rem;">Saldo pendiente</small>
                 <span class="fw-bold text-danger fs-5">{{ compra.saldo|cop }}</span>
               </div>
             </div>
