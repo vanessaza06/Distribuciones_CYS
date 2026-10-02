@@ -42,17 +42,32 @@ document.addEventListener('DOMContentLoaded', function () {
   // Protegido: si inicializarGraficos() no existe todavía en ningún archivo
   // cargado, esto ya NO detiene la ejecución del resto del script.
   if (typeof inicializarGraficos === 'function') {
-    inicializarGraficos();
+    try {
+      inicializarGraficos();
+    } catch (e) {
+      console.error('Error en inicializarGraficos():', e);
+    }
   } else {
     console.warn('inicializarGraficos() no está definida — se omite (revisar si falta cargar su <script>).');
   }
 });
 
-// ═══════ INICIALIZACIÓN INDEPENDIENTE DEL DROPDOWN DE CATEGORÍA ═══════
-// En su propio listener para que NUNCA dependa de si otras funciones
-// (como inicializarGraficos) existen o fallan.
-document.addEventListener('DOMContentLoaded', function () {
-  inicializarDropdownCategorias();
+// ═══════ DROPDOWN CATEGORÍA (modal Nuevo Producto) ═══════
+// Delegado en document para que funcione sin importar cuándo/cómo
+// se pinta el DOM, y para que un fallo en otra parte del script
+// (gráficos, DataTable, etc.) NUNCA le impida quedar activo.
+document.addEventListener('click', function (e) {
+  const item = e.target.closest('.crear-cat-item');
+  if (!item) return;
+  e.preventDefault();
+
+  const valor = item.dataset.value;
+  const texto = item.textContent.trim();
+
+  const inputCategoria = document.getElementById('crear-categoria');
+  const labelCategoria = document.getElementById('crear-categoria-label');
+  if (inputCategoria) inputCategoria.value = valor;
+  if (labelCategoria) labelCategoria.textContent = texto;
 });
 
 function filasHtmlDe(filtrados) {
@@ -152,20 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-// ═══════ DROPDOWN CATEGORÍA (modal Nuevo Producto) ═══════
-function inicializarDropdownCategorias() {
-  document.querySelectorAll('.crear-cat-item').forEach(item => {
-    item.addEventListener('click', function (e) {
-      e.preventDefault();
-      const valor  = this.dataset.value;
-      const texto  = this.textContent.trim();
-
-      document.getElementById('crear-categoria').value = valor;
-      document.getElementById('crear-categoria-label').textContent = texto;
-    });
-  });
-}
 
 // ═══════ ENVÍO DEL FORMULARIO NUEVO PRODUCTO ═══════
 function mostrarErrorCrear(feedback, mensaje) {
