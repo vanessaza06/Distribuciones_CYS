@@ -3,12 +3,23 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+  if (typeof bootstrap === 'undefined') {
+    console.error('[Presentaciones] Bootstrap JS no está cargado: los modales no van a abrir. Revisa base.html.');
+  }
+
+  moverModalesAlBody();
   inicializarBusquedaPresentaciones();
   inicializarModalCrearPresentacion();
 
-  // Cierra cualquier dropdown abierto si se hace clic fuera
   document.addEventListener('click', function (e) {
+    // Cierra cualquier dropdown abierto si se hace clic fuera
     if (!e.target.closest('.dd-wrap')) {
+      cerrarDropdownsPres();
+      return;
+    }
+
+    // Al elegir un enlace del menú (ej. Editar) se cierra el dropdown
+    if (e.target.closest('a.dd-item')) {
       cerrarDropdownsPres();
     }
   });
@@ -16,6 +27,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // El menú usa position: fixed, así que se cierra al hacer scroll
   window.addEventListener('scroll', cerrarDropdownsPres, true);
 });
+
+/**
+ * Mueve los modales al <body> para que ningún contenedor con
+ * transform / overflow / z-index los deje detrás del backdrop.
+ */
+function moverModalesAlBody() {
+  document.querySelectorAll('.modal').forEach(function (modal) {
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  });
+}
 
 function cerrarDropdownsPres() {
   document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
@@ -63,7 +86,11 @@ function inicializarModalCrearPresentacion() {
       form.setAttribute('action', '');
       return;
     }
-    form.setAttribute('action', plantilla.replace(/\/0\//, '/' + selectProducto.value + '/'));
+    // Reemplaza el segmento "/0" (con o sin barra final) por el id del producto
+    form.setAttribute(
+      'action',
+      plantilla.replace(/\/0(?=\/|$)/, '/' + selectProducto.value)
+    );
   }
 
   selectProducto.addEventListener('change', actualizarAction);

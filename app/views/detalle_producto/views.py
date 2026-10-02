@@ -38,30 +38,18 @@ def detalle_producto_crear_rapido(request, producto_pk):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
 
-    codigo = request.POST.get('codigo_barras', '').strip()
-    marca_pk = request.POST.get('marca', '').strip()
-    fecha_vencimiento = request.POST.get('fecha_vencimiento', '').strip()
-
-    if not codigo:
-        return JsonResponse({'ok': False, 'error': 'Código vacío.'}, status=400)
-    if not marca_pk:
-        return JsonResponse({'ok': False, 'error': 'Selecciona una marca.'}, status=400)
-    if not fecha_vencimiento:
-        return JsonResponse({'ok': False, 'error': 'Falta la fecha de vencimiento.'}, status=400)
-
-    if DetalleProducto.objects.filter(codigo_barras=codigo).exists():
-        return JsonResponse({'ok': False, 'error': 'Ese código ya existe.'}, status=400)
     if DetalleProducto.objects.filter(producto=producto).exists():
         return JsonResponse({'ok': False, 'error': 'Este producto ya tiene un detalle.'}, status=400)
 
-    marca = get_object_or_404(Marca, pk=marca_pk)
+    form = DetalleProductoForm(request.POST)
+    if not form.is_valid():
+        primer_error = next(iter(form.errors.values()))[0]
+        return JsonResponse({'ok': False, 'error': primer_error}, status=400)
 
-    detalle = DetalleProducto.objects.create(
-        producto=producto,
-        codigo_barras=codigo,
-        marca=marca,
-        fecha_vencimiento=fecha_vencimiento,
-    )
+    detalle = form.save(commit=False)
+    detalle.producto = producto
+    detalle.save()
+
     return JsonResponse({
         'ok': True,
         'detalle_pk': detalle.pk,
@@ -72,7 +60,12 @@ def detalle_producto_crear_rapido(request, producto_pk):
 @login_required
 def detalle_producto_crear(request, producto_pk):
     producto = get_object_or_404(Producto, pk=producto_pk)
+
     if request.method == 'POST':
+        if DetalleProducto.objects.filter(producto=producto).exists():
+            messages.error(request, 'Este producto ya tiene un detalle registrado.')
+            return redirect('producto_detalle', pk=producto_pk)
+
         form = DetalleProductoForm(request.POST)
         if form.is_valid():
             detalle = form.save(commit=False)
@@ -80,7 +73,9 @@ def detalle_producto_crear(request, producto_pk):
             detalle.save()
             messages.success(request, 'Detalle de producto registrado.')
         else:
-            messages.error(request, 'Revisa los datos: ' + str(form.errors))
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
 
     return redirect('producto_detalle', pk=producto_pk)
 
@@ -88,6 +83,7 @@ def detalle_producto_crear(request, producto_pk):
 @login_required
 def detalle_producto_editar(request, pk):
     detalle = get_object_or_404(DetalleProducto, pk=pk)
+
     if request.method == 'POST':
         form = DetalleProductoForm(request.POST, instance=detalle)
         if form.is_valid():
@@ -98,7 +94,9 @@ def detalle_producto_editar(request, pk):
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'ok': False, 'errores': form.errors}, status=400)
-            messages.error(request, 'Revisa los datos del formulario.')
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
 
     return redirect('detalle_producto_lista')
 

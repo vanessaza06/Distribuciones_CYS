@@ -158,6 +158,15 @@
       </div>
       <div class="modal-body p-4">
         <div id="crear-feedback" class="mb-3 d-none"></div>
+
+        {% if not categorias %}
+        <div class="alert alert-warning py-2 mb-3">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          Todavía no tienes categorías registradas.
+          <a href="{% url 'categorias_lista' %}" class="alert-link">Crea una primero</a> para poder asignarla al producto.
+        </div>
+        {% endif %}
+
         <form id="form-nuevo-producto-modal">
           {% csrf_token %}
           <div class="row g-3">
@@ -170,8 +179,11 @@
               <label class="form-label prod-label">Categoría <span class="text-danger">*</span></label>
               <div class="dropdown w-100">
                 <button class="btn dropdown-toggle w-100 text-start prod-input prod-categoria-select-btn" type="button"
-                    id="crear-categoria-btn" data-bs-toggle="dropdown">
-                  <span id="crear-categoria-label">— Seleccionar —</span>
+                    id="crear-categoria-btn" data-bs-toggle="dropdown"
+                    {% if not categorias %}disabled{% endif %}>
+                  <span id="crear-categoria-label">
+                    {% if categorias %}— Seleccionar —{% else %}No hay categorías disponibles{% endif %}
+                  </span>
                 </button>
                 <ul class="dropdown-menu prod-dropdown-menu prod-dropdown-menu-scroll w-100">
                   {% for main_cat in categorias %}
@@ -188,6 +200,14 @@
                       </a>
                     </li>
                     {% endfor %}
+                  {% empty %}
+                    <li><span class="dropdown-item disabled">No hay categorías registradas.</span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item" href="{% url 'categorias_lista' %}">
+                        <i class="bi bi-plus-circle me-1"></i> Crear una categoría
+                      </a>
+                    </li>
                   {% endfor %}
                 </ul>
               </div>
@@ -208,7 +228,7 @@
       <div class="modal-footer prod-modal-footer justify-content-between">
         <button type="button" class="btn prod-btn-outline" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn prod-btn-primary" id="btn-crear-solo"
-                onclick="enviarCrearProducto()">
+                onclick="enviarCrearProducto()" {% if not categorias %}disabled{% endif %}>
           <i class="bi bi-check-lg me-1"></i> Guardar Producto
         </button>
       </div>
@@ -269,9 +289,9 @@
          "pk": {{ producto.pk }},
          "nombre": "{{ producto.nombre|escapejs }}",
          "codigo": "{{ detalle.codigo_barras|default:''|escapejs }}",
-         "categoria_pk": {{ producto.categoria.pk }},
+         "categoria_pk": {{ producto.categoria.pk|default:"null" }},
          "categoria_subcategoria_pk": {% if producto.categoria.subcategoria %}{{ producto.categoria.subcategoria.pk }}{% else %}null{% endif %},
-         "categoria_nombre": "{{ producto.categoria.nombre|escapejs }}",
+         "categoria_nombre": "{{ producto.categoria.nombre|default:''|escapejs }}",
          "stock_total": {{ producto.stock_total }},
          "stock_critico": {% if producto.stock_critico %}true{% else %}false{% endif %},
          "descripcion": "{{ producto.descripcion|default:''|escapejs }}",

@@ -96,8 +96,8 @@ def lote_list(request):
 def gestion_stock(request):
     productos = Producto.objects.select_related('categoria').prefetch_related('presentaciones__lotes')
     lotes_activos = list(Lote.objects.select_related('presentacion__producto', 'bodega'))
-    lotes_por_vencer = [l for l in lotes_activos if l.proximo_a_vencer]
-    lotes_vencidos = [l for l in lotes_activos if l.esta_vencido]
+    lotes_por_vencer = [l for l in lotes_activos if l.stock_actual > 0 and l.proximo_a_vencer]
+    lotes_vencidos = [l for l in lotes_activos if l.stock_actual > 0 and l.esta_vencido]
 
     context = {
         'productos': productos,
@@ -140,14 +140,27 @@ def lote_create(request):
 @login_required
 def lote_update(request, numero_lote):
     lote = get_object_or_404(Lote, numero_lote=numero_lote)
+    cantidad_inicial_original = lote.cantidad_inicial
+
     if request.method == 'POST':
-        form = LoteForm(request.POST, instance=lote)
+        form = LoteForm(request.POST, request.FILES, instance=lote)
         if form.is_valid():
-            form.save()
+            lote_actualizado = form.save(commit=False)
+            # La cantidad inicial no se edita aquí: representa el ingreso
+            # original del lote. Para cambiar el stock disponible se usa
+            # "Ajustar stock".
+            lote_actualizado.cantidad_inicial = cantidad_inicial_original
+            lote_actualizado.costo_total = lote_actualizado.costo_unitario * cantidad_inicial_original
+            lote_actualizado.save()
             messages.success(request, f'Lote {lote.numero_lote} actualizado.')
-            return redirect('gestion_stock')
+            return redirect('lote_list')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f'{campo}: {error}')
     else:
         form = LoteForm(instance=lote)
+
     return render(request, 'lotes/lote_form.html', {'form': form, 'lote': lote})
 
 
@@ -161,33 +174,43 @@ def lote_detail(request, numero_lote):
 
 @login_required
 def lote_ajustar_stock(request, numero_lote):
-    """Usada por el modal 'Editar lote' de Stock & Productos (stock.html)."""
     lote = get_object_or_404(Lote, numero_lote=numero_lote)
 
-    if request.method == 'POST':
-        nuevo_stock = request.POST.get('nuevo_stock', '').strip()
-        costo_unitario = request.POST.get('costo_unitario', '').strip()
-        motivo = request.POST.get('motivo', '').strip()
+    if request.method != 'POST':
+        return redirect('gestion_stock')
 
-        if nuevo_stock:
-            try:
-                lote.stock_actual = int(nuevo_stock)
-            except (ValueError, TypeError):
-                messages.error(request, 'El stock ingresado no es válido.')
-                return redirect('gestion_stock')
+    nuevo_stock_raw = request.POST.get('nuevo_stock', '').strip()
+    costo_unitario_raw = request.POST.get('costo_unitario', '').strip()
 
-        if costo_unitario:
-            try:
-                lote.costo_unitario = Decimal(costo_unitario)
-            except (InvalidOperation, TypeError):
-                messages.error(request, 'El costo unitario ingresado no es válido.')
-                return redirect('gestion_stock')
+    try:
+        nuevo_stock = int(nuevo_stock_raw)
+    except (TypeError, ValueError):
+        messages.error(request, 'El nuevo stock debe ser un número entero.')
+        return redirect('gestion_stock')
 
-        lote.save()
+    if nuevo_stock < 0:
+        messages.error(request, 'El stock no puede ser negativo.')
+        return redirect('gestion_stock')
 
-        mensaje = f'Lote {lote.numero_lote} actualizado.'
-        if motivo:
-            mensaje += f' Motivo: {motivo}'
-        messages.success(request, mensaje)
+    lote.stock_actual = nuevo_stock
 
+    if costo_unitario_raw:
+        try:
+            nuevo_costo = Decimal(costo_unitario_raw.replace(',', '.'))
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'El costo unitario no es válido.')
+            return redirect('gestion_stock')
+
+        if nuevo_costo <= 0:
+            messages.error(request, 'El costo unitario debe ser mayor a 0.')
+            return redirect('gestion_stock')
+
+        lote.costo_unitario = nuevo_costo
+        # Se recalcula el costo total con la cantidad inicial del lote.
+        lote.costo_total = nuevo_costo * lote.cantidad_inicial
+        lote.save(update_fields=['stock_actual', 'costo_unitario', 'costo_total'])
+    else:
+        lote.save(update_fields=['stock_actual'])
+
+    messages.success(request, 'Stock ajustado.')
     return redirect('gestion_stock')
