@@ -192,21 +192,62 @@
     {% block extra_js %}{% endblock %}
 
     <!-- ══════════════════════════════════════════
-         SOPORTE HTMX: re-inicializar tooltips de
-         Bootstrap dentro del contenido nuevo tras
-         cada navegación por AJAX.
+         SOPORTE GLOBAL Y HTMX: Tooltips estrictos SOLO Hover
+         y limpieza automática de mensajes flotantes
     ═══════════════════════════════════════════ -->
     <script>
-      document.body.addEventListener('htmx:afterSettle', function (evt) {
-        if (window.bootstrap) {
-          evt.target.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
-            var existente = bootstrap.Tooltip.getInstance(el);
-            if (!existente) {
-              try { new bootstrap.Tooltip(el); } catch (e) {}
-            }
+      window.cysCleanTooltips = function() {
+        document.querySelectorAll('.tooltip').forEach(function(t) {
+          t.remove();
+        });
+      };
+
+      window.setupStrictCYSTooltips = function(container) {
+        if (!window.bootstrap || !bootstrap.Tooltip) return;
+        var root = container || document;
+        root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+          if (el.getAttribute('data-bs-toggle') === 'modal') return;
+
+          var existing = bootstrap.Tooltip.getInstance(el);
+          if (existing) {
+            try { existing.dispose(); } catch(e) {}
+          }
+
+          var instance = new bootstrap.Tooltip(el, {
+            trigger: 'hover',
+            container: 'body',
+            animation: false
           });
-        }
+
+          var hideAndClean = function() {
+            try { instance.hide(); } catch(e) {}
+            el.blur();
+            window.cysCleanTooltips();
+          };
+
+          el.addEventListener('click', hideAndClean);
+          el.addEventListener('mouseleave', hideAndClean);
+          el.addEventListener('blur', hideAndClean);
+        });
+      };
+
+      document.addEventListener('DOMContentLoaded', function() {
+        window.setupStrictCYSTooltips();
       });
+
+      document.addEventListener('show.bs.modal', window.cysCleanTooltips);
+      document.addEventListener('hide.bs.modal', window.cysCleanTooltips);
+      document.addEventListener('submit', window.cysCleanTooltips);
+      window.addEventListener('beforeunload', window.cysCleanTooltips);
+      window.addEventListener('pagehide', window.cysCleanTooltips);
+
+      if (document.body) {
+        document.body.addEventListener('htmx:beforeSwap', window.cysCleanTooltips);
+        document.body.addEventListener('htmx:afterSettle', function (evt) {
+          window.cysCleanTooltips();
+          window.setupStrictCYSTooltips(evt.target);
+        });
+      }
     </script>
   </body>
 </html>

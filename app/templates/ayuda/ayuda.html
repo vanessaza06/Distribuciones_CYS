@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block page_title %}Ayuda{% endblock %}
-{% block title %}Ayuda — CYS Ltda{% endblock %}
+{% block page_title %}Ayuda & Asistente Virtual{% endblock %}
+{% block title %}Ayuda & Chatbot — CYS Ltda{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ayuda/ayuda.css' %}">
@@ -11,11 +11,33 @@
 {% block content %}
 <div class="container-fluid p-0">
 
-  <!-- ═══════ HEADER ═══════ -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <!-- ═══════ HEADER & BANNER CHATBOT ═══════ -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-      <h5 class="ayd-titulo mb-1"><i class="bi bi-question-circle-fill me-2"></i>Centro de Ayuda</h5>
-      <p class="ayd-subtitulo mb-0">Encuentra respuestas rápidas o contáctanos si necesitas más apoyo.</p>
+      <h5 class="ayd-titulo mb-1"><i class="bi bi-question-circle-fill me-2"></i>Centro de Ayuda & Asistente Virtual</h5>
+      <p class="ayd-subtitulo mb-0">Encuentra respuestas inmediatas con el Chatbot o consulta nuestras guías interactivas.</p>
+    </div>
+  </div>
+
+  <!-- BANNER DESTACADO CHATBOT -->
+  <div class="ayd-chatbot-banner">
+    <div class="d-flex align-items-center gap-3">
+      <div class="ayd-chatbot-icon-box">
+        <img src="{% static 'img/mascota_cerveza.png' %}?v=2" alt="CYS Mascota">
+      </div>
+      <div>
+        <h6 class="fw-bold text-white mb-1" style="font-size:1.05rem;">
+          Asistente Virtual CYS (Chatbot Inteligente)
+        </h6>
+        <p class="text-white-50 small mb-0" style="max-width: 650px;">
+          ¿Tienes alguna duda sobre Ventas, Devoluciones, Caja, Inventario o Métodos de Pago? Inicia una conversación interactiva en tiempo real con nuestro Asistente Virtual.
+        </p>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="btn ayd-btn-chatbot" onclick="aydAbrirChatbot()">
+        <i class="bi bi-chat-dots-fill me-1 fs-5"></i> Iniciar Conversación con el Chatbot
+      </button>
     </div>
   </div>
 
@@ -47,14 +69,21 @@
           {% for guia in guias %}
           <div class="col-md-6 ayd-item" data-cat="{{ guia.cat_slug }}"
                data-texto="{{ guia.titulo|lower }} {{ guia.contenido|striptags|lower }}">
-            <div class="ayd-guia-card h-100">
-              <div class="ayd-guia-icono">
-                <i class="bi {{ guia.icono }}"></i>
+            <div class="ayd-guia-card h-100 d-flex flex-column justify-content-between">
+              <div class="d-flex gap-3">
+                <div class="ayd-guia-icono">
+                  <i class="bi {{ guia.icono }}"></i>
+                </div>
+                <div>
+                  <div class="ayd-guia-titulo">{{ guia.titulo }}</div>
+                  <div class="ayd-guia-cat">{{ guia.categoria }}</div>
+                  <div class="ayd-guia-contenido mb-2">{{ guia.contenido|linebreaks }}</div>
+                </div>
               </div>
-              <div>
-                <div class="ayd-guia-titulo">{{ guia.titulo }}</div>
-                <div class="ayd-guia-cat">{{ guia.categoria }}</div>
-                <div class="ayd-guia-contenido">{{ guia.contenido|linebreaks }}</div>
+              <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end">
+                <button type="button" class="btn ayd-btn-chat-duda" onclick="aydIniciarChatDuda('{{ guia.titulo|escapejs }}', '{{ guia.contenido|escapejs }}')">
+                  <i class="bi bi-chat-dots-fill me-1"></i> Consultar al Chatbot sobre esto
+                </button>
               </div>
             </div>
           </div>
@@ -86,8 +115,13 @@
             </h2>
             <div id="ayd-faq-{{ faq.pk }}" class="accordion-collapse collapse"
                  data-bs-parent="#ayd-accordion-faq">
-              <div class="accordion-body ayd-acc-body">
-                {{ faq.contenido|linebreaks }}
+              <div class="accordion-body ayd-acc-body d-flex flex-column gap-2">
+                <div>{{ faq.contenido|linebreaks }}</div>
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn ayd-btn-chat-duda" onclick="aydIniciarChatDuda('{{ faq.titulo|escapejs }}', '{{ faq.contenido|escapejs }}')">
+                    <i class="bi bi-chat-dots-fill me-1"></i> Abrir Chatbot con esta duda
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -129,6 +163,86 @@
         </form>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL CHATBOT INTERACTIVO (ASISTENTE CYS)
+     ══════════════════════════════════════════ -->
+<div class="modal fade ayd-chat-modal" id="modalChatbotAyuda" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <!-- Header -->
+      <div class="ayd-chat-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="ayd-chat-avatar">
+            <img src="{% static 'img/mascota_cerveza.png' %}?v=2" alt="CYS Mascota">
+          </div>
+          <div>
+            <h6 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+              Asistente Virtual CYS
+              <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-40 rounded-pill px-2 py-0.5" style="font-size:0.68rem;">
+                🟢 En línea
+              </span>
+            </h6>
+            <small style="color:#a0aec0; font-size:0.75rem;">Respuesta inmediata a tus dudas del sistema</small>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm text-white-50 p-1" onclick="aydLimpiarChat()" title="Reiniciar Chat">
+            <i class="bi bi-arrow-counterclockwise fs-5"></i>
+          </button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+
+      <!-- Chat Body -->
+      <div class="ayd-chat-body" id="ayd-chat-messages">
+        <!-- Welcome Message -->
+        <div class="ayd-msg ayd-msg-bot">
+          <div class="ayd-chat-avatar">
+            <img src="{% static 'img/mascota_cerveza.png' %}?v=2" alt="CYS Mascota">
+          </div>
+          <div class="ayd-msg-bubble">
+            <strong>👋 ¡Hola! Soy tu Asistente Virtual CYS.</strong><br>
+            ¿En qué te puedo ayudar hoy? Puedes escribir tu duda o seleccionar una de las sugerencias rápidas:
+            
+            <div class="d-flex flex-wrap gap-1.5 mt-2.5">
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo registrar una venta?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[0].respuesta);">
+                🛒 Registrar Venta
+              </button>
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo hacer una devolución?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[1].respuesta);">
+                🔄 Hacer Devolución
+              </button>
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo abrir o cerrar caja?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[2].respuesta);">
+                💰 Apertura y Cierre de Caja
+              </button>
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo consultar stock?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[4].respuesta);">
+                📦 Consultar Stock
+              </button>
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo ver métodos de pago?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[3].respuesta);">
+                💳 Métodos de Pago
+              </button>
+              <button type="button" class="ayd-chip-btn" onclick="aydAgregarMensaje('¿Cómo crear compras?', 'user'); aydSimularRespuestaBot(BOT_KNOWLEDGE[5].respuesta);">
+                🚚 Compras a Proveedores
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Footer / Form -->
+      <div class="ayd-chat-footer">
+        <form id="ayd-chat-form" onsubmit="aydEnviarMensajeChat(event)" class="d-flex gap-0">
+          <input type="text" id="ayd-chat-input-text" class="form-control ayd-chat-input"
+                 placeholder="Escribe tu duda aquí (ej: 'cómo hacer una devolución', 'stock', 'caja')..." autocomplete="off" required>
+          <button type="submit" class="btn ayd-chat-send-btn d-flex align-items-center gap-1">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

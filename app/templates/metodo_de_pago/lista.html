@@ -244,7 +244,7 @@
       </p>
     </div>
     <div>
-      <button class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Registrar Pago" data-bs-target="#modalNuevoPago">
+      <button type="button" class="mp-btn-action" data-bs-toggle="modal" data-bs-target="#modalNuevoPago" title="Registrar Pago">
         <i class="bi bi-plus-lg fs-5"></i> Registrar Nuevo Pago
       </button>
     </div>
@@ -303,39 +303,6 @@
     </div>
   </div>
 
-  <!-- Filter Toolbar -->
-  <div class="mp-filter-card">
-    <form method="GET" class="row g-3 align-items-center">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
-          <input type="text" name="q" class="form-control py-2" placeholder="Buscar por referencia, observación o compra..." value="{{ q }}">
-        </div>
-      </div>
-
-      <div class="col-md-2">
-        <select name="tipo" class="form-select py-2">
-          <option value="">— Todos los tipos —</option>
-          <option value="efectivo" {% if tipo == 'efectivo' %}selected{% endif %}>Efectivo</option>
-          <option value="transaccion" {% if tipo == 'transaccion' %}selected{% endif %}>Transacción / Banco</option>
-        </select>
-      </div>
-
-      <div class="col-md-2">
-        <input type="date" name="fecha_inicio" class="form-control py-2" value="{{ fecha_inicio }}" title="Fecha inicio">
-      </div>
-
-      <div class="col-md-2">
-        <input type="date" name="fecha_fin" class="form-control py-2" value="{{ fecha_fin }}" title="Fecha fin">
-      </div>
-
-      <div class="col-md-2 d-flex gap-2">
-        <button type="submit" class="mp-btn-action flex-grow-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas" style="height: 44px; font-size:0.88rem;"><i class="bi bi-funnel-fill"></i> Filtrar</button>
-        <a href="{% url 'lista_metodos_pago' %}" class="mp-btn-outline" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"><i class="bi bi-arrow-counterclockwise"></i></a>
-      </div>
-    </form>
-  </div>
-
   <!-- Tabla idéntica a Ventas (cys-pos-card & cys-inv-table) -->
   <section class="cys-pos-card mb-4" style="background: rgba(10, 26, 48, 0.95); border: 1px solid rgba(77, 168, 218, 0.3); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
     <div class="cys-pos-card-header p-3.5 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(16, 40, 75, 0.95), rgba(10, 26, 48, 0.98)); border-bottom: 1px solid rgba(77, 168, 218, 0.3);">
@@ -346,6 +313,50 @@
         Total {{ total_registros }} Registros
       </span>
     </div>
+
+    <!-- Toolbar de Filtros Integrada -->
+    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3" style="background:rgba(10,42,82,0.4); border-bottom:1px solid rgba(77,168,218,0.2);">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span style="font-size:.75rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px;">
+          Rango de fechas:
+        </span>
+        
+        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        
+        <span style="color:#ffffff; font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
+        
+        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}"
+               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+
+        <select name="tipo" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+          <option value="">— Todos los tipos —</option>
+          <option value="efectivo" {% if tipo == 'efectivo' %}selected{% endif %}>Efectivo</option>
+          <option value="transaccion" {% if tipo == 'transaccion' %}selected{% endif %}>Transacción / Banco</option>
+        </select>
+        
+        <button type="submit" class="btn btn-sm fw-bold"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas"
+                style="background:rgba(77,168,218,0.15); color:var(--azul-claro,#4DA8DA); border:1px solid rgba(77,168,218,0.3); border-radius:8px;">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+
+        <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm"
+           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"
+           style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.25); color:#ffffff; border-radius:8px; font-weight:600;">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
+        </a>
+      </div>
+
+      <!-- Buscador en tiempo real -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="cys-search-group" style="min-width:240px;">
+          <i class="bi bi-search"></i>
+          <input type="text" name="q" id="buscadorTablaMetodosPago" class="form-control form-control-sm cys-search-input"
+                 value="{{ q }}" placeholder="Buscar referencia, comprobante..." style="padding-left:36px !important;">
+        </div>
+      </div>
+    </form>
 
     <div class="table-responsive p-3 pt-2">
       <table class="cys-inv-table w-100">
@@ -400,9 +411,9 @@
               </td>
               <td style="text-align: center;">
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                  <button class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Editar Pago"
+                  <button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarPago_{{ p.pk }}"
                           style="background:rgba(77,168,218,0.15); color:#4DA8DA; border:1px solid rgba(77,168,218,0.3); border-radius:8px; padding:.35rem .65rem;"
-                          data-bs-target="#modalEditarPago_{{ p.pk }}">
+                          title="Editar Pago">
                     <i class="bi bi-pencil-square fs-6"></i>
                   </button>
                   <form method="POST" action="{% url 'eliminar_metodo_pago' p.pk %}" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro de pago #{{ p.codigo_metodo }}?');">
@@ -449,8 +460,8 @@
                           </div>
                         </div>
                         <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
-                          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
-                          <button type="submit" class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Guardar Cambios" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
+                          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+                          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
                         </div>
                       </form>
                     </div>
@@ -527,8 +538,8 @@
           </div>
         </div>
         <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar Operación" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
-          <button type="submit" class="mp-btn-action" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Guardar Pago" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
+          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
+          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
         </div>
       </form>
     </div>
@@ -539,18 +550,20 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // ── TOOLTIPS DINÁMICOS SOLO HOVER ──
-  function initCYSTooltips() {
-    if (!window.bootstrap || !bootstrap.Tooltip) return;
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-      const existing = bootstrap.Tooltip.getInstance(el);
-      if (existing) existing.dispose();
-      const instance = new bootstrap.Tooltip(el, { trigger: 'hover', container: 'body' });
-      el.addEventListener('click', function () { instance.hide(); el.blur(); });
-      el.addEventListener('mouseleave', function () { instance.hide(); });
+  const buscador = document.getElementById('buscadorTablaMetodosPago');
+  if (buscador) {
+    buscador.addEventListener('input', function() {
+      const term = this.value.toLowerCase().trim();
+      document.querySelectorAll('.fila-metodo-pago').forEach(tr => {
+        const text = tr.textContent.toLowerCase();
+        tr.style.display = text.includes(term) ? '' : 'none';
+      });
     });
   }
-  initCYSTooltips();
+
+  if (window.setupStrictCYSTooltips) {
+    window.setupStrictCYSTooltips();
+  }
 });
 </script>
 {% endblock %}

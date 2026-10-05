@@ -258,3 +258,218 @@
 .ayd-item.ayd-oculto {
   display: none !important;
 }
+
+/* ══════════════════════════════════════════
+   ASISTENTE VIRTUAL CHATBOT CYS
+   ══════════════════════════════════════════ */
+.ayd-chatbot-banner {
+  background: linear-gradient(135deg, rgba(16, 40, 75, 0.95), rgba(10, 26, 48, 0.98));
+  border: 1px solid rgba(77, 168, 218, 0.35);
+  border-radius: 18px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.ayd-chatbot-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77, 168, 218, 0.25), rgba(10, 26, 48, 0.9));
+  border: 2px solid rgba(77, 168, 218, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(77, 168, 218, 0.35);
+  padding: 2px;
+  overflow: hidden;
+}
+
+.ayd-chatbot-icon-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.ayd-btn-chatbot {
+  background: linear-gradient(135deg, #4DA8DA, #2575fc) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 0.7rem 1.4rem;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 20px rgba(77, 168, 218, 0.4);
+  transition: all 0.25s ease;
+}
+.ayd-btn-chatbot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(77, 168, 218, 0.55);
+}
+
+.ayd-btn-chat-duda {
+  background: rgba(77, 168, 218, 0.12);
+  color: var(--azul-claro, #4DA8DA);
+  border: 1px solid rgba(77, 168, 218, 0.3);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+.ayd-btn-chat-duda:hover {
+  background: rgba(77, 168, 218, 0.25);
+  color: #ffffff;
+  border-color: #4DA8DA;
+}
+
+/* Modal Chatbot Interface */
+.ayd-chat-modal .modal-content {
+  background: #091d36;
+  border: 1px solid rgba(77, 168, 218, 0.4);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.ayd-chat-header {
+  background: linear-gradient(135deg, rgba(16, 40, 75, 0.98), rgba(10, 26, 48, 0.98));
+  border-bottom: 1px solid rgba(77, 168, 218, 0.3);
+  padding: 1rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ayd-chat-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77, 168, 218, 0.3), rgba(10, 26, 48, 0.9));
+  border: 1.5px solid rgba(77, 168, 218, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.ayd-chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.ayd-chat-body {
+  height: 440px;
+  overflow-y: auto;
+  padding: 1.25rem;
+  background: radial-gradient(circle at top right, rgba(16, 40, 75, 0.5), transparent 70%);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Bubbles */
+.ayd-msg {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 85%;
+  animation: fadeInMsg 0.25s ease forwards;
+}
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ayd-msg-user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.ayd-msg-bot {
+  align-self: flex-start;
+}
+
+.ayd-msg-bubble {
+  padding: 0.85rem 1.1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.ayd-msg-user .ayd-msg-bubble {
+  background: linear-gradient(135deg, #2575fc, #1a52b8);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+}
+
+.ayd-msg-bot .ayd-msg-bubble {
+  background: rgba(16, 40, 75, 0.9);
+  border: 1px solid rgba(77, 168, 218, 0.3);
+  color: #e2e8f0;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ayd-chip-btn {
+  background: rgba(77, 168, 218, 0.12);
+  color: #4DA8DA;
+  border: 1px solid rgba(77, 168, 218, 0.3);
+  border-radius: 50px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.ayd-chip-btn:hover {
+  background: rgba(77, 168, 218, 0.28);
+  color: #ffffff;
+  border-color: #4DA8DA;
+  transform: translateY(-1px);
+}
+
+.ayd-chat-footer {
+  background: rgba(10, 26, 48, 0.95);
+  border-top: 1px solid rgba(77, 168, 218, 0.3);
+  padding: 0.85rem 1rem;
+}
+
+.ayd-chat-input {
+  background: rgba(6, 19, 36, 0.9) !important;
+  border: 1px solid rgba(77, 168, 218, 0.4) !important;
+  color: #ffffff !important;
+  border-radius: 12px 0 0 12px !important;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+}
+
+.ayd-chat-input:focus {
+  border-color: #4DA8DA !important;
+  box-shadow: 0 0 0 0.2rem rgba(77, 168, 218, 0.2) !important;
+}
+
+.ayd-chat-send-btn {
+  background: linear-gradient(135deg, #4DA8DA, #2575fc) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0 12px 12px 0 !important;
+  padding: 0 1.25rem;
+  font-size: 1.1rem;
+}
