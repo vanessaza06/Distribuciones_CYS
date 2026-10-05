@@ -8,20 +8,41 @@
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
-<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
-<script>
-  // Variables globales para los gráficos (datos del servidor)
-  window.meseslabels = {{ meses_labels_json|safe }};
-  window.mesesa = {{ meses_data_json|safe }};
-  window.productosLabels = {{ productos_labels_json|safe }};
-  window.productosData = {{ productos_data_json|safe }};
-  window.gastosLabels = {{ gastos_labels_json|safe }};
-  window.gastosData = {{ gastos_data_json|safe }};
-  window.gastosPorcentajes = {{ gastos_porcentajes_json|safe }};
-</script>
 {% endblock %}
 
 {% block content %}
+<style>
+  /* ── Compras: formulario y modales ── */
+  .cmp-input,
+  .cmp-input:focus {
+    background-color: #02224a;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  .cmp-input:focus {
+    border-color: #CF9C48;
+    box-shadow: 0 0 0 .2rem rgba(207,156,72,0.18);
+  }
+  .cmp-input option { background: #02224a; color: #fff; }
+  .cmp-input option:disabled { display: none; }
+  .cmp-total-box {
+    background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.10) 100%);
+    border: 1px solid rgba(207,156,72,0.35);
+    border-radius: 10px;
+  }
+  .cmp-extra-box {
+    background: rgba(3,30,62,0.6);
+    border: 1px solid rgba(239,248,226,0.1);
+    border-radius: 10px;
+  }
+  .cmp-label-mini { letter-spacing: .05em; font-size: .72rem; }
+  #tablaHistorialCompras td, #tablaHistorialCompras th { white-space: nowrap; }
+  @media (max-width: 576px) {
+    .container-fluid.px-4 { padding-left: .75rem !important; padding-right: .75rem !important; }
+    .proveedor-actions { width: 100%; }
+    .btn-nueva-compra { width: 100%; justify-content: center; }
+  }
+</style>
 <div class="container-fluid px-4 py-4">
 
   <!-- ====== MENSAJES ====== -->
@@ -45,7 +66,7 @@
         <div class="kpi-icon-box cyan"><i class="bi bi-receipt"></i></div>
         <span class="kpi-badge cyan">SUBTOTAL</span>
       </div>
-      <div class="kpi-value cyan" id="subtotal-principal"><span class="subtotal-kpi">{{ subtotal_compras|default:0|cop }}</span></div>
+      <div class="kpi-value cyan"><span class="subtotal-kpi">{{ subtotal_compras|default:0|cop }}</span></div>
       <p class="kpi-title">Subtotal de Compras</p>
       <p class="kpi-sub">Gasto: {{ total_gastado|default:0|cop }}</p>
     </div>
@@ -100,10 +121,10 @@
               {% if proveedor.tipo_proveedor %}
               <span class="detail-badge">{{ proveedor.get_tipo_proveedor_display }}</span>
               {% endif %}
-              {% if proveedor.email %}
+              {% if proveedor.correo %}
               <div class="detail-item">
                 <i class="bi bi-envelope-fill"></i>
-                <span>{{ proveedor.email }}</span>
+                <span>{{ proveedor.correo }}</span>
               </div>
               {% endif %}
               {% if proveedor.telefono %}
@@ -204,6 +225,7 @@
         <!-- Contenido desplegable -->
         <div class="collapse show" id="collapseHistorial">
           <div class="table-responsive table-scroll">
+            {% if compras %}
             <table id="tablaHistorialCompras" class="table table-sm align-middle mb-0">
               <thead>
                 <tr>
@@ -226,21 +248,21 @@
                       <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-box icon-primary"></i>
                         <div>
-                          <div class="fw-semibold small text-truncate" style="max-width: 180px;" title="{{ compra.producto.nombre }}">{{ compra.producto.nombre }}</div>
+                          <div class="fw-semibold small text-truncate" style="max-width: 180px;" title="{{ compra.producto.nombre|default:'Sin producto' }}">{{ compra.producto.nombre|default:"Sin producto" }}</div>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
                       <span class="badge badge-cyan">{{ compra.cantidad }}</span>
                     </td>
-                    <td class="text-end small" data-order="{{ compra.precio_unitario|default:0|stringformat:'f' }}">
+                    <td class="text-end small" data-order="{{ compra.precio_unitario|default:0|stringformat:'.2f' }}">
                       {% if compra.precio_unitario %}
                         {{ compra.precio_unitario|cop }}
                       {% else %}
                         <span class="text-muted">—</span>
                       {% endif %}
                     </td>
-                    <td class="text-end small fw-bold text-success" data-order="{{ compra.total|default:0|stringformat:'f' }}">
+                    <td class="text-end small fw-bold text-success" data-order="{{ compra.total|default:0|stringformat:'.2f' }}">
                       {% if compra.precio_unitario %}
                         {{ compra.total|cop }}
                       {% else %}
@@ -309,9 +331,9 @@
                               <button type="button" class="dropdown-item btn-abrir-pago text-success" 
                                 data-compra-id="{{ compra.id }}" 
                                 data-compra-codigo="{{ compra.codigo_compra }}"
-                                data-compra-total="{{ compra.total }}" 
-                                data-compra-pagado="{{ compra.monto_pagado }}" 
-                                data-compra-saldo="{{ compra.saldo }}"
+                                data-compra-total="{{ compra.total|stringformat:'.2f' }}" 
+                                data-compra-pagado="{{ compra.monto_pagado|stringformat:'.2f' }}" 
+                                data-compra-saldo="{{ compra.saldo|stringformat:'.2f' }}"
                                 data-bs-toggle="modal" data-bs-target="#modalPago">
                                 <i class="bi bi-credit-card me-2"></i>Registrar Pago
                               </button>
@@ -355,19 +377,8 @@
                       </div>
                     </td>
                   </tr>
-                {% empty %}
-                  <tr>
-                    <td colspan="9" class="text-center py-5">
-                      <div class="d-flex flex-column align-items-center justify-content-center">
-                        <i class="bi bi-clock-history icon-empty"></i>
-                        <p class="fw-semibold mb-1">Sin compras registradas aun</p>
-                        <p class="small mb-0 text-muted">Registra la primera compra desde el botón "Nueva compra".</p>
-                      </div>
-                    </td>
-                  </tr>
                 {% endfor %}
               </tbody>
-              {% if compras %}
                 <tfoot class="tfoot-total">
                   <tr>
                     <td colspan="5" class="text-end fw-bold text-uppercase small">
@@ -377,8 +388,15 @@
                     <td colspan="3"></td>
                   </tr>
                 </tfoot>
-              {% endif %}
             </table>
+            {% endif %}
+            {% if not compras %}
+            <div class="d-flex flex-column align-items-center justify-content-center py-5">
+              <i class="bi bi-clock-history icon-empty"></i>
+              <p class="fw-semibold mb-1">Sin compras registradas aún</p>
+              <p class="small mb-0 text-muted">Registra la primera compra desde el botón "Nueva compra".</p>
+            </div>
+            {% endif %}
           </div>
         </div>
         <!-- fin collapse -->
@@ -445,7 +463,7 @@
             <label class="dev-form-label fw-bold d-flex align-items-center gap-1">
               <i class="bi bi-truck text-warning"></i> Proveedor de la Compra
             </label>
-            <select id="proveedorSeleccionado" name="proveedor" class="form-select form-select-lg" required title="Proveedor al que se le está comprando" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
+            <select id="proveedorSeleccionado" name="proveedor" class="form-select form-select-lg cmp-input" required title="Proveedor al que se le está comprando">
               {% for prov in todos_proveedores %}
                 <option value="{{ prov.pk }}" {% if proveedor and prov.pk == proveedor.pk %}selected{% endif %}>
                   {{ prov.nombre_empresa }} (NIT: {{ prov.pk }})
@@ -459,7 +477,7 @@
             <label for="formCompraProducto" class="dev-form-label fw-bold d-flex align-items-center gap-1">
               <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
             </label>
-            <select id="formCompraProducto" name="producto" class="form-select form-select-lg" required title="Producto que estás comprando" onchange="window.seleccionarProductoCompra(this)" style="background-color: #02224a; color: #fff; border: 1px solid rgba(77,168,218,0.3);">
+            <select id="formCompraProducto" name="producto" class="form-select form-select-lg cmp-input" required title="Producto que estás comprando">
               <option value="" disabled selected>-- Selecciona un Producto --</option>
               {% for p in form.producto.field.queryset %}
                 <option value="{{ p.pk }}" data-precio="{{ p.precio_base|default:0 }}" data-stock="{{ p.stock_total }}" data-categoria="{{ p.categoria.nombre|default:'General' }}">
@@ -474,7 +492,7 @@
             <label for="formCompraLote" class="dev-form-label fw-semibold d-flex align-items-center gap-1">
               <i class="bi bi-tags text-secondary"></i> Lote Destino <small class="text-muted">(Opcional)</small>
             </label>
-            <select id="formCompraLote" name="lote" class="form-select form-select-lg" title="Lote donde entrará esta mercancía al recibirla" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+            <select id="formCompraLote" name="lote" class="form-select form-select-lg cmp-input" title="Lote donde entrará esta mercancía al recibirla">
               <option value="">-- Sin lote asignado / Registrar después --</option>
               {% for l in form.lote.field.queryset %}
                 <option value="{{ l.pk }}" data-producto="{{ l.producto_id }}">
@@ -488,37 +506,37 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label for="formCompraCantidad" class="dev-form-label fw-bold">Cantidad (Unidades) <span class="text-danger">*</span></label>
-              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg" min="1" value="1" required title="Cuántas unidades estás comprando" oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg cmp-input" min="1" value="1" required title="Cuántas unidades estás comprando">
             </div>
             <div class="col-md-6">
               <label for="formCompraPrecio" class="dev-form-label fw-bold">Precio Unitario ($) <span class="text-danger">*</span></label>
               <div class="input-group input-group-lg">
                 <span class="input-group-text" style="background: rgba(207,156,72,0.2); color: #CF9C48; border-color: rgba(207,156,72,0.3);">$</span>
-                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg" step="any" min="0.01" placeholder="Ej: 25000" required title="Precio de compra por cada unidad" oninput="window.recalcularTotalCompra()" onchange="window.recalcularTotalCompra()" style="background-color: #02224a; color: #fff; border: 1px solid rgba(207,156,72,0.3);">
+                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg cmp-input" step="any" min="0.01" placeholder="Ej: 25000" required title="Precio de compra por cada unidad">
               </div>
             </div>
           </div>
 
           <!-- Tarjeta de Cálculo en Vivo -->
-          <div class="p-3 mb-3 rounded" style="background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.1) 100%); border: 1px solid rgba(207,156,72,0.35);">
+          <div class="p-3 mb-3 cmp-total-box">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div>
-                <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 0.05em; font-size: 0.72rem;">Cálculo Total</small>
+                <small class="text-muted text-uppercase fw-bold cmp-label-mini" >Cálculo Total</small>
                 <div class="small text-white" id="calculoDetalleTexto">1 und. × $0</div>
               </div>
               <div class="text-end">
-                <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 0.05em; font-size: 0.72rem;">Total Compra</small>
+                <small class="text-muted text-uppercase fw-bold cmp-label-mini" >Total Compra</small>
                 <div class="fs-4 fw-extrabold text-success" id="calculoTotalDisplay" style="color: #2ecc71 !important; font-weight: 800;">$0</div>
               </div>
             </div>
           </div>
 
           <!-- Opciones adicionales (Estado y Abono) en acordeón colapsable -->
-          <div class="border rounded p-3 mb-2" style="background: rgba(3,30,62,0.6); border-color: rgba(239,248,226,0.1) !important;">
+          <div class="p-3 mb-2 cmp-extra-box">
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="formCompraEstado" class="dev-form-label fw-semibold">Estado de la Compra</label>
-                <select id="formCompraEstado" name="estado" class="form-select" title="En qué punto del proceso está esta compra" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <select id="formCompraEstado" name="estado" class="form-select cmp-input" title="En qué punto del proceso está esta compra">
                   <option value="recibida" selected>Recibida (Ingresar al stock ahora)</option>
                   <option value="confirmada">Confirmada (En camino)</option>
                   <option value="pendiente">Pendiente</option>
@@ -526,24 +544,24 @@
               </div>
               <div class="col-md-6">
                 <label for="formCompraFactura" class="dev-form-label fw-semibold">N° Factura / Referencia</label>
-                <input type="text" id="formCompraFactura" name="numero_factura" class="form-control" placeholder="Ej: FAC-2026-001" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <input type="text" id="formCompraFactura" name="numero_factura" class="form-control cmp-input" placeholder="Ej: FAC-2026-001">
               </div>
               <div class="col-md-6">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
                   <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" title="Pagar el total de la compra de una vez" onclick="pagarTotalNuevaCompra()">100% Total</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" title="Registrar la compra sin pagar nada todavía" onclick="creditoNuevaCompra()">Crédito ($0)</button>
+                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" title="Pagar el total de la compra de una vez" id="btnPagarTotalNueva">100% Total</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" title="Registrar la compra sin pagar nada todavía" id="btnCreditoNueva">Crédito ($0)</button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" title="Cuánto vas a pagar ahora de esta compra" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);" oninput="recalcularSaldoNuevaCompra()">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" title="Cuánto vas a pagar ahora de esta compra">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
                   Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
               </div>
               <div class="col-md-6">
                 <label for="formCompraMetodoPago" class="dev-form-label fw-semibold">Método de Pago</label>
-                <select id="formCompraMetodoPago" name="metodo_pago" class="form-select" title="Cómo se pagó el abono inicial" style="background-color: #02224a; color: #fff; border: 1px solid rgba(255,255,255,0.15);">
+                <select id="formCompraMetodoPago" name="metodo_pago" class="form-select cmp-input" title="Cómo se pagó el abono inicial">
                   <option value="efectivo" selected>Efectivo</option>
                   <option value="nequi">Nequi</option>
                   <option value="daviplata">Daviplata</option>
@@ -566,100 +584,6 @@
   </div>
 </div>
 
-<!-- MODAL: DETALLE DE COMPRA -->
-{% for compra in compras %}
-  <div class="modal fade" id="detalleCompra{{ compra.id }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content detalle-compra-modal">
-        <div class="modal-header detalle-compra-header">
-          <div class="detalle-compra-title-wrap">
-            <span class="detalle-compra-id">ID #{{ compra.id }}</span>
-            <h5 class="modal-title detalle-compra-title">
-              <i class="bi bi-receipt-cutoff"></i>Detalle de compra
-            </h5>
-            <small>Resumen del movimiento registrado</small>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body detalle-compra-body">
-          <div class="row g-3 detalle-compra-grid">
-            <div class="col-12">
-              <div class="detalle-card detalle-card-producto">
-                <div class="detalle-icon detalle-icon-producto">
-                  <i class="bi bi-box-seam"></i>
-                </div>
-                <div>
-                  <p class="detalle-label">Producto</p>
-                  <p class="detalle-value detalle-producto-nombre">{{ compra.producto.nombre }}</p>
-                  {% if compra.producto.categoria %}
-                    <small class="detalle-subvalue">{{ compra.producto.categoria.nombre }}</small>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <div class="detalle-card h-100">
-                <div class="detalle-icon"><i class="bi bi-stack"></i></div>
-                <p class="detalle-label">Cantidad</p>
-                <p class="detalle-value">{{ compra.cantidad }} und.</p>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <div class="detalle-card h-100">
-                <div class="detalle-icon"><i class="bi bi-tags"></i></div>
-                <p class="detalle-label">Lote</p>
-                <p class="detalle-value">{% if compra.numero_lote %}{{ compra.numero_lote }}{% else %}Sin lote{% endif %}</p>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <div class="detalle-card h-100">
-                <div class="detalle-icon"><i class="bi bi-calendar2-check"></i></div>
-                <p class="detalle-label">Fecha</p>
-                <p class="detalle-value fecha-text">{{ compra.fecha_registro|date:"d/m H:i" }}</p>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <div class="detalle-card h-100">
-                <div class="detalle-icon"><i class="bi bi-cash-coin"></i></div>
-                <p class="detalle-label">Precio Unitario</p>
-                <p class="detalle-value">{% if compra.precio_unitario %}{{ compra.precio_unitario|cop }}{% else %}Sin precio{% endif %}</p>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <div class="detalle-card detalle-card-total h-100">
-                <div class="detalle-icon detalle-icon-total"><i class="bi bi-receipt"></i></div>
-                <p class="detalle-label">Total Compra</p>
-                <p class="detalle-value detalle-total">{% if compra.precio_unitario %}{{ compra.total|cop }}{% else %}Sin precio{% endif %}</p>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <div class="detalle-card detalle-card-proveedor">
-                <div class="detalle-icon"><i class="bi bi-truck"></i></div>
-                <div>
-                  <p class="detalle-label">Proveedor</p>
-                  <p class="detalle-value">{{ proveedor.nombre_empresa|default:"N/A" }}</p>
-                  <small class="text-muted">{{ proveedor.nombre_contacto|default:"" }}{% if proveedor.telefono %} • {{ proveedor.telefono }}{% endif %}</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer detalle-compra-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endfor %}
-
 <!-- MODAL: SELECCIONAR PROVEEDOR -->
 <div class="modal fade" id="modalProveedores" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -677,7 +601,7 @@
       <div class="modal-body p-4">
         <div class="dev-search-wrapper mb-3">
           <i class="dev-search-icon bi bi-search"></i>
-          <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, contacto..." title="Filtra la lista de proveedores mientras escribes">
+          <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, NIT o teléfono..." title="Filtra la lista de proveedores mientras escribes">
         </div>
 
         <div id="tablaProveedores" class="table-scroll" style="max-height: 400px; overflow-y: auto;">
@@ -686,7 +610,6 @@
             <a href="?proveedor={{ prov.pk }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none transition-all {% if proveedor and prov.pk == proveedor.pk %}border-warning bg-opacity-25 bg-warning{% endif %}" 
                data-nombre="{{ prov.nombre_empresa|lower }}" 
                data-nit="{{ prov.pk|lower }}" 
-               data-contacto="{{ prov.nombre_contacto|lower|default:'' }}" 
                data-telefono="{{ prov.telefono|lower|default:'' }}" 
                data-id="{{ prov.pk }}" 
                data-proveedor-name="{{ prov.nombre_empresa }}"
@@ -744,44 +667,6 @@
     </div>
   </div>
 </div>
-
-<!-- MODAL: CAMBIAR ESTADO DE COMPRA -->
-<div class="modal fade" id="modalEstadoCompra" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header gradient-header">
-        <div>
-          <h5 class="modal-title fw-bold"><i class="bi bi-arrow-repeat me-2"></i>Cambiar estado</h5>
-          <small class="text-muted">Selecciona el estado de la compra</small>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <form id="formEstadoCompra" method="POST" action="{% url 'cambiar_estado_compra' %}">
-          {% csrf_token %}
-          <input type="hidden" id="compraEstadoId" name="compra_id">
-
-          <div class="mb-3">
-            <label for="nuevoEstado" class="form-label">Nuevo estado</label>
-            <select id="nuevoEstado" name="estado" class="form-select form-select-lg" required>
-              <option value="pendiente">Pendiente</option>
-              <option value="confirmada">Confirmada</option>
-              <option value="recibida">Recibida</option>
-              <option value="cancelada">Cancelada</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer gradient-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" form="formEstadoCompra" class="btn btn-primary fw-bold">
-          <i class="bi bi-check2 me-2"></i>Actualizar estado
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 <!-- MODAL: INFORMACIÓN DE PAGO (COMPRA) -->
 <div class="modal fade" id="modalPago" tabindex="-1">
@@ -860,7 +745,7 @@
                                         <span>Bre-B</span>
                                     </label>
                                     <label class="metodo-pago-item" title="Pagar en efectivo">
-                                        <input type="radio" name="metodo_pago" value="efectivo" class="form-check-input">
+                                        <input type="radio" name="metodo_pago" value="efectivo" class="form-check-input" checked>
                                         <i class="bi bi-cash-coin"></i>
                                         <span>Efectivo</span>
                                     </label>
@@ -881,15 +766,13 @@
                                 <span class="fw-bold text-success fs-6" id="resumenMontoPagado">$0</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block text-warning fw-semibold" style="font-size:0.75rem;">Plata que Falta</small>
+                                <small class="text-muted d-block text-warning fw-semibold" style="font-size:0.75rem;">Saldo pendiente</small>
                                 <span class="fw-bold text-danger fs-5" id="resumenSaldoPendiente">$0</span>
                             </div>
                         </div>
                     </div>
 
-                    <input type="hidden" id="montoTotal" name="monto_total">
-                    <input type="hidden" id="montoYaPagado" name="monto_ya_pagado">
-                    <input type="hidden" id="saldoActual" name="saldo_actual">
+                                                            <input type="hidden" id="saldoActual">
 
                     <!-- Monto a Abonar / Pagar Ahora -->
                     <div class="mb-4">
@@ -954,336 +837,33 @@
     </div>
 </div>
 
-{% endblock %}
+<script type="application/json" id="compras-datos">{
+  "meses_labels": {{ meses_labels_json|safe }},
+  "meses_data": {{ meses_data_json|safe }},
+  "productos_labels": {{ productos_labels_json|safe }},
+  "productos_data": {{ productos_data_json|safe }}
+}</script>
 
-{% block extra_js %}
-<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
-<script src="{% static 'js/datatables.min.js' %}"></script>
-<script src="{% static 'js/proveedores/compras.js' %}"></script>
+{# Con hx-boost solo se recarga #cys-page-wrap: los scripts de la página deben vivir aquí dentro. #}
 <script>
-$(document).ready(function() {
-  if ($.fn.DataTable.isDataTable('#tablaHistorialCompras')) {
-    $('#tablaHistorialCompras').DataTable().destroy();
+(function () {
+  function cargar(src, yaEsta) {
+    if (yaEsta()) return Promise.resolve();
+    return new Promise(function (ok, fallo) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = ok;
+      s.onerror = function () { fallo(new Error('No se pudo cargar ' + src)); };
+      document.head.appendChild(s);
+    });
   }
-
-  var tablaCompras = $('#tablaHistorialCompras').DataTable({
-    paging: true,
-    searching: false,
-    info: true,
-    lengthChange: false,
-    pageLength: 10,
-    ordering: true,
-    order: [],
-    columnDefs: [
-      { orderable: false, targets: 8 },
-      { orderable: false, targets: 0 }
-    ],
-    language: {
-      info: "Mostrando _START_ a _END_ de _TOTAL_ compras",
-      infoEmpty: "Mostrando 0 a 0 de 0 compras",
-      emptyTable: "Sin compras registradas aún.",
-      paginate: { first: '«', previous: '‹', next: '›', last: '»' }
-    },
-    dom: 'rt<"d-flex justify-content-center align-items-center mt-3"ip>'
-  });
-});
+  cargar("{% static 'vendor/chartjs/chart.umd.min.js' %}", function () { return window.Chart; })
+    .then(function () { return cargar("{% static 'vendor/jquery/jquery-3.7.1.min.js' %}", function () { return window.jQuery; }); })
+    .then(function () { return cargar("{% static 'js/datatables.min.js' %}", function () { return window.jQuery.fn.DataTable; }); })
+    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}", function () { return window.ComprasPage; }); })
+    .then(function () { window.ComprasPage.init(); })
+    .catch(function (e) { console.error(e); });
+})();
 </script>
-<script>
-// ═══════════════════════════════════════════════════════════════
-// MODAL NUEVA COMPRA: FUNCIONES GLOBALES INMEDIATAS
-// ═══════════════════════════════════════════════════════════════
-window.recalcularTotalCompra = function() {
-  const cantInput = document.getElementById('formCompraCantidad');
-  const precInput = document.getElementById('formCompraPrecio');
-  const calcTexto = document.getElementById('calculoDetalleTexto');
-  const calcDisplay = document.getElementById('calculoTotalDisplay');
 
-  const cant = parseInt(cantInput ? cantInput.value : 1) || 0;
-  const precio = parseFloat(precInput ? precInput.value : 0) || 0;
-  const total = cant * precio;
-
-  if (calcTexto) {
-    calcTexto.textContent = `${cant} und. × $${precio.toLocaleString('es-CO')}`;
-  }
-  if (calcDisplay) {
-    calcDisplay.textContent = `$${total.toLocaleString('es-CO')}`;
-  }
-  window.recalcularSaldoNuevaCompra();
-};
-
-window.pagarTotalNuevaCompra = function() {
-  const cant = parseInt(document.getElementById('formCompraCantidad')?.value || 1) || 0;
-  const precio = parseFloat(document.getElementById('formCompraPrecio')?.value || 0) || 0;
-  const total = cant * precio;
-  const pagoInput = document.getElementById('formCompraPago');
-  if (pagoInput) {
-    pagoInput.value = total;
-    window.recalcularSaldoNuevaCompra();
-  }
-};
-
-window.creditoNuevaCompra = function() {
-  const pagoInput = document.getElementById('formCompraPago');
-  if (pagoInput) {
-    pagoInput.value = 0;
-    window.recalcularSaldoNuevaCompra();
-  }
-};
-
-window.recalcularSaldoNuevaCompra = function() {
-  const cant = parseInt(document.getElementById('formCompraCantidad')?.value || 1) || 0;
-  const precio = parseFloat(document.getElementById('formCompraPrecio')?.value || 0) || 0;
-  const total = cant * precio;
-  const pagoInput = document.getElementById('formCompraPago');
-  const abono = parseFloat(pagoInput ? pagoInput.value : 0) || 0;
-  const saldoFalta = Math.max(0, total - abono);
-
-  const feedback = document.getElementById('formCompraSaldoFeedback');
-  if (feedback) {
-    if (total === 0) {
-      feedback.innerHTML = '<span class="text-muted">Ingresa producto, cantidad y precio.</span>';
-    } else if (abono >= total) {
-      feedback.innerHTML = `<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>`;
-    } else if (abono > 0) {
-      feedback.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago Parcial</span> Falta por pagar: <strong class="text-danger">$${saldoFalta.toLocaleString('es-CO')}</strong>`;
-    } else {
-      feedback.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">$${total.toLocaleString('es-CO')}</strong>`;
-    }
-  }
-};
-
-window.seleccionarProductoCompra = function(selectEl) {
-  const opt = selectEl.options[selectEl.selectedIndex];
-  if (opt) {
-    const precInput = document.getElementById('formCompraPrecio');
-    const loteSel = document.getElementById('formCompraLote');
-    const precio = parseFloat(opt.getAttribute('data-precio')) || 0;
-    if (precInput) {
-      precInput.value = precio > 0 ? precio : '';
-    }
-    const prodId = selectEl.value;
-    if (loteSel) {
-      Array.from(loteSel.options).forEach((lo, idx) => {
-        if (idx === 0) return;
-        const lProd = lo.getAttribute('data-producto');
-        lo.style.display = (!lProd || lProd === prodId) ? '' : 'none';
-      });
-      loteSel.value = '';
-    }
-  }
-  window.recalcularTotalCompra();
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  const prodSelect = document.getElementById('formCompraProducto');
-  const cantInput = document.getElementById('formCompraCantidad');
-  const precInput = document.getElementById('formCompraPrecio');
-  const modalNuevaCompraEl = document.getElementById('modalNuevaCompra');
-
-  if (prodSelect) {
-    prodSelect.addEventListener('change', function() {
-      window.seleccionarProductoCompra(this);
-    });
-  }
-
-  if (cantInput) {
-    cantInput.addEventListener('input', recalcularTotalCompra);
-    cantInput.addEventListener('change', recalcularTotalCompra);
-    cantInput.addEventListener('keyup', recalcularTotalCompra);
-  }
-
-  if (precInput) {
-    precInput.addEventListener('input', recalcularTotalCompra);
-    precInput.addEventListener('change', recalcularTotalCompra);
-    precInput.addEventListener('keyup', recalcularTotalCompra);
-  }
-
-  if (modalNuevaCompraEl) {
-    modalNuevaCompraEl.addEventListener('shown.bs.modal', function() {
-      recalcularTotalCompra();
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // BÚSQUEDA DINÁMICA DE PROVEEDORES EN MODAL
-  // ═══════════════════════════════════════════════════════════════
-  const buscarProvInput = document.getElementById('buscarProveedor');
-  const sinResultadosEl = document.getElementById('sinResultados');
-  if (buscarProvInput) {
-    buscarProvInput.addEventListener('input', function() {
-      const termino = this.value.toLowerCase().trim();
-      let visible = 0;
-      document.querySelectorAll('.fila-proveedor').forEach(fila => {
-        const nombre = fila.dataset.nombre || '';
-        const nit = fila.dataset.nit || '';
-        const contacto = fila.dataset.contacto || '';
-        const telefono = fila.dataset.telefono || '';
-        const coincide = nombre.includes(termino) || nit.includes(termino) || contacto.includes(termino) || telefono.includes(termino);
-        fila.style.display = coincide ? '' : 'none';
-        if (coincide) visible++;
-      });
-      if (sinResultadosEl) {
-        sinResultadosEl.style.display = (visible === 0 && termino !== '') ? 'block' : 'none';
-      }
-    });
-  }
-
-  // Nota: SUBTOTAL y KPIs ya llegan formateados en pesos colombianos
-  // desde el servidor (filtro `cop`), no requieren reformateo por JS.
-
-  // Auto-reload después de registrar compra
-  // ═══════════════════════════════════════════════════════════════
-  // MODAL DE PAGO - CARGA DE DATOS Y CÁLCULOS AUTOMÁTICOS
-  // ═══════════════════════════════════════════════════════════════
-
-  const montoPagadoInput = document.getElementById('montoPagado');
-  const saldoPendienteInput = document.getElementById('saldoPendiente');
-  const montoTotalInput = document.getElementById('montoTotal');
-  const montoYaPagadoInput = document.getElementById('montoYaPagado');
-  const saldoActualInput = document.getElementById('saldoActual');
-  const modalPago = document.getElementById('modalPago');
-  const alertaPagada = document.getElementById('alertaPagada');
-  const btnAbrirPago = document.querySelectorAll('.btn-abrir-pago');
-  const btnPagarTodoSaldo = document.getElementById('btnPagarTodoSaldo');
-
-  // Convierte montos con formato es-CO ("50.000,00") a número JS válido.
-  function parseMontoLocalizado(raw) {
-    if (raw === null || raw === undefined) return NaN;
-    const str = String(raw).trim();
-    if (!str) return NaN;
-    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
-  }
-
-  // Cuando se hace clic en "Registrar Pago", cargar los datos de la compra
-  btnAbrirPago.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const compraId = this.getAttribute('data-compra-id');
-      const totalCompra = parseMontoLocalizado(this.getAttribute('data-compra-total')) || 0;
-      const montoPagadoAnterior = parseMontoLocalizado(this.getAttribute('data-compra-pagado')) || 0;
-      const rawSaldo = this.getAttribute('data-compra-saldo');
-      const saldoParseado = parseMontoLocalizado(rawSaldo);
-      const saldoActual = !isNaN(saldoParseado)
-        ? saldoParseado
-        : Math.max(0, totalCompra - montoPagadoAnterior);
-
-      document.getElementById('compraId').value = compraId;
-      if (montoTotalInput) montoTotalInput.value = totalCompra;
-      if (montoYaPagadoInput) montoYaPagadoInput.value = montoPagadoAnterior;
-      if (saldoActualInput) saldoActualInput.value = saldoActual;
-
-      const resTotal = document.getElementById('resumenMontoTotal');
-      const resPagado = document.getElementById('resumenMontoPagado');
-      const resSaldo = document.getElementById('resumenSaldoPendiente');
-
-      if (resTotal) resTotal.textContent = `$${totalCompra.toLocaleString('es-CO')}`;
-      if (resPagado) resPagado.textContent = `$${montoPagadoAnterior.toLocaleString('es-CO')}`;
-      if (resSaldo) resSaldo.textContent = `$${saldoActual.toLocaleString('es-CO')}`;
-
-      if (montoPagadoInput) {
-        montoPagadoInput.value = '';
-        montoPagadoInput.max = saldoActual;
-      }
-
-      if (btnPagarTodoSaldo) {
-        btnPagarTodoSaldo.innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar Todo ($${saldoActual.toLocaleString('es-CO')})`;
-      }
-
-      // Mostrar alerta si ya está pagada completamente
-      if (saldoActual <= 0) {
-        alertaPagada.classList.remove('d-none');
-        document.getElementById('formPago').style.display = 'none';
-        document.getElementById('formPago').querySelector('button[type="submit"]').disabled = true;
-      } else {
-        alertaPagada.classList.add('d-none');
-        document.getElementById('formPago').style.display = 'block';
-        document.getElementById('formPago').querySelector('button[type="submit"]').disabled = false;
-      }
-
-      actualizarCalculosPago();
-    });
-  });
-
-  if (btnPagarTodoSaldo) {
-    btnPagarTodoSaldo.addEventListener('click', function() {
-      const saldoActual = parseFloat(document.getElementById('saldoActual')?.value || 0);
-      if (montoPagadoInput) {
-        montoPagadoInput.value = saldoActual > 0 ? saldoActual.toFixed(2) : 0;
-        actualizarCalculosPago();
-      }
-    });
-  }
-
-  // Calcular saldo pendiente en tiempo real según el monto a abonar
-  function actualizarCalculosPago() {
-    const saldoActual = parseFloat(document.getElementById('saldoActual')?.value || 0);
-    const montoAbono = parseFloat(montoPagadoInput ? montoPagadoInput.value : 0) || 0;
-    const nuevoSaldo = Math.max(0, saldoActual - montoAbono);
-
-    if (saldoPendienteInput) {
-      saldoPendienteInput.value = `$${nuevoSaldo.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-    }
-
-    const badgeNuevo = document.getElementById('badgeNuevoEstado');
-    if (badgeNuevo) {
-      if (montoAbono >= saldoActual && saldoActual > 0) {
-        badgeNuevo.className = 'badge badge-success-custom px-3 py-2 w-100 text-center';
-        badgeNuevo.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
-      } else if (montoAbono > 0) {
-        badgeNuevo.className = 'badge badge-warning-custom px-3 py-2 w-100 text-center';
-        badgeNuevo.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Quedará PARCIAL';
-      } else {
-        badgeNuevo.className = 'badge badge-pending-custom px-3 py-2 w-100 text-center';
-        badgeNuevo.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono nuevo';
-      }
-    }
-  }
-
-  if (montoPagadoInput) {
-    montoPagadoInput.addEventListener('input', actualizarCalculosPago);
-    montoPagadoInput.addEventListener('change', actualizarCalculosPago);
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // DROPDOWN - CERRAR OTROS AL ABRIR UNO
-  // ═══════════════════════════════════════════════════════════════
-
-  document.addEventListener('show.bs.dropdown', function(e) {
-    // Cerrar TODOS los otros dropdowns
-    const allDropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
-    allDropdowns.forEach(btn => {
-      if (btn !== e.relatedTarget) {
-        const dropdown = bootstrap.Dropdown.getInstance(btn);
-        if (dropdown) {
-          dropdown.hide();
-        }
-      }
-    });
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // VALIDAR FORMULARIO DE PAGO
-  // ═══════════════════════════════════════════════════════════════
-
-  const formPago = document.getElementById('formPago');
-  if (formPago) {
-    formPago.addEventListener('submit', function(e) {
-      const metodoPago = document.querySelector('input[name="metodo_pago"]:checked');
-      const montoPagado = document.getElementById('montoPagado');
-
-      if (!metodoPago || !metodoPago.value) {
-        e.preventDefault();
-        alert('⚠️ Debe seleccionar un método de pago');
-        return false;
-      }
-
-      if (!montoPagado.value || parseFloat(montoPagado.value) <= 0) {
-        e.preventDefault();
-        alert('⚠️ Debe ingresar un monto válido');
-        return false;
-      }
-    });
-  }
-});
-</script>
 {% endblock %}
-
