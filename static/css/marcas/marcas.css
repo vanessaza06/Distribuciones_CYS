@@ -23,6 +23,10 @@
   --cys-amber-soft: rgba(245, 179, 1, 0.12);
   --cys-amber-border: rgba(245, 179, 1, 0.35);
 
+  --cys-cyan: #4da8da;
+  --cys-cyan-soft: rgba(77, 168, 218, 0.12);
+  --cys-cyan-border: rgba(77, 168, 218, 0.55);
+
   --cys-blue: #2f7bf5;
   --cys-blue-soft: rgba(47, 123, 245, 0.12);
   --cys-blue-border: rgba(47, 123, 245, 0.35);
@@ -44,7 +48,7 @@
 
 .cys-page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
@@ -70,7 +74,113 @@
 .cys-page-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--cys-text); }
 .cys-page-subtitle { margin: 2px 0 0; color: var(--cys-text-secondary); font-size: 14px; }
 
-.cys-page-header__right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+/* Zona derecha: Desde | Hasta | Exportar | Nueva marca, todo en una fila */
+.cys-page-header__right {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ---------- Campos de fecha (Desde / Hasta) ---------- */
+
+.cys-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.cys-date-field label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cys-cyan);
+}
+
+.cys-date-field input[type="date"] {
+  width: 160px;
+  height: 46px;
+  box-sizing: border-box;
+  background: var(--cys-bg);
+  border: 1px solid var(--cys-cyan-border);
+  border-radius: var(--cys-radius-sm);
+  padding: 0 12px;
+  color: var(--cys-text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  color-scheme: dark;
+}
+
+.cys-date-field input[type="date"]:focus {
+  border-color: var(--cys-cyan);
+  box-shadow: 0 0 0 3px var(--cys-cyan-soft);
+}
+
+.cys-date-field input[type="date"]:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cys-date-field input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.9;
+  filter: invert(62%) sepia(46%) saturate(580%) hue-rotate(170deg) brightness(95%);
+}
+
+/* ---------- Exportar (botón + menú desplegable) ---------- */
+
+.cys-export { position: relative; }
+
+.cys-btn--export {
+  height: 46px;
+  box-sizing: border-box;
+  background: var(--cys-blue-soft);
+  border: 1px solid var(--cys-blue);
+  color: var(--cys-text);
+  font-weight: 600;
+}
+
+.cys-btn--export:hover { background: rgba(47, 123, 245, 0.2); }
+
+.cys-export__chevron { font-size: 11px; transition: transform 0.15s ease; }
+.cys-export--open .cys-export__chevron { transform: rotate(180deg); }
+
+.cys-export__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  width: max-content;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--cys-surface-alt);
+  border: 1px solid var(--cys-border);
+  border-radius: var(--cys-radius-md);
+  box-shadow: var(--cys-shadow);
+  z-index: 30;
+  display: none;
+}
+
+.cys-export--open .cys-export__menu { display: block; }
+
+.cys-export__menu li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  font-size: 14px;
+  color: var(--cys-text);
+  border-radius: var(--cys-radius-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.cys-export__menu li i { font-size: 17px; }
+.cys-export__menu li:hover { background: var(--cys-blue-soft); }
 
 /* ---------- Botones propios de esta página ---------- */
 
@@ -186,8 +296,6 @@
   flex-wrap: wrap;
 }
 
-/* Buscador estilo "Stock & Productos": caja de icono azul pegada al input,
-   formando una sola barra con dos zonas de color. */
 .cys-search {
   flex: 1;
   min-width: 240px;
@@ -672,6 +780,105 @@
    BLINDAJE — corrige lo que base.css pueda estar pisando
    ========================================================= */
 
+/* Cabecera: todo en una sola fila, alineado abajo */
+.cys-marcas-page .cys-page-header { align-items: flex-end !important; }
+
+.cys-marcas-page .cys-page-header__right {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+}
+
+.cys-marcas-page .cys-date-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+.cys-marcas-page .cys-date-field label {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+  color: var(--cys-cyan) !important;
+}
+
+.cys-marcas-page .cys-date-field input[type="date"] {
+  width: 160px !important;
+  height: 46px !important;
+  background: var(--cys-bg) !important;
+  border: 1px solid var(--cys-cyan-border) !important;
+  border-radius: var(--cys-radius-sm) !important;
+  color: var(--cys-text) !important;
+  padding: 0 12px !important;
+  box-shadow: none !important;
+}
+
+.cys-marcas-page .cys-date-field input[type="date"]:focus {
+  border-color: var(--cys-cyan) !important;
+  box-shadow: 0 0 0 3px var(--cys-cyan-soft) !important;
+}
+
+.cys-marcas-page .cys-btn.cys-btn--export,
+.cys-marcas-page #cysExportTrigger {
+  height: 46px !important;
+  background: var(--cys-blue-soft) !important;
+  background-color: rgba(47, 123, 245, 0.12) !important;
+  border: 1px solid var(--cys-blue) !important;
+  border-radius: var(--cys-radius-sm) !important;
+  color: var(--cys-text) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.cys-marcas-page .cys-btn.cys-btn--export:hover { background-color: rgba(47, 123, 245, 0.2) !important; }
+
+/* Menú de exportar: oculto por defecto, flotante, sin viñetas */
+.cys-marcas-page .cys-export { position: relative !important; }
+
+.cys-marcas-page .cys-export__menu {
+  display: none !important;
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  padding: 6px !important;
+  list-style: none !important;
+  background-color: var(--cys-surface-alt) !important;
+  border: 1px solid var(--cys-border) !important;
+  border-radius: var(--cys-radius-md) !important;
+  box-shadow: var(--cys-shadow) !important;
+  z-index: 30 !important;
+}
+
+.cys-marcas-page .cys-export--open .cys-export__menu { display: block !important; }
+
+.cys-marcas-page .cys-export__menu li {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  list-style: none !important;
+  padding: 11px 16px !important;
+  font-size: 14px !important;
+  color: var(--cys-text) !important;
+  border-radius: var(--cys-radius-sm) !important;
+  cursor: pointer !important;
+}
+
+.cys-marcas-page .cys-export__menu li::marker { content: none; }
+.cys-marcas-page .cys-export__menu li:hover { background: var(--cys-blue-soft) !important; }
+
 .cys-marcas-page .cys-stats {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -723,6 +930,8 @@ a.cys-btn--primary,
   font-weight: 600 !important;
 }
 
+#btnNuevaMarca.cys-btn { height: 46px !important; }
+
 .cys-table-card .cys-table thead th {
   color: var(--cys-text-muted) !important;
   background: var(--cys-surface-alt) !important;
@@ -746,8 +955,8 @@ a.cys-btn--primary,
 @media (max-width: 960px) {
   .cys-marcas-page .cys-stats { grid-template-columns: 1fr !important; }
   .cys-stats { grid-template-columns: 1fr; }
-  .cys-page-header { flex-direction: column; align-items: flex-start; }
-  .cys-page-header__right { align-items: flex-start; }
+  .cys-page-header { flex-direction: column; align-items: flex-start !important; }
+  .cys-marcas-page .cys-page-header__right { justify-content: flex-start !important; }
 }
 
 @media (max-width: 480px) {
@@ -759,6 +968,7 @@ a.cys-btn--primary,
     margin: 0;
   }
   .cys-estado-options { grid-template-columns: 1fr; }
+  .cys-marcas-page .cys-date-field input[type="date"] { width: 140px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

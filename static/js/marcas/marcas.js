@@ -1,8 +1,8 @@
 /* =========================================================
    CYS Licorera — Marcas
    Delegación de eventos en fase de CAPTURA sobre `document`.
-   Sin funcionalidad de eliminar: una marca solo se activa
-   o desactiva desde el modal de edición.
+   Incluye: modal crear/editar, filtros, rango de fechas
+   y exportación (Excel, PDF, Imprimir).
    ========================================================= */
 
 (function () {
@@ -27,6 +27,8 @@
     console.error("[marcas.js] No se encontraron las URLs de crear/editar.");
     return null;
   }
+
+  /* ---------------- Modal ---------------- */
 
   function mostrarOverlay(overlay) {
     if (!overlay) return;
@@ -111,10 +113,70 @@
     ocultarOverlay($id("cysModalOverlay"));
   }
 
+  /* ---------------- Select de estado ---------------- */
+
   function cerrarSelect() {
     var sel = $id("cysEstadoSelect");
     if (sel) sel.classList.remove("cys-select--open");
   }
+
+  /* ---------------- Exportar ---------------- */
+
+  function cerrarExport() {
+    var box = $id("cysExport");
+    if (box) box.classList.remove("cys-export--open");
+  }
+
+  // Construye la URL de exportación con los filtros actuales
+  // (búsqueda, estado, desde, hasta), aunque no se hayan aplicado aún.
+  function urlExportacion(tipo) {
+    var page = document.querySelector(".cys-marcas-page");
+    if (!page || !page.dataset.urlLista) return null;
+
+    var form = $id("cysFiltroForm");
+    var params = new URLSearchParams();
+    if (form) {
+      new FormData(form).forEach(function (valor, clave) {
+        if (valor !== "" && clave !== "page") params.append(clave, valor);
+      });
+    }
+    params.set("export", tipo);
+    return page.dataset.urlLista + "?" + params.toString();
+  }
+
+  function exportar(tipo) {
+    var url = urlExportacion(tipo);
+    if (!url) {
+      console.error("[marcas.js] No se encontró la URL de exportación:", tipo);
+      return;
+    }
+    if (tipo === "imprimir") {
+      window.open(url, "_blank");
+    } else {
+      window.location.href = url; // descarga directa (Content-Disposition: attachment)
+    }
+  }
+
+  /* ---------------- Fechas ---------------- */
+
+  // Evita rangos inválidos: "hasta" no puede ser menor que "desde".
+  function validarRangoFechas(cambiado) {
+    var desde = $id("fieldDesde");
+    var hasta = $id("fieldHasta");
+    if (!desde || !hasta) return true;
+
+    hasta.min = desde.value || "";
+    desde.max = hasta.value || "";
+
+    if (desde.value && hasta.value && desde.value > hasta.value) {
+      // Si el usuario cambió uno, el otro se ajusta para mantener coherencia.
+      if (cambiado === desde) hasta.value = desde.value;
+      else desde.value = hasta.value;
+    }
+    return true;
+  }
+
+  /* ---------------- Clicks (fase de captura) ---------------- */
 
   document.addEventListener("click", function (e) {
     var t = e.target;
@@ -143,9 +205,26 @@
 
     if (t.id === "cysModalOverlay") { cerrarModal(); return; }
 
+    /* --- Exportar --- */
+    if (t.closest("#cysExportTrigger")) {
+      var box = $id("cysExport");
+      if (box) box.classList.toggle("cys-export--open");
+      cerrarSelect();
+      return;
+    }
+
+    var itemExport = t.closest("#cysExportMenu li");
+    if (itemExport) {
+      cerrarExport();
+      exportar(itemExport.dataset.export);
+      return;
+    }
+
+    /* --- Select de estado --- */
     if (t.closest("#cysEstadoTrigger")) {
       var sel = $id("cysEstadoSelect");
       if (sel) sel.classList.toggle("cys-select--open");
+      cerrarExport();
       return;
     }
 
@@ -162,13 +241,26 @@
     }
 
     if (!t.closest("#cysEstadoSelect")) cerrarSelect();
+    if (!t.closest("#cysExport")) cerrarExport();
   }, true);
+
+  /* ---------------- Change / Input / Submit / Keydown ---------------- */
 
   var debounceTimer = null;
 
   document.addEventListener("change", function (e) {
-    if (e.target && e.target.name === "estado_radio") {
+    var t = e.target;
+    if (!t) return;
+
+    if (t.name === "estado_radio") {
       actualizarEstadoSeleccionado();
+    }
+
+    // Al cambiar una fecha, se valida el rango y se filtra la tabla.
+    if (t.id === "fieldDesde" || t.id === "fieldHasta") {
+      validarRangoFechas(t);
+      var form = $id("cysFiltroForm");
+      if (form) form.submit();
     }
   });
 
@@ -197,13 +289,18 @@
     if (e.key !== "Escape") return;
     cerrarModal();
     cerrarSelect();
+    cerrarExport();
   });
+
+  /* ---------------- Inicio ---------------- */
 
   function alListo() {
     var ov = $id("cysModalOverlay");
     if (ov && ov.parentElement !== document.body) {
       document.body.appendChild(ov);
     }
+
+    validarRangoFechas(null);
 
     var buscar = $id("inputBuscar");
     if (buscar && buscar.value && new URLSearchParams(window.location.search).has("q")) {
