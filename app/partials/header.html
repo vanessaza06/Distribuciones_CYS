@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <link rel="stylesheet" href="{% static 'css/cuerpo/header-inline.css' %}">
 <link rel="stylesheet" href="{% static 'css/cuerpo/header.css' %}">
 <header class="cys-header" data-url-stock-status="{% url 'stock_status' %}">
@@ -36,28 +36,45 @@
             <div class="dropdown-menu dropdown-menu-end p-0 notif-dropdown-menu"
                 id="notif-dropdown-menu">
 
-            <div class="d-flex notif-tabs-divider">
-                     <button id="tab-alertas" type="button" onclick="notifTab('alertas')"
-                 class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn">
-                 Alertas
-               </button>
+                <div class="d-flex notif-tabs-divider">
+                    <button id="tab-alertas" type="button" onclick="notifTab('alertas')"
+                            class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn active">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Stock
+                    </button>
+                    <button id="tab-compras" type="button" onclick="notifTab('compras')"
+                            class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn">
+                        <i class="bi bi-bag-check me-1"></i>Compras <span id="badge-compras-tab" class="badge rounded-pill d-none ms-1" style="background:#CF9C48; color:#011936; font-size:9px; padding:2px 5px;">0</span>
+                    </button>
                     <button id="tab-historial" type="button" onclick="notifTab('historial')"
                             class="btn btn-sm flex-fill rounded-0 fw-bold notif-tab-btn">
-                        Historial
+                        <i class="bi bi-clock-history me-1"></i>Historial
                     </button>
                 </div>
 
+                <!-- Panel Stock Crítico -->
                 <div id="panel-alertas" class="notif-panel">
-                    <div class="text-center py-3 notif-empty-text">Cargando…</div>
+                    <div class="text-center py-3 notif-empty-text">Cargando alertas…</div>
                 </div>
 
+                <!-- Panel Compras Pendientes -->
+                <div id="panel-compras" class="d-none notif-panel">
+                    <div class="text-center py-3 notif-empty-text">Cargando compras…</div>
+                </div>
+
+                <!-- Panel Historial -->
                 <div id="panel-historial" class="d-none notif-panel">
                     <div class="text-center py-3 notif-empty-text">Sin notificaciones aún</div>
                 </div>
 
-                <a class="dropdown-item text-center py-2 notif-footer-link" href="#">
-                    Ver stock completo →
-                </a>
+                <!-- Footers dinámicos -->
+                <div id="notif-footer-container">
+                    <a id="notif-footer-stock" class="dropdown-item text-center py-2 notif-footer-link" href="{% url 'lista_productos' %}">
+                        Ver stock completo →
+                    </a>
+                    <a id="notif-footer-compras" class="dropdown-item text-center py-2 notif-footer-link d-none" href="{% url 'lista_compras' %}" style="color:#CF9C48;">
+                        Ir a Gestión de Compras →
+                    </a>
+                </div>
             </div>
         </div>
 
