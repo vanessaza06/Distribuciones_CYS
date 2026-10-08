@@ -114,23 +114,25 @@
 
   .dc-kpi {
     background: #02224a;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 1.1rem 1.2rem;
-    border-left: 3px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #CF9C48 !important;
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .dc-kpi:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border-color: rgba(207, 156, 72, 0.4);
+    box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
   }
 
-  .dc-kpi--gold  { border-left-color: #CF9C48; }
-  .dc-kpi--blue  { border-left-color: #4DA8DA; }
-  .dc-kpi--green { border-left-color: #27ae60; }
-  .dc-kpi--red   { border-left-color: #912F40; }
-  .dc-kpi--purple{ border-left-color: #9b5de5; }
+  .dc-kpi--gold,
+  .dc-kpi--blue,
+  .dc-kpi--green,
+  .dc-kpi--red,
+  .dc-kpi--purple { border-left: 4px solid #CF9C48 !important; }
 
   .dc-kpi__label {
     font-size: 0.65rem;
@@ -158,17 +160,24 @@
   }
 
   .dc-kpi--gold .dc-kpi__value  { color: #CF9C48; }
-  .dc-kpi--blue .dc-kpi__value  { color: #4DA8DA; }
-  .dc-kpi--green .dc-kpi__value { color: #27ae60; }
-  .dc-kpi--purple .dc-kpi__value{ color: #9b5de5; }
+  .dc-kpi--blue .dc-kpi__value  { color: #CF9C48; }
+  .dc-kpi--green .dc-kpi__value { color: #CF9C48; }
+  .dc-kpi--purple .dc-kpi__value{ color: #CF9C48; }
 
   /* ─── Secciones de información ─── */
   .dc-section {
     background: #02224a;
-    border: 1px solid rgba(239,248,226,0.1);
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #CF9C48 !important;
+    border-radius: 12px;
     margin-bottom: 1.25rem;
     overflow: hidden;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+
+  .dc-section:hover {
+    border-color: rgba(207, 156, 72, 0.4);
+    box-shadow: 0 0 15px rgba(207, 156, 72, 0.3) !important;
   }
 
   .dc-section__head {

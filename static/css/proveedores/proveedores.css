@@ -31,12 +31,16 @@
 }
 
 /* BASE CARD STYLING */
-.cys-card {
-  background: var(--color-bg-card);
-  border: 1px solid transparent;
-  border-left: 4px solid #CF9C48;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+.cys-card,
+.card-dev,
+.editar-form-card,
+.editar-header {
+  background: var(--color-bg-card) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 4px solid #CF9C48 !important;
+  border-top: none !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
   overflow: hidden;
 }
 
@@ -45,26 +49,22 @@
   padding: 1rem 1.5rem;
 }
 
-.cys-card:hover {
-  border-color: #CF9C48;
-  box-shadow: 0 0 20px rgba(207, 156, 72, 0.4), 0 0 40px rgba(207, 156, 72, 0.15);
+.cys-card:hover,
+.card-dev:hover,
+.editar-form-card:hover,
+.editar-header:hover {
+  border-color: rgba(207, 156, 72, 0.4) !important;
+  border-left-color: #CF9C48 !important;
+  box-shadow: 0 0 15px rgba(207, 156, 72, 0.35) !important;
 }
 
-/* CARD COLOR VARIANTS */
-.cys-card--inv {
-  border-top: 4px solid var(--cyan) !important;
-}
-
-.cys-card--prov {
-  border-top: 4px solid var(--green-light) !important;
-}
-
-.cys-card--diario {
-  border-top: 4px solid var(--yellow) !important;
-}
-
+/* CARD COLOR VARIANTS — Borde izquierdo dorado unificado */
+.cys-card--inv,
+.cys-card--prov,
+.cys-card--diario,
 .cys-card--analisis {
-  border-top: 4px solid var(--orange) !important;
+  border-left: 4px solid #CF9C48 !important;
+  border-top: none !important;
 }
 
 /* CARD TITLES */
@@ -208,14 +208,17 @@
 }
 .top-item {
   padding: 1.5rem;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 10%, transparent), color-mix(in srgb, var(--azul-claro) 5%, transparent));
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
+  background: var(--color-bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #CF9C48;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 .top-item:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--azul-claro) 20%, transparent);
+  border-color: rgba(207, 156, 72, 0.4);
+  border-left-color: #CF9C48;
+  box-shadow: 0 0 15px rgba(207, 156, 72, 0.35);
 }
 .medal {
   width: 40px;
@@ -936,7 +939,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .kpi-card {
   background: var(--color-bg-card) !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 4px solid #CF9C48 !important;
   border-radius: 12px !important;
   padding: 1rem !important;
   color: var(--text-hi) !important;
@@ -948,8 +952,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .kpi-card:hover {
   transform: translateY(-4px);
-  border-color: #CF9C48 !important;
-  box-shadow: 0 8px 16px rgba(207, 156, 72, 0.3) !important;
+  border-color: rgba(207, 156, 72, 0.4) !important;
+  border-left-color: #CF9C48 !important;
+  box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
 }
 
 .kpi-card-top {
