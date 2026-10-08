@@ -1,37 +1,20 @@
 /* =========================================================
    CYS Licorera — Marcas
-   Delegación de eventos en fase de CAPTURA sobre `document`.
-   Incluye: modal crear/editar, filtros, rango de fechas
-   y exportación (Excel, PDF, Imprimir).
+   Todo con delegación de eventos sobre `document` (fase de captura).
+   Modal crear/editar, filtros, fechas, ordenamiento y exportación.
+   Sin librerías externas: todo abre al instante.
    ========================================================= */
 
 (function () {
   "use strict";
 
   window.CYS_MARCAS_OK = true;
-  console.log("[marcas.js] Script cargado.");
 
-  function $id(id) {
-    return document.getElementById(id);
-  }
-
-  function getUrls() {
-    if (window.CYS_URLS) return window.CYS_URLS;
-    var page = document.querySelector(".cys-marcas-page");
-    if (page && page.dataset.urlCrear) {
-      return {
-        crear: page.dataset.urlCrear,
-        editarBase: page.dataset.urlEditarBase,
-      };
-    }
-    console.error("[marcas.js] No se encontraron las URLs de crear/editar.");
-    return null;
-  }
+  function $id(id) { return document.getElementById(id); }
 
   /* ---------------- Modal ---------------- */
 
   function mostrarOverlay(overlay) {
-    if (!overlay) return;
     overlay.classList.add("cys-modal-overlay--open");
     overlay.style.setProperty("display", "flex", "important");
   }
@@ -68,57 +51,68 @@
     if (desc && cont) cont.textContent = desc.value.length + "/200";
   }
 
+  function resetBotonGuardar() {
+    var btn = $id("cysGuardarBtn");
+    if (btn) btn.disabled = false;
+  }
+
   function abrirModalNueva() {
     var overlay = $id("cysModalOverlay");
     var form = $id("cysMarcaForm");
-    if (!overlay || !form) {
-      console.error("[marcas.js] Falta #cysModalOverlay o #cysMarcaForm en el HTML.");
-      return;
-    }
-    var urls = getUrls();
-    var titulo = $id("cysModalTitle");
-    var sub = $id("cysModalSubtitle");
-    if (titulo) titulo.textContent = "Nueva marca";
-    if (sub) sub.textContent = "Registra una nueva marca de productos";
+    if (!overlay || !form) return;
+
+    var page = document.querySelector(".cys-marcas-page");
+    $id("cysModalTitle").textContent = "Nueva marca";
+    $id("cysModalSubtitle").textContent = "Registra una nueva marca de productos";
     form.reset();
-    if (urls) form.action = urls.crear;
+    if (page && page.dataset.urlCrear) form.action = page.dataset.urlCrear;
     setEstado(true);
     actualizarContador();
+    resetBotonGuardar();
     mostrarOverlay(overlay);
     var nombre = $id("fieldNombre");
     if (nombre) nombre.focus();
   }
 
-  function abrirModalEditar(datos) {
+  function abrirModalEditar(btn) {
     var overlay = $id("cysModalOverlay");
     var form = $id("cysMarcaForm");
     if (!overlay || !form) return;
-    var urls = getUrls();
-    var titulo = $id("cysModalTitle");
-    var sub = $id("cysModalSubtitle");
-    var nombre = $id("fieldNombre");
-    var desc = $id("fieldDescripcion");
-    if (titulo) titulo.textContent = "Editar marca";
-    if (sub) sub.textContent = "Actualiza los datos de la marca";
-    if (nombre) nombre.value = datos.nombre || "";
-    if (desc) desc.value = datos.descripcion || "";
-    setEstado(datos.estado === "activo");
+
+    $id("cysModalTitle").textContent = "Editar marca";
+    $id("cysModalSubtitle").textContent = "Actualiza los datos de la marca";
+    $id("fieldNombre").value = btn.dataset.nombre || "";
+    $id("fieldDescripcion").value = btn.dataset.descripcion || "";
+    setEstado(btn.dataset.estado === "activo");
     actualizarContador();
-    if (urls) form.action = urls.editarBase + datos.id + "/";
+    resetBotonGuardar();
+    form.action = btn.dataset.url;   // URL propia de cada marca
     mostrarOverlay(overlay);
-    if (nombre) nombre.focus();
+    $id("fieldNombre").focus();
   }
 
   function cerrarModal() {
     ocultarOverlay($id("cysModalOverlay"));
   }
 
-  /* ---------------- Select de estado ---------------- */
+  /* ---------------- Select de estado (Todos los estados) ----------------
+     Se controla con estilo en línea (!important) para que ningún CSS
+     externo pueda dejarlo siempre oculto o siempre visible. */
 
-  function cerrarSelect() {
+  function setSelectAbierto(abrir) {
     var sel = $id("cysEstadoSelect");
-    if (sel) sel.classList.remove("cys-select--open");
+    var menu = $id("cysEstadoMenu");
+    if (!sel || !menu) return;
+    sel.classList.toggle("cys-select--open", abrir);
+    menu.style.setProperty("display", abrir ? "block" : "none", "important");
   }
+
+  function selectAbierto() {
+    var sel = $id("cysEstadoSelect");
+    return !!(sel && sel.classList.contains("cys-select--open"));
+  }
+
+  function cerrarSelect() { setSelectAbierto(false); }
 
   /* ---------------- Exportar ---------------- */
 
@@ -127,8 +121,7 @@
     if (box) box.classList.remove("cys-export--open");
   }
 
-  // Construye la URL de exportación con los filtros actuales
-  // (búsqueda, estado, desde, hasta), aunque no se hayan aplicado aún.
+  // URL de exportación con los filtros actuales (incluye Desde/Hasta aunque no se hayan aplicado)
   function urlExportacion(tipo) {
     var page = document.querySelector(".cys-marcas-page");
     if (!page || !page.dataset.urlLista) return null;
@@ -146,34 +139,72 @@
 
   function exportar(tipo) {
     var url = urlExportacion(tipo);
-    if (!url) {
-      console.error("[marcas.js] No se encontró la URL de exportación:", tipo);
-      return;
-    }
+    if (!url) return;
+
     if (tipo === "imprimir") {
       window.open(url, "_blank");
-    } else {
-      window.location.href = url; // descarga directa (Content-Disposition: attachment)
+      return;
     }
+
+    // Excel / PDF: aviso visual mientras el servidor genera el archivo
+    var label = $id("cysExportLabel");
+    var trigger = $id("cysExportTrigger");
+    if (label) label.textContent = "Generando…";
+    if (trigger) trigger.disabled = true;
+    window.location.href = url;   // descarga directa (attachment): la página no se recarga
+    setTimeout(function () {
+      if (label) label.textContent = "Exportar";
+      if (trigger) trigger.disabled = false;
+    }, 3500);
   }
 
   /* ---------------- Fechas ---------------- */
 
-  // Evita rangos inválidos: "hasta" no puede ser menor que "desde".
   function validarRangoFechas(cambiado) {
     var desde = $id("fieldDesde");
     var hasta = $id("fieldHasta");
-    if (!desde || !hasta) return true;
+    if (!desde || !hasta) return;
 
     hasta.min = desde.value || "";
     desde.max = hasta.value || "";
 
     if (desde.value && hasta.value && desde.value > hasta.value) {
-      // Si el usuario cambió uno, el otro se ajusta para mantener coherencia.
       if (cambiado === desde) hasta.value = desde.value;
       else desde.value = hasta.value;
     }
-    return true;
+  }
+
+  /* ---------------- Ordenar tabla (sin librerías) ---------------- */
+
+  var orden = { col: null, asc: true };
+
+  function ordenarTabla(th) {
+    var tbody = $id("cysTableBody");
+    if (!tbody) return;
+
+    var col = parseInt(th.dataset.col, 10);
+    var esNum = th.dataset.type === "num";
+    orden.asc = (orden.col === col) ? !orden.asc : true;
+    orden.col = col;
+
+    var filas = Array.prototype.slice.call(tbody.rows);
+    filas.sort(function (a, b) {
+      var x = a.cells[col].textContent.trim();
+      var y = b.cells[col].textContent.trim();
+      var r = esNum
+        ? (parseFloat(x) || 0) - (parseFloat(y) || 0)
+        : x.localeCompare(y, "es", { sensitivity: "base" });
+      return orden.asc ? r : -r;
+    });
+
+    var frag = document.createDocumentFragment();
+    filas.forEach(function (tr) { frag.appendChild(tr); });
+    tbody.appendChild(frag);
+
+    document.querySelectorAll("#tablaMarcas th.cys-sortable").forEach(function (h) {
+      h.classList.remove("cys-sort-asc", "cys-sort-desc");
+    });
+    th.classList.add(orden.asc ? "cys-sort-asc" : "cys-sort-desc");
   }
 
   /* ---------------- Clicks (fase de captura) ---------------- */
@@ -182,30 +213,15 @@
     var t = e.target;
     if (!t || !t.closest) return;
 
-    if (t.closest("#btnNuevaMarca")) {
-      abrirModalNueva();
-      return;
-    }
+    if (t.closest("#btnNuevaMarca")) { abrirModalNueva(); return; }
 
     var btnEditar = t.closest(".cys-action-btn--edit");
-    if (btnEditar) {
-      abrirModalEditar({
-        id: btnEditar.dataset.id,
-        nombre: btnEditar.dataset.nombre,
-        descripcion: btnEditar.dataset.descripcion,
-        estado: btnEditar.dataset.estado,
-      });
-      return;
-    }
+    if (btnEditar) { abrirModalEditar(btnEditar); return; }
 
-    if (t.closest("#cysModalClose") || t.closest("#cysCancelBtn")) {
-      cerrarModal();
-      return;
-    }
-
+    if (t.closest("#cysModalClose") || t.closest("#cysCancelBtn")) { cerrarModal(); return; }
     if (t.id === "cysModalOverlay") { cerrarModal(); return; }
 
-    /* --- Exportar --- */
+    /* Exportar */
     if (t.closest("#cysExportTrigger")) {
       var box = $id("cysExport");
       if (box) box.classList.toggle("cys-export--open");
@@ -220,14 +236,15 @@
       return;
     }
 
-    /* --- Select de estado --- */
+    /* Select de estado: abrir / cerrar */
     if (t.closest("#cysEstadoTrigger")) {
-      var sel = $id("cysEstadoSelect");
-      if (sel) sel.classList.toggle("cys-select--open");
+      e.preventDefault();
+      setSelectAbierto(!selectAbierto());
       cerrarExport();
       return;
     }
 
+    /* Select de estado: elegir una opción */
     var item = t.closest("#cysEstadoMenu li");
     if (item) {
       var hidden = $id("fieldEstadoFiltro");
@@ -240,6 +257,11 @@
       return;
     }
 
+    /* Ordenar por columna */
+    var th = t.closest("#tablaMarcas th.cys-sortable");
+    if (th) { ordenarTabla(th); return; }
+
+    /* Clic fuera: cerrar menús */
     if (!t.closest("#cysEstadoSelect")) cerrarSelect();
     if (!t.closest("#cysExport")) cerrarExport();
   }, true);
@@ -252,11 +274,8 @@
     var t = e.target;
     if (!t) return;
 
-    if (t.name === "estado_radio") {
-      actualizarEstadoSeleccionado();
-    }
+    if (t.name === "estado_radio") actualizarEstadoSeleccionado();
 
-    // Al cambiar una fecha, se valida el rango y se filtra la tabla.
     if (t.id === "fieldDesde" || t.id === "fieldHasta") {
       validarRangoFechas(t);
       var form = $id("cysFiltroForm");
@@ -275,13 +294,26 @@
       debounceTimer = setTimeout(function () {
         var form = $id("cysFiltroForm");
         if (form) form.submit();
-      }, 500);
+      }, 400);
     }
   });
 
   document.addEventListener("submit", function (e) {
-    if (e.target && e.target.id === "cysMarcaForm") {
+    var f = e.target;
+    if (!f) return;
+
+    if (f.id === "cysMarcaForm") {
       actualizarEstadoSeleccionado();
+      var g = $id("cysGuardarBtn");
+      // se desactiva después del envío para evitar doble clic
+      if (g) setTimeout(function () { g.disabled = true; }, 0);
+      return;
+    }
+
+    // Activar / desactivar: evita doble envío
+    if (f.matches && f.matches(".cys-row-actions form")) {
+      var b = f.querySelector("button");
+      if (b) setTimeout(function () { b.disabled = true; }, 0);
     }
   });
 
@@ -295,13 +327,15 @@
   /* ---------------- Inicio ---------------- */
 
   function alListo() {
+    // Mover el modal al <body> para que ningún contenedor lo recorte
     var ov = $id("cysModalOverlay");
-    if (ov && ov.parentElement !== document.body) {
-      document.body.appendChild(ov);
-    }
+    if (ov && ov.parentElement !== document.body) document.body.appendChild(ov);
 
+    cerrarSelect();               // menú de estados cerrado al cargar
     validarRangoFechas(null);
+    actualizarEstadoSeleccionado();
 
+    // Si venimos de una búsqueda, dejar el cursor al final del texto
     var buscar = $id("inputBuscar");
     if (buscar && buscar.value && new URLSearchParams(window.location.search).has("q")) {
       buscar.focus();
