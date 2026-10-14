@@ -64,10 +64,30 @@ main, .cys-main, main > * {
 .card,
 .card-dev,
 .card-inner,
-.cys-card {
+.cys-card,
+.card-section,
+.chart-card,
+.proveedor-info-card,
+.cys-hv-table-wrap {
   background-color: var(--color-bg-card) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 4px solid #CF9C48 !important;
+  border-top: none !important;
+  border-radius: 12px !important;
   color: var(--color-blanco) !important;
+  transition: all 0.3s ease !important;
+}
+
+.card:hover,
+.card-dev:hover,
+.card-inner:hover,
+.cys-card:hover,
+.card-section:hover,
+.chart-card:hover,
+.proveedor-info-card:hover {
+  border-color: rgba(207, 156, 72, 0.4) !important;
+  border-left-color: #CF9C48 !important;
+  box-shadow: 0 0 15px rgba(207, 156, 72, 0.35) !important;
 }
 
 .card-header-top {
@@ -327,15 +347,17 @@ main, .cys-main, main > * {
 }
 
 .kpi-card {
-  background: #02224a;
-  border-radius: 10px;
+  background: #02224a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 4px solid #CF9C48 !important;
+  border-radius: 12px !important;
   padding: 16px 16px 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   position: relative;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
   min-height: 200px;
   max-height: 200px;
   height: 200px;
@@ -346,7 +368,9 @@ main, .cys-main, main > * {
 
 .kpi-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  border-color: rgba(207, 156, 72, 0.4) !important;
+  border-left-color: #CF9C48 !important;
+  box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
 }
 
 .kpi-card-top {

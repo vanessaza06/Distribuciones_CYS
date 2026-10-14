@@ -124,7 +124,55 @@ function initNuevaCompra() {
   if (btnCredito) btnCredito.addEventListener('click', () => { pago.value = 0; recalcularSaldo(); });
 
   const modal = byId('modalNuevaCompra');
-  if (modal) modal.addEventListener('shown.bs.modal', recalcular);
+  if (modal) {
+    // Cada compra nueva arranca SIN pago (a crédito); el abono se escribe a propósito
+    modal.addEventListener('show.bs.modal', () => { if (pago) pago.value = 0; });
+    modal.addEventListener('shown.bs.modal', recalcular);
+  }
+
+  // Confirmación dentro del modal: evita marcar como PAGADA una compra que aún no se ha pagado
+  const form = byId('formNuevaCompra');
+  const panel = byId('cmpConfirmPago');
+  let confirmado = false;
+
+  const ocultarConfirmacion = () => { if (panel) panel.classList.add('d-none'); confirmado = false; };
+
+  function mostrarConfirmacion(abono, t) {
+    const pagada = abono >= t;
+    panel.classList.toggle('is-pagada', pagada);
+    byId('cmpConfirmIcono').className = pagada ? 'bi bi-cash-coin' : 'bi bi-question-circle-fill';
+    byId('cmpConfirmTitulo').textContent = pagada ? '¿Ya le pagaste al proveedor?' : 'Confirma el abono inicial';
+    byId('cmpConfirmTexto').innerHTML = pagada
+      ? `El abono de <strong>${fmtCOP(abono)}</strong> cubre el total. La compra quedará marcada como <strong>PAGADA</strong>.`
+      : `Se registrará un abono de <strong>${fmtCOP(abono)}</strong>. Quedará un saldo pendiente de <strong>${fmtCOP(t - abono)}</strong>.`;
+    panel.classList.remove('d-none');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    byId('cmpConfirmAceptar').focus();
+  }
+
+  if (form && pago && panel) {
+    [producto, cantidad, precio, pago].forEach((el) => el.addEventListener('input', ocultarConfirmacion));
+    if (btnTotal) btnTotal.addEventListener('click', ocultarConfirmacion);
+    if (btnCredito) btnCredito.addEventListener('click', ocultarConfirmacion);
+    if (modal) modal.addEventListener('show.bs.modal', ocultarConfirmacion);
+
+    byId('cmpConfirmRevisar').addEventListener('click', () => { ocultarConfirmacion(); pago.focus(); pago.select(); });
+    byId('cmpConfirmAceptar').addEventListener('click', () => {
+      confirmado = true;
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+
+    form.addEventListener('submit', (e) => {
+      const t = total();
+      let abono = parseFloat(pago.value) || 0;
+      if (abono < 0) abono = 0;
+      if (t > 0 && abono > t) abono = t;
+      pago.value = abono;
+      if (confirmado || abono <= 0 || t <= 0) return;   // a crédito o ya confirmado: se guarda
+      e.preventDefault();
+      mostrarConfirmacion(abono, t);
+    });
+  }
   recalcular();
 }
 
@@ -184,16 +232,25 @@ function initModalPago() {
     monto.value = saldoActual().toFixed(2);
     actualizar();
   });
-  monto.addEventListener('input', actualizar);
+  monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
+
+  function mostrarError(texto) {
+    const box = byId('montoPagadoError');
+    if (!box) return;
+    box.querySelector('span').textContent = texto;
+    box.classList.toggle('d-none', !texto);
+  }
 
   form.addEventListener('submit', function (e) {
     const valor = parseFloat(monto.value);
     if (!valor || valor <= 0) {
       e.preventDefault();
-      alert('Debes ingresar un monto válido.');
+      mostrarError('Debes ingresar un monto válido.');
+      monto.focus();
     } else if (valor > saldoActual()) {
       e.preventDefault();
-      alert(`El monto supera el saldo pendiente (${fmtCOP(saldoActual())}).`);
+      mostrarError(`El monto supera el saldo pendiente (${fmtCOP(saldoActual())}).`);
+      monto.focus();
     }
   });
 }

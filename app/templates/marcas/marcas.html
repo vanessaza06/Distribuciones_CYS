@@ -6,15 +6,14 @@
 {% block nav_marcas %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=10">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=12">
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid p-0 cys-marcas-page"
      data-url-crear="{% url 'crear_marca' %}"
-     data-url-editar-base="{% url 'editar_marca' 0 %}">
+     data-url-lista="{% url 'lista_marcas' %}">
 
   <!-- Encabezado de página -->
   <section class="cys-page-header">
@@ -27,6 +26,30 @@
     </div>
 
     <div class="cys-page-header__right">
+      <div class="cys-date-field">
+        <label for="fieldDesde">Desde</label>
+        <input type="date" id="fieldDesde" name="desde" form="cysFiltroForm" value="{{ desde }}"{% if not filtro_fechas %} disabled title="Filtro por fecha no configurado"{% endif %}>
+      </div>
+
+      <div class="cys-date-field">
+        <label for="fieldHasta">Hasta</label>
+        <input type="date" id="fieldHasta" name="hasta" form="cysFiltroForm" value="{{ hasta }}"{% if not filtro_fechas %} disabled title="Filtro por fecha no configurado"{% endif %}>
+      </div>
+
+      <!-- Exportar -->
+      <div class="cys-export" id="cysExport">
+        <button class="cys-btn cys-btn--export" id="cysExportTrigger" type="button" aria-haspopup="true">
+          <i class="bi bi-box-arrow-up"></i>
+          <span id="cysExportLabel">Exportar</span>
+          <i class="bi bi-chevron-down cys-export__chevron"></i>
+        </button>
+        <ul class="cys-export__menu" id="cysExportMenu">
+          <li data-export="excel"><i class="bi bi-file-earmark-excel" style="color: var(--cys-green);"></i> Excel</li>
+          <li data-export="pdf"><i class="bi bi-file-earmark-pdf" style="color: var(--cys-red);"></i> PDF</li>
+          <li data-export="imprimir"><i class="bi bi-printer" style="color: #4da8da;"></i> Imprimir</li>
+        </ul>
+      </div>
+
       <button class="cys-btn cys-btn--primary" id="btnNuevaMarca" type="button">
         <i class="bi bi-plus-lg"></i>
         Nueva marca
@@ -97,10 +120,10 @@
       <thead>
         <tr>
           <th class="cys-col-num">#</th>
-          <th>Marca</th>
-          <th>Descripción</th>
-          <th class="cys-col-center">Productos</th>
-          <th>Estado</th>
+          <th class="cys-sortable" data-col="1" data-type="text">Marca</th>
+          <th class="cys-sortable" data-col="2" data-type="text">Descripción</th>
+          <th class="cys-sortable cys-col-center" data-col="3" data-type="num">Productos</th>
+          <th class="cys-sortable" data-col="4" data-type="text">Estado</th>
           <th class="cys-col-actions">Acciones</th>
         </tr>
       </thead>
@@ -121,7 +144,9 @@
           <td>
             <div class="cys-row-actions">
               <button class="cys-action-btn cys-action-btn--edit" type="button" title="Editar"
-                      data-id="{{ marca.codigo_marca }}" data-nombre="{{ marca.nombre }}"
+                      data-id="{{ marca.codigo_marca }}"
+                      data-url="{% url 'editar_marca' marca.codigo_marca %}"
+                      data-nombre="{{ marca.nombre }}"
                       data-descripcion="{{ marca.descripcion|default:'' }}"
                       data-estado="{{ marca.estado }}">
                 <i class="bi bi-pencil"></i>
@@ -149,7 +174,7 @@
     <p class="cys-empty" id="cysEmptyState">No hay marcas para mostrar.</p>
   </section>
 
-  <!-- Pie: resumen + paginación (Django real) -->
+  <!-- Pie: resumen + paginación -->
   <section class="cys-table-footer">
     <p class="cys-table-count">
       {% if marcas %}
@@ -161,7 +186,7 @@
     <div class="cys-pagination">
       {% if page_obj.has_previous %}
         <a class="cys-page-btn" aria-label="Página anterior"
-           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.previous_page_number }}">
+           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&desde={{ desde|urlencode }}&hasta={{ hasta|urlencode }}&page={{ page_obj.previous_page_number }}">
           <i class="bi bi-chevron-left"></i>
         </a>
       {% else %}
@@ -171,13 +196,13 @@
       <div class="cys-page-numbers">
         {% for num in paginator.page_range %}
           <a class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}"
-             href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ num }}">{{ num }}</a>
+             href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&desde={{ desde|urlencode }}&hasta={{ hasta|urlencode }}&page={{ num }}">{{ num }}</a>
         {% endfor %}
       </div>
 
       {% if page_obj.has_next %}
         <a class="cys-page-btn" aria-label="Página siguiente"
-           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.next_page_number }}">
+           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&desde={{ desde|urlencode }}&hasta={{ hasta|urlencode }}&page={{ page_obj.next_page_number }}">
           <i class="bi bi-chevron-right"></i>
         </a>
       {% else %}
@@ -246,7 +271,7 @@
 
       <footer class="cys-modal__footer">
         <button type="button" class="cys-btn cys-btn--ghost" id="cysCancelBtn">Cancelar</button>
-        <button type="submit" class="cys-btn cys-btn--primary">
+        <button type="submit" class="cys-btn cys-btn--primary" id="cysGuardarBtn">
           <i class="bi bi-save"></i>
           Guardar marca
         </button>
@@ -258,14 +283,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  window.CYS_URLS = {
-    crear: "{% url 'crear_marca' %}",
-    editarBase: "{% url 'editar_marca' 0 %}".replace(/0\/$/, "")
-  };
-</script>
-
-<script src="{% static 'js/marcas/marcas.js' %}?v=10"
+<script src="{% static 'js/marcas/marcas.js' %}?v=12"
         onerror="var s=document.createElement('script');s.src=this.src.replace('/js/marcas/','/js/marca/');document.body.appendChild(s);"></script>
 
 <script>
@@ -278,31 +296,6 @@
     aviso.textContent = "No se pudo cargar marcas.js: por eso los botones no funcionan. " +
       "Revisa que el archivo esté en static/js/marcas/marcas.js (o static/js/marca/marcas.js).";
     page.insertBefore(aviso, page.firstChild);
-  });
-</script>
-
-<!-- DataTables: solo para orden (flechas), paginación/búsqueda las maneja Django -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-  $(document).ready(function () {
-    if ($.fn.DataTable.isDataTable('#tablaMarcas')) {
-      $('#tablaMarcas').DataTable().destroy();
-    }
-    $('#tablaMarcas').DataTable({
-      paging: false,
-      searching: false,
-      info: false,
-      ordering: true,
-      language: {
-        url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
-      },
-      columnDefs: [
-        { orderable: false, targets: [0, 5] } // # y Acciones sin orden
-      ]
-    });
   });
 </script>
 {% endblock %}

@@ -36,26 +36,28 @@
    DROPDOWN DE NOTIFICACIONES
    ============================================================ */
 .notif-dropdown-menu {
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
-  width: 290px !important;
-  border-radius: 10px !important;
+  border: 1px solid rgba(207, 156, 72, 0.3) !important;
+  border-left: 3px solid #CF9C48 !important;
+  width: 325px !important;
+  border-radius: 12px !important;
   overflow: hidden !important;
   background: #142b49 !important;
   color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 .notif-dropdown-menu .notif-item:hover,
 .notif-dropdown-menu .notif-item:focus,
 .notif-dropdown-menu .dropdown-item:hover,
 .notif-dropdown-menu .dropdown-item:focus {
-  background: rgba(77, 168, 218, 0.08) !important;
+  background: rgba(207, 156, 72, 0.08) !important;
   color: #e2e8f0 !important;
 }
 
 .notif-dropdown-menu .notif-footer:hover,
 .notif-dropdown-menu .notif-footer:focus {
-  background: rgba(77, 168, 218, 0.12) !important;
-  color: #4DA8DA !important;
+  background: rgba(207, 156, 72, 0.12) !important;
+  color: #CF9C48 !important;
 }
 
 /* Divisor de tabs */
