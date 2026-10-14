@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block page_title %}Ayuda{% endblock %}
-{% block title %}Ayuda — CYS Ltda{% endblock %}
+{% block page_title %}Ayuda & Asistente Virtual{% endblock %}
+{% block title %}Ayuda & Chatbot — CYS Ltda{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ayuda/ayuda.css' %}">
@@ -11,11 +11,33 @@
 {% block content %}
 <div class="container-fluid p-0">
 
-  <!-- ═══════ HEADER ═══════ -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <!-- ═══════ HEADER & BANNER CHATBOT ═══════ -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-      <h5 class="ayd-titulo mb-1"><i class="bi bi-question-circle-fill me-2"></i>Centro de Ayuda</h5>
-      <p class="ayd-subtitulo mb-0">Encuentra respuestas rápidas o contáctanos si necesitas más apoyo.</p>
+      <h5 class="ayd-titulo mb-1"><i class="bi bi-question-circle-fill me-2"></i>Centro de Ayuda & Asistente Virtual</h5>
+      <p class="ayd-subtitulo mb-0">Encuentra respuestas inmediatas con el Chatbot o consulta nuestras guías interactivas.</p>
+    </div>
+  </div>
+
+  <!-- BANNER DESTACADO CHATBOT -->
+  <div class="ayd-chatbot-banner">
+    <div class="d-flex align-items-center gap-3">
+      <div class="ayd-chatbot-icon-box">
+        <img src="{% static 'img/muñeco_sin_fondo_.png' %}" alt="Asistente CYS">
+      </div>
+      <div>
+        <h6 class="fw-bold text-white mb-1" style="font-size:1.05rem;">
+          Asistente Virtual CYS (Chatbot Inteligente)
+        </h6>
+        <p class="text-white-50 small mb-0" style="max-width: 650px;">
+          ¿Tienes alguna duda sobre Ventas, Devoluciones, Caja, Inventario o Métodos de Pago? Inicia una conversación interactiva en tiempo real con nuestro Asistente Virtual.
+        </p>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="btn ayd-btn-chatbot" onclick="aydAbrirChatbot()">
+        <i class="bi bi-chat-dots-fill me-1 fs-5"></i> Iniciar Conversación con el Chatbot
+      </button>
     </div>
   </div>
 
@@ -47,14 +69,21 @@
           {% for guia in guias %}
           <div class="col-md-6 ayd-item" data-cat="{{ guia.cat_slug }}"
                data-texto="{{ guia.titulo|lower }} {{ guia.contenido|striptags|lower }}">
-            <div class="ayd-guia-card h-100">
-              <div class="ayd-guia-icono">
-                <i class="bi {{ guia.icono }}"></i>
+            <div class="ayd-guia-card h-100 d-flex flex-column justify-content-between">
+              <div class="d-flex gap-3">
+                <div class="ayd-guia-icono">
+                  <i class="bi {{ guia.icono }}"></i>
+                </div>
+                <div>
+                  <div class="ayd-guia-titulo">{{ guia.titulo }}</div>
+                  <div class="ayd-guia-cat">{{ guia.categoria }}</div>
+                  <div class="ayd-guia-contenido mb-2">{{ guia.contenido|linebreaks }}</div>
+                </div>
               </div>
-              <div>
-                <div class="ayd-guia-titulo">{{ guia.titulo }}</div>
-                <div class="ayd-guia-cat">{{ guia.categoria }}</div>
-                <div class="ayd-guia-contenido">{{ guia.contenido|linebreaks }}</div>
+              <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end">
+                <button type="button" class="btn ayd-btn-chat-duda" onclick="aydIniciarChatDuda('{{ guia.titulo|escapejs }}', '{{ guia.contenido|escapejs }}')">
+                  <i class="bi bi-chat-dots-fill me-1"></i> Consultar al Chatbot sobre esto
+                </button>
               </div>
             </div>
           </div>
@@ -86,8 +115,13 @@
             </h2>
             <div id="ayd-faq-{{ faq.pk }}" class="accordion-collapse collapse"
                  data-bs-parent="#ayd-accordion-faq">
-              <div class="accordion-body ayd-acc-body">
-                {{ faq.contenido|linebreaks }}
+              <div class="accordion-body ayd-acc-body d-flex flex-column gap-2">
+                <div>{{ faq.contenido|linebreaks }}</div>
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn ayd-btn-chat-duda" onclick="aydIniciarChatDuda('{{ faq.titulo|escapejs }}', '{{ faq.contenido|escapejs }}')">
+                    <i class="bi bi-chat-dots-fill me-1"></i> Abrir Chatbot con esta duda
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -132,6 +166,7 @@
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

@@ -11,12 +11,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* ── Variables ──
-   --azul-borde y --texto-muted YA son nombres globales de base.js
-   (aplicados como estilo inline en <html>), así que ya heredaban del
-   tema por especificidad — se quitaron de aquí para no confundir.
-   El resto de los "-acento" locales SÍ estaban desconectados y ahora
-   son alias de las variables reales del tema. */
+/* ── Variables ── */
 :root {
   --color-bg: var(--fondo);
   --color-bg-card: var(--fondo-card);
@@ -29,11 +24,11 @@
 
   --azul-acento: var(--azul-claro);
   --verde-acento: var(--verde);
-  --morado-acento: #7F77DD;   /* categórico (Análisis), fijo a propósito */
-  --naranja-acento: #e8a87c;  /* categórico, fijo a propósito */
-  --amarillo-acento: #f0d080; /* categórico, fijo a propósito */
+  --morado-acento: #7F77DD;
+  --naranja-acento: #e8a87c;
+  --amarillo-acento: #f0d080;
   --rojo-acento: var(--rojo);
-  --dorado-acento: #CF9C48;   /* marca CYS, fijo en todos los módulos */
+  --dorado-acento: #CF9C48;
 }
 
 /* ────────────────────────────────────
@@ -257,10 +252,6 @@
   margin-bottom: .75rem;
 }
 
-/* Antes: blanco fijo (#FDFFFC) + una clase especial que lo volvía azul
-   solo en modo accesibilidad "Claro". Ahora var(--texto) ya se ajusta
-   solo en cualquier tema, así que la clase --modo-claro de abajo ya
-   no hace falta (se deja comentada por si el HTML aún la aplica). */
 .cys-report-card-icon--inv,
 .cys-report-card-icon--prov,
 .cys-report-card-icon--compras,
@@ -276,9 +267,6 @@
   color: var(--texto);
 }
 
-/* Ya no es necesario: var(--texto) se adapta solo en modo Claro.
-   Se deja vacío en vez de eliminarlo por si algo más del HTML depende
-   de que la clase exista. */
 html.cys-a11y-modo-claro .cys-report-card-icon--inv,
 html.cys-a11y-modo-claro .cys-report-card-icon--prov,
 html.cys-a11y-modo-claro .cys-report-card-icon--compras,
@@ -301,7 +289,6 @@ html.cys-a11y-modo-claro .cys-report-card-icon--proxima {
   margin-bottom: .75rem;
 }
 
-/* Ver reporte → : dorado de marca, fijo en todos los módulos */
 .cys-report-card__link-text--inv,
 .cys-report-card__link-text--prov,
 .cys-report-card__link-text--compras,
@@ -842,9 +829,6 @@ html.cys-a11y-modo-claro .cys-report-card-icon--proxima {
   background: linear-gradient(135deg, var(--azul-claro), #2e6d8f);
 }
 
-/* Gradientes de avatar por fila: paleta decorativa fija a propósito,
-   igual que los íconos de denominación en Ventas — sirven para
-   distinguir proveedores visualmente, no para reflejar el tema */
 #tabla-modal-proveedores .prov-row:nth-child(1) .cys-avatar-initials {
   background: linear-gradient(135deg, #4DA8DA, #2563a8);
 }
@@ -1630,21 +1614,19 @@ html.cys-a11y-modo-claro .cys-report-card-icon--proxima {
 }
 
 /* ────────────────────────────────────
-   SCROLL SNAP
+   SCROLL SNAP (sin altura de pantalla completa)
 ──────────────────────────────────── */
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
+  scroll-snap-type: none;
   scroll-padding-top: calc(var(--header-h) + var(--nav-h) + 1.5rem);
 }
 
 .cys-snap-section {
-  scroll-snap-align: start;
-  min-height: calc(100vh - var(--header-h) - var(--nav-h) - 3.5rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  margin-bottom: 3.5rem;
+  scroll-snap-align: none;
+  min-height: 0;
+  display: block;
+  margin-bottom: 1.5rem;
 }
 
 @media (max-width: 992px) {
@@ -2053,9 +2035,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   text-decoration: none;
 }
 
+/* ← CAMBIO: mismo fondo que las tarjetas de reporte (--fondo-card) */
 .cys-card:has(#reportes-table) {
-  background: var(--fondo-card2);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  background: var(--fondo-card) !important;
   border-radius: 16px;
   overflow: hidden;
 }
@@ -2201,8 +2183,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: transparent !important;
 }
 
+/* ← CAMBIO: encabezado de tabla transparente para que tome el color de la tarjeta */
 #reportes-table thead th {
-  background: var(--fondo-card2) !important;
+  background: transparent !important;
   color: var(--azul-claro) !important;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;

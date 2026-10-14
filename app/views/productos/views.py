@@ -9,10 +9,11 @@ from django.db.models import Prefetch, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from app.forms import ProductoRegistroForm
-from app.models import Categoria, PresentacionProducto, Producto
+from app.models import Categoria, Compra, PresentacionProducto, Producto
 
 UMBRAL_STOCK_CRITICO = 5
 
@@ -303,11 +304,11 @@ def producto_registro(request):
 
 
 # ===============================
-# STOCK STATUS
+# STOCK STATUS & NOTIFICACIONES
 # ===============================
 @login_required
 def stock_status(request):
-    """Una sola consulta; el umbral está en UMBRAL_STOCK_CRITICO."""
+    """Retorna productos con stock crítico y compras pendientes."""
     productos = Producto.objects.filter(activo=True).annotate(total=Sum('lotes__stock_actual'))
 
     criticos = [
@@ -316,9 +317,31 @@ def stock_status(request):
         if (p.total or 0) <= UMBRAL_STOCK_CRITICO
     ]
 
+    compras_pendientes_qs = (
+        Compra.objects.filter(estado__in=['pendiente', 'confirmada'])
+        .select_related('proveedor')
+        .order_by('-fecha')[:20]
+    )
+
+    compras_pendientes = [
+        {
+            'id': c.codigo_compra,
+            'proveedor': c.proveedor.nombre_empresa if c.proveedor else 'Proveedor',
+            'estado': c.get_estado_display(),
+            'estado_raw': c.estado,
+            'valor': float(c.valor),
+            'saldo': float(c.saldo),
+            'fecha': timezone.localtime(c.fecha).strftime('%d/%m %H:%M') if c.fecha else '',
+            'url': reverse('detalle_compra', args=[c.codigo_compra]),
+        }
+        for c in compras_pendientes_qs
+    ]
+
     return JsonResponse({
         'criticos': criticos,
-        'total_alertas': len(criticos),
+        'compras_pendientes': compras_pendientes,
+        'total_compras_pendientes': len(compras_pendientes),
+        'total_alertas': len(criticos) + len(compras_pendientes),
     })
 
 

@@ -28,14 +28,50 @@
   .cmp-total-box {
     background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.10) 100%);
     border: 1px solid rgba(207,156,72,0.35);
-    border-radius: 10px;
+    border-left: 4px solid #CF9C48 !important;
+    border-radius: 12px;
   }
   .cmp-extra-box {
     background: rgba(3,30,62,0.6);
-    border: 1px solid rgba(239,248,226,0.1);
-    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 4px solid #CF9C48 !important;
+    border-radius: 12px;
   }
   .cmp-label-mini { letter-spacing: .05em; font-size: .72rem; }
+  /* Confirmación del abono dentro del modal */
+  .cmp-confirm {
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-top: 14px; padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(207,156,72,0.14) 0%, rgba(3,30,62,0.85) 100%);
+    border: 1px solid rgba(207,156,72,0.45);
+    border-left: 4px solid #CF9C48 !important;
+    border-radius: 12px;
+    animation: cmpConfirmIn .25s ease-out;
+  }
+  .cmp-confirm.is-pagada {
+    background: linear-gradient(135deg, rgba(207,156,72,0.18) 0%, rgba(3,30,62,0.85) 100%);
+    border-color: rgba(207,156,72,0.5);
+    border-left-color: #CF9C48 !important;
+  }
+  .cmp-confirm__icon { font-size: 1.6rem; line-height: 1; color: #CF9C48 !important; }
+  .cmp-confirm.is-pagada .cmp-confirm__icon { color: #CF9C48 !important; }
+  .cmp-confirm__body { flex: 1; }
+  .cmp-confirm__title { margin: 0 0 4px; font-weight: 700; color: #fff; }
+  .cmp-confirm__text { margin: 0 0 12px; color: rgba(239,248,226,0.85); font-size: .92rem; }
+  .cmp-confirm__text strong { color: #fff; }
+  .cmp-confirm__actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+  .cmp-confirm__ok {
+    background: linear-gradient(135deg, #CF9C48, #e0b566); color: #011936;
+    font-weight: 700; border: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .cmp-confirm__ok:hover { color: #011936; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(207,156,72,0.35); }
+  @keyframes cmpConfirmIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .cmp-inline-error {
+    margin-top: 6px; padding: 6px 10px; border-radius: 8px;
+    background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.4);
+    color: #ff8a7a; font-size: .85rem; font-weight: 600;
+  }
   #tablaHistorialCompras td, #tablaHistorialCompras th { white-space: nowrap; }
   @media (max-width: 576px) {
     .container-fluid.px-4 { padding-left: .75rem !important; padding-right: .75rem !important; }
@@ -455,7 +491,7 @@
       </div>
 
       <div class="modal-body p-4">
-        <form method="POST" action="{% url 'lista_compras' %}" id="formNuevaCompra">
+        <form method="POST" action="{% url 'lista_compras' %}" id="formNuevaCompra" autocomplete="off">
           {% csrf_token %}
 
           <!-- Proveedor -->
@@ -554,7 +590,7 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" title="Registrar la compra sin pagar nada todavía" id="btnCreditoNueva">Crédito ($0)</button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" title="Cuánto vas a pagar ahora de esta compra">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" autocomplete="off" title="Cuánto vas a pagar ahora de esta compra">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
                   Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
@@ -568,6 +604,23 @@
                   <option value="bancolombia">Bancolombia</option>
                   <option value="breb">Bre-B</option>
                 </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirmación del abono (reemplaza el confirm() del navegador) -->
+          <div id="cmpConfirmPago" class="cmp-confirm d-none" role="alertdialog" aria-live="assertive" aria-labelledby="cmpConfirmTitulo">
+            <div class="cmp-confirm__icon"><i id="cmpConfirmIcono" class="bi bi-question-circle-fill"></i></div>
+            <div class="cmp-confirm__body">
+              <h6 id="cmpConfirmTitulo" class="cmp-confirm__title">Confirma el pago</h6>
+              <p id="cmpConfirmTexto" class="cmp-confirm__text"></p>
+              <div class="cmp-confirm__actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="cmpConfirmRevisar">
+                  <i class="bi bi-pencil me-1"></i>Revisar abono
+                </button>
+                <button type="button" class="btn btn-sm cmp-confirm__ok" id="cmpConfirmAceptar">
+                  <i class="bi bi-check2-circle me-1"></i>Sí, registrar compra
+                </button>
               </div>
             </div>
           </div>
@@ -790,6 +843,7 @@
                             <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa cuánto vas a pagar" required title="Valor del abono o pago que vas a registrar">
                         </div>
                         <small id="montoPagadoAyuda" class="text-muted">Ingresa el valor del abono o pago que vas a registrar.</small>
+                        <div id="montoPagadoError" class="cmp-inline-error d-none" role="alert"><i class="bi bi-exclamation-triangle-fill me-1"></i><span></span></div>
                     </div>
 
                     <!-- Saldo que quedará después de este pago -->
