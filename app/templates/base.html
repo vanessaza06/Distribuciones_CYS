@@ -185,9 +185,13 @@
     </div>
     <!-- ===== FIN WIDGET DE ACCESIBILIDAD ===== -->
 
+    <!-- ===== WIDGET FLOTANTE DE CHATBOT (global, en todas las páginas) ===== -->
+    {% include 'partials/chatbot.html' %}
+
     <script src="{% static 'js/cuerpo/reloj.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/principal.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/sidebar-init.js' %}" defer></script>
+    <script src="{% static 'js/cuerpo/chatbot.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 
