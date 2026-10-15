@@ -131,6 +131,37 @@ function filtrarProductos(q) {
 
   document.getElementById('noResultados').classList.toggle('d-none', visibles > 0 || !term);
 }
+// ── Avisos con estilo de la página (reemplaza alert) ──
+window.mostrarAviso = function (mensaje, tipo) {
+  tipo = tipo || 'error';
+  const tipos = {
+    error:   { icono: 'bi-x-circle-fill',             titulo: 'Error' },
+    warning: { icono: 'bi-exclamation-triangle-fill', titulo: 'Atención' },
+    success: { icono: 'bi-check-circle-fill',         titulo: 'Listo' },
+    info:    { icono: 'bi-info-circle-fill',          titulo: 'Información' }
+  };
+  const cfg  = tipos[tipo] || tipos.error;
+  const cont = document.getElementById('gp-toast-container');
+  if (!cont) { alert(mensaje); return; } // respaldo si falta el contenedor
+
+  const el = document.createElement('div');
+  el.className = 'toast gp-toast gp-toast-' + tipo;
+  el.setAttribute('role', 'alert');
+  el.innerHTML =
+    '<div class="d-flex align-items-center gap-3 p-3">' +
+      '<i class="bi ' + cfg.icono + ' gp-toast-icon"></i>' +
+      '<div class="flex-grow-1">' +
+        '<div class="gp-toast-titulo">' + cfg.titulo + '</div>' +
+        '<div class="gp-toast-msg"></div>' +
+      '</div>' +
+      '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>' +
+    '</div>';
+  el.querySelector('.gp-toast-msg').textContent = mensaje;
+
+  cont.appendChild(el);
+  el.addEventListener('hidden.bs.toast', function () { el.remove(); });
+  new bootstrap.Toast(el, { delay: 4000 }).show();
+};
 
 function mostrarModalConfirmacion(mensaje, onAceptar, opciones) {
   opciones = opciones || {};
@@ -307,8 +338,12 @@ $(document).ready(function () {
     }
     camPanel.classList.add('d-none');
   }
+function guardarCodigo(fila, codigo) {
+  if (!codigo) {
+    mostrarAviso('Escribe o escanea un código antes de guardar.', 'warning');
+    return;
+  }
 
-  function guardarCodigo(fila, codigo) {
   const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
   const esNuevo = fila.classList.contains('fila-sin-detalle');
   const fd = new FormData();
@@ -318,16 +353,17 @@ $(document).ready(function () {
   if (esNuevo) {
     const marca = document.getElementById('scan-marca').value;
     const fecha = document.getElementById('scan-fecha-venc').value;
-    if (!marca) { alert('Selecciona una marca.'); return; }
-    if (!fecha) { alert('Selecciona la fecha de vencimiento.'); return; }
+    if (!marca) { mostrarAviso('Selecciona una marca.', 'warning'); return; }
+    if (!fecha) { mostrarAviso('Selecciona la fecha de vencimiento.', 'warning'); return; }
     fd.append('marca', marca);
     fd.append('fecha_vencimiento', fecha);
   }
+
   fetch(fila.dataset.url, { method: 'POST', body: fd })
     .then(r => r.json().catch(() => ({})).then(data => ({ ok: r.ok, data })))
     .then(({ ok, data }) => {
       if (!ok || (data && data.ok === false)) {
-        alert((data && data.error) || 'Error al guardar. Intenta de nuevo.');
+        mostrarAviso((data && data.error) || 'Error al guardar. Intenta de nuevo.', 'error');
         return;
       }
 
@@ -351,10 +387,12 @@ $(document).ready(function () {
 
       tabla.row(fila).invalidate().draw(false);
 
+      mostrarAviso('Código guardado correctamente.', 'success');
+
       fila.classList.add('scan-row--saved');
       setTimeout(() => { fila.classList.remove('scan-row--saved'); resetUI(); }, 1200);
     })
-    .catch(() => alert('Error al guardar. Intenta de nuevo.'));
+    .catch(() => mostrarAviso('No se pudo conectar con el servidor. Intenta de nuevo.', 'error'));
 }
 
 document.getElementById('tabla-codigos').addEventListener('click', function (e) {

@@ -722,3 +722,25 @@
 .gp-md-panel-header > .gp-dots-btn {
   flex-shrink: 0;
 }
+/* ── Avisos (toasts) ── */
+.gp-toast {
+  background: #0d2240;
+  color: #e6eefc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left-width: 4px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  min-width: 320px;
+}
+.gp-toast-titulo { font-weight: 700; font-size: 0.9rem; }
+.gp-toast-msg    { font-size: 0.85rem; opacity: 0.9; }
+.gp-toast-icon   { font-size: 1.5rem; }
+
+.gp-toast-error   { border-left-color: #ef4444; }
+.gp-toast-error   .gp-toast-icon { color: #ef4444; }
+.gp-toast-warning { border-left-color: #f59e0b; }
+.gp-toast-warning .gp-toast-icon { color: #f59e0b; }
+.gp-toast-success { border-left-color: #22c55e; }
+.gp-toast-success .gp-toast-icon { color: #22c55e; }
+.gp-toast-info    { border-left-color: #38bdf8; }
+.gp-toast-info    .gp-toast-icon { color: #38bdf8; }
