@@ -113,6 +113,12 @@ function initNuevaCompra() {
     const val = parseFloat(pago && pago.value) || 0;
 
     if (btnTotal && btnCredito) {
+      if (t > 0 && val > t) {
+        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+        return;
+      }
+
       if (modoPago === 'total' || (t > 0 && Math.abs(val - t) < 0.01)) {
         btnTotal.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-total';
         btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
@@ -129,11 +135,15 @@ function initNuevaCompra() {
   function recalcular() {
     const cant = parseInt(cantidad.value, 10) || 0;
     const p = parseFloat(precio.value) || 0;
-    const t = cant * p;
+    const t = total();
     const txt = byId('calculoDetalleTexto');
     const disp = byId('calculoTotalDisplay');
     if (txt) txt.textContent = `${cant} und. × ${fmtCOP(p)}`;
     if (disp) disp.textContent = fmtCOP(t);
+
+    if (pago) {
+      pago.max = t > 0 ? t : 0;
+    }
 
     if (modoPago === 'total') {
       if (pago) pago.value = t > 0 ? (Number.isInteger(t) ? t : t.toFixed(2)) : 0;
@@ -147,18 +157,41 @@ function initNuevaCompra() {
 
   function recalcularSaldo() {
     const t = total();
-    const abono = parseFloat(pago && pago.value) || 0;
+    const val = parseFloat(pago && pago.value) || 0;
     const fb = byId('formCompraSaldoFeedback');
     if (!fb) return;
+
+    if (pago) pago.classList.remove('is-invalid');
+
     if (t === 0) {
-      fb.innerHTML = '<span class="text-muted">Selecciona producto, cantidad y precio.</span>';
-    } else if (abono >= t) {
-      fb.innerHTML = '<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>';
-    } else if (abono > 0) {
-      fb.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago parcial</span> Falta por pagar: <strong class="text-danger">${fmtCOP(t - abono)}</strong>`;
-    } else {
-      fb.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">${fmtCOP(t)}</strong>`;
+      fb.innerHTML = '<span class="text-muted"><i class="bi bi-info-circle me-1"></i>Ingresa producto, cantidad y precio.</span>';
+      return;
     }
+
+    if (val < 0) {
+      if (pago) pago.classList.add('is-invalid');
+      fb.innerHTML = '<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Monto inválido</span> El abono no puede ser negativo.';
+      return;
+    }
+
+    if (val > t) {
+      if (pago) pago.classList.add('is-invalid');
+      const exceso = val - t;
+      fb.innerHTML = `<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el total</span> El abono de <strong>${fmtCOP(val)}</strong> supera el total de la compra (<strong>${fmtCOP(t)}</strong>). Exceso: <strong class="text-danger">${fmtCOP(exceso)}</strong>`;
+      return;
+    }
+
+    if (Math.abs(val - t) < 0.01) {
+      fb.innerHTML = '<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>';
+      return;
+    }
+
+    if (val === 0) {
+      fb.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">${fmtCOP(t)}</strong>`;
+      return;
+    }
+
+    fb.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago parcial</span> Falta por pagar: <strong class="text-danger">${fmtCOP(t - val)}</strong>`;
   }
 
   function aplicarModoTotal() {
@@ -193,24 +226,39 @@ function initNuevaCompra() {
   [cantidad, precio].forEach((el) => el.addEventListener('input', recalcular));
 
   if (pago) {
+    pago.addEventListener('focus', () => {
+      if (pago.value === '0' || pago.value === '0.00' || parseFloat(pago.value) === 0) {
+        pago.select();
+      }
+    });
+
     pago.addEventListener('input', () => {
       const val = parseFloat(pago.value) || 0;
       const t = total();
-      if (t > 0 && Math.abs(val - t) < 0.01) {
+
+      if (val > t) {
+        modoPago = 'invalido';
+      } else if (t > 0 && Math.abs(val - t) < 0.01) {
         modoPago = 'total';
       } else if (val === 0) {
         modoPago = 'credito';
       } else {
         modoPago = 'manual';
       }
+
       recalcularSaldo();
       actualizarBotonesModoPago();
     });
+
     pago.addEventListener('blur', () => {
-      const t = total();
-      if (t > 0 && parseFloat(pago.value) > t) {
-        pago.value = t;
-        modoPago = 'total';
+      if (pago.value.trim() === '') {
+        pago.value = 0;
+        modoPago = 'credito';
+      } else {
+        const num = parseFloat(pago.value);
+        if (!isNaN(num)) {
+          pago.value = Number.isInteger(num) ? num : num.toFixed(2);
+        }
       }
       recalcularSaldo();
       actualizarBotonesModoPago();
@@ -484,7 +532,7 @@ function initNuevaCompra() {
   const ocultarConfirmacion = () => { if (panel) panel.classList.add('d-none'); confirmado = false; };
 
   function mostrarConfirmacion(abono, t) {
-    const pagada = abono >= t;
+    const pagada = Math.abs(abono - t) < 0.01;
     panel.classList.toggle('is-pagada', pagada);
     byId('cmpConfirmIcono').className = pagada ? 'bi bi-cash-coin' : 'bi bi-question-circle-fill';
     byId('cmpConfirmTitulo').textContent = pagada ? '¿Ya le pagaste al proveedor?' : 'Confirma el abono inicial';
@@ -509,7 +557,7 @@ function initNuevaCompra() {
     });
 
     form.addEventListener('submit', (e) => {
-      // Validar selección de producto antes de enviar
+      // 1. Validar selección de producto antes de enviar
       if (!hiddenProducto.value) {
         e.preventDefault();
         if (searchWrap) {
@@ -523,13 +571,49 @@ function initNuevaCompra() {
         return;
       }
 
+      // 2. Validar cantidad y precio
+      const cant = parseInt(cantidad.value, 10) || 0;
+      const p = parseFloat(precio.value) || 0;
       const t = total();
-      let abono = parseFloat(pago.value) || 0;
-      if (abono < 0) abono = 0;
-      if (t > 0 && abono > t) abono = t;
-      pago.value = abono;
-      // Si el usuario ya confirmó, o es a crédito (abono <= 0), o eligió explícitamente "100% Total": se envía directamente sin bloquear
-      if (confirmado || abono <= 0 || t <= 0 || modoPago === 'total') return;
+
+      if (cant <= 0) {
+        e.preventDefault();
+        cantidad.focus();
+        return;
+      }
+      if (p <= 0 || t <= 0) {
+        e.preventDefault();
+        precio.focus();
+        return;
+      }
+
+      // 3. Validar abono inicial
+      const rawAbono = pago ? pago.value.trim() : '0';
+      const abono = parseFloat(rawAbono) || 0;
+
+      if (abono < 0) {
+        e.preventDefault();
+        pago.classList.add('is-invalid');
+        pago.focus();
+        recalcularSaldo();
+        return;
+      }
+
+      // Validación estricta: el abono no puede superar el total
+      if (abono > t) {
+        e.preventDefault();
+        pago.classList.add('is-invalid');
+        pago.focus();
+        recalcularSaldo();
+        return;
+      }
+
+      // 4. Si el abono es 0 (crédito) o cubre el total (100% Total), o ya confirmó: enviar directamente
+      if (confirmado || abono <= 0 || modoPago === 'total' || Math.abs(abono - t) < 0.01) {
+        return;
+      }
+
+      // 5. Abono parcial: solicitar confirmación amigable
       e.preventDefault();
       mostrarConfirmacion(abono, t);
     });
@@ -553,13 +637,21 @@ function initModalPago() {
 
     const badge = byId('badgeNuevoEstado');
     if (!badge) return;
-    if (abono > 0 && abono >= saldo) {
+
+    if (abono > saldo) {
+      monto.classList.add('is-invalid');
+      badge.className = 'badge bg-danger px-3 py-2 w-100 text-center';
+      badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el saldo pendiente (${fmtCOP(saldo)})`;
+    } else if (abono > 0 && Math.abs(abono - saldo) < 0.01) {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-success-custom px-3 py-2 w-100 text-center';
       badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
     } else if (abono > 0) {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-warning-custom px-3 py-2 w-100 text-center';
       badge.innerHTML = `<i class="bi bi-dash-circle me-1"></i>Abono parcial (aún debe ${fmtCOP(saldo - abono)})`;
     } else {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-pending-custom px-3 py-2 w-100 text-center';
       badge.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono nuevo';
     }
