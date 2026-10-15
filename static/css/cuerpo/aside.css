@@ -26,8 +26,8 @@
   gap: .75rem;
   width: 100%;
   padding: calc(.75rem * var(--density-scale, 1));
-  background: rgba(77,168,218,.06) !important;
-  border: 1px solid rgba(77,168,218,.18) !important;
+  background: color-mix(in srgb, var(--azul-claro) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
   border-radius: 12px;
   cursor: pointer;
   transition: background .2s, border-color .2s, border-radius .22s, padding .25s ease;
@@ -40,8 +40,8 @@
 .cys-sb-user-info-btn:hover,
 .cys-sb-user-info-btn:focus,
 .cys-sb-user-info-btn:active {
-  background: rgba(77,168,218,.10) !important;
-  border-color: rgba(77,168,218,.28) !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 28%, transparent) !important;
   outline: none;
   box-shadow: none !important;
   color: inherit;
@@ -54,8 +54,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a3a5c, #2a5080);
-  border: 2px solid rgba(77,168,218,.45);
+  background: linear-gradient(135deg, var(--fondo-card), var(--fondo-card2));
+  border: 2px solid color-mix(in srgb, var(--azul-claro) 45%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +81,7 @@
 }
 
 .cys-sb-user-wrap:hover .cys-sb-avatar {
-  border-color: rgba(77,168,218,.7);
+  border-color: color-mix(in srgb, var(--azul-claro) 70%, transparent);
 }
 
 .cys-sb-user-wrap:hover .cys-sb-avatar__icon {
@@ -127,11 +127,11 @@
   font-size: .82rem;
   font-weight: 500;
   text-decoration: none;
-  color: rgba(77,168,218,.75);
-  background: rgba(4,14,28,.58) !important;
+  color: color-mix(in srgb, var(--azul-claro) 85%, transparent);
+  background: color-mix(in srgb, var(--azul-oscuro) 70%, transparent) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(77,168,218,.13) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 13%, transparent) !important;
   border-top: none !important;
   border-radius: 0 0 12px 12px;
   transition: background .18s, color .18s, padding-left .18s;
@@ -146,7 +146,7 @@
 }
 
 .cys-sb-link--usuarios:hover {
-  background: rgba(77,168,218,.10) !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
   color: var(--azul-claro);
   padding-left: 1.25rem;
 }
@@ -216,9 +216,9 @@
 
 .cys-sb-link:hover,
 .cys-sb-link.active {
-  background: rgba(77,168,218,.08);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
   color: var(--azul-claro);
-  border-color: rgba(77,168,218,.2);
+  border-color: color-mix(in srgb, var(--azul-claro) 20%, transparent);
 }
 
 /* Contenedores flex para links padres */
@@ -334,9 +334,9 @@
 }
 
 .cys-sb-sublink:hover {
-  background: rgba(77,168,218,.08);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
   color: var(--azul-claro);
-  border-color: rgba(77,168,218,.15);
+  border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent);
   transform: translateX(3px);
 }
 
@@ -344,7 +344,7 @@
    solo texto resaltado y una marca sobre la línea guía del submenú */
 .cys-sb-sublink.active,
 .cys-sb-sublink.active:hover {
-  background: rgba(77,168,218,.05);
+  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
   color: var(--azul-claro);
   border-color: transparent;
   font-weight: 600;
@@ -360,7 +360,7 @@
   width: 3px;
   border-radius: 3px;
   background: var(--azul-claro);
-  box-shadow: 0 0 8px rgba(77,168,218,.55);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--azul-claro) 55%, transparent);
 }
 
 /* Padre cuando la página actual es uno de sus hijos: solo cambia el color,
@@ -391,8 +391,8 @@
 }
 
 .cys-sb-stat:hover {
-  border-color: rgba(77,168,218,.4);
-  box-shadow: 0 0 12px rgba(77,168,218,.1);
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--azul-claro) 10%, transparent);
 }
 
 .cys-sb-stat__dot {
@@ -402,6 +402,7 @@
   flex-shrink: 0;
 }
 
+/* Puntos de estado: colores categóricos, fijos a propósito */
 .cys-sb-stat__dot--verde    { background: #2ecc71; box-shadow: 0 0 7px rgba(46,204,113,.55); }
 .cys-sb-stat__dot--rojo     { background: #e87070; box-shadow: 0 0 7px rgba(232,112,112,.55); }
 .cys-sb-stat__dot--amarillo { background: #f1c40f; box-shadow: 0 0 7px rgba(241,196,15,.55); }
@@ -512,7 +513,7 @@
 }
 
 .cys-sb-mini-toggle:hover {
-  background-color: rgba(77, 168, 218, 0.15) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   color: var(--azul-claro) !important;
 }
 
@@ -613,8 +614,8 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 
 /* En modo compacto no se ven los hijos: el padre sí lleva indicador */
 .offcanvas.cys-sb-mini .cys-sb-link.activo-hijo {
-  background: rgba(77,168,218,.08);
-  border-color: rgba(77,168,218,.2);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 20%, transparent);
 }
 
 /* Marca del sublink activo dentro del flyout */
@@ -635,10 +636,10 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   margin: 0 !important;
   padding: 0 .35rem .4rem !important;
   z-index: 1060 !important;
-  background: rgba(4,14,28,.92) !important;
+  background: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
-  border: 1px solid rgba(77,168,218,.18) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
   border-radius: 10px !important;
   box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
   opacity: 0 !important;
@@ -686,42 +687,44 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 
 /* ============================================================
    TOOLTIPS — colores personalizados (Ayuda / Configuración / Cerrar Sesión)
+   El fondo sigue el tema; el color del texto/borde es categórico
+   (cian = ayuda, amarillo = config, rojo = salir) y queda fijo.
    ============================================================ */
 .tooltip.cys-tip-ayuda .tooltip-inner {
-  background: rgba(4,14,28,.92);
+  background: color-mix(in srgb, var(--azul-oscuro) 94%, transparent);
   color: #4dd0e1;
   border: 1px solid rgba(77,208,225,.4);
   box-shadow: 0 0 12px rgba(77,208,225,.35);
 }
 .tooltip.cys-tip-ayuda .tooltip-arrow::before {
-  border-right-color: rgba(4,14,28,.92) !important;
+  border-right-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
 .tooltip.cys-tip-config .tooltip-inner {
-  background: rgba(4,14,28,.92);
+  background: color-mix(in srgb, var(--azul-oscuro) 94%, transparent);
   color: #f1c40f;
   border: 1px solid rgba(241,196,15,.4);
   box-shadow: 0 0 12px rgba(241,196,15,.35);
 }
 .tooltip.cys-tip-config .tooltip-arrow::before {
-  border-right-color: rgba(4,14,28,.92) !important;
+  border-right-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
 .tooltip.cys-tip-logout .tooltip-inner {
-  background: rgba(4,14,28,.92);
+  background: color-mix(in srgb, var(--azul-oscuro) 94%, transparent);
   color: #ff8a8a;
   border: 1px solid rgba(232,112,112,.4);
   box-shadow: 0 0 12px rgba(232,112,112,.35);
 }
 .tooltip.cys-tip-logout .tooltip-arrow::before {
-  border-right-color: rgba(4,14,28,.92) !important;
+  border-right-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
 /* Los tooltips del aside salen a la izquierda: la flecha usa border-left */
 .tooltip.cys-tip-ayuda[data-popper-placement^="left"] .tooltip-arrow::before,
 .tooltip.cys-tip-config[data-popper-placement^="left"] .tooltip-arrow::before,
 .tooltip.cys-tip-logout[data-popper-placement^="left"] .tooltip-arrow::before {
-  border-left-color: rgba(4,14,28,.92) !important;
+  border-left-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
 /* ============================================================
@@ -730,7 +733,7 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 .cys-logout-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4,14,28,.85);
+  background: color-mix(in srgb, var(--azul-oscuro) 88%, transparent);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
