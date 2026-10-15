@@ -146,6 +146,20 @@ class NuevaCompraForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraMetodoPago'}),
         label="Método de Pago"
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'producto' in self.fields:
+            self.fields['producto'].queryset = (
+                Producto.objects.filter(activo=True)
+                .select_related('categoria')
+                .prefetch_related('presentaciones', 'lotes')
+                .order_by('nombre')
+            )
+        if 'proveedor' in self.fields:
+            self.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre_empresa')
+        if 'lote' in self.fields:
+            self.fields['lote'].queryset = Lote.objects.all().order_by('numero_lote')
 #-----PRODUCTO-----#
 
 class ProductoRegistroForm(forms.ModelForm):

@@ -99,7 +99,7 @@
           <div class="gp-md-row{% if forloop.first %} active{% endif %}"
                data-pk="{{ p.pk }}"
                data-nombre="{{ p.nombre|lower }}"
-               data-codigo="{{ p.detalles.first.codigo_barras|default:''|lower }}"
+               data-codigo="{{ p.detalle_principal.codigo_barras|default:''|lower }}"
                onclick="gpSeleccionarProducto({{ p.pk }})">
             <div class="gp-cat-icon-box gp-md-icon"></div>
             <div class="gp-md-row-info">
@@ -133,7 +133,7 @@
         <!-- PANEL DE DETALLE -->
         <div class="gp-md-detail">
           {% for p in productos %}
-          {% with detalle=p.detalles.first %}
+          {% with detalle=p.detalle_principal %}
           <div class="gp-md-panel{% if not forloop.first %} d-none{% endif %}" id="gpPanel{{ p.pk }}">
 
             <div class="gp-md-panel-header">
@@ -177,7 +177,7 @@
               </div>
               <div class="col-6 col-md-3">
                 <div class="small mb-1 gp-label-muted">Costo unit. (último lote)</div>
-                {% with ul=p.presentaciones.first.lotes.last %}
+                {% with ul=p.lote_referencia %}
                   {% if ul and ul.costo_unitario %}
                     <span class="fw-bold fs-5 gp-value-blue">${{ ul.costo_unitario|floatformat:0 }}</span>
                   {% else %}
@@ -394,7 +394,7 @@
             </thead>
             <tbody>
               {% for p in productos %}
-              {% with detalle=p.detalles.first %}
+              {% with detalle=p.detalle_principal %}
               <tr
                 {% if detalle %}
                 class="scan-row fila-clickable"
