@@ -816,17 +816,17 @@
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
                   <div class="btn-group btn-group-sm" role="group" aria-label="Modalidad de pago">
-                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago" style="font-size:0.75rem;" title="Pagar el total de la compra de una vez" id="btnPagarTotalNueva">
+                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago" style="font-size:0.75rem;" id="btnPagarTotalNueva">
                       <i class="bi bi-check2-circle me-1"></i>100% Total
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago is-active-credito" style="font-size:0.75rem;" title="Registrar la compra a crédito sin pagar nada ahora" id="btnCreditoNueva">
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago is-active-credito" style="font-size:0.75rem;" id="btnCreditoNueva">
                       <i class="bi bi-clock-history me-1"></i>Crédito ($0)
                     </button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" autocomplete="off" title="Cuánto vas a pagar ahora de esta compra">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="any" min="0" placeholder="0 para crédito total" value="0" autocomplete="off">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
-                  Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
+                  Saldo pendiente: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
               </div>
               <div class="col-md-6">
@@ -1148,7 +1148,7 @@
   cargar("{% static 'vendor/chartjs/chart.umd.min.js' %}", function () { return window.Chart; })
     .then(function () { return cargar("{% static 'vendor/jquery/jquery-3.7.1.min.js' %}", function () { return window.jQuery; }); })
     .then(function () { return cargar("{% static 'js/datatables.min.js' %}", function () { return window.jQuery.fn.DataTable; }); })
-    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}?v=20261015b", function () { return false; }); })
+    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}?v=20261015c", function () { return false; }); })
     .then(function () { if (window.ComprasPage && window.ComprasPage.init) window.ComprasPage.init(); })
     .catch(function (e) { console.error(e); });
 })();
