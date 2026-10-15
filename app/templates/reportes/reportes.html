@@ -355,7 +355,7 @@
         <span>Filtros activos:</span>
         <strong>{{ fecha_inicio|default:"…" }} → {{ fecha_fin|default:"…" }}</strong>
         <span class="cys-busqueda-activa__count">
-          — {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:",s" }}
+          — {{ ventas_count }} resultado{{ ventas_count|pluralize:",s" }}
         </span>
         <a href="{% url 'reportes' %}" class="cys-busqueda-activa__clear">
           ✕ Limpiar
@@ -382,7 +382,7 @@
               <tr class="cys-tr">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                 <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
-                <td class="cys-td" data-label="Producto">{{ det.producto.nombre }}</td>
+                <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                 <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
                 <td class="cys-td" data-label="Precio Uni.">${{ det.precio_unitario|floatformat:0 }}</td>
                 <td class="cys-td cys-td--bold" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
@@ -589,12 +589,12 @@
               {% for e in entradas %}
               <tr class="cys-tr">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                <td data-label="Producto" class="cys-td cys-td--bold">{{ e.producto.nombre }}</td>
+                <td data-label="Producto" class="cys-td cys-td--bold">{% if e.producto %}{{ e.producto.nombre }}{% else %}—{% endif %}</td>
                 <td class="cys-qty cys-qty--ok" data-label="Cantidad">+{{ e.cantidad }}</td>
-                <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.numero_orden|default:"—" }}</td>
-                <td class="cys-td cys-td--muted" data-label="Motivo">{{ e.motivo|default:"—" }}</td>
-                <td class="cys-td" data-label="Fecha Venc.">{{ e.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</td>
-                <td class="cys-td" data-label="Fecha">{{ e.fecha_actualizada|date:"d/m/Y H:i" }}</td>
+                <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.compra.codigo_compra }}</td>
+                <td class="cys-td cys-td--muted" data-label="Motivo">Compra recibida</td>
+                <td class="cys-td" data-label="Fecha Venc.">{% if e.producto %}{{ e.producto.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% else %}—{% endif %}</td>
+                <td class="cys-td" data-label="Fecha">{{ e.compra.fecha|date:"d/m/Y H:i" }}</td>
               </tr>
               {% empty %}
               <tr>
@@ -630,11 +630,11 @@
               {% for s in salidas %}
               <tr class="cys-tr">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                <td data-label="Producto" class="cys-td cys-td--bold">{{ s.producto.nombre }}</td>
+                <td data-label="Producto" class="cys-td cys-td--bold">{% if s.producto %}{{ s.producto.nombre }}{% elif s.presentacion %}{{ s.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                 <td class="cys-qty cys-qty--out" data-label="Cantidad">-{{ s.cantidad }}</td>
-                <td class="cys-td cys-td--muted" data-label="Motivo">{{ s.motivo|default:"—" }}</td>
-                <td class="cys-td" data-label="Responsable">{{ s.responsable|default:"—" }}</td>
-                <td class="cys-td" data-label="Fecha">{{ s.fecha_actualizada|date:"d/m/Y H:i" }}</td>
+                <td class="cys-td cys-td--muted" data-label="Motivo">Venta #{{ s.venta.codigo_venta }}</td>
+                <td class="cys-td" data-label="Responsable">{{ s.venta.vendedor|default:"—" }}</td>
+                <td class="cys-td" data-label="Fecha">{{ s.venta.fecha|date:"d/m/Y H:i" }}</td>
               </tr>
               {% empty %}
               <tr>
@@ -730,8 +730,8 @@
             <thead>
               <tr>
                 <th class="cys-col-num">#</th>
-                <th>NOMBRE</th>
-                <th>EMPRESA</th>
+                <th>PROVEEDOR</th>
+                <th>TIPO</th>
                 <th>TELÉFONO</th>
                 <th>CORREO</th>
               </tr>
@@ -741,16 +741,16 @@
               <tr class="cys-tr prov-row">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                 <td class="cys-prov-name-text" data-label="Nombre">
-                  {{ prov.nombre_contacto }}
+                  {{ prov.nombre_empresa }}
                 </td>
                 <td class="cys-prov-company" data-label="Empresa">
-                  {{ prov.nombre_empresa }}
+                  {{ prov.get_tipo_proveedor_display }}
                 </td>
                 <td class="cys-prov-phone" data-label="Teléfono">
                   {{ prov.telefono }}
                 </td>
                 <td class="cys-prov-email" data-label="Correo">
-                  {{ prov.email }}
+                  {{ prov.correo }}
                 </td>
               </tr>
               {% empty %}
@@ -844,14 +844,16 @@
             </thead>
             <tbody>
               {% for compra in compras %}
+                {% for detalle in compra.detalles.all %}
               <tr class="cys-tr">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                 <td data-label="Proveedor"><span class="cys-tag">{{ compra.proveedor }}</span></td>
-                <td class="cys-td" data-label="Producto">{{ compra.producto }}</td>
-                <td class="cys-td" data-label="Cantidad">{{ compra.cantidad }}</td>
-                <td class="cys-qty cys-qty--ok" data-label="Valor">${{ compra.valor|floatformat:0 }}</td>
+                <td class="cys-td" data-label="Producto">{% if detalle.producto %}{{ detalle.producto.nombre }}{% else %}—{% endif %}</td>
+                <td class="cys-td" data-label="Cantidad">{{ detalle.cantidad }}</td>
+                <td class="cys-qty cys-qty--ok" data-label="Valor">${{ detalle.subtotal_compra|floatformat:0 }}</td>
                 <td class="cys-td" data-label="Fecha">{{ compra.fecha|date:"d/m/Y" }}</td>
               </tr>
+                {% endfor %}
               {% empty %}
               <tr>
                 <td colspan="6" class="cys-td--empty">
@@ -1007,12 +1009,12 @@
                       {% for e in entradas_hoy %}
                       <tr class="cys-tr rd-entrada-row">
                         <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                        <td data-label="Producto" class="cys-td cys-td--bold">{{ e.producto.nombre }}</td>
+                        <td data-label="Producto" class="cys-td cys-td--bold">{% if e.producto %}{{ e.producto.nombre }}{% else %}—{% endif %}</td>
                         <td class="cys-qty cys-qty--ok" data-label="Cantidad">+{{ e.cantidad }}</td>
-                        <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.numero_orden|default:"—" }}</td>
-                        <td class="cys-td cys-td--muted" data-label="Motivo">{{ e.motivo|default:"—" }}</td>
-                        <td class="cys-td" data-label="Fecha Venc.">{{ e.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</td>
-                        <td class="cys-td" data-label="Fecha">{{ e.fecha_actualizada|date:"d/m/Y" }}</td>
+                        <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.compra.codigo_compra }}</td>
+                        <td class="cys-td cys-td--muted" data-label="Motivo">Compra recibida</td>
+                        <td class="cys-td" data-label="Fecha Venc.">{% if e.producto %}{{ e.producto.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% else %}—{% endif %}</td>
+                        <td class="cys-td" data-label="Fecha">{{ e.compra.fecha|date:"d/m/Y" }}</td>
                       </tr>
                       {% empty %}
                       <tr>
@@ -1057,11 +1059,11 @@
                       {% for s in salidas_hoy %}
                       <tr class="cys-tr rd-salida-row">
                         <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                        <td data-label="Producto" class="cys-td cys-td--bold">{{ s.producto.nombre }}</td>
+                        <td data-label="Producto" class="cys-td cys-td--bold">{% if s.producto %}{{ s.producto.nombre }}{% elif s.presentacion %}{{ s.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                         <td class="cys-qty cys-qty--out" data-label="Cantidad">-{{ s.cantidad }}</td>
-                        <td class="cys-td cys-td--muted" data-label="Motivo">{{ s.motivo|default:"—" }}</td>
-                        <td class="cys-td" data-label="Responsable">{{ s.responsable|default:"—" }}</td>
-                        <td class="cys-td" data-label="Fecha">{{ s.fecha_actualizada|date:"d/m/Y" }}</td>
+                        <td class="cys-td cys-td--muted" data-label="Motivo">Venta #{{ s.venta.codigo_venta }}</td>
+                        <td class="cys-td" data-label="Responsable">{{ s.venta.vendedor|default:"—" }}</td>
+                        <td class="cys-td" data-label="Fecha">{{ s.venta.fecha|date:"d/m/Y" }}</td>
                       </tr>
                       {% empty %}
                       <tr>
@@ -1104,7 +1106,7 @@
                         <tr class="cys-tr rd-venta-row">
                           <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                           <td data-label="Cliente"><strong>{{ v.cliente }}</strong></td>
-                          <td class="cys-td" data-label="Producto">{{ det.producto.nombre }}</td>
+                          <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                           <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
                           <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
                           <td class="cys-td" data-label="Fecha">{{ v.fecha|date:"d/m/Y" }}</td>
@@ -1279,7 +1281,7 @@
                       <tr class="cys-tr">
                         <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"d/m/Y" }}</td>
                         <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
-                        <td class="cys-td" data-label="Producto">{{ det.producto.nombre }}</td>
+                        <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                         <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
                         <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
                       </tr>
@@ -1306,7 +1308,7 @@
                     <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
                   </thead>
                   <tbody>
-                    {% for nombre, datos in top_productos_hoy %}
+                    {% for nombre, datos in top_productos %}
                     <tr class="cys-tr">
                       <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                       <td data-label="Producto"><strong>{{ nombre }}</strong></td>
@@ -1348,7 +1350,7 @@
                       <tr class="cys-tr av-fecha-row">
                         <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"d/m/Y" }}</td>
                         <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
-                        <td class="cys-td" data-label="Producto">{{ det.producto.nombre }}</td>
+                        <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
                         <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
                         <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
                       </tr>
@@ -1386,7 +1388,7 @@
                     <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
                   </thead>
                   <tbody>
-                    {% for nombre, datos in top_productos_hoy %}
+                    {% for nombre, datos in top_productos %}
                     <tr class="cys-tr av-top-row">
                       <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                       <td data-label="Producto"><strong>{{ nombre }}</strong></td>

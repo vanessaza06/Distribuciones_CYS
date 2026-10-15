@@ -20,6 +20,8 @@ from app.views.ayuda import views as ayuda_views
 
 urlpatterns = [
     path("", principal_views.principal, name="principal"),
+    path("semana-json/", principal_views.semana_json, name="semana_json"),
+    path("meses-json/", principal_views.meses_json, name="meses_json"),
 
     # MÉTODOS DE PAGO
     path("metodos-pago/", mp_views.lista_metodos_pago, name="lista_metodos_pago"),
