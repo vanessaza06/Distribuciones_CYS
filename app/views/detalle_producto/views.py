@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,19 +10,26 @@ from django.urls import reverse
 
 @login_required
 def detalle_producto_lista(request):
-    productos = (
-        Producto.objects
-        .select_related('categoria')
-        .prefetch_related('detalles', 'presentaciones__lotes')
-        .all()
-    )
+    productos_qs = Producto.objects.select_related('categoria__subcategoria')
 
-    con_codigo = productos.filter(detalles__codigo_barras__isnull=False).exclude(detalles__codigo_barras='').distinct().count()
-    sin_codigo = productos.count() - con_codigo
+    con_codigo = productos_qs.filter(detalles__codigo_barras__isnull=False).exclude(detalles__codigo_barras='').distinct().count()
+
+    # Una sola pasada: stock anotado + relaciones precargadas (antes ~6800 consultas)
+    productos = list(
+        productos_qs
+        .annotate(stock_total_anotado=Sum('lotes__stock_actual'))
+        .prefetch_related('detalles', 'presentaciones__lotes')
+    )
+    sin_codigo = len(productos) - con_codigo
+
+    # Se evalúa una vez: la plantilla recorre las categorías dentro de cada modal
+    categorias = list(
+        Categoria.objects.filter(subcategoria__isnull=True).prefetch_related('subcategorias')
+    )
 
     context = {
         'productos': productos,
-        'categorias': Categoria.objects.filter(subcategoria__isnull=True),  # solo principales
+        'categorias': categorias,  # solo principales
         'con_codigo': con_codigo,
         'sin_codigo': sin_codigo,
         'marcas': Marca.objects.all(),
