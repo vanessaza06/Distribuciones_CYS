@@ -373,13 +373,12 @@
   background: rgba(10, 42, 82, 0.95) !important;
 }
 
-/* Tarjetas de Categoría y Producto con Tamaños y Estilos Uniformes */
-.cys-cat-card-item,
-.cys-prod-card-item {
+/* Tarjetas de Categoría */
+.cys-cat-card-item {
   background: linear-gradient(145deg, rgba(10, 42, 82, 0.85), rgba(15, 59, 108, 0.85));
   border: 1px solid rgba(77, 168, 218, 0.25);
   border-radius: 14px;
-  padding: 1rem 0.85rem;
+  padding: 1.15rem 0.95rem;
   min-height: 125px;
   height: 100%;
   cursor: pointer;
@@ -392,8 +391,7 @@
   color: #ffffff !important;
 }
 
-.cys-cat-card-item:hover,
-.cys-prod-card-item:hover {
+.cys-cat-card-item:hover {
   transform: translateY(-4px);
   border-color: var(--azul-claro, #4DA8DA);
   box-shadow: 0 10px 25px rgba(77, 168, 218, 0.22);
@@ -419,6 +417,318 @@
   background: var(--azul-claro, #4DA8DA);
   color: #0A2A52;
   transform: scale(1.08);
+}
+
+/* Tarjetas de Producto Modernas */
+.cys-prod-card-item {
+  background: linear-gradient(145deg, rgba(15, 59, 108, 0.75), rgba(10, 42, 82, 0.9));
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1rem;
+  min-height: 155px;
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.cys-prod-card-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: background 0.25s ease;
+}
+
+.cys-prod-card-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--azul-claro, #4DA8DA);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 15px rgba(77, 168, 218, 0.2);
+  background: linear-gradient(145deg, rgba(18, 71, 133, 0.9), rgba(12, 48, 94, 0.95));
+}
+
+.cys-prod-card-item:hover::before {
+  background: linear-gradient(90deg, #4DA8DA, #2ed573);
+}
+
+.cys-prod-card-item--nostock {
+  opacity: 0.7;
+}
+
+.cys-prod-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(77, 168, 218, 0.12);
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--azul-claro, #4DA8DA);
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.cys-prod-card-item:hover .cys-prod-icon-circle {
+  background: var(--azul-claro, #4DA8DA);
+  color: #0A2A52;
+  transform: scale(1.05);
+}
+
+.cys-prod-name {
+  font-weight: 800;
+  font-size: 0.96rem;
+  color: #ffffff !important;
+  line-height: 1.25;
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cys-prod-sub {
+  font-size: 0.74rem;
+  color: var(--texto-muted, #a0aec0) !important;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+.cys-prod-price-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-muted, #a0aec0) !important;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+
+.cys-prod-price {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: var(--azul-claro, #4DA8DA) !important;
+  line-height: 1;
+}
+
+.cys-prod-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(77, 168, 218, 0.15);
+  border: 1px solid rgba(77, 168, 218, 0.35);
+  color: var(--azul-claro, #4DA8DA) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.cys-prod-card-item:hover .cys-prod-action-btn:not(.disabled) {
+  background: var(--azul-claro, #4DA8DA);
+  color: #0A2A52 !important;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(77, 168, 218, 0.4);
+}
+
+/* Barra de Navegación / Breadcrumbs POS */
+.cys-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(15, 59, 108, 0.6), rgba(10, 42, 82, 0.8));
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+}
+
+.cys-btn-back {
+  background: rgba(10, 42, 82, 0.9) !important;
+  border: 1px solid rgba(77, 168, 218, 0.35) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  border-radius: 8px !important;
+  padding: 0.35rem 0.75rem !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cys-btn-back:hover {
+  background: var(--azul-claro, #4DA8DA) !important;
+  color: #0A2A52 !important;
+  border-color: var(--azul-claro, #4DA8DA) !important;
+  transform: translateX(-2px);
+}
+
+.cys-breadcrumb-sep {
+  color: rgba(77, 168, 218, 0.4);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.cys-breadcrumb-chip {
+  background: rgba(77, 168, 218, 0.12);
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffffff !important;
+  display: inline-flex;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.cys-breadcrumb-chip--active {
+  background: rgba(77, 168, 218, 0.22);
+  border-color: var(--azul-claro, #4DA8DA);
+  color: var(--azul-claro, #4DA8DA) !important;
+}
+
+.cys-count-badge {
+  background: rgba(77, 168, 218, 0.15) !important;
+  border: 1px solid rgba(77, 168, 218, 0.3) !important;
+  color: var(--azul-claro, #4DA8DA) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+}
+
+/* Tarjetas de Presentación */
+.cys-pres-card-item {
+  background: linear-gradient(135deg, rgba(15, 59, 108, 0.75), rgba(10, 42, 82, 0.9));
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  margin-bottom: 0.5rem;
+}
+
+.cys-pres-card-item:hover:not(.cys-pres-card-item--disabled) {
+  transform: translateY(-2px);
+  border-color: var(--azul-claro, #4DA8DA);
+  background: linear-gradient(135deg, rgba(20, 78, 145, 0.85), rgba(12, 48, 94, 0.95));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 12px rgba(77, 168, 218, 0.2);
+}
+
+.cys-pres-card-item--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.cys-pres-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(77, 168, 218, 0.12);
+  border: 1px solid rgba(77, 168, 218, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--azul-claro, #4DA8DA);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.cys-pres-name {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #ffffff !important;
+  text-transform: capitalize;
+}
+
+.cys-pres-price-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-muted, #a0aec0) !important;
+  font-weight: 700;
+}
+
+.cys-pres-price {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: var(--azul-claro, #4DA8DA) !important;
+  line-height: 1;
+}
+
+.cys-pres-add-btn {
+  background: linear-gradient(135deg, #4DA8DA, #185FA5) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 0.9rem !important;
+  box-shadow: 0 4px 12px rgba(77, 168, 218, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cys-pres-card-item:hover .cys-pres-add-btn:not(.disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(77, 168, 218, 0.45) !important;
+}
+
+/* Toast Notificaciones POS */
+.cys-pos-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: rgba(10, 42, 82, 0.95);
+  border: 1px solid var(--azul-claro, #4DA8DA);
+  color: #ffffff !important;
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(77,168,218,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  animation: cysToastIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes cysToastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Stock Badges con Colores Forzados */
+.cys-stock-badge--ok {
+  background: rgba(46, 213, 115, 0.15) !important;
+  color: #2ed573 !important;
+  border: 1px solid rgba(46, 213, 115, 0.35) !important;
+}
+
+.cys-stock-badge--low {
+  background: rgba(255, 171, 0, 0.15) !important;
+  color: #ffab00 !important;
+  border: 1px solid rgba(255, 171, 0, 0.35) !important;
+}
+
+.cys-stock-badge--empty {
+  background: rgba(235, 77, 75, 0.15) !important;
+  color: #ff7675 !important;
+  border: 1px solid rgba(235, 77, 75, 0.35) !important;
 }
 
 /* Forzar Texto Blanco en Todos los Elementos del POS */

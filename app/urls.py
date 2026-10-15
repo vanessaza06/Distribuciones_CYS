@@ -36,6 +36,7 @@ urlpatterns = [
     path("ventas/nueva/", ventas_views.nueva_venta, name="nueva_venta"),
     path("ventas/eliminar/<int:pk>/", ventas_views.eliminar_venta, name="eliminar_venta"),
     path("ventas/producto-stock/<int:pk>/", ventas_views.producto_stock_json, name="producto_stock_json"),
+    path("ventas/producto/<int:pk>/stock/", ventas_views.producto_stock_json, name="producto_stock_json_alt"),
 
     # DEVOLUCIONES
     path("devoluciones/", dev_views.lista_devoluciones, name="lista_devoluciones"),
