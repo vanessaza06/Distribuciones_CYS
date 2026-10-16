@@ -130,10 +130,10 @@
 
           <!-- BOTONES -->
           <div class="botones-accion">
-            <button class="btn-print" onclick="window.print()">
+            <button class="btn-print" id="btnImprimirComprobante" type="button">
               <i class="bi bi-printer me-2"></i>Imprimir Comprobante
             </button>
-            <a href="{% url 'detalle_devolucion' devolucion.pk %}" class="btn-volver" style="text-decoration:none;">
+            <a href="{% url 'detalle_devolucion' devolucion.pk %}" class="btn-volver">
               <i class="bi bi-eye me-1"></i>Ver Detalle Completo
             </a>
             <a href="{% url 'lista_devoluciones' %}" class="btn-volver">
@@ -146,4 +146,8 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/proveedores/devoluciones.js' %}"></script>
 {% endblock %}

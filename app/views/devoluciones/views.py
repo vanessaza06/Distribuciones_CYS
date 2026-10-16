@@ -1,8 +1,9 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Sum, Q
@@ -473,14 +474,101 @@ def devoluciones_flujo(request):
         'metodos_pago':                 METODO_PAGO_CHOICES,
         'total_devolver':               total_devolver,
         'tab_activo':                   request.GET.get('tab', 'cliente'),
+        'todos_productos':              Producto.objects.filter(activo=True).order_by('nombre'),
         # Devoluciones a Proveedor (usando app.models.DevolucionProveedores)
         'todos_proveedores':            Proveedor.objects.filter(estado='activo').order_by('nombre_empresa'),
         'devoluciones_proveedor':       DevolucionProveedores.objects.select_related('proveedor').order_by('-fecha')[:50],
         'prov_total':                   DevolucionProveedores.objects.count(),
         'prov_pendientes':              DevolucionProveedores.objects.filter(estado='pendiente').count(),
+        'breadcrumb_items': [
+            {'nombre': 'Devoluciones', 'url': None},
+        ],
     }
 
     return render(request, 'devoluciones/devoluciones.html', context)
+
+
+@login_required
+@require_POST
+def registrar_devolucion_proveedor(request):
+    """Procesa el formulario de devolución a proveedor."""
+    nit_prov = request.POST.get('proveedor', '').strip()
+    prod_id = request.POST.get('presentacion') or request.POST.get('producto') or ''
+    cantidad_raw = request.POST.get('cantidad', '1').strip()
+    precio_raw = request.POST.get('precio_unitario', '0').strip()
+    motivo = request.POST.get('motivo', 'otro').strip()
+    tipo_resolucion = request.POST.get('tipo_resolucion', 'nota_credito').strip()
+    obs = request.POST.get('observaciones', '').strip()
+
+    proveedor = Proveedor.objects.filter(pk=nit_prov).first()
+    if not proveedor:
+        messages.error(request, '⚠️ Debes seleccionar un proveedor válido.')
+        return redirect(f"{reverse('lista_devoluciones')}?tab=proveedor")
+
+    try:
+        cantidad = int(cantidad_raw)
+        if cantidad <= 0:
+            raise ValueError
+    except ValueError:
+        messages.error(request, '⚠️ La cantidad a devolver debe ser un número entero mayor a cero.')
+        return redirect(f"{reverse('lista_devoluciones')}?tab=proveedor")
+
+    try:
+        precio_unitario = Decimal(precio_raw.replace(',', '.'))
+        if precio_unitario <= Decimal('0.00'):
+            raise ValueError
+    except (ValueError, InvalidOperation):
+        messages.error(request, '⚠️ El precio unitario debe ser mayor a 0.')
+        return redirect(f"{reverse('lista_devoluciones')}?tab=proveedor")
+
+    producto = None
+    if prod_id:
+        producto = Producto.objects.filter(pk=prod_id).first()
+
+    total = Decimal(cantidad) * precio_unitario
+
+    import json
+    metadata = {
+        'total': float(total),
+        'cantidad': cantidad,
+        'precio_unitario': float(precio_unitario),
+        'producto_id': producto.pk if producto else None,
+        'producto_nombre': producto.nombre if producto else 'Mercancía general',
+        'tipo_resolucion': tipo_resolucion,
+        'obs': obs,
+    }
+
+    dev_prov = DevolucionProveedores.objects.create(
+        proveedor=proveedor,
+        motivo=motivo,
+        estado='pendiente',
+        observaciones=json.dumps(metadata, ensure_ascii=False),
+        fecha=timezone.now(),
+    )
+
+    messages.success(
+        request,
+        f'✅ Devolución {dev_prov.numero} registrada correctamente para {proveedor.nombre_empresa} (${total:,.0f}).'
+    )
+    return redirect(f"{reverse('lista_devoluciones')}?tab=proveedor")
+
+
+@login_required
+@require_POST
+def cambiar_estado_devolucion_proveedor(request, pk):
+    """Cambia el estado de una devolución a proveedor (aprobada, aplicada, rechazada)."""
+    dev_prov = get_object_or_404(DevolucionProveedores, pk=pk)
+    nuevo_estado = request.POST.get('nuevo_estado', '').strip()
+    estados_validos = {'pendiente', 'aprobada', 'aplicada', 'rechazada'}
+
+    if nuevo_estado in estados_validos:
+        dev_prov.estado = nuevo_estado
+        dev_prov.save()
+        messages.success(request, f'✅ Estado de la devolución {dev_prov.numero} actualizado a "{nuevo_estado.capitalize()}".')
+    else:
+        messages.error(request, '⚠️ Estado no válido.')
+
+    return redirect(f"{reverse('lista_devoluciones')}?tab=proveedor")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

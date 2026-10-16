@@ -101,6 +101,9 @@
         </div>
       </div>
 
+      <!-- Botones de Exportar (Excel y PDF con DataTables) -->
+      <div id="cys-dt-export-proveedores" class="d-flex align-items-center gap-2"></div>
+
       <!-- Nuevo proveedor -->
       <button type="button" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor" class="btn-nuevo-prov">
         <i class="bi bi-plus-circle"></i> Nuevo proveedor
@@ -467,6 +470,6 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
-<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/datatables.js' %}"></script>
 <script src="{% static 'js/proveedores/proveedores.js' %}"></script>
 {% endblock %}

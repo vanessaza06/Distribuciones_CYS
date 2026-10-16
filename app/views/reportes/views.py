@@ -12,6 +12,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
@@ -262,5 +263,8 @@ def reportes(request):
         "cantidad_devoluciones": cantidad_devoluciones,
         "tasa_devolucion": tasa_devolucion,
         "devoluciones_aprobadas": devoluciones_aprobadas,
+        "breadcrumb_items": [
+            {"nombre": "Reportes", "url": reverse("reportes")},
+        ],
     }
     return render(request, "reportes/reportes.html", context)
