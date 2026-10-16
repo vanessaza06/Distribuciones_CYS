@@ -9,458 +9,8 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
-<style>
-  /* ─── DETALLE COMPRA — Estilos específicos ─── */
-
-  .dc-hero {
-    background: linear-gradient(135deg, #02224a 0%, #011936 60%, rgba(207,156,72,0.06) 100%);
-    border: 1px solid rgba(207,156,72,0.2);
-    border-left: 4px solid #CF9C48;
-    border-radius: 12px;
-    padding: 1.75rem 2rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .dc-hero::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(207,156,72,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .dc-hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(207,156,72,0.12);
-    color: #CF9C48;
-    border: 1px solid rgba(207,156,72,0.3);
-    border-radius: 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.7rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .dc-hero-title {
-    color: #e2e8f0;
-    font-size: 1.9rem;
-    font-weight: 800;
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .dc-hero-title i {
-    color: #CF9C48;
-    margin-right: 0.4rem;
-  }
-
-  .dc-hero-code {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: #8FA3B1;
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-top: 0.4rem;
-    letter-spacing: 0.04em;
-  }
-
-  .dc-hero-code span {
-    color: #CF9C48;
-    font-family: monospace;
-    font-size: 0.9rem;
-  }
-
-  .btn-volver {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    border: 1px solid rgba(207,156,72,0.3);
-    color: #CF9C48;
-    border-radius: 8px;
-    padding: 0.5rem 1.1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-  }
-
-  .btn-volver:hover {
-    background: rgba(207,156,72,0.1);
-    border-color: #CF9C48;
-    color: #CF9C48;
-    transform: translateX(-2px);
-  }
-
-  /* ─── KPI Cards fila superior ─── */
-  .dc-kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 1.5rem;
-  }
-
-  .dc-kpi {
-    background: #02224a;
-    border-radius: 12px;
-    padding: 1.1rem 1.2rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 4px solid #CF9C48 !important;
-    position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  }
-
-  .dc-kpi:hover {
-    transform: translateY(-4px);
-    border-color: rgba(207, 156, 72, 0.4);
-    box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
-  }
-
-  .dc-kpi--gold,
-  .dc-kpi--blue,
-  .dc-kpi--green,
-  .dc-kpi--red,
-  .dc-kpi--purple { border-left: 4px solid #CF9C48 !important; }
-
-  .dc-kpi__label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #8FA3B1;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .dc-kpi__value {
-    font-size: 1.6rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: #e2e8f0;
-  }
-
-  .dc-kpi__sub {
-    font-size: 0.72rem;
-    color: #8FA3B1;
-    margin-top: 0.3rem;
-  }
-
-  .dc-kpi--gold .dc-kpi__value  { color: #CF9C48; }
-  .dc-kpi--blue .dc-kpi__value  { color: #CF9C48; }
-  .dc-kpi--green .dc-kpi__value { color: #CF9C48; }
-  .dc-kpi--purple .dc-kpi__value{ color: #CF9C48; }
-
-  /* ─── Secciones de información ─── */
-  .dc-section {
-    background: #02224a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 4px solid #CF9C48 !important;
-    border-radius: 12px;
-    margin-bottom: 1.25rem;
-    overflow: hidden;
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  }
-
-  .dc-section:hover {
-    border-color: rgba(207, 156, 72, 0.4);
-    box-shadow: 0 0 15px rgba(207, 156, 72, 0.3) !important;
-  }
-
-  .dc-section__head {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(239,248,226,0.08);
-    background: rgba(207,156,72,0.04);
-  }
-
-  .dc-section__head-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: rgba(207,156,72,0.12);
-    border: 1px solid rgba(207,156,72,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #CF9C48;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
-  .dc-section__head-title {
-    color: #e2e8f0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 0;
-  }
-
-  .dc-section__body {
-    padding: 1.5rem;
-  }
-
-  /* ─── Filas de datos ─── */
-  .dc-data-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
-  }
-
-  .dc-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .dc-field__label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8FA3B1;
-  }
-
-  .dc-field__value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-
-  .dc-field__value--big {
-    font-size: 1.4rem;
-    font-weight: 800;
-  }
-
-  .dc-field__value--gold   { color: #CF9C48; }
-  .dc-field__value--blue   { color: #4DA8DA; }
-  .dc-field__value--green  { color: #27ae60; }
-  .dc-field__value--muted  { color: #8FA3B1; }
-
-  /* ─── Divider ─── */
-  .dc-divider {
-    height: 1px;
-    background: rgba(239,248,226,0.08);
-    margin: 1.25rem 0;
-  }
-
-  /* ─── Badge de estado ─── */
-  .dc-estado-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.95rem;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .dc-estado-badge--pendiente  { background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
-  .dc-estado-badge--confirmada { background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.35); }
-  .dc-estado-badge--recibida   { background: rgba(39,174,96,0.15);  color: #27ae60; border: 1px solid rgba(39,174,96,0.35); }
-  .dc-estado-badge--cancelada  { background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
-
-  .dc-pago-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.95rem;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .dc-pago-badge--pagada   { background: rgba(207,156,72,0.15); color: #CF9C48; border: 1px solid rgba(207,156,72,0.35); }
-  .dc-pago-badge--parcial  { background: rgba(232,168,124,0.15); color: #e8a87c; border: 1px solid rgba(232,168,124,0.35); }
-  .dc-pago-badge--pendiente{ background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
-
-  /* ─── Barra de progreso de pago ─── */
-  .dc-progress-wrap {
-    margin-top: 1rem;
-  }
-  .dc-progress-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.72rem;
-    color: #8FA3B1;
-    margin-bottom: 0.4rem;
-  }
-  .dc-progress-bar-bg {
-    height: 8px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .dc-progress-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #CF9C48, #e8a87c);
-    transition: width 0.6s ease;
-  }
-
-  /* ─── Botones de acción ─── */
-  .dc-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid rgba(239,248,226,0.08);
-    background: rgba(207,156,72,0.03);
-    border-radius: 0 0 10px 10px;
-  }
-
-  .dc-btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #CF9C48;
-    color: #011936;
-    border: none;
-    border-radius: 8px;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .dc-btn-primary:hover {
-    background: #e8b55a;
-    color: #011936;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(207,156,72,0.4);
-  }
-
-  .dc-btn-info {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(77,168,218,0.15);
-    color: #4DA8DA;
-    border: 1px solid rgba(77,168,218,0.35);
-    border-radius: 8px;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .dc-btn-info:hover {
-    background: rgba(77,168,218,0.25);
-    color: #4DA8DA;
-    transform: translateY(-2px);
-  }
-
-  .dc-btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: #8FA3B1;
-    border: 1px solid rgba(239,248,226,0.15);
-    border-radius: 8px;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .dc-btn-outline:hover {
-    background: rgba(239,248,226,0.05);
-    color: #e2e8f0;
-    border-color: rgba(239,248,226,0.3);
-  }
-
-  /* ─── Timeline de auditoría ─── */
-  .dc-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .dc-timeline-item {
-    display: flex;
-    gap: 1rem;
-    position: relative;
-    padding-bottom: 1.25rem;
-  }
-  .dc-timeline-item:last-child { padding-bottom: 0; }
-  .dc-timeline-item::before {
-    content: '';
-    position: absolute;
-    left: 14px;
-    top: 28px;
-    bottom: 0;
-    width: 2px;
-    background: rgba(207,156,72,0.15);
-  }
-  .dc-timeline-item:last-child::before { display: none; }
-  .dc-timeline-dot {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(207,156,72,0.12);
-    border: 2px solid rgba(207,156,72,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #CF9C48;
-    font-size: 0.7rem;
-    flex-shrink: 0;
-    z-index: 1;
-  }
-  .dc-timeline-content { flex: 1; padding-top: 0.25rem; }
-  .dc-timeline-title { color: #e2e8f0; font-size: 0.85rem; font-weight: 600; }
-  .dc-timeline-sub { color: #8FA3B1; font-size: 0.75rem; margin-top: 0.15rem; }
-
-  /* ─── Lote badge ─── */
-  .dc-lote-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(77,168,218,0.1);
-    border: 1px solid rgba(77,168,218,0.25);
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    color: #4DA8DA;
-    font-family: 'Courier New', monospace;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
-
-  /* ─── Responsive ─── */
-  @media (max-width: 768px) {
-    .dc-kpi-row { grid-template-columns: repeat(2, 1fr); }
-    .dc-hero-title { font-size: 1.4rem; }
-    .dc-hero { padding: 1.25rem; }
-    .dc-section__body { padding: 1.1rem; }
-    .dc-actions { flex-direction: column; }
-    .dc-btn-primary, .dc-btn-info, .dc-btn-outline { width: 100%; justify-content: center; }
-  }
-  @media (max-width: 480px) {
-    .dc-kpi-row { grid-template-columns: 1fr 1fr; }
-    .dc-data-grid { grid-template-columns: 1fr; }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/detalle_compra.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -474,7 +24,7 @@
       </div>
       <h1 class="dc-hero-title">
         <i class="bi bi-receipt-cutoff"></i>Compra
-        <span style="color:#CF9C48;">#{{ compra.codigo_compra }}</span>
+        <span class="dc-hero-code">#{{ compra.codigo_compra }}</span>
       </h1>
       <div class="dc-hero-code">
         <i class="bi bi-building"></i>
@@ -484,9 +34,12 @@
         {{ compra.fecha|date:"d/m/Y" }}
       </div>
     </div>
-    <a href="{{ url_lista }}" class="btn-volver">
-      <i class="bi bi-arrow-left"></i> Volver a Compras
-    </a>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div id="cys-dt-export-compra" class="d-flex align-items-center gap-2"></div>
+      <a href="{{ url_lista }}" class="btn-volver">
+        <i class="bi bi-arrow-left"></i> Volver a Compras
+      </a>
+    </div>
   </div>
 
   {# ─── TARJETAS KPI ─── #}
@@ -511,7 +64,7 @@
     <div class="dc-kpi dc-kpi--gold">
       <div class="dc-kpi__label"><i class="bi bi-cash-stack"></i> Total Compra</div>
       <div class="dc-kpi__value dc-kpi__value--gold">
-        {% if compra.precio_unitario %}{{ compra.total|cop }}{% else %}<span style="color:#8FA3B1;">—</span>{% endif %}
+        {% if compra.precio_unitario %}{{ compra.total|cop }}{% else %}<span class="dc-text-muted">—</span>{% endif %}
       </div>
       <div class="dc-kpi__sub">{{ compra.cantidad|default:0 }} und. × {{ compra.precio_unitario|default:0|cop }}/und.</div>
     </div>
@@ -534,7 +87,7 @@
     {# Fecha Registro #}
     <div class="dc-kpi dc-kpi--purple">
       <div class="dc-kpi__label"><i class="bi bi-calendar-check"></i> Fecha</div>
-      <div class="dc-kpi__value" style="font-size:1.1rem; color:#9b5de5;">{{ compra.fecha|date:"d/m/Y" }}</div>
+      <div class="dc-kpi__value dc-kpi-purple">{{ compra.fecha|date:"d/m/Y" }}</div>
       <div class="dc-kpi__sub">{{ compra.fecha|time:"H:i" }} hrs</div>
     </div>
   </div>
@@ -553,12 +106,12 @@
         <div class="dc-section__body">
           {% if compra.producto %}
           <div class="dc-data-grid">
-            <div class="dc-field" style="grid-column: 1 / -1;">
+            <div class="dc-field dc-field-full">
               <div class="dc-field__label">Nombre del Producto</div>
               <div class="dc-field__value dc-field__value--big">{{ compra.producto.nombre }}</div>
               {% if compra.producto.categoria %}
-              <div style="margin-top:0.4rem;">
-                <span style="background:rgba(77,168,218,0.1);color:#4DA8DA;border:1px solid rgba(77,168,218,0.25);border-radius:6px;padding:0.2rem 0.65rem;font-size:0.75rem;font-weight:600;">
+              <div>
+                <span class="dc-cat-badge">
                   <i class="bi bi-tag me-1"></i>{{ compra.producto.categoria.nombre }}
                 </span>
               </div>
@@ -566,12 +119,12 @@
             </div>
             <div class="dc-field">
               <div class="dc-field__label">Cantidad Comprada</div>
-              <div class="dc-field__value dc-field__value--blue" style="font-size:1.5rem;font-weight:800;">{{ compra.cantidad|default:0 }} <span style="font-size:0.9rem;font-weight:600;">und.</span></div>
+              <div class="dc-field__value dc-field__value--blue dc-cant-val">{{ compra.cantidad|default:0 }} <span class="dc-unit-span">und.</span></div>
             </div>
           </div>
           {% else %}
-          <div class="text-center py-3" style="color:#8FA3B1;">
-            <i class="bi bi-box" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+          <div class="text-center py-3 dc-text-muted">
+            <i class="bi bi-box dc-empty-icon"></i>
             Sin información de producto
           </div>
           {% endif %}
@@ -588,6 +141,71 @@
         </div>
       </div>
 
+      {# TABLA DE PRODUCTOS EN LA COMPRA (DATATABLE) #}
+      <div class="dc-section">
+        <div class="dc-section__head d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <div class="dc-section__head-icon"><i class="bi bi-table"></i></div>
+            <h2 class="dc-section__head-title">Ítems de la Compra</h2>
+          </div>
+          <span class="badge dc-badge-item-count">
+            {{ compra.detalles.count|default:1 }} ítem{{ compra.detalles.count|pluralize:"s" }}
+          </span>
+        </div>
+        <div class="dc-section__body p-3">
+          <div class="table-responsive">
+            <table id="tablaDetalleCompra" class="table table-sm align-middle mb-0 w-100 dc-table-light" data-codigo="{{ compra.codigo_compra }}" data-fecha="{{ compra.fecha|date:'Ymd' }}">
+              <thead>
+                <tr class="dc-table-th-gold">
+                  <th class="text-center dc-th-col-num">#</th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Lote</th>
+                  <th class="text-center">Cant.</th>
+                  <th class="text-end">Precio Unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in compra.detalles.all %}
+                <tr class="dc-tr-subtle">
+                  <td class="text-center text-muted small">{{ forloop.counter }}</td>
+                  <td>
+                    <div class="fw-bold dc-text-light">{{ d.producto.nombre|default:"Sin producto" }}</div>
+                  </td>
+                  <td>
+                    <span class="badge dc-badge-cat-table">
+                      {{ d.producto.categoria.nombre|default:"—" }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="dc-lote-tag py-1 px-2 dc-lote-tag-sm">
+                      {{ d.numero_lote|default:"—" }}
+                    </span>
+                  </td>
+                  <td class="text-center fw-bold dc-text-cyan">{{ d.cantidad }}</td>
+                  <td class="text-end dc-text-gold">{{ d.precio_unitario|cop }}</td>
+                  <td class="text-end fw-bold text-success">{{ d.subtotal|cop }}</td>
+                </tr>
+                {% empty %}
+                {% if compra.producto %}
+                <tr class="dc-tr-subtle">
+                  <td class="text-center text-muted small">1</td>
+                  <td><div class="fw-bold dc-text-light">{{ compra.producto.nombre }}</div></td>
+                  <td><span class="badge dc-badge-cat-table">{{ compra.producto.categoria.nombre|default:"—" }}</span></td>
+                  <td><span class="dc-lote-tag py-1 px-2 dc-lote-tag-sm">{{ compra.numero_lote|default:"—" }}</span></td>
+                  <td class="text-center fw-bold dc-text-cyan">{{ compra.cantidad|default:1 }}</td>
+                  <td class="text-end dc-text-gold">{{ compra.precio_unitario|cop }}</td>
+                  <td class="text-end fw-bold text-success">{{ compra.total|cop }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       {# INFORMACIÓN FINANCIERA #}
       <div class="dc-section">
         <div class="dc-section__head">
@@ -598,33 +216,33 @@
           <div class="dc-data-grid">
             <div class="dc-field">
               <div class="dc-field__label">Precio Unitario</div>
-              <div class="dc-field__value dc-field__value--gold" style="font-size:1.3rem;font-weight:800;">
+              <div class="dc-field__value dc-field__value--gold dc-field-val-gold-md">
                 {% if compra.precio_unitario %}
                   {{ compra.precio_unitario|cop }}
                 {% else %}
-                  <span class="dc-field__value--muted" style="font-size:1rem;">No especificado</span>
+                  <span class="dc-field__value--muted dc-field-val-muted-md">No especificado</span>
                 {% endif %}
               </div>
             </div>
             <div class="dc-field">
               <div class="dc-field__label">Total Compra</div>
-              <div class="dc-field__value dc-field__value--gold" style="font-size:1.6rem;font-weight:800;">
+              <div class="dc-field__value dc-field__value--gold dc-field-val-gold-lg">
                 {% if compra.precio_unitario %}
                   {{ compra.total|cop }}
                 {% else %}
-                  <span class="dc-field__value--muted" style="font-size:1rem;">—</span>
+                  <span class="dc-field__value--muted dc-field-val-muted-md">—</span>
                 {% endif %}
               </div>
             </div>
             <div class="dc-field">
               <div class="dc-field__label">Monto Pagado</div>
-              <div class="dc-field__value" style="color:#27ae60;font-size:1.2rem;font-weight:700;">
+              <div class="dc-field__value dc-val-success">
                 {{ compra.monto_pagado|default:0|cop }}
               </div>
             </div>
             <div class="dc-field">
               <div class="dc-field__label">Saldo Pendiente</div>
-              <div class="dc-field__value" style="color:{% if compra.saldo <= 0 %}#27ae60{% else %}#e74c3c{% endif %};font-size:1.2rem;font-weight:700;">
+              <div class="dc-field__value {% if compra.saldo <= 0 %}dc-val-success{% else %}dc-val-danger{% endif %}">
                 {{ compra.saldo|default:0|cop }}
               </div>
             </div>
@@ -643,7 +261,7 @@
             </div>
             <div class="dc-progress-bar-bg">
               <div class="dc-progress-bar-fill"
-                style="width: {% if compra.monto_pagado and compra.total %}{% widthratio compra.monto_pagado compra.total 100 %}{% else %}0{% endif %}%;">
+                data-progreso="{% if compra.monto_pagado and compra.total %}{% widthratio compra.monto_pagado compra.total 100 %}{% else %}0{% endif %}">
               </div>
             </div>
           </div>
@@ -664,14 +282,14 @@
         </div>
         <div class="dc-section__body">
           {% if compra.proveedor %}
-          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
-            <div style="width:48px;height:48px;border-radius:10px;background:rgba(207,156,72,0.12);border:1.5px solid rgba(207,156,72,0.3);display:flex;align-items:center;justify-content:center;color:#CF9C48;font-size:1.3rem;flex-shrink:0;">
+          <div class="dc-prov-header">
+            <div class="dc-prov-avatar">
               <i class="bi bi-building"></i>
             </div>
             <div>
-              <div style="color:#e2e8f0;font-size:1.05rem;font-weight:700;">{{ compra.proveedor.nombre_empresa|default:"N/A" }}</div>
+              <div class="dc-prov-name">{{ compra.proveedor.nombre_empresa|default:"N/A" }}</div>
               {% if compra.proveedor.tipo_proveedor %}
-              <span style="background:rgba(77,168,218,0.1);color:#4DA8DA;border:1px solid rgba(77,168,218,0.25);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;">
+              <span class="dc-prov-nit">
                 {{ compra.proveedor.get_tipo_proveedor_display }}
               </span>
               {% endif %}
@@ -680,7 +298,7 @@
 
           <div class="dc-divider"></div>
 
-          <div style="display:flex;flex-direction:column;gap:0.85rem;">
+          <div class="dc-prov-details">
             <div class="dc-field">
               <div class="dc-field__label"><i class="bi bi-hash me-1"></i>NIT</div>
               <div class="dc-field__value">{{ compra.proveedor.pk }}</div>
@@ -689,7 +307,7 @@
               <div class="dc-field__label"><i class="bi bi-telephone me-1"></i>Teléfono</div>
               <div class="dc-field__value">
                 {% if compra.proveedor.telefono %}
-                  <a href="tel:{{ compra.proveedor.telefono }}" style="color:#4DA8DA;text-decoration:none;">
+                  <a href="tel:{{ compra.proveedor.telefono }}" class="dc-link-cyan">
                     {{ compra.proveedor.telefono }}
                   </a>
                 {% else %}
@@ -701,7 +319,7 @@
               <div class="dc-field__label"><i class="bi bi-envelope me-1"></i>Correo</div>
               <div class="dc-field__value">
                 {% if compra.proveedor.correo %}
-                  <a href="mailto:{{ compra.proveedor.correo }}" style="color:#4DA8DA;text-decoration:none;">{{ compra.proveedor.correo }}</a>
+                  <a href="mailto:{{ compra.proveedor.correo }}" class="dc-link-cyan">{{ compra.proveedor.correo }}</a>
                 {% else %}
                   <span class="dc-field__value--muted">No especificado</span>
                 {% endif %}
@@ -709,8 +327,8 @@
             </div>
           </div>
           {% else %}
-          <div class="text-center py-3" style="color:#8FA3B1;">
-            <i class="bi bi-truck" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+          <div class="text-center py-3 dc-text-muted">
+            <i class="bi bi-truck dc-empty-icon"></i>
             Sin información de proveedor
           </div>
           {% endif %}
@@ -733,8 +351,8 @@
             <span class="fw-bold text-success">{{ pago.valor|cop }}</span>
           </div>
           {% empty %}
-          <div class="text-center py-3" style="color:#8FA3B1;">
-            <i class="bi bi-wallet2" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+          <div class="text-center py-3 dc-text-muted">
+            <i class="bi bi-wallet2 dc-empty-icon"></i>
             Aún no hay pagos registrados
           </div>
           {% endfor %}
@@ -758,40 +376,40 @@
             </div>
             {% if compra.estado == 'confirmada' or compra.estado == 'recibida' %}
             <div class="dc-timeline-item">
-              <div class="dc-timeline-dot" style="background:rgba(77,168,218,0.12);border-color:rgba(77,168,218,0.35);color:#4DA8DA;">
+              <div class="dc-timeline-dot dc-tl-blue">
                 <i class="bi bi-check2"></i>
               </div>
               <div class="dc-timeline-content">
                 <div class="dc-timeline-title">Compra confirmada</div>
-                <div class="dc-timeline-sub" style="color:#4DA8DA;">Estado: Confirmada</div>
+                <div class="dc-timeline-sub dc-text-cyan">Estado: Confirmada</div>
               </div>
             </div>
             {% endif %}
             {% if compra.estado == 'recibida' %}
             <div class="dc-timeline-item">
-              <div class="dc-timeline-dot" style="background:rgba(39,174,96,0.12);border-color:rgba(39,174,96,0.35);color:#27ae60;">
+              <div class="dc-timeline-dot dc-tl-green">
                 <i class="bi bi-box-arrow-in-down"></i>
               </div>
               <div class="dc-timeline-content">
                 <div class="dc-timeline-title">Mercancía recibida</div>
-                <div class="dc-timeline-sub" style="color:#27ae60;">Estado: Recibida</div>
+                <div class="dc-timeline-sub text-success">Estado: Recibida</div>
               </div>
             </div>
             {% endif %}
             {% if compra.estado == 'cancelada' %}
             <div class="dc-timeline-item">
-              <div class="dc-timeline-dot" style="background:rgba(231,76,60,0.12);border-color:rgba(231,76,60,0.35);color:#e74c3c;">
+              <div class="dc-timeline-dot dc-tl-red">
                 <i class="bi bi-x-lg"></i>
               </div>
               <div class="dc-timeline-content">
                 <div class="dc-timeline-title">Compra cancelada</div>
-                <div class="dc-timeline-sub" style="color:#e74c3c;">Estado: Cancelada</div>
+                <div class="dc-timeline-sub text-danger">Estado: Cancelada</div>
               </div>
             </div>
             {% endif %}
             {% if compra.usuario %}
             <div class="dc-timeline-item">
-              <div class="dc-timeline-dot" style="background:rgba(155,93,229,0.12);border-color:rgba(155,93,229,0.35);color:#9b5de5;">
+              <div class="dc-timeline-dot dc-tl-purple">
                 <i class="bi bi-person"></i>
               </div>
               <div class="dc-timeline-content">
@@ -838,34 +456,34 @@
 
 {# ─── MODAL DE PAGO PARA DETALLE DE COMPRA ─── #}
 {% if compra.estado_pago != 'pagada' and compra.estado != 'cancelada' %}
-<div class="modal fade" id="modalPagoDetalle" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalPagoDetalle" tabindex="-1" aria-hidden="true" data-saldo="{{ compra.saldo|stringformat:'.2f' }}" data-codigo="{{ compra.codigo_compra }}" data-fecha="{{ compra.fecha|date:'Ymd' }}">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:#02224a; border:1px solid rgba(207,156,72,0.3); color:#e2e8f0;">
-      <div class="modal-header" style="border-bottom:1px solid rgba(239,248,226,0.1);">
-        <h5 class="modal-title" style="color:#CF9C48;">
+    <div class="modal-content dc-modal-content">
+      <div class="modal-header dc-modal-header">
+        <h5 class="modal-title dc-modal-title">
           <i class="bi bi-credit-card me-2"></i>Registrar Pago - Compra #{{ compra.codigo_compra }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}" onsubmit="return validarPagoDetalle()">
+      <form id="formPagoDetalle" method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'detalle_compra' compra.codigo_compra %}">
 
         <div class="modal-body p-4">
           <!-- Tarjeta Financiera -->
-          <div class="p-3 mb-4 rounded" style="background: rgba(3, 30, 62, 0.7); border: 1px solid rgba(207,156,72,0.2);">
+          <div class="p-3 mb-4 rounded dc-modal-card">
             <div class="row g-2 text-center">
               <div class="col-4 border-end border-secondary border-opacity-25">
-                <small class="text-muted d-block" style="font-size:0.75rem;">Total Compra</small>
+                <small class="text-muted d-block dc-modal-subtext">Total Compra</small>
                 <span class="fw-bold text-light">{{ compra.total|cop }}</span>
               </div>
               <div class="col-4 border-end border-secondary border-opacity-25">
-                <small class="text-muted d-block" style="font-size:0.75rem;">Ya Pagado</small>
+                <small class="text-muted d-block dc-modal-subtext">Ya Pagado</small>
                 <span class="fw-bold text-success">{{ compra.monto_pagado|cop }}</span>
               </div>
               <div class="col-4">
-                <small class="text-warning fw-semibold d-block" style="font-size:0.75rem;">Saldo pendiente</small>
+                <small class="text-warning fw-semibold d-block dc-modal-subtext">Saldo pendiente</small>
                 <span class="fw-bold text-danger fs-5">{{ compra.saldo|cop }}</span>
               </div>
             </div>
@@ -875,14 +493,13 @@
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label class="form-label mb-0 fw-semibold">Monto a Pagar Ahora ($) <span class="text-danger">*</span></label>
-              <button type="button" id="btnPagarTodoDetalle" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" style="font-size:0.78rem;" onclick="pagarTodoDetalle()">
+              <button type="button" id="btnPagarTodoDetalle" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold dc-btn-pagar-todo">
                 <i class="bi bi-check2-all me-1"></i>Pagar Todo ({{ compra.saldo|cop }})
               </button>
             </div>
             <div class="input-group input-group-lg">
-              <span class="input-group-text" style="background:#011936; border-color:rgba(255,255,255,0.15); color:#CF9C48;">$</span>
-              {# Campo visible con separador de miles (es-CO); el valor limpio viaja en el hidden #}
-              <input type="text" id="inputMontoDetalle" inputmode="numeric" autocomplete="off" class="form-control form-control-lg" placeholder="Ej: 50.000" required style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);" oninput="formatearMontoDetalle(this)">
+              <span class="input-group-text dc-modal-input-prefix">$</span>
+              <input type="text" id="inputMontoDetalle" inputmode="numeric" autocomplete="off" class="form-control form-control-lg dc-modal-input" placeholder="Ej: 50.000" required>
               <input type="hidden" id="inputMontoDetalleRaw" name="monto_pagado" value="">
             </div>
             <div id="errorMontoDetalle" class="small text-danger mt-1 d-none">
@@ -905,7 +522,7 @@
           <!-- Método de pago -->
           <div class="mb-3">
             <label class="form-label fw-semibold">Método de Pago</label>
-            <select name="metodo_pago" class="form-select" style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);">
+            <select name="metodo_pago" class="form-select dc-modal-input">
               <option value="efectivo" selected>Efectivo</option>
               <option value="nequi">Nequi</option>
               <option value="daviplata">Daviplata</option>
@@ -917,11 +534,11 @@
           <!-- Factura / referencia -->
           <div class="mb-2">
             <label class="form-label fw-semibold">N° Factura / Referencia (Opcional)</label>
-            <input type="text" name="numero_factura" class="form-control" placeholder="Ej: RECIBO-001" style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);">
+            <input type="text" name="numero_factura" class="form-control dc-modal-input" placeholder="Ej: RECIBO-001">
           </div>
         </div>
 
-        <div class="modal-footer" style="border-top:1px solid rgba(239,248,226,0.1);">
+        <div class="modal-footer dc-modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" id="btnConfirmarPagoDetalle" class="dc-btn-primary py-2 px-4" disabled>
             <i class="bi bi-check-circle me-1"></i>Confirmar Pago
@@ -931,64 +548,11 @@
     </div>
   </div>
 </div>
-
-<script>
-var SALDO_DETALLE = parseFloat('{{ compra.saldo|stringformat:".2f" }}') || 0;
-var fmtCopDetalle = function (n) { return '$' + Math.round(n).toLocaleString('es-CO'); };
-
-// Solo dígitos: el punto se muestra como separador de miles, nunca como decimal
-function formatearMontoDetalle(el) {
-  var digitos = el.value.replace(/\D/g, '').replace(/^0+/, '');
-  el.value = digitos ? Number(digitos).toLocaleString('es-CO') : '';
-  document.getElementById('inputMontoDetalleRaw').value = digitos;
-  recalcularPagoDetalle();
-}
-
-function pagarTodoDetalle() {
-  document.getElementById('inputMontoDetalle').value = Math.round(SALDO_DETALLE).toLocaleString('es-CO');
-  document.getElementById('inputMontoDetalleRaw').value = SALDO_DETALLE.toFixed(2);
-  recalcularPagoDetalle();
-}
-
-function recalcularPagoDetalle() {
-  var abono = parseFloat(document.getElementById('inputMontoDetalleRaw').value) || 0;
-  var excede = abono > SALDO_DETALLE;
-  var nuevoSaldo = Math.max(0, SALDO_DETALLE - abono);
-
-  var error = document.getElementById('errorMontoDetalle');
-  var input = document.getElementById('inputMontoDetalle');
-  error.querySelector('span').textContent = excede
-    ? 'El monto (' + fmtCopDetalle(abono) + ') supera el saldo pendiente (' + fmtCopDetalle(SALDO_DETALLE) + ').'
-    : '';
-  error.classList.toggle('d-none', !excede);
-  input.classList.toggle('is-invalid', excede);
-  document.getElementById('btnConfirmarPagoDetalle').disabled = excede || abono <= 0;
-
-  var saldoTexto = document.getElementById('saldoRestanteDetalleTexto');
-  saldoTexto.textContent = excede ? '—' : fmtCopDetalle(nuevoSaldo);
-  saldoTexto.className = nuevoSaldo === 0 && !excede ? 'fw-bold text-success fs-6' : 'fw-bold text-danger fs-6';
-
-  var badgeEl = document.getElementById('badgeEstadoDetalle');
-  if (excede) {
-    badgeEl.className = 'badge bg-danger px-2 py-1';
-    badgeEl.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i>Monto no válido';
-  } else if (abono > 0 && nuevoSaldo === 0) {
-    badgeEl.className = 'badge badge-success-custom px-2 py-1';
-    badgeEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
-  } else if (abono > 0) {
-    badgeEl.className = 'badge badge-warning-custom px-2 py-1';
-    badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Abono parcial (aún debe ' + fmtCopDetalle(nuevoSaldo) + ')';
-  } else {
-    badgeEl.className = 'badge badge-pending-custom px-2 py-1';
-    badgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono';
-  }
-}
-
-function validarPagoDetalle() {
-  var abono = parseFloat(document.getElementById('inputMontoDetalleRaw').value) || 0;
-  recalcularPagoDetalle();
-  return abono > 0 && abono <= SALDO_DETALLE;
-}
-</script>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.js' %}"></script>
+<script src="{% static 'js/proveedores/detalle_compra.js' %}"></script>
 {% endblock %}
