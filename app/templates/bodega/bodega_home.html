@@ -7,16 +7,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/bodega/bodega.css' %}">
-<style>
-  /* Variante dorada para la tarjeta "Nuevo Lote" (usa el mismo patrón que teal/verde/azul) */
-  .qc-borde-dorado { border-left: 4px solid #dcb535; }
-  .qc-icono-bg-dorado { background: rgba(220, 181, 53, 0.15); }
-  .qc-icono-color-dorado { color: #dcb535; }
-  .qc-badge-dorado { background: rgba(220, 181, 53, 0.15); color: #dcb535; }
-  .qc-valor-dorado { color: #dcb535; }
-  .qc-footer-borde-dorado { border-top: 1px solid rgba(220, 181, 53, 0.25); }
-  .qc-footer-texto-dorado { color: #dcb535; font-size: .85rem; }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -24,7 +14,7 @@
 
   {% if messages %}
     {% for message in messages %}
-      <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+      <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} alert-dismissible fade show mb-3" role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
@@ -34,8 +24,8 @@
   <!-- ① ACCESO RÁPIDO — Módulo Bodega -->
   <div class="row g-3 mb-4">
     <!-- Tarjeta Agendar -->
-    <div class="col-md-3">
-      <div class="inv-quick-card qc-borde-teal" data-bs-toggle="modal" data-bs-target="#modalAgendar" role="button">
+    <div class="col-md-4">
+      <div class="inv-quick-card h-100 w-100 qc-borde-teal" data-bs-toggle="modal" data-bs-target="#modalAgendar" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-teal">
             <i class="bi bi-calendar-plus fs-4 qc-icono-color-teal"></i>
@@ -45,7 +35,7 @@
         <div class="fw-bold mt-1 qc-valor-teal">{{ agendas|length|default:"0" }}</div>
         <div class="fw-semibold mt-1 qc-titulo">Agendar Inventario</div>
         <div class="text-muted small mt-1 qc-desc">Programar fecha y hora del conteo</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-teal">
+        <div class="mt-auto pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-teal">
           <span class="qc-footer-texto-teal">Abrir módulo</span>
           <i class="bi bi-arrow-right qc-footer-texto-teal"></i>
         </div>
@@ -53,8 +43,8 @@
     </div>
 
     <!-- Tarjeta Conteo -->
-    <div class="col-md-3">
-      <div class="inv-quick-card qc-borde-verde" data-bs-toggle="modal" data-bs-target="#modalConteo" role="button">
+    <div class="col-md-4">
+      <div class="inv-quick-card h-100 w-100 qc-borde-verde" data-bs-toggle="modal" data-bs-target="#modalConteo" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-verde">
             <i class="bi bi-clipboard2-check fs-4 qc-icono-color-verde"></i>
@@ -64,7 +54,7 @@
         <div class="fw-bold mt-1 qc-valor-verde">{{ conteos|length|default:"0" }}</div>
         <div class="fw-semibold mt-1 qc-titulo">Iniciar Conteo</div>
         <div class="text-muted small mt-1 qc-desc">Ingresar cantidades físicas</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-verde">
+        <div class="mt-auto pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-verde">
           <span class="qc-footer-texto-verde">Abrir módulo</span>
           <i class="bi bi-arrow-right qc-footer-texto-verde"></i>
         </div>
@@ -72,8 +62,8 @@
     </div>
 
     <!-- Tarjeta Comparar -->
-    <div class="col-md-3">
-      <div class="inv-quick-card qc-borde-azul" data-bs-toggle="modal" data-bs-target="#modalComparar" role="button">
+    <div class="col-md-4">
+      <div class="inv-quick-card h-100 w-100 qc-borde-azul" data-bs-toggle="modal" data-bs-target="#modalComparar" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
           <div class="rounded-3 p-2 qc-icono-bg-teal">
             <i class="bi bi-arrow-left-right fs-4 qc-icono-color-azul"></i>
@@ -83,30 +73,11 @@
         <div class="fw-bold mt-1 qc-valor-azul">{{ discrepancias|length|default:"0" }}</div>
         <div class="fw-semibold mt-1 qc-titulo">Comparar Inventario</div>
         <div class="text-muted small mt-1 qc-desc">Ver discrepancias físico vs sistema</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-teal">
+        <div class="mt-auto pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-teal">
           <span class="qc-footer-texto-azul">Abrir módulo</span>
           <i class="bi bi-arrow-right qc-footer-texto-azul"></i>
         </div>
       </div>
-    </div>
-
-    <!-- Tarjeta Nuevo Lote (link directo a la página de Lotes) -->
-    <div class="col-md-3">
-      <a href="{% url 'lote_list' %}" class="inv-quick-card qc-borde-dorado text-decoration-none d-block">
-        <div class="d-flex justify-content-between align-items-start w-100 mb-2">
-          <div class="rounded-3 p-2 qc-icono-bg-dorado">
-            <i class="bi bi-box-seam-fill fs-4 qc-icono-color-dorado"></i>
-          </div>
-          <span class="badge rounded-pill qc-badge-dorado">LOTE</span>
-        </div>
-        <div class="fw-bold mt-1 qc-valor-dorado">{{ presentaciones_sin_lote|length|default:"0" }}</div>
-        <div class="fw-semibold mt-1 qc-titulo">Nuevo Lote</div>
-        <div class="text-muted small mt-1 qc-desc">Registrar un lote de inventario</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-dorado">
-          <span class="qc-footer-texto-dorado">Ir a Lotes</span>
-          <i class="bi bi-arrow-right qc-footer-texto-dorado"></i>
-        </div>
-      </a>
     </div>
   </div>
 
@@ -125,9 +96,17 @@
       </div>
       <div class="collapse show" id="presSinLoteBody" data-bs-parent="#accordionBodega">
         <div class="card-body">
-          <div class="row g-3">
+          {% if presentaciones_sin_lote %}
+          <div class="d-flex align-items-center mb-3 inv-search-grupo" id="buscarPresSinLote-grupo">
+            <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
+            <input type="text" id="buscarPresSinLote" class="form-control inv-input" placeholder="Buscar producto o presentación…" autocomplete="off">
+          </div>
+          {% endif %}
+          <div class="row g-3" id="grid-pres-sin-lote">
             {% for pres in presentaciones_sin_lote %}
-            <div class="col-md-6 col-xl-4">
+            <div class="col-md-6 col-xl-4 pres-card-col"
+                 data-nombre="{{ pres.producto.nombre|lower }}"
+                 data-pres="{{ pres.nombre|lower }}">
               <div class="lote-card">
                 <div class="lote-card__body">
                   <div class="lote-card__titulo">{{ pres.producto.nombre }}</div>
@@ -154,6 +133,10 @@
             </div>
             {% endfor %}
           </div>
+          <div id="sinResultadosPres" class="text-center py-4 d-none text-muted">
+            <i class="bi bi-search fs-3 d-block mb-2 opacity-50"></i>
+            Sin resultados para tu búsqueda.
+          </div>
         </div>
       </div>
     </div>
@@ -171,9 +154,9 @@
       </div>
       <div class="collapse show" id="lotesBody" data-bs-parent="#accordionBodega">
         <div class="card-body">
-          <div class="d-flex align-items-center gap-2 mb-3" id="buscarLoteBodega-grupo">
-            <span class="lotes-search-prefix-bodega"><i class="bi bi-search"></i></span>
-            <input type="text" id="buscarLoteBodega" class="form-control inv-input" placeholder="Buscar producto, lote, bodega…">
+          <div class="d-flex align-items-center mb-3 inv-search-grupo" id="buscarLoteBodega-grupo">
+            <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
+            <input type="text" id="buscarLoteBodega" class="form-control inv-input" placeholder="Buscar producto, lote, bodega…" autocomplete="off">
           </div>
           <div class="row g-3" id="grid-lotes-bodega">
             {% for lote in lotes %}
@@ -241,10 +224,10 @@
       <div class="collapse show" id="agendaBody" data-bs-parent="#accordionBodega">
         <div class="card-body">
           <div class="d-flex gap-2 mb-3">
-            <button class="btn btn-sm rounded-pill fw-semibold agenda-tab-btn agenda-tab-activo" data-tab="activos">
+            <button type="button" class="btn btn-sm rounded-pill fw-semibold agenda-tab-btn agenda-tab-activo" data-tab="activos">
               <i class="bi bi-clock me-1"></i>Activos
             </button>
-            <button class="btn btn-sm rounded-pill fw-semibold agenda-tab-btn agenda-tab-inactivo" data-tab="historial">
+            <button type="button" class="btn btn-sm rounded-pill fw-semibold agenda-tab-btn agenda-tab-inactivo" data-tab="historial">
               <i class="bi bi-archive me-1"></i>Historial
             </button>
           </div>
@@ -258,7 +241,7 @@
                   <div>
                     <div class="fw-semibold agenda-titulo-texto">{{ agenda.titulo }}</div>
                     <div class="text-muted small mt-1">
-                      <i class="bi bi-clock me-1"></i>{{ agenda.fecha_programada|date:"d/m/Y H:i" }}
+                      <i class="bi bi-clock me-1"></i>{{ agenda.fecha|date:"d/m/Y H:i" }}
                     </div>
                     {% if agenda.descripcion %}
                       <div class="text-muted small mt-1">{{ agenda.descripcion }}</div>
@@ -315,6 +298,10 @@
                 No hay inventarios programados.
               </div>
             {% endfor %}
+            <div id="agenda-sin-items" class="text-center py-4 text-muted d-none">
+              <i class="bi bi-calendar-x d-block mb-2 fs-3"></i>
+              <span data-texto>No hay inventarios en esta pestaña.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -333,19 +320,24 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form method="POST" action="{% url 'bodega_home' %}">
+        <form method="POST" action="{% url 'bodega_home' %}" id="form-agendar" novalidate>
           {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label inv-label">Título</label>
-            <input type="text" name="titulo" class="form-control inv-input" placeholder="Ej: Inventario mensual Junio" required>
+          <div class="mb-3 campo-validar">
+            <label class="form-label inv-label" for="agendar-titulo">Título <span class="text-danger">*</span></label>
+            <input type="text" id="agendar-titulo" name="titulo" class="form-control inv-input"
+                   placeholder="Ej: Inventario mensual Junio" maxlength="100" autocomplete="off">
+            <div class="inv-error"></div>
           </div>
-          <div class="mb-3">
-            <label class="form-label inv-label">Fecha y hora</label>
-            <input type="datetime-local" name="fecha_programada" class="form-control inv-input" required>
+          <div class="mb-3 campo-validar">
+            <label class="form-label inv-label" for="agendar-fecha">Fecha y hora <span class="text-danger">*</span></label>
+            <input type="datetime-local" id="agendar-fecha" name="fecha_programada" class="form-control inv-input">
+            <div class="inv-error"></div>
           </div>
-          <div class="mb-3">
-            <label class="form-label inv-label">Descripción (opcional)</label>
-            <textarea name="descripcion" class="form-control inv-input" rows="3" placeholder="Notas adicionales..."></textarea>
+          <div class="mb-3 campo-validar">
+            <label class="form-label inv-label" for="agendar-descripcion">Descripción (opcional)</label>
+            <textarea id="agendar-descripcion" name="descripcion" class="form-control inv-input" rows="3"
+                      maxlength="300" placeholder="Notas adicionales..."></textarea>
+            <div class="inv-error"></div>
           </div>
           <div class="d-flex gap-2 justify-content-end">
             <button type="button" class="btn rounded-pill px-4 btn-outline-azul" data-bs-dismiss="modal">Cancelar</button>
@@ -383,7 +375,8 @@
               <div class="text-muted small">No hay sesión activa</div>
             {% endif %}
           </div>
-          <form method="POST" action="#">
+          <form method="POST" action="#" id="form-sesion" novalidate
+                {% if sesion %}data-confirmar="¿Seguro que quieres reiniciar la sesión de conteo?"{% endif %}>
             {% csrf_token %}
             <button type="submit" name="iniciar_sesion" class="btn rounded-pill fw-bold px-4 btn-solido-azul">
               <i class="bi bi-play-fill me-1"></i>
@@ -392,12 +385,12 @@
           </form>
         </div>
         {% if sesion %}
-          <form method="POST" action="#">
+          <form method="POST" action="#" id="form-conteo" novalidate>
             {% csrf_token %}
             <input type="hidden" name="sesion_id" value="{{ sesion.pk }}">
-            <div class="row g-3 align-items-end mb-3">
-              <div class="col-md-7">
-                <label class="form-label inv-label">Producto</label>
+            <div class="row g-3 align-items-start mb-3">
+              <div class="col-md-7 campo-validar">
+                <label class="form-label inv-label">Producto <span class="text-danger">*</span></label>
                 <div class="dropdown w-100">
                   <button class="btn dropdown-toggle w-100 text-start conteo-prod-btn" type="button"
                       id="conteo-prod-btn" data-bs-toggle="dropdown">
@@ -410,17 +403,22 @@
                         {{ p.nombre }}
                       </a>
                     </li>
+                    {% empty %}
+                    <li><span class="dropdown-item disabled">No hay productos registrados.</span></li>
                     {% endfor %}
                   </ul>
                 </div>
-                <input type="hidden" name="producto_id" id="conteo-prod-hidden" required>
+                <input type="hidden" name="producto_id" id="conteo-prod-hidden">
+                <div class="inv-error"></div>
               </div>
-              <div class="col-md-3">
-                <label class="form-label inv-label">Cantidad física</label>
-                <input type="number" name="cantidad_contada" class="form-control inv-input" min="0" placeholder="0" required>
+              <div class="col-md-3 campo-validar">
+                <label class="form-label inv-label" for="conteo-cantidad">Cantidad física <span class="text-danger">*</span></label>
+                <input type="number" id="conteo-cantidad" name="cantidad_contada" class="form-control inv-input"
+                       min="0" max="1000000" step="1" inputmode="numeric" placeholder="0">
+                <div class="inv-error"></div>
               </div>
-              <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-info rounded-circle p-2 d-inline-flex align-items-center justify-content-center conteo-guardar-btn">
+              <div class="col-md-2 d-flex align-items-end conteo-guardar-col">
+                <button type="submit" class="btn btn-outline-info rounded-circle p-2 d-inline-flex align-items-center justify-content-center conteo-guardar-btn" title="Guardar conteo">
                   <i class="bi bi-save"></i>
                 </button>
               </div>
@@ -502,7 +500,7 @@
             <div class="col-md-4">
               <div class="inv-stat-card text-center">
                 <div class="text-muted small">Con Diferencia</div>
-                <div class="fw-bold fs-4 text-danger">{{ discrepancias|length }}</div>
+                <div class="fw-bold fs-4 text-danger" id="cmp-con-diferencia">{{ discrepancias|length }}</div>
                 <div class="text-muted texto-mini">revisión necesaria</div>
               </div>
             </div>
@@ -547,7 +545,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="nueva_cantidad" value="{{ d.fisico }}">
                     <button type="submit" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center comparar-ajustar-btn"
-                            onclick="return confirm('¿Ajustar stock de {{ d.presentacion.producto.nombre }}?')" title="Ajustar stock">
+                            onclick="return confirm('¿Ajustar stock de {{ d.presentacion.producto.nombre|escapejs }}?')" title="Ajustar stock">
                       <i class="bi bi-arrow-repeat"></i>
                     </button>
                   </form>
