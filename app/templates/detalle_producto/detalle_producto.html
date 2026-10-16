@@ -87,7 +87,7 @@
         <label class="stat-label mb-2 d-block"><i class="bi bi-filter-left me-1"></i>Filtrar</label>
         <div class="gp-search-wrap">
           <i class="bi bi-search gp-search-icon"></i>
-          <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre..." oninput="gpFiltrarProductos(this.value)">
+          <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre o código..." oninput="gpFiltrarProductos(this.value)">
         </div>
       </div>
 
@@ -379,6 +379,12 @@
         <div id="scan-camara-panel" class="d-none mb-3 text-center">
           <video id="scan-video" class="rounded-3 w-100 scan-video" playsinline muted></video>
           <div id="scan-camara-estado" class="text-muted small mt-2">Apunta la cámara al código de barras…</div>
+        </div>
+
+        <div class="gp-search-wrap mb-3">
+          <i class="bi bi-search gp-search-icon"></i>
+          <input type="text" id="buscadorCodigos" class="gp-search-input"
+            placeholder="Buscar por producto, categoría o código…" autocomplete="off">
         </div>
 
         <div class="table-responsive">

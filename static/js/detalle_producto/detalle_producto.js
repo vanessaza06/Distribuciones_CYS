@@ -248,19 +248,34 @@ window.addEventListener('load', function () {
   });
 })();
 $(document).ready(function () {
-  window.tablaCodigosDT = $('#tabla-codigos').DataTable({
+  const dt = $('#tabla-codigos').DataTable({
     paging: false,
-    searching: false,
+    searching: true,
     info: false,
     ordering: true,
     responsive: true,
-    columnDefs: [
-      { orderable: false, targets: [0] }
-    ],
-    language: {
-      emptyTable: "No hay productos registrados."
-    },
+    columnDefs: [{ orderable: false, targets: [0] }],
+    language: { emptyTable: "No hay productos registrados.", zeroRecords: "No se encontraron productos." },
     dom: 'rt'
+  });
+  window.tablaCodigosDT = dt;
+
+  const $buscador = $('#buscadorCodigos');
+
+  $buscador.on('input', function () {
+    dt.search(this.value).draw();
+  });
+
+  // Enter: si queda un solo resultado, lo selecciona y pasa al campo de código
+  $buscador.on('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const nodos = dt.rows({ search: 'applied' }).nodes();
+    if (nodos.length === 1) nodos[0].click();
+  });
+
+  $('#modalRegistrarCodigos').on('shown.bs.modal', function () {
+    $buscador.trigger('focus');
   });
 });
 // ── REGISTRAR CÓDIGOS ──
@@ -284,11 +299,17 @@ $(document).ready(function () {
     scanBtn.disabled       = true;
     camBtn.disabled        = true;
     detenerCamara();
+   const b = document.getElementById('buscadorCodigos');
+    if (b && window.tablaCodigosDT) {
+      b.value = '';
+      window.tablaCodigosDT.search('').draw();
+      b.focus();
+    }
   }
 
   let html5Scanner = null;
 
-  async function iniciarCamara() {
+    async function iniciarCamara() {
     camPanel.classList.remove('d-none');
     camEstado.textContent = 'Iniciando cámara…';
 
@@ -304,23 +325,46 @@ $(document).ready(function () {
       contenedor.id = 'scan-video-html5';
       camVideo.parentNode.insertBefore(contenedor, camVideo);
     }
-    contenedor.style.width      = '340px';
-    contenedor.style.maxWidth   = '100%';
-    contenedor.style.height     = '220px';
-    contenedor.style.margin     = '0 auto';
-    contenedor.style.overflow   = 'hidden';
+    contenedor.style.width        = '100%';
+    contenedor.style.maxWidth     = '480px';
+    contenedor.style.margin       = '0 auto';
     contenedor.style.borderRadius = '12px';
+    contenedor.style.overflow     = 'hidden';
 
-    html5Scanner = new Html5Qrcode('scan-video-html5');
+    html5Scanner = new Html5Qrcode('scan-video-html5', {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39
+      ],
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      verbose: false
+    });
 
     try {
       await html5Scanner.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
+        {
+          fps: 20,
+          qrbox: (w, h) => {
+            const ancho = Math.floor(w * 0.85);
+            return { width: ancho, height: Math.floor(ancho * 0.4) };
+          },
+          disableFlip: true,
+          videoConstraints: {
+            width:  { ideal: 1280 },
+            height: { ideal: 720 },
+            focusMode: 'continuous'
+          }
+        },
         (codigoDetectado) => {
           scanInput.value = codigoDetectado;
           camEstado.textContent = 'Código detectado: ' + codigoDetectado;
           detenerCamara();
+          scanInput.focus();
         },
         () => {}
       );
