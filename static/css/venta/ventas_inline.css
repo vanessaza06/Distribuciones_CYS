@@ -1513,6 +1513,39 @@ select:-webkit-autofill {
   color: var(--texto) !important;
 }
 
+/* ── Altura y Alineación Estricta y Uniforme de Tarjetas KPI ── */
+.cys-kpi-card,
+.mp-kpi-card {
+  height: 100% !important;
+  min-height: 86px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+.cys-kpi-card > div:not(.cys-kpi-icon),
+.mp-kpi-card > div:not(.mp-kpi-icon) {
+  min-width: 0 !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.mp-kpi-label,
+.cys-kpi-label {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: var(--texto-muted) !important;
+  line-height: 1.25 !important;
+  min-height: 2.2em !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 0.2rem !important;
+}
+
 .cys-kpi-card:hover,
 .cys-pos-card:hover,
 .mp-kpi-card:hover,
@@ -1937,6 +1970,9 @@ select:-webkit-autofill {
   display: flex;
   align-items: center;
   gap: 1rem;
+  height: 100% !important;
+  min-height: 84px !important;
+  box-sizing: border-box !important;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 .mp-kpi-card:hover {
@@ -1961,6 +1997,10 @@ select:-webkit-autofill {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--texto-muted);
+  min-height: 2.2em;
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
 }
 
 .mp-kpi-val {

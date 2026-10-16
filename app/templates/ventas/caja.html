@@ -57,17 +57,17 @@
   </div>
 
 
-  <!-- ── TARJETAS KPIS SUPERIORES ── -->
-  <div class="row g-3 mb-4">
+  <!-- ── TARJETAS KPIS SUPERIORES (ALTURA UNIFORME) ── -->
+  <div class="row g-3 mb-4 align-items-stretch">
     
     <!-- KPI 1: Estado / Turno Activo -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cys-kpi-card d-flex align-items-center gap-3">
+      <div class="cys-kpi-card h-100 d-flex align-items-center gap-3">
         <div class="cys-kpi-icon" style="background:rgba(46,213,115,0.2); color:#2ed573; border:1px solid rgba(46,213,115,0.4);">
           <i class="bi bi-clock-history"></i>
         </div>
-        <div>
-          <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Estado del Turno</div>
+        <div style="min-width:0; flex:1;">
+          <div class="small text-white opacity-75 text-uppercase fw-bold cys-kpi-label" style="font-size:.72rem; letter-spacing:0.5px; min-height:1.8em; display:flex; align-items:center;">Estado del Turno</div>
           <div class="fw-bold text-white fs-6">
             {% if turno_activo %}
               Turno #{{ turno_activo.id }} (Activo)
@@ -75,7 +75,7 @@
               Sin Turno Activo
             {% endif %}
           </div>
-          <div class="small text-white opacity-85" style="font-size:.78rem;">
+          <div class="small text-white opacity-85 text-truncate" style="font-size:.78rem;">
             {% if turno_activo %}{{ turno_activo.operador }}{% else %}Caja lista para apertura{% endif %}
           </div>
         </div>
@@ -84,12 +84,12 @@
 
     <!-- KPI 2: Base Inicial (Turno Activo o Previa) -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cys-kpi-card d-flex align-items-center gap-3">
+      <div class="cys-kpi-card h-100 d-flex align-items-center gap-3">
         <div class="cys-kpi-icon" style="background:rgba(77,168,218,0.2); color:#4DA8DA; border:1px solid rgba(77,168,218,0.4);">
           <i class="bi bi-piggy-bank-fill"></i>
         </div>
-        <div>
-          <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Base Inicial Actual</div>
+        <div style="min-width:0; flex:1;">
+          <div class="small text-white opacity-75 text-uppercase fw-bold cys-kpi-label" style="font-size:.72rem; letter-spacing:0.5px; min-height:1.8em; display:flex; align-items:center;">Base Inicial Actual</div>
           <div class="fw-bold text-white fs-5">
             {% if turno_activo %}
               ${{ turno_activo.monto_base|floatformat:0 }}
@@ -106,12 +106,12 @@
 
     <!-- KPI 3: Generado en Turno Activo -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cys-kpi-card d-flex align-items-center gap-3">
+      <div class="cys-kpi-card h-100 d-flex align-items-center gap-3">
         <div class="cys-kpi-icon" style="background:rgba(46,213,115,0.25); color:#2ed573; border:1px solid rgba(46,213,115,0.5);">
           <i class="bi bi-graph-up-arrow"></i>
         </div>
-        <div>
-          <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Generado en Turno</div>
+        <div style="min-width:0; flex:1;">
+          <div class="small text-white opacity-75 text-uppercase fw-bold cys-kpi-label" style="font-size:.72rem; letter-spacing:0.5px; min-height:1.8em; display:flex; align-items:center;">Generado en Turno</div>
           <div class="fw-bold fs-5" style="color:var(--verde, #2ed573) !important;">
             {% if turno_activo %}
               ${{ turno_activo.total_ventas|floatformat:0 }}
@@ -128,12 +128,12 @@
 
     <!-- KPI 4: Acumulado Histórico -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cys-kpi-card d-flex align-items-center gap-3">
+      <div class="cys-kpi-card h-100 d-flex align-items-center gap-3">
         <div class="cys-kpi-icon" style="background:rgba(255,171,0,0.2); color:#ffab00; border:1px solid rgba(255,171,0,0.4);">
           <i class="bi bi-wallet2"></i>
         </div>
-        <div>
-          <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Histórico Recaudado</div>
+        <div style="min-width:0; flex:1;">
+          <div class="small text-white opacity-75 text-uppercase fw-bold cys-kpi-label" style="font-size:.72rem; letter-spacing:0.5px; min-height:1.8em; display:flex; align-items:center;">Histórico Recaudado</div>
           <div class="fw-bold text-white fs-5">
             ${{ ventas_totales_historicas|floatformat:0 }}
           </div>
@@ -200,11 +200,11 @@
     <div class="p-4">
       
       <!-- ── FILA 1: TARJETAS COMPARATIVAS DE DINERO (BASE vs GENERADO) ── -->
-      <div class="row g-3 mb-4">
+      <div class="row g-3 mb-4 align-items-stretch">
         
         <!-- Base Inicial -->
         <div class="col-12 col-md-4">
-          <div class="rounded-3 p-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.3);">
+          <div class="rounded-3 p-3 h-100 d-flex flex-column justify-content-between" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.3);">
             <div class="d-flex align-items-center justify-content-between mb-1">
               <span class="small text-white font-weight-bold text-uppercase" style="font-size:.75rem;"><i class="bi bi-cash-coin me-1" style="color:#4DA8DA;"></i> Base Inicial</span>
               <span class="badge" style="background:rgba(77,168,218,0.25); color:#4DA8DA;">{{ t.pct_base }}% del total</span>
@@ -218,7 +218,7 @@
 
         <!-- Generado en Turno -->
         <div class="col-12 col-md-4">
-          <div class="rounded-3 p-3" style="background:rgba(46,213,115,0.12); border:1px solid rgba(46,213,115,0.4);">
+          <div class="rounded-3 p-3 h-100 d-flex flex-column justify-content-between" style="background:rgba(46,213,115,0.12); border:1px solid rgba(46,213,115,0.4);">
             <div class="d-flex align-items-center justify-content-between mb-1">
               <span class="small font-weight-bold text-uppercase" style="font-size:.75rem; color:#2ed573;"><i class="bi bi-cash-stack me-1"></i> Generado en Turno</span>
               <span class="badge" style="background:rgba(46,213,115,0.25); color:#2ed573;">{{ t.pct_generado }}% del total</span>
@@ -232,7 +232,7 @@
 
         <!-- Total Dinero Acumulado -->
         <div class="col-12 col-md-4">
-          <div class="rounded-3 p-3" style="background:rgba(255,171,0,0.12); border:1px solid rgba(255,171,0,0.4);">
+          <div class="rounded-3 p-3 h-100 d-flex flex-column justify-content-between" style="background:rgba(255,171,0,0.12); border:1px solid rgba(255,171,0,0.4);">
             <div class="d-flex align-items-center justify-content-between mb-1">
               <span class="small font-weight-bold text-uppercase" style="font-size:.75rem; color:#ffab00;"><i class="bi bi-wallet-fill me-1"></i> Total en Caja</span>
               <span class="badge" style="background:rgba(255,171,0,0.25); color:#ffab00;">Base + Generado</span>
