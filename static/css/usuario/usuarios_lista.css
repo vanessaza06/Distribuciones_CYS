@@ -1,10 +1,25 @@
-﻿/* ════════════════════════════════════════════════
-   USUARIOS.CSS — CYS Ltda
-   Todos los colores siguen las variables de tema de base.js:
-   --fondo, --fondo-card, --fondo-card2, --texto, --texto-muted,
-   --azul-claro, --azul-oscuro, --azul-borde, --verde, --rojo
-   Este archivo NO define fondo ni color base de la página.
-   ════════════════════════════════════════════════ */
+﻿:root {
+  /* Superficie interna (igual que los campos de Perfil) */
+  --ul-superficie:     rgba(77, 168, 218, .04);
+  --ul-borde:          rgba(77, 168, 218, .12);
+  --ul-borde-modal:    rgba(77, 168, 218, .30);
+  --ul-linea:          rgba(77, 168, 218, .07);
+
+  /* Tarjeta principal (igual que .cys-card de Perfil) */
+  --ul-card-bg:        var(--fondo-card);
+  --ul-card-borde:     rgba(207, 156, 72, .30);
+  --ul-card-sombra:    0 8px 32px rgba(207, 156, 72, .22), 0 2px 10px rgba(0, 0, 0, .10);
+
+  /* Hover de tarjeta: sombra dorada más intensa + elevación */
+  --ul-card-sombra-hover: 0 14px 44px rgba(207, 156, 72, .34), 0 4px 14px rgba(0, 0, 0, .12);
+  --ul-card-lift:         translateY(-3px);
+
+  /* Dorado (hover) */
+  --ul-borde-hover:    var(--cys-dorado-borde, rgba(207, 156, 72, .35));
+  --ul-dorado:         var(--cys-dorado, #3f392e);
+  --ul-dorado-dim:     var(--cys-dorado-dim, rgba(207, 156, 72, .15));
+  --ul-dorado-hover:   var(--cys-dorado-borde-hover, rgba(68, 55, 34, 0.6));
+}
 
 .hidden-display {
   display: none; 
@@ -45,7 +60,7 @@
 
 .modal-footer-custom {
   background: var(--fondo-card);
-  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  border-top: 1px solid var(--ul-borde);
   padding: 1rem 1.4rem;
   display: flex;
   gap: 0.75rem;
@@ -67,11 +82,17 @@
 .ul-searchbar {
   display: flex;
   align-items: center;
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 10px;
   padding: .5rem .9rem;
   gap: .6rem;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.ul-searchbar:hover {
+  border-color: var(--ul-borde-hover);
+  box-shadow: var(--ul-card-sombra-hover);
 }
 .ul-searchbar__icon {
   color: var(--azul-claro);
@@ -93,7 +114,7 @@
 .ul-searchbar__div {
   width: 1px;
   height: 20px;
-  background: color-mix(in srgb, var(--azul-claro) 20%, transparent);
+  background: var(--ul-borde-modal);
   flex-shrink: 0;
 }
 .ul-searchbar__btn {
@@ -116,8 +137,8 @@
   cursor: pointer;
 }
 .ul-searchbar__btn:hover {
-  background: var(--azul-claro);
-  color: var(--azul-oscuro);
+  background: var(--ul-dorado-dim);
+  color: var(--ul-dorado);
 }
 .ul-searchbar__btn i { font-size: 1rem; }
 
@@ -151,11 +172,19 @@
 .widget-rol {
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 14px;
   padding: .75rem .9rem;
   width: 100%;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.widget-estado:hover,
+.widget-rol:hover {
+  border-color: var(--ul-borde-hover);
+  box-shadow: var(--ul-card-sombra-hover);
+  transform: var(--ul-card-lift);
 }
 
 /* ══════════════════════════════════════════════
@@ -165,8 +194,9 @@
 .btn-trigger-dropdown {
   display: none;
   width: 100%;
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 12px;
   padding: .8rem 1.1rem;
   color: var(--azul-claro);
@@ -181,9 +211,9 @@
   margin-bottom: .4rem;
 }
 .btn-trigger-dropdown:hover {
-  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
-  border-color: var(--azul-claro);
-  color: var(--texto);
+  background: var(--ul-dorado-dim);
+  border-color: var(--ul-dorado-hover);
+  color: var(--ul-dorado);
 }
 .btn-trigger-dropdown .arrow-icon {
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -249,10 +279,18 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 12px;
   overflow: hidden;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.ul-layout.cards-view-1-2 #wrapperStats:hover,
+.ul-layout.cards-view-1-2 #wrapperRecientes:hover {
+  border-color: var(--ul-borde-hover);
+  box-shadow: var(--ul-card-sombra-hover);
+  transform: var(--ul-card-lift);
 }
 
 .ul-layout.cards-view-1-2 #wrapperStats .btn-trigger-dropdown,
@@ -261,11 +299,12 @@
   margin-bottom: 0;
   background: transparent;
   border: none;
+  box-shadow: none;
   border-radius: 0;
 }
 
 .ul-layout.cards-view-1-2 .btn-trigger-dropdown[aria-expanded="true"] {
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border-bottom: 1px solid var(--ul-borde);
 }
 
 .ul-layout.cards-view-1-2 #collapseStats,
@@ -287,16 +326,29 @@
 
 .ul-layout.cards-view-1-2 #wrapperRecientes .ul-widget {
   border: none;
+  box-shadow: none;
   border-radius: 0;
   background: transparent;
   padding: .75rem;
 }
+/* Dentro del desplegable el widget no se eleva ni cambia de sombra (ya lo hace el contenedor) */
+.ul-layout.cards-view-1-2 #wrapperRecientes .ul-widget:hover {
+  box-shadow: none;
+  transform: none;
+}
 
+/* Dentro del desplegable: superficie tenue (como los campos de Perfil), sin sombra */
 .ul-layout.cards-view-1-2 .widget-estado,
 .ul-layout.cards-view-1-2 .widget-rol {
-  background: color-mix(in srgb, var(--azul-claro) 4%, transparent);
+  background: var(--ul-superficie);
+  box-shadow: none;
   border-radius: 10px !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border: 1px solid var(--ul-borde) !important;
+}
+.ul-layout.cards-view-1-2 .widget-estado:hover,
+.ul-layout.cards-view-1-2 .widget-rol:hover {
+  box-shadow: none;
+  transform: none;
 }
 
 .ul-layout.cards-view-1-2 .ul-recientes-scroll {
@@ -481,14 +533,21 @@
    WIDGETS
 ══════════════════════════════════════════════ */
 .ul-widget {
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 14px;
   padding: 1.1rem 1.2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 100%;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.ul-widget:hover {
+  border-color: var(--ul-borde-hover);
+  box-shadow: var(--ul-card-sombra-hover);
+  transform: var(--ul-card-lift);
 }
 .ul-widget__title {
   font-size: .62rem;
@@ -507,7 +566,7 @@
   align-items: center;
   justify-content: space-between;
   padding: .45rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 7%, transparent);
+  border-bottom: 1px solid var(--ul-linea);
   font-size: .82rem;
 }
 .ul-stat-row:last-child { border-bottom: none; }
@@ -569,14 +628,14 @@
   align-items: flex-start;
   gap: .65rem;
   padding: .5rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 7%, transparent);
+  border-bottom: 1px solid var(--ul-linea);
 }
 .ul-activity-item:last-child { border-bottom: none; }
 .ul-activity-avatar {
   width: 28px; height: 28px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  background: var(--ul-superficie);
+  border: 1px solid var(--ul-borde-modal);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
@@ -607,16 +666,16 @@
 }
 .ul-recientes-scroll {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--azul-claro) 30%, transparent) transparent;
+  scrollbar-color: rgba(77, 168, 218, .30) transparent;
 }
 .ul-recientes-scroll::-webkit-scrollbar { width: 5px; }
 .ul-recientes-scroll::-webkit-scrollbar-track { background: transparent; }
 .ul-recientes-scroll::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  background: rgba(77, 168, 218, .30);
   border-radius: 999px;
 }
 .ul-recientes-scroll::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--azul-claro) 50%, transparent);
+  background: rgba(77, 168, 218, .50);
 }
 .ul-bar-wrap { margin-top: .6rem; }
 .ul-bar-label-row {
@@ -628,7 +687,7 @@
 }
 .ul-bar-track {
   height: 5px;
-  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
+  background: var(--ul-borde);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -643,15 +702,17 @@
    CARDS DE USUARIOS
 ══════════════════════════════════════════════ */
 .usuario-card {
-  background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  background: var(--ul-card-bg);
+  border: 1px solid var(--ul-card-borde);
+  box-shadow: var(--ul-card-sombra);
   border-radius: 14px;
   padding: 1.1rem 1.2rem;
-  transition: border-color .2s, box-shadow .2s, opacity .35s ease, transform .35s ease;
+  transition: border-color .25s ease, box-shadow .25s ease, opacity .35s ease, transform .25s ease;
 }
 .usuario-card:hover {
-  border-color: color-mix(in srgb, var(--azul-claro) 35%, transparent);
-  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  border-color: var(--ul-borde-hover);
+  box-shadow: var(--ul-card-sombra-hover);
+  transform: var(--ul-card-lift);
 }
 .usuario-card--removing {
   opacity: 0 !important;
@@ -660,19 +721,21 @@
 }
 .usuario-avatar {
   width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  background: var(--ul-superficie);
+  border: 2px solid rgba(77, 168, 218, .45);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Rajdhani',sans-serif; font-weight: 700; font-size: .95rem; color: var(--azul-claro);
   overflow: hidden;
+  transition: border-color .25s;
 }
+.usuario-card:hover .usuario-avatar { border-color: var(--ul-dorado-hover); }
 .usuario-nombre { font-size: .88rem; font-weight: 600; color: var(--texto); line-height: 1.2; }
 .usuario-user   { font-size: .72rem; color: var(--azul-claro); margin-top: .1rem; }
 .usuario-rol    { font-size: .62rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 .usuario-rol--admin    { background: color-mix(in srgb, var(--rojo) 18%, transparent); color: var(--rojo); border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent); }
 .usuario-rol--cajero   { background: color-mix(in srgb, var(--azul-claro) 15%, transparent); color: var(--azul-claro); border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent); }
 .usuario-rol--empleado { background: color-mix(in srgb, var(--verde) 12%, transparent); color: var(--verde); border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent); }
-.usuario-divider { border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent); margin: .5rem 0 .85rem; }
+.usuario-divider { border-color: var(--ul-borde); margin: .5rem 0 .85rem; }
 .usuario-datos { font-size: .78rem; }
 .usuario-datos .col-6 {
   display: flex;
@@ -698,8 +761,15 @@
 .usuario-estado--activo .usuario-dot   { background: var(--verde); }
 .usuario-estado--inactivo .usuario-dot { background: color-mix(in srgb, var(--texto) 20%, transparent); }
 .usuario-btn            { border-radius: 8px; font-size: .78rem; font-family: 'Inter',sans-serif; transition: all .2s; }
-.usuario-btn-editar     { background: color-mix(in srgb, var(--azul-claro) 8%, transparent); border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent); color: var(--azul-claro); }
-.usuario-btn-editar:hover { background: color-mix(in srgb, var(--azul-claro) 20%, transparent); }
+
+/* Editar: mismo estilo que el botón "Cambiar" de Perfil (cys-btn-link) */
+.usuario-btn-editar     { background: transparent; border: 1px solid var(--ul-borde-modal); color: color-mix(in srgb, var(--texto) 65%, transparent); }
+.usuario-btn-editar:hover {
+  background: var(--ul-dorado-dim);
+  border-color: var(--ul-dorado-hover);
+  color: var(--ul-dorado);
+}
+
 .usuario-btn-desactivar { background: color-mix(in srgb, var(--rojo) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent); color: var(--rojo); }
 .usuario-btn-desactivar:hover { background: color-mix(in srgb, var(--rojo) 28%, transparent); border-color: color-mix(in srgb, var(--rojo) 50%, transparent); color: var(--texto); }
 .usuario-btn-activar    { background: color-mix(in srgb, var(--verde) 14%, transparent); border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent); color: var(--verde); }
@@ -716,7 +786,7 @@
    VACÍO, INFO, ALERTAS
 ══════════════════════════════════════════════ */
 .usuarios-vacio { color: color-mix(in srgb, var(--texto) 25%, transparent); }
-.usuarios-vacio-icon { font-size: 3rem; display: block; margin-bottom: 1rem; color: color-mix(in srgb, var(--azul-claro) 15%, transparent); }
+.usuarios-vacio-icon { font-size: 3rem; display: block; margin-bottom: 1rem; color: rgba(77, 168, 218, .15); }
 .usuarios-vacio-text { font-size: .9rem; }
 .cys-alert-error { background: color-mix(in srgb, var(--rojo) 12%, transparent); border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent); color: var(--rojo); border-radius: 10px; }
 
@@ -724,8 +794,8 @@
    MODAL EDITAR / CREAR
 ══════════════════════════════════════════════ */
 .modal-editar { max-width: 500px; }
-.modal-editar-content { background: var(--fondo-card); border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,.8); font-family: 'Inter',sans-serif; }
-.modal-editar-header  { border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent); padding: 1.1rem 1.4rem; }
+.modal-editar-content { background: var(--fondo-card); border: 1px solid var(--ul-borde-modal); border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,.8); font-family: 'Inter',sans-serif; }
+.modal-editar-header  { border-bottom: 1px solid var(--ul-borde); padding: 1.1rem 1.4rem; }
 .modal-editar-title   { font-family: 'Rajdhani',sans-serif; font-weight: 700; font-size: .95rem; letter-spacing: .12em; text-transform: uppercase; color: var(--texto); }
 .modal-editar-user    { font-size: .78rem; color: color-mix(in srgb, var(--texto) 40%, transparent); margin-left: .6rem; }
 .modal-editar-body    { padding: 1.25rem 1.4rem 1.4rem; }
@@ -735,7 +805,7 @@
 .eu-label  { font-size: .62rem; font-weight: 600; color: color-mix(in srgb, var(--texto) 40%, transparent); letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: .3rem; }
 .eu-input { 
   background: var(--fondo-card2); 
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); 
+  border: 1px solid var(--ul-borde-modal); 
   color: var(--texto); 
   border-radius: 10px; 
   padding: .65rem .9rem; 
@@ -743,10 +813,11 @@
   width: 100%; 
   outline: none; 
   font-family: 'Inter', sans-serif; 
-  transition: border-color .2s; 
+  transition: border-color .2s, box-shadow .2s; 
 }
 .eu-input:focus { 
   border-color: var(--azul-claro); 
+  box-shadow: 0 0 0 3px rgba(77, 168, 218, .13);
 }
 .eu-input option { 
   background: var(--fondo-card2); 
@@ -765,7 +836,7 @@
   -webkit-text-fill-color: var(--texto) !important;
   font-family: 'Inter', sans-serif !important;
 }
-.modal-divider    { border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent); margin: 1rem 0 .85rem; }
+.modal-divider    { border-color: var(--ul-borde); margin: 1rem 0 .85rem; }
 .modal-pass-title { font-size: .68rem; color: color-mix(in srgb, var(--texto) 30%, transparent); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .85rem; }
 .modal-btn-guardar { background: var(--azul-claro); color: var(--azul-oscuro); border: none; border-radius: 10px; padding: .75rem; font-family: 'Rajdhani',sans-serif; font-weight: 700; font-size: .95rem; letter-spacing: .1em; text-transform: uppercase; transition: background .2s; box-shadow: 0 4px 14px color-mix(in srgb, var(--azul-claro) 30%, transparent); }
 .modal-btn-guardar:hover { background: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)); }
@@ -778,7 +849,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
   font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
   color: var(--azul-claro); margin-bottom: .75rem; padding-bottom: .4rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent); opacity: .85;
+  border-bottom: 1px solid var(--ul-borde); opacity: .85;
 }
 .cu-section-label i { font-size: .82rem; }
 .cu-required { color: var(--rojo); margin-left: .15rem; }
@@ -806,7 +877,7 @@
   right: .75rem;
   background: transparent;
   border: none;
-  color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
+  color: rgba(77, 168, 218, .4);
   cursor: pointer;
   padding: 0;
   font-size: .95rem;
@@ -814,7 +885,7 @@
   transition: color .2s;
   z-index: 2;
 }
-.cu-eye-btn:hover { color: var(--azul-claro); }
+.cu-eye-btn:hover { color: var(--ul-dorado); }
 
 /* ── Indicador coincidencia ── */
 .cu-match-hint {
@@ -830,8 +901,8 @@
 
 /* ── Términos y condiciones — checkbox ── */
 .cu-tc-wrap {
-  background: color-mix(in srgb, var(--azul-claro) 4%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  background: var(--ul-superficie);
+  border: 1px solid var(--ul-borde);
   border-radius: 10px;
   padding: .75rem .9rem;
   transition: border-color .2s, background .2s;
@@ -854,7 +925,7 @@
 .cu-tc-box {
   width: 20px;
   height: 20px;
-  border: 1.5px solid color-mix(in srgb, var(--azul-claro) 40%, transparent);
+  border: 1.5px solid rgba(77, 168, 218, .40);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -888,14 +959,14 @@
   text-underline-offset: 2px;
   transition: color .2s;
 }
-.cu-tc-link:hover { color: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)); }
+.cu-tc-link:hover { color: var(--ul-dorado); }
 
 /* ══════════════════════════════════════════════
    MODAL TÉRMINOS Y CONDICIONES — contenido
 ══════════════════════════════════════════════ */
 .tc-banner {
-  background: color-mix(in srgb, var(--azul-claro) 7%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  background: var(--ul-superficie);
+  border: 1px solid var(--ul-borde);
   border-radius: 8px;
   padding: .65rem .9rem;
   font-size: .79rem;
@@ -906,7 +977,7 @@
   display: flex;
   gap: 1rem;
   padding: .9rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border-bottom: 1px solid var(--ul-linea);
 }
 .tc-item:last-child { border-bottom: none; }
 .tc-num {
@@ -947,7 +1018,7 @@
 .usuario-rol-selector {
   position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
   display: flex; align-items: center; gap: .3rem;
-  background: var(--fondo-card); border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent);
+  background: var(--fondo-card); border: 1px solid var(--ul-borde-modal);
   border-radius: 10px; padding: .35rem .45rem;
   box-shadow: 0 6px 20px rgba(0,0,0,.55);
   animation: rolFadeIn .15s ease; white-space: nowrap;
@@ -957,12 +1028,12 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 .usuario-rol-select {
-  background: color-mix(in srgb, var(--fondo-card) 90%, transparent); border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent);
+  background: color-mix(in srgb, var(--fondo-card) 90%, transparent); border: 1px solid var(--ul-borde-modal);
   border-radius: 6px; color: var(--texto); font-size: .72rem; font-weight: 600;
   padding: .22rem .4rem; outline: none; cursor: pointer;
   width: auto; max-width: 96px; transition: border-color .15s;
 }
-.usuario-rol-select:focus { border-color: color-mix(in srgb, var(--azul-claro) 85%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--azul-claro) 12%, transparent); }
+.usuario-rol-select:focus { border-color: var(--azul-claro); box-shadow: 0 0 0 2px rgba(77, 168, 218, .12); }
 .usuario-rol-select option { background: var(--fondo-card); color: var(--texto); }
 .usuario-rol-btn {
   display: inline-flex; align-items: center; justify-content: center;

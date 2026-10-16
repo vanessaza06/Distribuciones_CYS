@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════
    bodega.css — CYS Ltda
-   Variables globales + clases exclusivas para 
+   Variables globales + clases exclusivas para
    Agenda, Conteo y Comparar
    ══════════════════════════════════════════ */
 
@@ -17,6 +17,7 @@
   --inv-rojo:       #CF9C48;
   --inv-verde:      var(--verde);
   --inv-amarillo:   #f39c12;
+  --inv-error:      #e74c3c;
   --inv-radius:     14px;
   --inv-border:     var(--azul-borde);
 }
@@ -33,9 +34,18 @@
 .inv-input::placeholder { color: var(--inv-muted) !important; }
 .inv-label { font-size: .75rem; font-weight: 600; color: var(--inv-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; display: block; }
 
+/* ── VALIDACIONES DE FORMULARIO ── */
+.inv-input.is-invalid, .inv-select.is-invalid { border-color: var(--inv-error) !important; background-image: none !important; box-shadow: none !important; }
+.inv-input.is-invalid:focus, .inv-select.is-invalid:focus { box-shadow: 0 0 0 3px rgba(231, 76, 60, .18) !important; }
+#conteo-prod-btn.is-invalid { border-color: var(--inv-error) !important; }
+.inv-error { display: none; font-size: .72rem; color: var(--inv-error); margin-top: 5px; line-height: 1.3; }
+.inv-error.visible { display: block; }
+.conteo-guardar-col { padding-top: 1.55rem; }
+
 /* ── BOTONES GLOBALES ── */
 .btn-solido-azul, button.btn-solido-azul { background-color: var(--azul-claro) !important; color: var(--fondo) !important; border: none !important; }
 .btn-solido-azul:hover, button.btn-solido-azul:hover { background-color: color-mix(in srgb, var(--azul-claro) 90%, black) !important; color: var(--fondo) !important; }
+.btn-solido-azul:disabled, button.btn-solido-azul:disabled { opacity: .6; cursor: not-allowed; }
 .btn-outline-azul, button.btn-outline-azul { border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important; color: var(--azul-claro) !important; background: transparent !important; }
 .btn-outline-azul:hover, button.btn-outline-azul:hover { background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; color: var(--azul-claro) !important; }
 
@@ -132,8 +142,8 @@
 .badge-estado-faltante { font-size: .6rem; background: rgba(207, 156, 72, .15); color: var(--inv-rojo); border: 1px solid rgba(207, 156, 72, .3); }
 .comparar-diferencia-valor { font-size: 1.15rem; }
 
-/* ── LOTES EN BODEGA (tarjetas) ── */
-.lotes-search-prefix-bodega {
+/* ── BUSCADORES (Presentaciones sin lote y Lotes en bodega) ── */
+.inv-search-prefix {
   background: var(--inv-card2);
   border: 1px solid var(--inv-border);
   border-right: none;
@@ -141,9 +151,11 @@
   color: var(--inv-muted);
   padding: 0 12px;
   display: flex; align-items: center;
+  align-self: stretch;
 }
-#buscarLoteBodega-grupo .inv-input { border-radius: 0 8px 8px 0 !important; border-left: none !important; }
+.inv-search-grupo .inv-input { border-radius: 0 8px 8px 0 !important; border-left: none !important; }
 
+/* ── TARJETAS DE LOTE / PRESENTACIÓN ── */
 .lote-card {
   background: var(--inv-card2);
   border: 1px solid var(--inv-azul-borde);
@@ -191,4 +203,5 @@
 @media (max-width: 767px) {
   .qc-valor-teal, .qc-valor-verde, .qc-valor-azul { font-size: 1.2rem; }
   .qc-titulo { font-size: .8rem; }
+  .conteo-guardar-col { padding-top: 0; }
 }
