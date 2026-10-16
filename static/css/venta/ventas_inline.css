@@ -1,7 +1,16 @@
 /* ════════════════════════════════════════════════════════════════
    VENTAS_INLINE.CSS — Estilos extraídos de HTML
    Antes estaban inline style="..." — Ahora en este archivo
+   Todos los colores siguen las variables de tema de base.js
+   (--fondo, --fondo-card, --fondo-card2, --texto, --texto-muted,
+   --azul-claro, --azul-oscuro, --azul-borde, --verde, --rojo).
+   Este archivo NO define fondo ni color base de la página.
    ════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Dorado de marca: acento fijo (igual que home.css y compras.css) */
+  --cys-dorado: var(--dorado, #CF9C48);
+}
 
 /* ────────────────────────────────────────────────────────────────
    CAJA.HTML — Modal de Caja/Login
@@ -14,46 +23,46 @@
 }
 
 .caja-info-container {
-  background: #E6F1FB;
-  color: #0C447C;
+  background: color-mix(in srgb, var(--azul-claro) 15%, var(--fondo-card));
+  color: var(--texto);
 }
 
 .caja-info-info {
-  background: #F1EFE8;
-  border: 0.5px solid #D3D1C7;
+  background: var(--fondo-card2);
+  border: 0.5px solid var(--azul-borde);
 }
 
 .caja-base-futura {
-  color: #1D9E75;
+  color: var(--verde);
 }
 
 .caja-icono-cerrada {
-  color: #E24B4A;
+  color: var(--rojo);
 }
 
 .caja-icono-abierta {
-  color: #1D9E75;
+  color: var(--verde);
 }
 
 .caja-badge-box {
   width: 52px;
   height: 52px;
-  background: #E6F1FB;
+  background: color-mix(in srgb, var(--azul-claro) 15%, var(--fondo-card));
 }
 
 .caja-badge-icon {
-  color: #185FA5;
+  color: var(--azul-claro);
 }
 
 .caja-btn-punto-venta {
-  background: #185FA5;
-  color: #fff;
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
   border-radius: 8px;
 }
 
 .caja-btn-punto-venta:hover {
-  background: #134080;
-  color: #fff;
+  background: color-mix(in srgb, var(--azul-claro) 80%, var(--texto));
+  color: var(--azul-oscuro);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -120,7 +129,7 @@
 
 /* Input de cliente */
 .caja-input-cliente-error {
-  color: var(--cys-rojo);
+  color: var(--rojo);
 }
 
 #errorCliente {
@@ -129,11 +138,11 @@
 
 /* Comprobante modal */
 .caja-comprobante-icon-check {
-  color: var(--cys-acento);
+  color: var(--azul-claro);
 }
 
 .caja-comprobante-icon-arrow {
-  color: var(--cys-acento);
+  color: var(--azul-claro);
 }
 
 /* Input file oculto */
@@ -214,13 +223,13 @@
 
 .cys-hist-cantidad {
   text-align: center;
-  color: #fff;
+  color: var(--texto);
   font-weight: 700;
 }
 
 .cys-hist-precio-muted {
   text-align: right;
-  color: var(--cys-texto-muted);
+  color: var(--texto-muted);
 }
 
 .cys-hist-total {
@@ -243,7 +252,7 @@
 
 /* Iconos con color acento */
 .caja-icono-acento {
-  color: var(--cys-acento);
+  color: var(--azul-claro);
 }
 
 /* Centrado de celdas */
@@ -253,7 +262,7 @@
 
 .cys-cliente-cell-subtitle {
   font-size: 0.7rem;
-  color: var(--cys-texto-muted);
+  color: var(--texto-muted);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -265,6 +274,7 @@
 .cys-pos-header-bar {
   background: rgba(14, 28, 52, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #38bdf8;
   border-radius: 14px;
   padding: 0.95rem 1.35rem;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
@@ -287,12 +297,14 @@
   background: rgba(34, 197, 94, 0.1);
   color: #4ade80;
   border: 1px solid rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
 }
 
 .cys-status-pill--cerrada {
   background: rgba(239, 68, 68, 0.1);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
 }
 
 .cys-pulse-dot {
@@ -409,7 +421,7 @@
 }
 
 .cys-pos-card-header {
-  padding: 1rem 1.25rem 0.85rem;
+  padding: 1.1rem 1.35rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(10, 20, 38, 0.35);
   display: flex;
@@ -442,22 +454,35 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
+<<<<<<< HEAD
   color: #64748b;
   font-size: 0.92rem;
+=======
+  color: var(--texto-muted);
+  font-size: 0.95rem;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   pointer-events: none;
 }
 
 .cys-search-input {
+<<<<<<< HEAD
   padding-left: 40px !important;
   background: rgba(10, 20, 38, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
   color: #f1f5f9 !important;
+=======
+  padding-left: 42px !important;
+  background: color-mix(in srgb, var(--fondo-card2) 80%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 10px !important;
   font-size: 0.88rem !important;
   transition: all 0.2s ease !important;
 }
 
 .cys-search-input:focus {
+<<<<<<< HEAD
   border-color: rgba(56, 189, 248, 0.4) !important;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
   background: rgba(10, 20, 38, 0.7) !important;
@@ -474,6 +499,23 @@
   border-radius: 12px;
   padding: 1.1rem 0.85rem;
   min-height: 120px;
+=======
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  background: color-mix(in srgb, var(--fondo-card2) 95%, transparent) !important;
+}
+
+/* Tarjetas de Categoría y Producto con Tamaños y Estilos Uniformes */
+.cys-cat-card-item,
+.cys-prod-card-item {
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--fondo-card2) 85%, transparent),
+    color-mix(in srgb, var(--fondo-card) 85%, transparent));
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  border-radius: 14px;
+  padding: 1.15rem 0.95rem;
+  min-height: 125px;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   height: 100%;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -482,6 +524,7 @@
   align-items: center;
   justify-content: space-between;
   text-align: center;
+<<<<<<< HEAD
   color: #f1f5f9 !important;
 }
 
@@ -776,6 +819,102 @@
 }
 
 /* Stock Badges Suaves */
+=======
+  color: var(--texto) !important;
+}
+
+.cys-cat-card-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--azul-claro);
+  box-shadow: 0 10px 25px color-mix(in srgb, var(--azul-claro) 22%, transparent);
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--fondo-card) 95%, transparent),
+    color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)));
+}
+
+.cys-cat-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.4rem;
+  color: var(--azul-claro);
+  font-size: 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.cys-cat-card-item:hover .cys-cat-icon-circle {
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  transform: scale(1.08);
+}
+
+/* Forzar Texto del tema en Todos los Elementos del POS */
+.cys-pos-card,
+.cys-pos-card *,
+.cys-pos-card input,
+.cys-pos-card select,
+.cys-pos-card label,
+.cys-pos-card span,
+.cys-pos-card div,
+.cys-pos-card button,
+.cys-pos-card h4,
+.cys-pos-card h5 {
+  color: var(--texto);
+}
+
+.cys-pos-card-title,
+.cys-pos-card-title * {
+  color: var(--azul-claro) !important;
+}
+
+.cys-search-input,
+.pago-input,
+#inputClienteNombre,
+#inputDescuento,
+#ctObservacion,
+#baseSiguiente,
+.cys-pos-card .form-control {
+  color: var(--texto) !important;
+  background-color: color-mix(in srgb, var(--fondo-card2) 85%, transparent) !important;
+}
+
+.cys-search-input::placeholder,
+#inputClienteNombre::placeholder,
+#ctObservacion::placeholder,
+#baseSiguiente::placeholder,
+.cys-pos-card .form-control::placeholder {
+  color: color-mix(in srgb, var(--texto) 50%, transparent) !important;
+}
+
+/* Autocomplete de Sugerencias de Cliente */
+#sugerenciasClientes .list-group-item-action {
+  background: var(--fondo-card) !important;
+  color: var(--texto) !important;
+}
+
+#sugerenciasClientes .list-group-item-action:hover,
+#sugerenciasClientes .list-group-item-action:focus {
+  background: color-mix(in srgb, var(--azul-claro) 20%, var(--fondo-card)) !important;
+  color: var(--texto) !important;
+}
+
+/* Override autofill del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--texto) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--fondo-card2) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 .cys-stock-badge {
   font-size: 0.7rem;
   font-weight: 600;
@@ -787,6 +926,7 @@
 }
 
 .cys-stock-badge--ok {
+<<<<<<< HEAD
   background: rgba(34, 197, 94, 0.1) !important;
   color: #4ade80 !important;
   border: 1px solid rgba(34, 197, 94, 0.22) !important;
@@ -847,30 +987,66 @@ select:-webkit-autofill {
   -webkit-text-fill-color: #f1f5f9 !important;
   -webkit-box-shadow: 0 0 0px 1000px #0a1b32 inset !important;
   transition: background-color 5000s ease-in-out 0s;
+=======
+  background: color-mix(in srgb, var(--verde) 15%, transparent);
+  color: var(--verde);
+  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+}
+
+.cys-stock-badge--low {
+  background: color-mix(in srgb, var(--cys-dorado) 15%, transparent);
+  color: var(--cys-dorado);
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent);
+}
+
+.cys-stock-badge--empty {
+  background: color-mix(in srgb, var(--rojo) 15%, transparent);
+  color: var(--rojo);
+  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Items del Carrito */
 .cys-cart-item {
+<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 0.7rem 0.85rem;
+=======
+  background: color-mix(in srgb, var(--fondo-card2) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease;
 }
 
 .cys-cart-item:hover {
+<<<<<<< HEAD
   border-color: rgba(56, 189, 248, 0.25);
   background: rgba(14, 26, 48, 0.6);
+=======
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
+  background: color-mix(in srgb, var(--fondo-card2) 85%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-qty-btn {
   width: 26px;
   height: 26px;
   padding: 0;
+<<<<<<< HEAD
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #f1f5f9;
+=======
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  color: var(--texto);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -880,15 +1056,26 @@ select:-webkit-autofill {
 }
 
 .cys-qty-btn:hover {
+<<<<<<< HEAD
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.4);
+=======
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  border-color: var(--azul-claro);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Panel de Desglose de Pagos y Calculadora de Cambio */
 .cys-payment-panel {
+<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.06);
+=======
+  background: color-mix(in srgb, var(--fondo-card2) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 12px;
   padding: 1rem;
 }
@@ -904,6 +1091,7 @@ select:-webkit-autofill {
 }
 
 .cys-change-indicator--ok {
+<<<<<<< HEAD
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.22);
   color: #4ade80;
@@ -913,10 +1101,22 @@ select:-webkit-autofill {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.22);
   color: #fbbf24;
+=======
+  background: color-mix(in srgb, var(--verde) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent);
+  color: var(--verde);
+}
+
+.cys-change-indicator--pending {
+  background: color-mix(in srgb, var(--cys-dorado) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
+  color: var(--cys-dorado);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Botones Principales POS */
 .cys-btn-checkout {
+<<<<<<< HEAD
   background: linear-gradient(135deg, #059669, #10b981) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
@@ -926,14 +1126,31 @@ select:-webkit-autofill {
   letter-spacing: 0.02em !important;
   border: none !important;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+=======
+  background: linear-gradient(135deg, var(--azul-claro), color-mix(in srgb, var(--azul-claro) 70%, black));
+  color: var(--azul-oscuro) !important;
+  font-weight: 800 !important;
+  border-radius: 12px !important;
+  padding: 0.75rem 1.2rem !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.04em !important;
+  border: none !important;
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--azul-claro) 30%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease !important;
 }
 
 .cys-btn-checkout:hover:not(:disabled) {
+<<<<<<< HEAD
   background: linear-gradient(135deg, #047857, #059669) !important;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
   color: #ffffff !important;
+=======
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--azul-claro) 45%, transparent);
+  color: var(--azul-oscuro) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-btn-checkout:disabled {
@@ -956,15 +1173,17 @@ select:-webkit-autofill {
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: var(--azul-claro, #4DA8DA);
+  color: var(--azul-claro);
   margin-bottom: 0.85rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px dashed rgba(77, 168, 218, 0.25);
+  border-bottom: 1px dashed color-mix(in srgb, var(--azul-claro) 25%, transparent);
 }
 
 .cys-denom-card {
-  background: linear-gradient(145deg, rgba(10, 42, 82, 0.85), rgba(15, 59, 108, 0.85));
-  border: 1px solid rgba(77, 168, 218, 0.2);
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--fondo-card2) 85%, transparent),
+    color-mix(in srgb, var(--fondo-card) 85%, transparent));
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   border-radius: 12px;
   padding: 0.55rem 0.6rem;
   transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -976,17 +1195,19 @@ select:-webkit-autofill {
 }
 
 .cys-denom-card:hover, .cys-denom-card:focus-within {
-  border-color: var(--azul-claro, #4DA8DA);
-  box-shadow: 0 6px 20px rgba(77, 168, 218, 0.18);
-  background: linear-gradient(145deg, rgba(15, 59, 108, 0.95), rgba(18, 71, 133, 0.95));
+  border-color: var(--azul-claro);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--azul-claro) 18%, transparent);
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--fondo-card) 95%, transparent),
+    color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)));
 }
 
 .cys-denom-card--billete {
-  border-top: 2.5px solid #2ed573;
+  border-top: 2.5px solid var(--verde);
 }
 
 .cys-denom-card--moneda {
-  border-top: 2.5px solid #ffa502;
+  border-top: 2.5px solid var(--cys-dorado);
 }
 
 .cys-denom-header {
@@ -1007,22 +1228,22 @@ select:-webkit-autofill {
 }
 
 .cys-denom-badge--billete {
-  background: rgba(46, 213, 115, 0.15);
-  color: #2ed573;
-  border: 1px solid rgba(46, 213, 115, 0.3);
+  background: color-mix(in srgb, var(--verde) 15%, transparent);
+  color: var(--verde);
+  border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent);
 }
 
 .cys-denom-badge--moneda {
-  background: rgba(255, 165, 2, 0.15);
-  color: #ffa502;
-  border: 1px solid rgba(255, 165, 2, 0.3);
+  background: color-mix(in srgb, var(--cys-dorado) 15%, transparent);
+  color: var(--cys-dorado);
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
 }
 
 .cys-denom-val {
   font-family: 'Rajdhani', sans-serif;
   font-size: 1.05rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--texto);
   line-height: 1;
 }
 
@@ -1037,9 +1258,9 @@ select:-webkit-autofill {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid rgba(77, 168, 218, 0.3);
-  background: rgba(10, 42, 82, 0.9);
-  color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  background: color-mix(in srgb, var(--fondo-card2) 90%, transparent);
+  color: var(--texto);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1051,15 +1272,15 @@ select:-webkit-autofill {
 }
 
 .cys-denom-btn:hover {
-  background: var(--azul-claro, #4DA8DA);
-  color: #0A2A52;
-  border-color: var(--azul-claro, #4DA8DA);
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  border-color: var(--azul-claro);
 }
 
 .cys-denom-input {
-  background: rgba(10, 42, 82, 0.95) !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
-  color: #ffffff !important;
+  background: color-mix(in srgb, var(--fondo-card2) 95%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto) !important;
   font-weight: 800 !important;
   font-family: 'Rajdhani', sans-serif !important;
   font-size: 1.05rem !important;
@@ -1070,21 +1291,21 @@ select:-webkit-autofill {
 }
 
 .cys-denom-input:focus {
-  border-color: var(--azul-claro, #4DA8DA) !important;
-  box-shadow: 0 0 0 3px rgba(77, 168, 218, 0.25) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
 }
 
 .cys-denom-subtotal {
   font-size: 0.68rem;
   font-weight: 700;
-  color: var(--texto-muted, rgba(232,237,242,.6));
+  color: var(--texto-muted);
   margin-top: 0.25rem;
   text-align: right;
   min-height: 1rem;
 }
 
 .cys-denom-subtotal span {
-  color: var(--azul-claro, #4DA8DA);
+  color: var(--azul-claro);
   font-family: 'Rajdhani', sans-serif;
   font-size: 0.8rem;
   font-weight: 800;
@@ -1095,8 +1316,8 @@ select:-webkit-autofill {
    ──────────────────────────────────────────────────────────────── */
 
 .cys-stat-method-card {
-  background: rgba(10, 42, 82, 0.65);
-  border: 1px solid rgba(77, 168, 218, 0.2);
+  background: color-mix(in srgb, var(--fondo-card2) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   display: flex;
@@ -1106,14 +1327,14 @@ select:-webkit-autofill {
 }
 
 .cys-stat-method-card:hover {
-  border-color: rgba(77, 168, 218, 0.4);
-  background: rgba(15, 59, 108, 0.85);
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
+  background: color-mix(in srgb, var(--fondo-card) 85%, transparent);
   transform: translateY(-2px);
 }
 
 .cys-top-product-card {
-  background: rgba(10, 42, 82, 0.6);
-  border: 1px solid rgba(77, 168, 218, 0.2);
+  background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   transition: all 0.2s ease;
@@ -1124,10 +1345,10 @@ select:-webkit-autofill {
 }
 
 .cys-top-product-card:hover {
-  border-color: var(--azul-claro, #4DA8DA);
-  background: rgba(15, 59, 108, 0.85);
+  border-color: var(--azul-claro);
+  background: color-mix(in srgb, var(--fondo-card) 85%, transparent);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(77, 168, 218, 0.15);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--azul-claro) 15%, transparent);
 }
 
 .cys-rank-badge {
@@ -1141,6 +1362,7 @@ select:-webkit-autofill {
   font-size: 0.9rem;
 }
 
+/* Medallas: se mantienen fijas (oro / plata / bronce) */
 .cys-rank-badge--1 {
   background: linear-gradient(135deg, #ffd700, #ffaa00);
   color: #000;
@@ -1158,15 +1380,15 @@ select:-webkit-autofill {
 }
 
 .cys-rank-badge--other {
-  background: rgba(77, 168, 218, 0.15);
-  border: 1px solid rgba(77, 168, 218, 0.3);
-  color: var(--azul-claro, #4DA8DA);
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  color: var(--azul-claro);
 }
 
 /* Tarjeta de Tope de Ventas (Día, Semana, Mes, Año) */
 .cys-top-sales-card {
-  background: rgba(10, 42, 82, 0.65);
-  border: 1px solid rgba(77, 168, 218, 0.25);
+  background: color-mix(in srgb, var(--fondo-card2) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
   border-radius: 14px;
   padding: 1.1rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1178,8 +1400,8 @@ select:-webkit-autofill {
 }
 
 .cys-top-sales-card:hover {
-  border-color: rgba(77, 168, 218, 0.5);
-  background: rgba(15, 59, 108, 0.85);
+  border-color: color-mix(in srgb, var(--azul-claro) 50%, transparent);
+  background: color-mix(in srgb, var(--fondo-card) 85%, transparent);
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
@@ -1188,10 +1410,12 @@ select:-webkit-autofill {
 .cys-lock-card {
   position: relative;
   min-height: 560px;
-  background: radial-gradient(circle at 50% 30%, rgba(15, 59, 108, 0.75) 0%, rgba(6, 22, 48, 0.98) 75%);
-  border: 1px solid rgba(77, 168, 218, 0.35);
+  background: radial-gradient(circle at 50% 30%,
+    color-mix(in srgb, var(--fondo-card) 75%, transparent) 0%,
+    color-mix(in srgb, var(--fondo) 98%, transparent) 75%);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent);
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(77, 168, 218, 0.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 0 40px color-mix(in srgb, var(--azul-claro) 5%, transparent);
   overflow: hidden;
   backdrop-filter: blur(16px);
   padding: 3.5rem 2rem;
@@ -1209,7 +1433,7 @@ select:-webkit-autofill {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle at center, rgba(235, 77, 75, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--rojo) 8%, transparent) 0%, transparent 60%);
   pointer-events: none;
   animation: cysPulseGlow 4s ease-in-out infinite alternate;
 }
@@ -1225,25 +1449,27 @@ select:-webkit-autofill {
   height: 110px;
   margin: 0 auto 1.5rem auto;
   border-radius: 30px;
-  background: linear-gradient(135deg, rgba(235, 77, 75, 0.2), rgba(10, 42, 82, 0.9));
-  border: 2px solid rgba(235, 77, 75, 0.5);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--rojo) 20%, transparent),
+    color-mix(in srgb, var(--fondo-card2) 90%, transparent));
+  border: 2px solid color-mix(in srgb, var(--rojo) 50%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 40px rgba(235, 77, 75, 0.35), inset 0 0 20px rgba(235, 77, 75, 0.15);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--rojo) 35%, transparent), inset 0 0 20px color-mix(in srgb, var(--rojo) 15%, transparent);
   transition: all 0.3s ease;
 }
 
 .cys-lock-emblem i {
   font-size: 3.2rem;
-  color: #ff7675;
-  filter: drop-shadow(0 0 12px rgba(255, 118, 117, 0.6));
+  color: var(--rojo);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--rojo) 60%, transparent));
 }
 
 .cys-lock-badge {
-  background: rgba(235, 77, 75, 0.18);
-  border: 1px solid rgba(235, 77, 75, 0.45);
-  color: #ff7675;
+  background: color-mix(in srgb, var(--rojo) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rojo) 45%, transparent);
+  color: var(--rojo);
   font-family: 'Rajdhani', sans-serif;
   font-weight: 800;
   font-size: 0.85rem;
@@ -1254,7 +1480,7 @@ select:-webkit-autofill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 0 15px rgba(235, 77, 75, 0.2);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--rojo) 20%, transparent);
 }
 
 .cys-lock-steps {
@@ -1267,20 +1493,20 @@ select:-webkit-autofill {
 }
 
 .cys-lock-step-chip {
-  background: rgba(10, 42, 82, 0.7);
-  border: 1px solid rgba(77, 168, 218, 0.25);
+  background: color-mix(in srgb, var(--fondo-card2) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
   border-radius: 12px;
   padding: 0.5rem 1rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--texto);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .cys-lock-step-chip i {
-  color: var(--azul-claro, #4DA8DA);
+  color: var(--azul-claro);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1294,6 +1520,7 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table thead th {
+<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.5) !important;
   color: #94a3b8 !important;
   font-weight: 700 !important;
@@ -1303,6 +1530,17 @@ select:-webkit-autofill {
   padding: 0.75rem 1rem !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+=======
+  background: color-mix(in srgb, var(--fondo-card2) 85%, transparent) !important;
+  color: var(--azul-claro) !important;
+  font-weight: 800 !important;
+  font-size: 0.78rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  padding: 0.85rem 1rem !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   white-space: nowrap;
 }
 
@@ -1317,6 +1555,7 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table tbody tr {
+<<<<<<< HEAD
   background: rgba(14, 28, 52, 0.4);
   transition: all 0.2s ease;
 }
@@ -1331,19 +1570,45 @@ select:-webkit-autofill {
   padding: 0.8rem 1rem !important;
   border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
+  background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
+  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.cys-inv-table tbody tr:hover {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--fondo-card) 85%, transparent),
+    color-mix(in srgb, var(--fondo-card2) 95%, transparent)) !important;
+  transform: translateY(-1px);
+  box-shadow: inset 3px 0 0 var(--azul-claro), 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cys-inv-table tbody td {
+  padding: 0.85rem 1rem !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   vertical-align: middle;
   font-size: 0.86rem;
   color: #e2e8f0;
 }
 
 .cys-inv-table tbody td:first-child {
+<<<<<<< HEAD
   border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
+  border-left: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
 }
 
 .cys-inv-table tbody td:last-child {
+<<<<<<< HEAD
   border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
+  border-right: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
@@ -1359,6 +1624,7 @@ select:-webkit-autofill {
   gap: 5px;
 }
 .cys-stock-badge--ok {
+<<<<<<< HEAD
   background: rgba(46, 213, 115, 0.15);
   color: #2ed573;
   border: 1px solid rgba(46, 213, 115, 0.35);
@@ -1735,3 +2001,9 @@ select:-webkit-autofill {
 
 
 
+=======
+  background: color-mix(in srgb, var(--verde) 15%, transparent);
+  color: var(--verde);
+  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+}
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b

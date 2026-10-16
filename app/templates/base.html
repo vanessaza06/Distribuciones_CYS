@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="es">
+<html lang="es" data-tema-sistema="{{ config.tema_predeterminado|default:'oscuro' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/cuerpo/base.css' %}" />
     <link rel="stylesheet" href="{% static 'css/cuerpo/breadcrumb.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/cuerpo/botellin.css' %}" />
 
     {% block extra_css %}{% endblock %}
 
@@ -185,13 +186,15 @@
     </div>
     <!-- ===== FIN WIDGET DE ACCESIBILIDAD ===== -->
 
-    <!-- ===== WIDGET FLOTANTE DE CHATBOT (global, en todas las páginas) ===== -->
-    {% include 'partials/chatbot.html' %}
+  <!-- ===== BOTELLÍN: mascota flotante + chat con IA (global) ===== -->
+{% if user.is_authenticated %}
+  {% include 'partials/botellin.html' %}
+{% endif %}
 
     <script src="{% static 'js/cuerpo/reloj.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/principal.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/sidebar-init.js' %}" defer></script>
-    <script src="{% static 'js/cuerpo/chatbot.js' %}" defer></script>
+    <script src="{% static 'js/cuerpo/botellin.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 

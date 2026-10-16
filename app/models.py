@@ -330,7 +330,6 @@ class Marca(models.Model):
     nombre = models.CharField(max_length=100, db_column="nombre")
     descripcion = models.TextField(db_column="descripcion")
     estado = models.CharField(max_length=20, db_column="estado")
-    fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True, db_column="fecha_creacion")
 
     class Meta:
         db_table = "marca"
@@ -1268,6 +1267,8 @@ class Hallazgo(models.Model):
 
 # -- CONFIGURACION DE EMPRESA --
 class ConfiguracionEmpresa(models.Model):
+    TEMAS_VALIDOS = ["oscuro", "claro", "alto-contraste", "basecys", "sepia"]
+
     nombre_empresa = models.CharField(max_length=200, default="CYS Ltda")
     nit = models.CharField(max_length=50, blank=True, default="")
     direccion = models.CharField(max_length=300, blank=True, default="")
@@ -1276,6 +1277,7 @@ class ConfiguracionEmpresa(models.Model):
     iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19)
     moneda = models.CharField(max_length=10, default="COP")
     unidades_medida = models.JSONField(default=list)
+    tema_predeterminado = models.CharField(max_length=20, default="oscuro")
 
     class Meta:
         db_table = "configuracion_empresa"
@@ -1305,4 +1307,3 @@ class BackupRegistro(models.Model):
 
     def __str__(self):
         return self.nombre
-

@@ -16,6 +16,10 @@ from app.views.reportes import views as rep_views
 from app.views.configuracion import views as config_views
 from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
+from app.views.ayuda.chatbot import chatbot_responder
+
+
+
 
 
 urlpatterns = [
@@ -200,8 +204,10 @@ path(
     path("configuracion/empresa/verificar/", config_views.verificar_clave_empresa, name="verificar_clave_empresa"),
     path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
     path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
+    path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),  # <-- NUEVA
     path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
-    
         # AYUDA
-       path("ayuda/", ayuda_views.index, name="ayuda_index"),
-]
+    path("ayuda/", ayuda_views.index, name="ayuda_index"),
+    path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
+
+]       
