@@ -266,76 +266,164 @@
 }
 
 /* ────────────────────────────────────────────────────────────────
-   REDISEÑO POS PREMIUM — Clases de Alta Fidelidad
+   REDISEÑO POS SOFISTICADO Y SUAVE — CYS Ltda
+   Paleta suave, descansada para la vista y armónica
    ──────────────────────────────────────────────────────────────── */
 
 /* Barra de Estado POS */
 .cys-pos-header-bar {
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--fondo-card) 95%, transparent),
-    color-mix(in srgb, var(--fondo-card2) 95%, transparent));
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
-  border-left: 4px solid var(--azul-claro);
+  background: rgba(14, 28, 52, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #38bdf8;
   border-radius: 14px;
-  padding: 1.1rem 1.35rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(8px);
+  padding: 0.95rem 1.35rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
 }
 
 .cys-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 50px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
 }
 
 .cys-status-pill--abierta {
-  background: color-mix(in srgb, var(--verde) 15%, transparent);
-  color: var(--verde);
-  border: 1px solid color-mix(in srgb, var(--verde) 40%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--verde) 20%, transparent);
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
 }
 
 .cys-status-pill--cerrada {
-  background: color-mix(in srgb, var(--rojo) 15%, transparent);
-  color: var(--rojo);
-  border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--rojo) 20%, transparent);
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
 }
 
 .cys-pulse-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: currentColor;
-  animation: cysPulse 1.8s infinite;
+  animation: cysPulse 2s infinite ease-in-out;
 }
 
 @keyframes cysPulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 70%, transparent); }
-  70% { transform: scale(1); box-shadow: 0 0 0 8px transparent; }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* Botones suaves de cabecera */
+.cys-btn-danger-soft {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+  border-radius: 10px !important;
+  padding: 0.45rem 1rem !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.cys-btn-danger-soft:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.cys-btn-ghost-soft {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 0.45rem 1rem !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.cys-btn-ghost-soft:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Alertas Suaves Modo Oscuro (Sin bloques opacos deslumbrantes) ── */
+.cys-alerts-container {
+  position: relative;
+  z-index: 20;
+}
+
+.cys-soft-alert {
+  border-radius: 12px !important;
+  padding: 0.85rem 1.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-width: 1px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.25) !important;
+  margin-bottom: 0.75rem !important;
+  font-size: 0.9rem !important;
+}
+
+.cys-soft-alert .cys-alert-msg {
+  font-weight: 600;
+}
+
+.cys-soft-alert-success,
+.alert.alert-success {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.28) !important;
+  color: #a7f3d0 !important;
+}
+
+.cys-soft-alert-danger,
+.cys-soft-alert-error,
+.alert.alert-danger {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.28) !important;
+  color: #fecdd3 !important;
+}
+
+.cys-soft-alert-warning,
+.alert.alert-warning {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.28) !important;
+  color: #fde68a !important;
+}
+
+.cys-soft-alert-info,
+.alert.alert-info {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.28) !important;
+  color: #bae6fd !important;
 }
 
 /* Tarjeta POS Contenedora */
 .cys-pos-card {
-  background: var(--fondo-card);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent);
+  background: rgba(14, 28, 52, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  backdrop-filter: blur(10px);
 }
 
 .cys-pos-card-header {
-  padding: 1.1rem 1.35rem 0.8rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
-  background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
+  padding: 1.1rem 1.35rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 20, 38, 0.35);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -343,14 +431,17 @@
 
 .cys-pos-card-title {
   font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--azul-claro);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
+}
+
+.cys-pos-card-title i {
+  color: #38bdf8;
 }
 
 /* Campo de Búsqueda POS */
@@ -363,22 +454,52 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
+<<<<<<< HEAD
+  color: #64748b;
+  font-size: 0.92rem;
+=======
   color: var(--texto-muted);
   font-size: 0.95rem;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   pointer-events: none;
 }
 
 .cys-search-input {
+<<<<<<< HEAD
+  padding-left: 40px !important;
+  background: rgba(10, 20, 38, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #f1f5f9 !important;
+=======
   padding-left: 42px !important;
   background: color-mix(in srgb, var(--fondo-card2) 80%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   color: var(--texto) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 10px !important;
-  font-size: 0.9rem !important;
+  font-size: 0.88rem !important;
   transition: all 0.2s ease !important;
 }
 
 .cys-search-input:focus {
+<<<<<<< HEAD
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
+  background: rgba(10, 20, 38, 0.7) !important;
+}
+
+.cys-search-input::placeholder {
+  color: #64748b !important;
+}
+
+/* Tarjetas de Categoría */
+.cys-cat-card-item {
+  background: rgba(16, 32, 58, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 1.1rem 0.85rem;
+  min-height: 120px;
+=======
   border-color: var(--azul-claro) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   background: color-mix(in srgb, var(--fondo-card2) 95%, transparent) !important;
@@ -394,14 +515,311 @@
   border-radius: 14px;
   padding: 1.15rem 0.95rem;
   min-height: 125px;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   height: 100%;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   text-align: center;
+<<<<<<< HEAD
+  color: #f1f5f9 !important;
+}
+
+.cys-cat-card-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3);
+  background: rgba(20, 42, 75, 0.8);
+}
+
+.cys-cat-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+  color: #38bdf8;
+  font-size: 1.15rem;
+  transition: all 0.2s ease;
+}
+
+.cys-cat-card-item:hover .cys-cat-icon-circle {
+  background: #38bdf8;
+  color: #0f172a;
+  transform: scale(1.05);
+}
+
+/* Tarjetas de Producto Modernas */
+.cys-prod-card-item {
+  background: rgba(16, 32, 58, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  min-height: 150px;
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  position: relative;
+}
+
+.cys-prod-card-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.32);
+  box-shadow: 0 8px 22px -4px rgba(0, 0, 0, 0.3);
+  background: rgba(20, 42, 75, 0.8);
+}
+
+.cys-prod-card-item--nostock {
+  opacity: 0.6;
+}
+
+.cys-prod-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.cys-prod-name {
+  font-weight: 700;
+  font-size: 0.94rem;
+  color: #f1f5f9 !important;
+  line-height: 1.25;
+  text-transform: capitalize;
+}
+
+.cys-prod-sub {
+  font-size: 0.72rem;
+  color: #94a3b8 !important;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.cys-prod-price-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8 !important;
+  font-weight: 600;
+}
+
+.cys-prod-price {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  line-height: 1;
+}
+
+.cys-prod-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #38bdf8 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.cys-prod-card-item:hover .cys-prod-action-btn:not(.disabled) {
+  background: #38bdf8;
+  color: #0f172a !important;
+}
+
+/* Barra de Navegación / Breadcrumbs POS */
+.cys-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10, 22, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+}
+
+.cys-btn-back {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  padding: 0.32rem 0.7rem !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cys-btn-back:hover {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  transform: translateX(-1px);
+}
+
+.cys-breadcrumb-sep {
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.cys-breadcrumb-chip {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 8px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #cbd5e1 !important;
+  display: inline-flex;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.cys-breadcrumb-chip--active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8 !important;
+}
+
+.cys-count-badge {
+  background: rgba(56, 189, 248, 0.1) !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  color: #38bdf8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+
+/* Tarjetas de Presentación */
+.cys-pres-card-item {
+  background: rgba(16, 32, 58, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+}
+
+.cys-pres-card-item:hover:not(.cys-pres-card-item--disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.32);
+  background: rgba(20, 42, 75, 0.8);
+}
+
+.cys-pres-card-item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.cys-pres-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.cys-pres-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f1f5f9 !important;
+}
+
+.cys-pres-price-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8 !important;
+  font-weight: 600;
+}
+
+.cys-pres-price {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  line-height: 1;
+}
+
+.cys-pres-add-btn {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  color: #38bdf8 !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  border-radius: 8px !important;
+  padding: 0.4rem 0.85rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.cys-pres-card-item:hover .cys-pres-add-btn:not(.disabled) {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+}
+
+/* Toast Notificaciones POS */
+.cys-pos-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #f1f5f9 !important;
+  border-radius: 12px;
+  padding: 0.75rem 1.2rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  backdrop-filter: blur(8px);
+  animation: cysToastIn 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes cysToastIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Stock Badges Suaves */
+=======
   color: var(--texto) !important;
 }
 
@@ -496,9 +914,10 @@ select:-webkit-autofill {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 .cys-stock-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 600;
   padding: 3px 8px;
   border-radius: 50px;
   display: inline-flex;
@@ -507,6 +926,68 @@ select:-webkit-autofill {
 }
 
 .cys-stock-badge--ok {
+<<<<<<< HEAD
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(34, 197, 94, 0.22) !important;
+}
+
+.cys-stock-badge--low {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.22) !important;
+}
+
+.cys-stock-badge--empty {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.22) !important;
+}
+
+/* Estilos de Controles de Formulario POS */
+.cys-pos-card .form-control {
+  background-color: rgba(10, 20, 38, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.cys-pos-card .form-control:focus {
+  background-color: rgba(10, 20, 38, 0.7) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
+}
+
+.cys-search-input::placeholder,
+#inputClienteNombre::placeholder,
+#ctObservacion::placeholder,
+#baseSiguiente::placeholder,
+.cys-pos-card .form-control::placeholder {
+  color: #64748b !important;
+}
+
+/* Autocomplete de Sugerencias de Cliente */
+#sugerenciasClientes .list-group-item-action {
+  background: rgba(14, 28, 52, 0.95) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+#sugerenciasClientes .list-group-item-action:hover,
+#sugerenciasClientes .list-group-item-action:focus {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+}
+
+/* Override autofill del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #f1f5f9 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0a1b32 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+=======
   background: color-mix(in srgb, var(--verde) 15%, transparent);
   color: var(--verde);
   border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
@@ -522,55 +1003,86 @@ select:-webkit-autofill {
   background: color-mix(in srgb, var(--rojo) 15%, transparent);
   color: var(--rojo);
   border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Items del Carrito */
 .cys-cart-item {
+<<<<<<< HEAD
+  background: rgba(10, 20, 38, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+=======
   background: color-mix(in srgb, var(--fondo-card2) 65%, transparent);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   border-radius: 12px;
   padding: 0.85rem 1rem;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease;
 }
 
 .cys-cart-item:hover {
+<<<<<<< HEAD
+  border-color: rgba(56, 189, 248, 0.25);
+  background: rgba(14, 26, 48, 0.6);
+=======
   border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
   background: color-mix(in srgb, var(--fondo-card2) 85%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-qty-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   padding: 0;
+<<<<<<< HEAD
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+=======
   border-radius: 7px;
   background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
   color: var(--texto);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   transition: all 0.15s ease;
 }
 
 .cys-qty-btn:hover {
+<<<<<<< HEAD
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+=======
   background: var(--azul-claro);
   color: var(--azul-oscuro);
   border-color: var(--azul-claro);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Panel de Desglose de Pagos y Calculadora de Cambio */
 .cys-payment-panel {
+<<<<<<< HEAD
+  background: rgba(10, 20, 38, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+=======
   background: color-mix(in srgb, var(--fondo-card2) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 12px;
-  padding: 1.1rem;
+  padding: 1rem;
 }
 
 .cys-change-indicator {
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.9rem;
   font-family: 'Rajdhani', sans-serif;
   display: flex;
   align-items: center;
@@ -579,6 +1091,17 @@ select:-webkit-autofill {
 }
 
 .cys-change-indicator--ok {
+<<<<<<< HEAD
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  color: #4ade80;
+}
+
+.cys-change-indicator--pending {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+=======
   background: color-mix(in srgb, var(--verde) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent);
   color: var(--verde);
@@ -588,10 +1111,22 @@ select:-webkit-autofill {
   background: color-mix(in srgb, var(--cys-dorado) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
   color: var(--cys-dorado);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Botones Principales POS */
 .cys-btn-checkout {
+<<<<<<< HEAD
+  background: linear-gradient(135deg, #059669, #10b981) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  padding: 0.75rem 1.25rem !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.02em !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+=======
   background: linear-gradient(135deg, var(--azul-claro), color-mix(in srgb, var(--azul-claro) 70%, black));
   color: var(--azul-oscuro) !important;
   font-weight: 800 !important;
@@ -601,19 +1136,29 @@ select:-webkit-autofill {
   letter-spacing: 0.04em !important;
   border: none !important;
   box-shadow: 0 4px 15px color-mix(in srgb, var(--azul-claro) 30%, transparent);
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease !important;
 }
 
 .cys-btn-checkout:hover:not(:disabled) {
+<<<<<<< HEAD
+  background: linear-gradient(135deg, #047857, #059669) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
+  color: #ffffff !important;
+=======
   transform: translateY(-2px);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--azul-claro) 45%, transparent);
   color: var(--azul-oscuro) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-btn-checkout:disabled {
-  opacity: 0.45;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #64748b !important;
   cursor: not-allowed;
-  box-shadow: none;
+  box-shadow: none !important;
+  opacity: 0.6;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -975,6 +1520,17 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table thead th {
+<<<<<<< HEAD
+  background: rgba(10, 20, 38, 0.5) !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 0.75rem 1rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+=======
   background: color-mix(in srgb, var(--fondo-card2) 85%, transparent) !important;
   color: var(--azul-claro) !important;
   font-weight: 800 !important;
@@ -984,6 +1540,7 @@ select:-webkit-autofill {
   padding: 0.85rem 1rem !important;
   border-top: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
   border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   white-space: nowrap;
 }
 
@@ -998,6 +1555,22 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table tbody tr {
+<<<<<<< HEAD
+  background: rgba(14, 28, 52, 0.4);
+  transition: all 0.2s ease;
+}
+
+.cys-inv-table tbody tr:hover {
+  background: rgba(22, 44, 78, 0.6) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cys-inv-table tbody td {
+  padding: 0.8rem 1rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
   background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
   transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
@@ -1014,18 +1587,28 @@ select:-webkit-autofill {
   padding: 0.85rem 1rem !important;
   border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   vertical-align: middle;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+  color: #e2e8f0;
 }
 
 .cys-inv-table tbody td:first-child {
+<<<<<<< HEAD
+  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
   border-left: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
 }
 
 .cys-inv-table tbody td:last-child {
+<<<<<<< HEAD
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+=======
   border-right: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
@@ -1041,7 +1624,386 @@ select:-webkit-autofill {
   gap: 5px;
 }
 .cys-stock-badge--ok {
+<<<<<<< HEAD
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.35);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SISTEMA DE DISEÑO UNIFICADO Y NO SATURADO (CYS SUITE)
+   Aplica idéntica tipografía, colores no saturados y formas a:
+   1. Ventas (POS)
+   2. Ventas del Día
+   3. Caja y Turnos
+   4. Métodos de Pago
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+  --cys-font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --cys-font-num: 'Rajdhani', sans-serif;
+  
+  /* Superficies y Fondos Suaves (Sin saturación) */
+  --cys-bg-card: rgba(13, 24, 45, 0.72);
+  --cys-bg-banner: linear-gradient(135deg, rgba(16, 30, 56, 0.88) 0%, rgba(10, 22, 42, 0.94) 100%);
+  --cys-border-subtle: rgba(255, 255, 255, 0.08);
+  --cys-border-light: rgba(255, 255, 255, 0.12);
+  
+  /* Acentos Armónicos No Saturados */
+  --cys-primary: #38bdf8;
+  --cys-primary-bg: rgba(56, 189, 248, 0.10);
+  --cys-primary-border: rgba(56, 189, 248, 0.25);
+  
+  --cys-success: #4ade80;
+  --cys-success-bg: rgba(74, 222, 128, 0.10);
+  --cys-success-border: rgba(74, 222, 128, 0.25);
+  
+  --cys-warning: #fbbf24;
+  --cys-warning-bg: rgba(251, 191, 36, 0.10);
+  --cys-warning-border: rgba(251, 191, 36, 0.25);
+  
+  --cys-danger: #f87171;
+  --cys-danger-bg: rgba(248, 113, 113, 0.10);
+  --cys-danger-border: rgba(248, 113, 113, 0.25);
+  
+  /* Textos */
+  --cys-text-main: #f1f5f9;
+  --cys-text-muted: #94a3b8;
+  --cys-text-subtle: #64748b;
+  
+  --cys-radius-lg: 16px;
+  --cys-radius-md: 12px;
+  --cys-radius-sm: 8px;
+}
+
+/* Tipografía y Contenedores */
+.cys-module-container,
+.cys-caja-container,
+.mp-container {
+  font-family: var(--cys-font-main) !important;
+  color: var(--cys-text-main) !important;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.cys-num-val,
+.cys-kpi-value,
+.cys-price-val {
+  font-family: var(--cys-font-num) !important;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* Banners de Encabezado Unificados */
+.cys-module-banner,
+.cys-caja-header-banner,
+.mp-header-banner {
+  background: var(--cys-bg-banner) !important;
+  border: 1px solid var(--cys-border-subtle) !important;
+  border-radius: var(--cys-radius-lg) !important;
+  padding: 1.25rem 1.6rem !important;
+  margin-bottom: 1.75rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.cys-module-banner h3,
+.cys-caja-header-banner h3,
+.mp-header-banner h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--cys-text-main);
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.2px;
+}
+
+.cys-module-banner p,
+.cys-caja-header-banner p,
+.mp-header-banner p {
+  color: var(--cys-text-muted) !important;
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+/* Tarjetas KPI Suaves Unificadas */
+.cys-kpi-card,
+.cys-pos-card,
+.mp-kpi-card {
+  background: var(--cys-bg-card) !important;
+  border: 1px solid var(--cys-border-subtle) !important;
+  border-radius: var(--cys-radius-md) !important;
+  padding: 1.1rem 1.3rem !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cys-kpi-card:hover,
+.cys-pos-card:hover,
+.mp-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--cys-primary-border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cys-kpi-icon {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: var(--cys-radius-md) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem !important;
+  flex-shrink: 0;
+}
+
+.cys-kpi-icon--primary {
+  background: var(--cys-primary-bg) !important;
+  color: var(--cys-primary) !important;
+  border: 1px solid var(--cys-primary-border) !important;
+}
+
+.cys-kpi-icon--success {
+  background: var(--cys-success-bg) !important;
+  color: var(--cys-success) !important;
+  border: 1px solid var(--cys-success-border) !important;
+}
+
+.cys-kpi-icon--warning {
+  background: var(--cys-warning-bg) !important;
+  color: var(--cys-warning) !important;
+  border: 1px solid var(--cys-warning-border) !important;
+}
+
+.cys-kpi-icon--danger {
+  background: var(--cys-danger-bg) !important;
+  color: var(--cys-danger) !important;
+  border: 1px solid var(--cys-danger-border) !important;
+}
+
+/* Botones Unificados (Acabado Satinado, No Saturado) */
+.cys-btn-primary,
+.mp-btn-action {
+  height: 40px !important;
+  padding: 0 1.25rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: var(--cys-font-main) !important;
+  border-radius: 10px !important;
+  border: 1px solid #0284c7 !important;
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25) !important;
+  cursor: pointer;
+}
+
+.cys-btn-primary:hover,
+.mp-btn-action:hover {
+  background: #0369a1 !important;
+  border-color: #0369a1 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+}
+
+.cys-btn-secondary,
+.mp-btn-outline {
+  height: 40px !important;
+  padding: 0 1.2rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: var(--cys-font-main) !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--cys-border-light) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cys-btn-secondary:hover,
+.mp-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.cys-btn-danger-soft {
+  height: 40px !important;
+  padding: 0 1.2rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: var(--cys-font-main) !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--cys-danger-border) !important;
+  background: var(--cys-danger-bg) !important;
+  color: var(--cys-danger) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cys-btn-danger-soft:hover {
+  background: rgba(248, 113, 113, 0.2) !important;
+  border-color: var(--cys-danger) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Badges Suaves */
+.cys-badge-soft {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cys-badge-soft--primary {
+  background: var(--cys-primary-bg);
+  color: var(--cys-primary);
+  border: 1px solid var(--cys-primary-border);
+}
+
+.cys-badge-soft--success {
+  background: var(--cys-success-bg);
+  color: var(--cys-success);
+  border: 1px solid var(--cys-success-border);
+}
+
+.cys-badge-soft--warning {
+  background: var(--cys-warning-bg);
+  color: var(--cys-warning);
+  border: 1px solid var(--cys-warning-border);
+}
+
+.cys-badge-soft--danger {
+  background: var(--cys-danger-bg);
+  color: var(--cys-danger);
+  border: 1px solid var(--cys-danger-border);
+}
+
+/* Tablas Suaves Homologadas */
+.cys-table-wrapper {
+  background: var(--cys-bg-card);
+  border: 1px solid var(--cys-border-subtle);
+  border-radius: var(--cys-radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.cys-clean-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.cys-clean-table th {
+  background: rgba(10, 20, 38, 0.75) !important;
+  color: var(--cys-text-muted) !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 0.85rem 1.1rem !important;
+  border-bottom: 1px solid var(--cys-border-subtle) !important;
+  white-space: nowrap;
+}
+
+.cys-clean-table td {
+  padding: 0.85rem 1.1rem !important;
+  color: #e2e8f0 !important;
+  font-size: 0.86rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  vertical-align: middle;
+}
+
+.cys-clean-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.cys-clean-table tbody tr:hover {
+  background-color: rgba(56, 189, 248, 0.04) !important;
+}
+
+/* Modales Suaves Unificados */
+.cys-modal-clean {
+  background: #0b172a !important;
+  border: 1px solid var(--cys-border-light) !important;
+  border-radius: var(--cys-radius-lg) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+  color: var(--cys-text-main) !important;
+}
+
+.cys-modal-clean .modal-header {
+  border-bottom: 1px solid var(--cys-border-subtle) !important;
+  background: rgba(15, 28, 50, 0.8) !important;
+  padding: 1.25rem 1.5rem !important;
+}
+
+.cys-modal-clean .modal-footer {
+  border-top: 1px solid var(--cys-border-subtle) !important;
+  background: rgba(15, 28, 50, 0.5) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* Form Controls Limpios */
+.cys-input-clean,
+.cys-caja-container input,
+.cys-caja-container select,
+.cys-caja-container textarea,
+.mp-container input,
+.mp-container select,
+.mp-container textarea {
+  background-color: rgba(10, 20, 36, 0.7) !important;
+  border: 1px solid var(--cys-border-light) !important;
+  border-radius: 10px !important;
+  color: var(--cys-text-main) !important;
+  font-size: 0.88rem !important;
+  padding: 0.55rem 0.9rem !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cys-input-clean:focus,
+.cys-caja-container input:focus,
+.cys-caja-container select:focus,
+.mp-container input:focus,
+.mp-container select:focus {
+  border-color: var(--cys-primary) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+  outline: none !important;
+}
+
+
+
+
+=======
   background: color-mix(in srgb, var(--verde) 15%, transparent);
   color: var(--verde);
   border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
 }
+>>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b

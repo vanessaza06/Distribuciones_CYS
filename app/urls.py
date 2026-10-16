@@ -16,6 +16,10 @@ from app.views.reportes import views as rep_views
 from app.views.configuracion import views as config_views
 from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
+from app.views.ayuda.chatbot import chatbot_responder
+
+
+
 
 
 urlpatterns = [
@@ -62,7 +66,7 @@ urlpatterns = [
     
 
 
-    # CATEGORIAS
+        # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
@@ -74,6 +78,16 @@ urlpatterns = [
         "categorias/toggle/<int:pk>/",
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
+    ),
+    path(
+        "categorias/exportar/pdf/",
+        cat_views.categoria_exportar_pdf,
+        name="categoria_exportar_pdf",
+    ),
+    path(
+        "categorias/exportar/excel/",
+        cat_views.categoria_exportar_excel,
+        name="categoria_exportar_excel",
     ),
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
@@ -205,5 +219,7 @@ path(
     path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),  # <-- NUEVA
     path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
         # AYUDA
-       path("ayuda/", ayuda_views.index, name="ayuda_index"),
-]
+    path("ayuda/", ayuda_views.index, name="ayuda_index"),
+    path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
+
+]       
