@@ -30,6 +30,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:8000',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 
 # Application definition
 
@@ -42,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuarios',
     'app',
-
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +84,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'app.context_processors.aside_stats',
+                "app.context_processors.config_empresa",
             ],
         },
     },
@@ -154,3 +167,4 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'login'
+

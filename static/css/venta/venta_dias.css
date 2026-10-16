@@ -1,9 +1,13 @@
 /* ==========================================================================
    VENTA_DIAS.CSS - CYS LTDA
-   Paleta: FFFFFF · 0A2A52 · 011936 · CF9C48 (dorado, solo peligro/faltante)
-   El verde (#2ecc71) se reserva EXCLUSIVAMENTE para mensajes de dinero/éxito
-   (ingresos, "Pagado", cifras positivas). Todo lo demás (gráficos, barras,
-   iconos, textos) usa el color de texto del tema en distintas opacidades.
+   Todos los colores siguen las variables de tema de base.js
+   (--fondo, --fondo-card, --fondo-card2, --texto, --texto-muted,
+   --azul-claro, --azul-oscuro, --azul-borde, --verde, --rojo).
+   Este archivo NO define fondo ni color base de la página.
+   El dorado (CF9C48) queda para acentos de borde; el verde se reserva
+   para mensajes de dinero/éxito (ingresos, "Pagado", cifras positivas).
+   Todo lo demás (gráficos, barras, iconos, textos) usa el color de texto
+   del tema en distintas opacidades.
    ========================================================================== */
 
 :root {
@@ -14,12 +18,12 @@
   --cys-acento:       var(--azul-claro);
   --cys-verde:        var(--verde);
   --cys-rojo:         var(--rojo);
+  --cys-dorado:       var(--dorado, #CF9C48);
 }
 
 
-/* Contenedor Principal */
+/* Contenedor Principal (el fondo lo pone el CSS global) */
 .cys-page-wrapper {
-    background-color: var(--cys-surface) !important;
     min-height: 100vh;
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: var(--texto);
@@ -48,11 +52,10 @@
     margin-top: 4px;
 }
 
-/* BOTONES OVALADOS — acción normal del módulo (blanco, no dorado:
-   el dorado queda reservado para peligro/faltante) */
+/* BOTONES OVALADOS — acción normal del módulo (acento del tema) */
 .cys-btn-oval-cyan {
-    background-color: #FFFFFF !important;
-    color: #001f38 !important;
+    background-color: var(--azul-claro) !important;
+    color: var(--azul-oscuro) !important;
     border: none !important;
     border-radius: 50px !important;
     padding: 8px 24px !important;
@@ -67,8 +70,8 @@
 }
 
 .cys-btn-oval-cyan:hover {
-    background-color: rgba(255, 255, 255, 0.85) !important;
-    color: #001f38 !important;
+    background-color: color-mix(in srgb, var(--azul-claro) 85%, var(--texto)) !important;
+    color: var(--azul-oscuro) !important;
     transform: scale(1.02);
 }
 
@@ -105,7 +108,7 @@
 .cys-meta-card {
     background-color: var(--cys-bg-card) !important;
     border: 1px solid var(--cys-borde) !important;
-    border-left: 3px solid #CF9C48 !important;
+    border-left: 3px solid var(--cys-dorado) !important;
     border-radius: 14px !important;
     padding: 1.25rem 1.5rem !important;
 }
@@ -179,7 +182,7 @@
 
 .cys-rank-nombre {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.75);
+    color: color-mix(in srgb, var(--texto) 75%, transparent);
 }
 
 .cys-rank-valor {
@@ -199,7 +202,7 @@
     width: 100%;
     height: 6px;
     border-radius: 50px;
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--texto) 8%, transparent);
     overflow: hidden;
 }
 
@@ -304,7 +307,7 @@
     align-items: center;
     gap: 12px;
     padding: 16px 24px;
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: color-mix(in srgb, var(--texto) 2%, transparent);
     border-bottom: 1px solid var(--cys-borde);
 }
 
@@ -353,9 +356,9 @@
 
 /* El badge de estado "Pagado" SÍ es un mensaje de éxito: mantiene el verde */
 .cys-badge-status {
-    background-color: rgba(46, 204, 113, 0.1);
+    background-color: color-mix(in srgb, var(--verde) 10%, transparent);
     color: var(--cys-verde);
-    border: 1px solid rgba(46, 204, 113, 0.2);
+    border: 1px solid color-mix(in srgb, var(--verde) 20%, transparent);
     border-radius: 20px;
     padding: 4px 12px;
     font-size: 0.78rem;
@@ -368,7 +371,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 24px;
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: color-mix(in srgb, var(--texto) 2%, transparent);
     border-top: 1px solid var(--cys-borde);
 }
 
@@ -379,29 +382,42 @@
   align-items: center;
   flex-wrap: wrap;
   padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--texto) 2%, transparent);
   border-bottom: 1px solid var(--cys-borde);
 }
-.cys-hist-search-wrap { position: relative; flex: 1 1 280px; min-width: 220px; }
+
+/* Buscador (bloques duplicados fusionados: valen los valores finales) */
+.cys-hist-search-wrap {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 220px;
+}
 .cys-hist-search-wrap i {
-  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-  color: var(--cys-texto-muted); font-size: .9rem;
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cys-acento);
+  font-size: 0.9rem;
+  pointer-events: none;
 }
 .cys-hist-search-input {
   width: 100%;
   background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  border-radius: 10px;
-  color: #fff;
-  padding: 9px 14px 9px 38px;
-  font-size: .85rem;
+  color: var(--texto);
+  border-radius: 50px;
+  padding: 9px 16px 9px 38px;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
-.cys-hist-search-input:focus { outline: none; border-color: var(--cys-acento); }
+.cys-hist-search-input:focus { border-color: var(--cys-acento); }
 .cys-hist-search-input::placeholder { color: var(--cys-texto-muted); }
 
 .cys-hist-table { width: 100%; border-collapse: collapse; }
 .cys-hist-table thead th {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--texto) 4%, transparent);
   color: var(--cys-acento);
   font-size: .72rem;
   font-weight: 700;
@@ -420,9 +436,9 @@
 .cys-hist-table th.sortable.activo .bi { opacity: 1; color: var(--cys-acento); }
 .cys-hist-table th.sortable.desc .bi { transform: rotate(180deg); }
 
-.cys-hist-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.08); transition: background .15s; }
-.cys-hist-table tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
-.cys-hist-table td { padding: 14px 16px; color: rgba(255, 255, 255, 0.85); font-size: .85rem; vertical-align: middle; }
+.cys-hist-table tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent); transition: background .15s; }
+.cys-hist-table tbody tr:hover { background: color-mix(in srgb, var(--texto) 4%, transparent); }
+.cys-hist-table td { padding: 14px 16px; color: color-mix(in srgb, var(--texto) 85%, transparent); font-size: .85rem; vertical-align: middle; }
 
 .cys-hist-id { color: var(--cys-texto-muted); font-weight: 700; }
 .cys-hist-cliente { color: var(--texto); font-weight: 700; }
@@ -442,33 +458,6 @@
   background: var(--cys-surface);
   border-bottom: 1px solid var(--cys-borde);
 }
-.cys-hist-search-wrap {
-  position: relative;
-  flex: 1 1 280px;
-  min-width: 220px;
-}
-.cys-hist-search-wrap i {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--cys-acento);
-  font-size: 0.9rem;
-  pointer-events: none;
-}
-.cys-hist-search-input {
-  width: 100%;
-  background: var(--cys-bg-card);
-  border: 1px solid var(--cys-borde);
-  color: #fff;
-  border-radius: 50px;
-  padding: 9px 16px 9px 38px;
-  font-size: 0.88rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.cys-hist-search-input:focus { border-color: var(--cys-acento); }
-.cys-hist-search-input::placeholder { color: var(--cys-texto-muted); }
 
 .cys-hist-sort-wrap { position: relative; flex: 0 0 auto; }
 .cys-hist-sort-wrap i {
@@ -485,20 +474,23 @@
   -webkit-appearance: none;
   background-color: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  color: #fff;
+  color: var(--texto);
   border-radius: 50px;
   padding: 9px 34px 9px 38px;
   font-size: 0.85rem;
   cursor: pointer;
   outline: none;
   min-width: 170px;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  /* Flecha que sigue el color del texto del tema (antes: SVG blanco fijo) */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
 }
 .cys-hist-sort-select:focus { border-color: var(--cys-acento); }
-.cys-hist-sort-select option { background: var(--cys-bg-card); color: #fff; }
+.cys-hist-sort-select option { background: var(--cys-bg-card); color: var(--texto); }
 
 /* ══════════════════════════════════════
    Variantes de color para tarjetas KPI
@@ -512,19 +504,19 @@
     align-items: center;
 }
 
-.cys-kpi-icon--info    { background: rgba(255, 255, 255, 0.12); color: var(--cys-acento); }
-.cys-kpi-icon--success { background: rgba(46, 204, 113, 0.12); color: var(--cys-verde); }
+.cys-kpi-icon--info    { background: color-mix(in srgb, var(--texto) 12%, transparent); color: var(--cys-acento); }
+.cys-kpi-icon--success { background: color-mix(in srgb, var(--verde) 12%, transparent); color: var(--cys-verde); }
 .cys-kpi-icon--info i, .cys-kpi-icon--success i { font-size: 1.1rem; }
 
 .cys-kpi-badge--info {
     color: var(--cys-acento);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, var(--texto) 10%, transparent);
+    border-color: color-mix(in srgb, var(--texto) 30%, transparent);
 }
 .cys-kpi-badge--success {
     color: var(--cys-verde);
-    background: rgba(46, 204, 113, 0.1);
-    border-color: rgba(46, 204, 113, 0.3);
+    background: color-mix(in srgb, var(--verde) 10%, transparent);
+    border-color: color-mix(in srgb, var(--verde) 30%, transparent);
 }
 
 /* KPI de ingresos: cifra de dinero, verde permitido */
@@ -540,14 +532,14 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--texto) 15%, transparent);
   color: var(--cys-acento);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--texto) 20%, transparent);
   flex-shrink: 0;
 }
 .cys-cliente-rol {
@@ -557,9 +549,9 @@
 .cys-producto-badge {
   display: inline-flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--texto) 5%, transparent);
+  color: var(--texto);
+  border: 1px solid color-mix(in srgb, var(--texto) 15%, transparent);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 0.85rem;
@@ -568,9 +560,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(46, 204, 113, 0.1);
+  background: color-mix(in srgb, var(--verde) 10%, transparent);
   color: var(--cys-verde);
-  border: 1px solid rgba(46, 204, 113, 0.25);
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent);
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 0.78rem;

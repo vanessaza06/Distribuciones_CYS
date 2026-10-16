@@ -31,6 +31,14 @@ def session_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated and not request.session.get('usuario_id'):
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+                'application/json' in (request.content_type or '') or
+                request.path.endswith('/apertura/') or
+                request.path.endswith('/cierre/')
+            )
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': 'Sesión no iniciada o expirada. Por favor recarga e inicia sesión.'}, status=401)
             return redirect('login')
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -60,11 +68,21 @@ def ventas_lista(request):
         .prefetch_related('productos__presentaciones__lotes')
     )
     hoy = timezone.localdate()
-    ventas_hoy = Venta.objects.filter(fecha__date=hoy)
-    total_dia = int(sum(v.total_venta for v in ventas_hoy))
+    start_of_day = timezone.make_aware(datetime.combine(hoy, datetime.min.time()))
+    end_of_day = timezone.make_aware(datetime.combine(hoy, datetime.max.time()))
 
     caja_abierta = obtener_caja_abierta(hoy)
     ultimo_cierre = Caja.objects.order_by('-fecha_hora').first()
+
+    # Combinar ventas asociadas a la caja abierta activa y ventas del día por rango (compatible MySQL)
+    if caja_abierta:
+        ventas_turno = Venta.objects.filter(
+            Q(caja=caja_abierta) | Q(fecha__range=(start_of_day, end_of_day))
+        ).distinct()
+    else:
+        ventas_turno = Venta.objects.filter(fecha__range=(start_of_day, end_of_day))
+
+    total_dia = int(sum(v.total_venta for v in ventas_turno))
 
     return render(request, 'ventas/ventas.html', {
         'ventas': ventas,
@@ -82,6 +100,7 @@ def ventas_lista(request):
 ventas = ventas_lista
 
 
+@csrf_exempt
 @session_required
 def nueva_venta(request):
     if request.method != 'POST':
@@ -91,13 +110,17 @@ def nueva_venta(request):
 
     caja_actual = obtener_caja_abierta()
     if not caja_actual:
+        denoms = {}
+        if vendedor:
+            denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
         caja_actual = Caja.objects.create(
+            fecha_hora=timezone.now(),
             monto_base=Decimal('0'),
             total_efectivo=Decimal('0'),
             total_transferencias=Decimal('0'),
             total_retirado=Decimal('0'),
-            usuario=vendedor,
             observacion='Turno iniciado automáticamente al registrar venta',
+            denominaciones=denoms,
         )
 
     producto_ids = request.POST.getlist('producto_id[]')
@@ -174,19 +197,22 @@ def nueva_venta(request):
     total_final = max(Decimal('0'), subtotal_venta - monto_descuento)
     total_pagado = pago_efectivo + pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
 
-    if total_pagado > Decimal('0') and total_pagado < total_final:
+    if total_pagado == Decimal('0'):
+        pago_efectivo = total_final
+        metodo_pago = 'efectivo'
+    elif total_pagado < total_final:
         messages.error(request, f"El total pagado (${total_pagado:,.0f}) no cubre el total (${total_final:,.0f}).".replace(',', '.'))
         return redirect('ventas')
-
-    metodo_pago = 'efectivo'
-    if pago_tarjeta > 0:
-        metodo_pago = 'tarjeta'
-    elif pago_transferencia > 0:
-        metodo_pago = 'transferencia'
-    elif pago_nequi > 0:
-        metodo_pago = 'nequi'
-    elif pago_daviplata > 0:
-        metodo_pago = 'daviplata'
+    else:
+        metodo_pago = 'efectivo'
+        if pago_tarjeta > 0:
+            metodo_pago = 'tarjeta'
+        elif pago_transferencia > 0:
+            metodo_pago = 'transferencia'
+        elif pago_nequi > 0:
+            metodo_pago = 'nequi'
+        elif pago_daviplata > 0:
+            metodo_pago = 'daviplata'
 
     with transaction.atomic():
         venta = Venta.objects.create(
@@ -317,11 +343,21 @@ def ventas_dia(request):
             pass
 
     if fecha_inicio_str or fecha_fin_str:
-        ventas_qs = Venta.objects.filter(fecha__date__range=[fecha_inicio, fecha_fin]).order_by('-fecha')
+        start_dt = timezone.make_aware(datetime.combine(fecha_inicio, datetime.min.time()))
+        end_dt = timezone.make_aware(datetime.combine(fecha_fin, datetime.max.time()))
+        ventas_qs = Venta.objects.filter(fecha__range=(start_dt, end_dt)).order_by('-fecha')
     else:
-        ventas_qs = Venta.objects.filter(fecha__date=hoy).order_by('-fecha')
+        start_dt = timezone.make_aware(datetime.combine(hoy, datetime.min.time()))
+        end_dt = timezone.make_aware(datetime.combine(hoy, datetime.max.time()))
+        caja_abierta = obtener_caja_abierta(hoy)
+        if caja_abierta:
+            ventas_qs = Venta.objects.filter(
+                Q(caja=caja_abierta) | Q(fecha__range=(start_dt, end_dt))
+            ).distinct().order_by('-fecha')
+        else:
+            ventas_qs = Venta.objects.filter(fecha__range=(start_dt, end_dt)).order_by('-fecha')
 
-    ventas_list = list(ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'))
+    ventas_list = list(ventas_qs.select_related('vendedor').prefetch_related('detalles__producto', 'detalles__presentacion'))
     total_dia = float(sum(v.total_venta for v in ventas_list))
     total_productos = sum(det.cantidad for v in ventas_list for det in v.detalles.all())
 
@@ -367,18 +403,27 @@ def ventas_dia(request):
     prods_map = {}
     for v in ventas_list:
         for det in v.detalles.all():
-            if not det.producto:
+            p_id = None
+            p_nombre = 'Producto'
+            if det.producto:
+                p_id = f"p_{det.producto.pk}"
+                p_nombre = det.producto.nombre
+            elif det.presentacion:
+                p_id = f"pres_{det.presentacion.pk}"
+                p_nombre = det.presentacion.nombre
+            else:
                 continue
-            p_id = det.producto.pk
-            p_nombre = det.producto.nombre
+
             if p_id not in prods_map:
                 prods_map[p_id] = {
                     'nombre': p_nombre,
                     'cantidad': 0,
                     'recaudo': 0.0,
                 }
-            prods_map[p_id]['cantidad'] += det.cantidad
-            prods_map[p_id]['recaudo'] += float(det.subtotal)
+            cant_item = det.cantidad or 0
+            subt_val = float(det.subtotal_val or (det.subtotal() if callable(getattr(det, 'subtotal', None)) else (cant_item * float(det.precio_unitario or 0))))
+            prods_map[p_id]['cantidad'] += cant_item
+            prods_map[p_id]['recaudo'] += subt_val
 
     productos_top = sorted(prods_map.values(), key=lambda x: x['cantidad'], reverse=True)[:8]
 
@@ -516,9 +561,12 @@ def caja(request):
         estado_label = 'CERRADO' if es_cerrado else ('ACTIVO' if es_ultimo else 'FINALIZADO')
 
         # Operador
-        if item.usuario:
+        operador_nombre = None
+        if isinstance(item.denominaciones, dict):
+            operador_nombre = item.denominaciones.get('operador')
+        if not operador_nombre and item.usuario:
             operador_nombre = getattr(item.usuario, 'nombre', None) or item.usuario.get_full_name() or item.usuario.username or str(item.usuario.documento_usuario or '')
-        else:
+        if not operador_nombre:
             operador_nombre = 'Administrador / Sistema'
 
         monto_base_val = float(item.monto_base or 0)
@@ -533,6 +581,10 @@ def caja(request):
         pct_daviplata = round((float(pago_daviplata) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
         pct_tarjeta = round((float(pago_tarjeta) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
         pct_transferencia = round((float(pago_transferencia) / total_ventas_val * 100), 1) if total_ventas_val > 0 else 0.0
+
+        ventas_turno_list = list(
+            ventas_turno.select_related('vendedor').prefetch_related('detalles__producto', 'detalles__presentacion').order_by('-fecha')[:100]
+        )
 
         turno_dict = {
             'id': item.codigo_caja,
@@ -559,6 +611,7 @@ def caja(request):
             'pct_tarjeta': pct_tarjeta,
             'pct_transferencia': pct_transferencia,
             'productos_top': productos_top_turno,
+            'ventas': ventas_turno_list,
             'denominaciones': item.denominaciones or {},
             'observacion': (item.observacion or '').replace('[CERRADO]', '').strip(),
             'operador': operador_nombre,
@@ -643,7 +696,6 @@ def obtener_usuario_actual(request):
 
 
 @csrf_exempt
-@session_required
 def apertura_caja(request):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
@@ -662,15 +714,16 @@ def apertura_caja(request):
 
     vendedor = obtener_usuario_actual(request)
     observacion_clean = (data.get('observacion', '') or '').replace('[CERRADO]', '').strip()
+    denoms = data.get('denominaciones', {}) or {}
+    if vendedor:
+        denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
 
     try:
         caja_existente = obtener_caja_abierta()
         if caja_existente:
             caja_existente.monto_base = Decimal(str(monto_base))
             caja_existente.observacion = observacion_clean
-            caja_existente.denominaciones = data.get('denominaciones', {})
-            if vendedor:
-                caja_existente.usuario = vendedor
+            caja_existente.denominaciones = denoms
             caja_existente.save()
             codigo_caja = caja_existente.codigo_caja
         else:
@@ -680,9 +733,8 @@ def apertura_caja(request):
                 total_efectivo=Decimal('0'),
                 total_transferencias=Decimal('0'),
                 total_retirado=Decimal('0'),
-                usuario=vendedor,
                 observacion=observacion_clean,
-                denominaciones=data.get('denominaciones', {}),
+                denominaciones=denoms,
             )
             codigo_caja = nueva_caja.codigo_caja
         return JsonResponse({'ok': True, 'monto_base': monto_base, 'codigo_caja': codigo_caja})
@@ -691,7 +743,6 @@ def apertura_caja(request):
 
 
 @csrf_exempt
-@session_required
 def cierre_caja(request):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
@@ -716,8 +767,8 @@ def cierre_caja(request):
         total_retirado = 0.0
 
     try:
-        caja_reg.total_efectivo = total_contado
-        caja_reg.total_retirado = total_retirado
+        caja_reg.total_efectivo = Decimal(str(total_contado))
+        caja_reg.total_retirado = Decimal(str(total_retirado))
         obs = (caja_reg.observacion or '').strip()
         if '[CERRADO]' not in obs:
             caja_reg.observacion = (obs + ' [CERRADO]').strip()
