@@ -1,8 +1,12 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Marcas — CYS Ltda{%
-endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
-%}active{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=12" />
-{% endblock %} {% block content %}
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Marcas — CYS Ltda{% endblock %}
+{% block page_title %}Marcas{% endblock %}
+{% block nav_marcas %}active{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=16" />
+{% endblock %}
+{% block content %}
 
 <div
   class="container-fluid p-0 cys-marcas-page"
@@ -76,54 +80,50 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
         </ul>
       </div>
 
-      <button class="cys-btn cys-btn--primary" id="btnNuevaMarca" type="button">
+      <!-- Botón Nueva marca (con tooltip "Crear nueva marca") -->
+      <button
+        class="cys-btn cys-btn--primary"
+        id="btnNuevaMarca"
+        type="button"
+        data-tooltip="Crear nueva marca"
+        aria-label="Crear nueva marca"
+      >
         <i class="bi bi-plus-lg"></i>
         Nueva marca
       </button>
     </div>
   </section>
 
-  {% if messages %} {% for message in messages %}
+  {% if messages %}
+  {% for message in messages %}
   <div class="cys-alert cys-alert--{{ message.tags }}">{{ message }}</div>
-  {% endfor %} {% endif %}
+  {% endfor %}
+  {% endif %}
 
   <!-- Tarjetas de resumen -->
   <section class="cys-stats" id="cysStats">
-    <article class="cys-stat-card">
-      <div class="cys-stat-card__icon cys-stat-card__icon--tag">
-        <i class="bi bi-tag"></i>
+    <article class="cys-kpi cys-kpi--total">
+      <div class="cys-kpi__body">
+        <p class="cys-kpi__label">Marcas</p>
+        <p class="cys-kpi__value">{{ total_marcas }}</p>
       </div>
-      <div class="cys-stat-card__body">
-        <p class="cys-stat-card__label">Total de marcas</p>
-        <p class="cys-stat-card__value">{{ total_marcas }}</p>
-      </div>
-      <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
+      <i class="bi bi-tag cys-kpi__icon"></i>
     </article>
 
-    <article class="cys-stat-card">
-      <div class="cys-stat-card__icon cys-stat-card__icon--active">
-        <i class="bi bi-circle-fill"></i>
+    <article class="cys-kpi cys-kpi--active">
+      <div class="cys-kpi__body">
+        <p class="cys-kpi__label">Activas</p>
+        <p class="cys-kpi__value">{{ total_activas }}</p>
       </div>
-      <div class="cys-stat-card__body">
-        <p class="cys-stat-card__label">Marcas activas</p>
-        <p class="cys-stat-card__value cys-stat-card__value--green">
-          {{ total_activas }}
-        </p>
-      </div>
-      <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
+      <i class="bi bi-check-circle cys-kpi__icon"></i>
     </article>
 
-    <article class="cys-stat-card">
-      <div class="cys-stat-card__icon cys-stat-card__icon--inactive">
-        <i class="bi bi-circle-fill"></i>
+    <article class="cys-kpi cys-kpi--inactive">
+      <div class="cys-kpi__body">
+        <p class="cys-kpi__label">Inactivas</p>
+        <p class="cys-kpi__value">{{ total_inactivas }}</p>
       </div>
-      <div class="cys-stat-card__body">
-        <p class="cys-stat-card__label">Marcas inactivas</p>
-        <p class="cys-stat-card__value cys-stat-card__value--red">
-          {{ total_inactivas }}
-        </p>
-      </div>
-      <span class="cys-stat-card__mini"><i class="bi bi-bar-chart"></i></span>
+      <i class="bi bi-x-circle cys-kpi__icon"></i>
     </article>
   </section>
 
@@ -143,10 +143,8 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
 
     <div class="cys-select" id="cysEstadoSelect">
       <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
-        <span id="cysEstadoLabel"
-          >{% if estado_filtro == "activo" %}Activa{% elif estado_filtro ==
-          "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span
-        >
+        {# IMPORTANTE: cada {% ... %} debe ir completo en UNA sola línea #}
+        <span id="cysEstadoLabel">{% if estado_filtro == "activo" %}Activa{% elif estado_filtro == "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span>
         <i class="bi bi-chevron-down"></i>
       </button>
       <ul class="cys-select__menu" id="cysEstadoMenu">
@@ -218,7 +216,8 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
                 method="post"
                 action="{% url 'cambiar_estado_marca' marca.codigo_marca %}"
               >
-                {% csrf_token %} {% if marca.estado == "activo" %}
+                {% csrf_token %}
+                {% if marca.estado == "activo" %}
                 <button
                   class="cys-action-btn cys-action-btn--deactivate"
                   type="submit"
@@ -248,11 +247,8 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
 
   <!-- Pie: resumen + paginación -->
   <section class="cys-table-footer">
-    <p class="cys-table-count">
-      {% if marcas %} Mostrando {{ page_obj.start_index }} a {{
-      page_obj.end_index }} de {{ paginator.count }} marcas {% else %} Mostrando
-      0 marcas {% endif %}
-    </p>
+    {# Importante: cada {{ ... }} y {% ... %} debe ir completo en UNA sola línea #}
+    <p class="cys-table-count">{% if marcas %}Mostrando {{ page_obj.start_index }} de {{ paginator.count }} marcas{% else %}Mostrando 0 marcas{% endif %}</p>
     <div class="cys-pagination">
       {% if page_obj.has_previous %}
       <a
@@ -274,7 +270,8 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
       {% endif %}
 
       <div class="cys-page-numbers">
-        {% for num in page_range %} {% if num == paginator.ELLIPSIS %}
+        {% for num in page_range %}
+        {% if num == paginator.ELLIPSIS %}
         <span class="cys-page-ellipsis">…</span>
         {% else %}
         <a
@@ -282,7 +279,8 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
           href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&desde={{ desde|urlencode }}&hasta={{ hasta|urlencode }}&page={{ num }}"
           >{{ num }}</a
         >
-        {% endif %} {% endfor %}
+        {% endif %}
+        {% endfor %}
       </div>
 
       {% if page_obj.has_next %}
@@ -434,9 +432,10 @@ endblock %} {% block page_title %}Marcas{% endblock %} {% block nav_marcas
   </div>
 </div>
 
-{% endblock %} {% block extra_js %}
+{% endblock %}
+{% block extra_js %}
 <script
-  src="{% static 'js/marcas/marcas.js' %}?v=12"
+  src="{% static 'js/marcas/marcas.js' %}?v=13"
   onerror="
     var s = document.createElement('script');
     s.src = this.src.replace('/js/marcas/', '/js/marca/');

@@ -1302,4 +1302,122 @@ html[data-bs-theme=dark] div.DTS div.dataTables_scrollBody table {
   background-color: var(--bs-body-bg);
 }
 
+/* ──────────────────────────────────────────────────────────
+   CYS DATATABLES EXPORT BUTTONS
+   ────────────────────────────────────────────────────────── */
+.cys-dt-btn-excel,
+.dt-button.cys-dt-btn-excel,
+button.cys-dt-btn-excel {
+  background: linear-gradient(135deg, #107c41, #1f9a55) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 8px !important;
+  padding: 0.42rem 0.95rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  box-shadow: 0 2px 8px rgba(16, 124, 65, 0.35) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+}
+
+.cys-dt-btn-excel:hover,
+.dt-button.cys-dt-btn-excel:hover,
+button.cys-dt-btn-excel:hover {
+  background: linear-gradient(135deg, #148f4c, #26ab60) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(16, 124, 65, 0.5) !important;
+  color: #ffffff !important;
+}
+
+.cys-dt-btn-pdf,
+.dt-button.cys-dt-btn-pdf,
+button.cys-dt-btn-pdf {
+  background: linear-gradient(135deg, #c0392b, #e74c3c) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 8px !important;
+  padding: 0.42rem 0.95rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.35) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+}
+
+.cys-dt-btn-pdf:hover,
+.dt-button.cys-dt-btn-pdf:hover,
+button.cys-dt-btn-pdf:hover {
+  background: linear-gradient(135deg, #d63031, #ff5252) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(214, 48, 49, 0.5) !important;
+  color: #ffffff !important;
+}
+
+div.dt-buttons {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Ocultar controles por defecto no deseados (Mostrar 10, Buscar) */
+div.dt-container div.dt-length,
+div.dt-container div.dt-search,
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  display: none !important;
+}
+
+/* Estilos oscuros para paginación */
+div.dt-container div.dt-paging ul.pagination,
+.dataTables_wrapper .dataTables_paginate {
+  gap: 3px !important;
+  margin-top: 0.5rem !important;
+}
+
+div.dt-container div.dt-paging ul.pagination .page-item .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(207, 156, 72, 0.25) !important;
+  color: #CF9C48 !important;
+  border-radius: 6px !important;
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.82rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+div.dt-container div.dt-paging ul.pagination .page-item:hover .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: rgba(207, 156, 72, 0.2) !important;
+  color: #ffffff !important;
+  border-color: #CF9C48 !important;
+}
+
+div.dt-container div.dt-paging ul.pagination .page-item.active .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: #CF9C48 !important;
+  color: #011936 !important;
+  border-color: #CF9C48 !important;
+  font-weight: 700 !important;
+}
+
+div.dt-container div.dt-paging ul.pagination .page-item.disabled .page-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+  color: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+  cursor: not-allowed !important;
+}
+
+
 

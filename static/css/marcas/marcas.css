@@ -279,7 +279,7 @@
   filter: brightness(1.08);
 }
 
-/* ---------- Stat cards ---------- */
+/* ---------- Tarjetas de resumen (IGUALES a Stock & Productos) ---------- */
 
 .cys-stats {
   display: grid;
@@ -288,85 +288,52 @@
   margin-bottom: 22px;
 }
 
-.cys-stat-card {
-  background: var(--cys-surface);
-  border: 1px solid var(--cys-amber-border);
-  border-radius: var(--cys-radius-md);
-  padding: 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.cys-kpi {
   position: relative;
-}
-
-.cys-stat-card:has(.cys-stat-card__icon--active) {
-  border-color: var(--cys-green-border);
-}
-
-.cys-stat-card:has(.cys-stat-card__icon--inactive) {
-  border-color: var(--cys-red-border);
-}
-
-.cys-stat-card__icon {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--cys-radius-sm);
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  font-size: 17px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 88px;
+  padding: 0 24px;
+  box-sizing: border-box;
+  background-color: var(--cys-surface);
+  border: 1px solid var(--cys-border-soft);
+  border-left: 2px solid var(--cys-amber);
+  border-radius: 10px;
 }
 
-.cys-stat-card__icon--tag {
-  background: var(--cys-amber-soft);
-  color: var(--cys-amber);
+.cys-kpi__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
-.cys-stat-card__icon--active {
-  background: var(--cys-green-soft);
-  color: var(--cys-green);
-}
-
-.cys-stat-card__icon--inactive {
-  background: var(--cys-red-soft);
-  color: var(--cys-red);
-}
-
-.cys-stat-card__label {
+.cys-kpi__label {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--cys-text-secondary);
 }
 
-.cys-stat-card__value {
+.cys-kpi__value {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--cys-blue);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--cys-text);
 }
 
-.cys-stat-card__value--green {
-  color: var(--cys-green);
-}
-
-.cys-stat-card__value--red {
-  color: var(--cys-red);
-}
-
-.cys-stat-card__mini {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--cys-radius-sm);
-  background: var(--cys-surface-alt);
-  color: var(--cys-text-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+.cys-kpi__icon {
+  font-size: 30px;
+  line-height: 1;
+  color: var(--cys-amber);
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 /* ---------- Toolbar (buscar + filtro) ---------- */
@@ -1295,44 +1262,80 @@
   color: var(--cys-amber) !important;
 }
 
+/* ---------- Tarjetas de resumen (blindado) ----------
+   Las 3 tarjetas (Marcas, Activas, Inactivas) usan EXACTAMENTE
+   el mismo estilo que las de Stock & Productos:
+   borde izquierdo ámbar, número blanco, ícono ámbar tenue.
+   Sin variantes de color por tarjeta. */
 .cys-marcas-page .cys-stats {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 18px !important;
 }
 
-.cys-marcas-page .cys-stats .cys-stat-card {
-  height: auto !important;
-  min-height: 0 !important;
-  width: auto !important;
-}
-
-.cys-stats .cys-stat-card {
+.cys-marcas-page .cys-kpi,
+.cys-marcas-page .cys-kpi--total,
+.cys-marcas-page .cys-kpi--active,
+.cys-marcas-page .cys-kpi--inactive {
+  position: relative;
+  display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px;
+  min-height: 88px !important;
+  height: auto !important;
+  width: auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box;
+  background-color: var(--cys-surface) !important;
+  border: 1px solid var(--cys-border-soft) !important;
+  border-left: 2px solid var(--cys-amber) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.cys-marcas-page .cys-kpi__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   text-align: left !important;
 }
 
-.cys-stats .cys-stat-card>div,
-.cys-stats .cys-stat-card__body {
-  text-align: left !important;
-}
-
-.cys-stats .cys-stat-card__label {
-  text-transform: none !important;
-  letter-spacing: normal !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
+.cys-marcas-page .cys-kpi__label {
+  margin: 0 0 4px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
   color: var(--cys-text-secondary) !important;
   text-align: left !important;
 }
 
-.cys-stats .cys-stat-card__value {
-  font-size: 26px !important;
+.cys-marcas-page .cys-kpi__value,
+.cys-marcas-page .cys-kpi--total .cys-kpi__value,
+.cys-marcas-page .cys-kpi--active .cys-kpi__value,
+.cys-marcas-page .cys-kpi--inactive .cys-kpi__value {
+  margin: 0 !important;
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  color: var(--cys-text) !important;
   text-align: left !important;
 }
 
+.cys-marcas-page .cys-kpi__icon,
+.cys-marcas-page .cys-kpi--total .cys-kpi__icon,
+.cys-marcas-page .cys-kpi--active .cys-kpi__icon,
+.cys-marcas-page .cys-kpi--inactive .cys-kpi__icon {
+  font-size: 30px !important;
+  line-height: 1;
+  color: var(--cys-amber) !important;
+  opacity: 0.6 !important;
+  flex-shrink: 0;
+}
+
+/* ---------- Botón principal ---------- */
 .cys-btn.cys-btn--primary,
 button.cys-btn--primary,
 a.cys-btn--primary,
@@ -1366,7 +1369,6 @@ a.cys-btn--primary,
 }
 
 .cys-table-card,
-.cys-stats .cys-stat-card,
 .cys-select__trigger {
   background-color: var(--cys-surface) !important;
 }
@@ -1488,6 +1490,10 @@ a.cys-btn--primary,
   .cys-marcas-page .cys-select {
     width: 100% !important;
   }
+
+  .cys-marcas-page .cys-kpi {
+    padding: 0 22px !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1508,4 +1514,45 @@ a.cys-btn--primary,
 .cys-modal-overlay {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+/* =========================================================
+   TOOLTIP — "Crear nueva marca" (igual al estilo de "Editar")
+   ========================================================= */
+.cys-marcas-page [data-tooltip] {
+  position: relative;
+}
+
+.cys-marcas-page [data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f2a4d;
+  border: 1px solid var(--cys-cyan-border);
+  color: var(--cys-text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: var(--cys-shadow);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.cys-marcas-page [data-tooltip]:hover::after,
+.cys-marcas-page [data-tooltip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* El tooltip no debe verse mientras el modal está abierto */
+.cys-modal-overlay--open ~ * [data-tooltip]::after {
+  display: none;
 }

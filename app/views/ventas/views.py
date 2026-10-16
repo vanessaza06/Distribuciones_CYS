@@ -438,7 +438,7 @@ def ventas_dia(request):
 
     # Ventas Tope del Día (Mayores transacciones individuales del día)
     ventas_sorted = sorted(ventas_list, key=lambda v: float(v.total_venta or 0), reverse=True)[:4]
-    colores_top = ['#ffffff', '#64748b', '#4DA8DA', '#2ed573']
+    colores_top = ['#38bdf8', '#2ed573', '#a855f7', '#fbbf24']
     ventas_tope_data = []
     total_base_dia = max(total_dia, 1.0)
     for idx, v in enumerate(ventas_sorted):
@@ -447,6 +447,13 @@ def ventas_dia(request):
         r_val = 38 - (idx * 11)  # concentric rings: 38, 27, 16, ...
         c_val = 2 * 3.14159265 * r_val
         dash_offset = c_val - (c_val * (pct_v / 100.0))
+        
+        cliente_nombre = 'Consumidor final'
+        if getattr(v, 'cliente', None) and getattr(v.cliente, 'nombre', None):
+            cliente_nombre = v.cliente.nombre
+        elif getattr(v, 'usuario', None) and getattr(v.usuario, 'nombre', None):
+            cliente_nombre = f"{v.usuario.nombre} {getattr(v.usuario, 'apellido', '')}".strip()
+
         ventas_tope_data.append({
             'codigo': getattr(v, 'codigo_venta', v.pk),
             'monto': monto_v,
@@ -455,6 +462,8 @@ def ventas_dia(request):
             'r': r_val,
             'c': round(c_val, 2),
             'dash_offset': round(dash_offset, 2),
+            'cliente': cliente_nombre,
+            'metodo_pago': getattr(v, 'metodo_pago', 'Efectivo') or 'Efectivo',
         })
 
     return render(request, 'ventas/ventas_dia.html', {

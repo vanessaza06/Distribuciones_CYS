@@ -51,13 +51,99 @@ function aplicarFiltro() {
     window.location.href = url;
 }
 
-/* ── Búsqueda inventario ── */
-function filtrarTablaInv(q) {
-    q = q.toLowerCase();
-    document.querySelectorAll('#tabla-modal-stock .inv-row').forEach(function(row) {
-        const txt = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-        row.style.display = txt.includes(q) ? '' : 'none';
+/* ══════════════════════════════════════════════
+   INVENTARIO — búsqueda + paginación de 10 en 10
+══════════════════════════════════════════════ */
+var INV_POR_PAGINA = 10;
+var invPagActual   = 1;
+var invQuery       = '';
+
+function invFilasCoincidentes() {
+    var filas = document.querySelectorAll('#tabla-modal-stock .inv-row');
+    var res = [];
+    filas.forEach(function(row) {
+        var txt = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        if (txt.includes(invQuery)) res.push(row);
     });
+    return res;
+}
+
+function renderInvPag() {
+    var todas       = document.querySelectorAll('#tabla-modal-stock .inv-row');
+    var coinciden   = invFilasCoincidentes();
+    var totalPags   = Math.max(1, Math.ceil(coinciden.length / INV_POR_PAGINA));
+    invPagActual    = Math.max(1, Math.min(invPagActual, totalPags));
+
+    var inicio = (invPagActual - 1) * INV_POR_PAGINA;
+    var fin    = inicio + INV_POR_PAGINA;
+
+    todas.forEach(function(r) { r.style.display = 'none'; });
+    coinciden.slice(inicio, fin).forEach(function(r) { r.style.display = ''; });
+
+    var bar = document.getElementById('inv-pag-bar');
+    if (!bar) return;
+
+    bar.style.display = todas.length === 0 ? 'none' : 'flex';
+
+    var desde = coinciden.length === 0 ? 0 : inicio + 1;
+    var hasta = Math.min(fin, coinciden.length);
+
+    document.getElementById('inv-pag-info').textContent =
+        'Mostrando ' + desde + '–' + hasta + ' de ' + coinciden.length;
+    document.getElementById('inv-pag-indicator').textContent =
+        invPagActual + ' / ' + totalPags;
+
+    document.getElementById('inv-pag-first').disabled = invPagActual === 1;
+    document.getElementById('inv-pag-prev').disabled  = invPagActual === 1;
+    document.getElementById('inv-pag-next').disabled  = invPagActual === totalPags;
+    document.getElementById('inv-pag-last').disabled  = invPagActual === totalPags;
+}
+
+function pagInv(dir) {
+    invPagActual += dir;
+    renderInvPag();
+}
+
+function irPagInv(destino) {
+    var total = Math.max(1, Math.ceil(invFilasCoincidentes().length / INV_POR_PAGINA));
+    invPagActual = destino === 'last' ? total : 1;
+    renderInvPag();
+}
+
+/* Búsqueda inventario (la llama el oninput del HTML) */
+function filtrarTablaInv(q) {
+    invQuery = (q || '').toLowerCase().trim();
+    invPagActual = 1;
+    renderInvPag();
+}
+
+function crearPaginacionInv() {
+    var tabla = document.getElementById('tabla-modal-stock');
+    if (!tabla || document.getElementById('inv-pag-bar')) return;
+
+    var wrap = tabla.closest('.table-responsive') || tabla.parentElement;
+
+    var bar = document.createElement('div');
+    bar.id = 'inv-pag-bar';
+    bar.className = 'cys-prov-pagination';
+    bar.style.flexWrap = 'wrap';
+    bar.innerHTML =
+        '<span id="inv-pag-info" style="margin-right:auto;padding-left:20px;font-size:.8rem;color:var(--texto-muted);"></span>' +
+        '<button type="button" class="cys-pag-btn" id="inv-pag-first" title="Primera"><i class="bi bi-chevron-double-left"></i></button>' +
+        '<button type="button" class="cys-pag-btn" id="inv-pag-prev" title="Anterior"><i class="bi bi-chevron-left"></i></button>' +
+        '<span id="inv-pag-indicator" class="cys-prov-pagination__indicator" style="width:auto;min-width:36px;padding:0 12px;">1</span>' +
+        '<button type="button" class="cys-pag-btn" id="inv-pag-next" title="Siguiente"><i class="bi bi-chevron-right"></i></button>' +
+        '<button type="button" class="cys-pag-btn" id="inv-pag-last" title="Última"><i class="bi bi-chevron-double-right"></i></button>' +
+        '<span style="margin-left:auto;padding-right:20px;"></span>';
+
+    wrap.insertAdjacentElement('afterend', bar);
+
+    document.getElementById('inv-pag-first').addEventListener('click', function() { irPagInv('first'); });
+    document.getElementById('inv-pag-prev').addEventListener('click',  function() { pagInv(-1); });
+    document.getElementById('inv-pag-next').addEventListener('click',  function() { pagInv(1); });
+    document.getElementById('inv-pag-last').addEventListener('click',  function() { irPagInv('last'); });
+
+    renderInvPag();
 }
 
 /* ── Búsqueda proveedores ── */
@@ -316,6 +402,7 @@ function renderReportCardChart(wrap, card) {
 
 function initReportesUI() {
     pagProv(0);
+    crearPaginacionInv();
 
     const botonesGrafica = document.querySelectorAll('.cys-report-card__chart-toggle');
     botonesGrafica.forEach(function (btn) {
@@ -330,9 +417,9 @@ function initReportesUI() {
     const tarjetas = document.querySelectorAll('.cys-card--interactive[data-cys-modal-target]');
     tarjetas.forEach(function (card) {
         function intentarAbrirModal(e) {
-    
+
             if (e.target.closest('.cys-report-card__chart-toggle')) return;
-         
+
             if (card.classList.contains('cys-card--chart-mode')) return;
 
             const targetSel = card.getAttribute('data-cys-modal-target');

@@ -1,11 +1,12 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Sum, Q
+from django.db.models import F, Sum, Q
 from django.utils import timezone
 
 from app.models import (
@@ -16,6 +17,9 @@ from app.models import (
     DevolucionProveedores,
     Proveedor,
     Producto,
+    Lote,
+    Compra,
+    DetalleCompra,
     Usuario,
     MetodoPago,
     PagoVenta
@@ -167,7 +171,7 @@ def detalle_devolucion(request, pk):
     """Muestra el detalle completo de una devolución de cliente."""
     devolucion = get_object_or_404(
         Devolucion.objects.select_related(
-            'venta__cliente',
+            'venta',
             'usuario',
             'detalle_venta__producto',
         ).prefetch_related(
@@ -393,16 +397,26 @@ def devoluciones_flujo(request):
                     DetalleDevolucion.objects.create(
                         devolucion=devolucion,
                         producto=det_item.producto,
+                        presentacion=det_item.presentacion,
+                        lote=det_item.lote,
+                        precio_unitario=det_item.precio_unitario,
                         cantidad=cant_a_devolver,
                         fecha_vencimiento=hoy,
                         descripcion=f"Devolución de venta #{venta.pk}",
                         observacion=motivo
                     )
 
-                    # Restaurar stock del producto
-                    if det_item.producto:
-                        det_item.producto.stock = (det_item.producto.stock or 0) + cant_a_devolver
-                        det_item.producto.save()
+                    # Restaurar stock: el stock vive en los lotes, no en Producto
+                    lote = det_item.lote
+                    if lote is None and det_item.producto_id:
+                        lotes = Lote.objects.filter(producto_id=det_item.producto_id)
+                        if det_item.presentacion_id:
+                            lotes = lotes.filter(presentacion_id=det_item.presentacion_id)
+                        lote = lotes.order_by('-fecha_registro').first()
+                    if lote:
+                        Lote.objects.filter(pk=lote.pk).update(
+                            stock_actual=F('stock_actual') + cant_a_devolver
+                        )
 
                 # Limpiar variables de sesión del flujo
                 for key in list(request.session.keys()):
@@ -469,18 +483,270 @@ def devoluciones_flujo(request):
         'motivo_seleccionado':          motivo_dict.get(request.session.get('dev_motivo'), ''),
         'tipo_reembolso_seleccionado':  tipo_dict.get(request.session.get('dev_tipo_reembolso'), ''),
         'observaciones':                request.session.get('dev_observaciones', ''),
-        'productos':                    Producto.objects.filter(activo=True) if paso >= 5 else [],
+        'productos':                    Producto.objects.filter(activo=True).order_by('nombre') if paso >= 5 else [],
         'metodos_pago':                 METODO_PAGO_CHOICES,
         'total_devolver':               total_devolver,
         'tab_activo':                   request.GET.get('tab', 'cliente'),
+        'todos_productos':              Producto.objects.filter(activo=True).annotate(
+                                            stock_total_anotado=Sum('lotes__stock_actual')
+                                        ).order_by('nombre'),
         # Devoluciones a Proveedor (usando app.models.DevolucionProveedores)
         'todos_proveedores':            Proveedor.objects.filter(estado='activo').order_by('nombre_empresa'),
         'devoluciones_proveedor':       DevolucionProveedores.objects.select_related('proveedor').order_by('-fecha')[:50],
         'prov_total':                   DevolucionProveedores.objects.count(),
+        'prov_monto':                   sum((d.total_devuelto for d in DevolucionProveedores.objects.exclude(estado='rechazada')), Decimal('0')),
+        'prov_monto_pendiente':         sum((d.total_devuelto for d in DevolucionProveedores.objects.filter(estado='pendiente')), Decimal('0')),
         'prov_pendientes':              DevolucionProveedores.objects.filter(estado='pendiente').count(),
+        'breadcrumb_items': [
+            {'nombre': 'Devoluciones', 'url': None},
+        ],
     }
 
     return render(request, 'devoluciones/devoluciones.html', context)
+
+
+def _cantidad_ya_devuelta(detalle_id):
+    """Unidades de un detalle de compra ya reclamadas al proveedor (sin contar rechazadas)."""
+    total = 0
+    for d in DevolucionProveedores.objects.exclude(estado='rechazada'):
+        extra = d.datos_extra
+        if extra.get('detalle_compra_id') == detalle_id:
+            total += int(extra.get('cantidad') or 0)
+    return total
+
+
+@login_required
+def compras_proveedor_json(request, nit):
+    """Compras de un proveedor con sus productos y la cantidad aún devolvible."""
+    proveedor = Proveedor.objects.filter(pk=nit).first()
+    if not proveedor:
+        return JsonResponse({'compras': []})
+
+    devueltas = {}
+    for d in DevolucionProveedores.objects.filter(proveedor=proveedor).exclude(estado='rechazada'):
+        extra = d.datos_extra
+        did = extra.get('detalle_compra_id')
+        if did:
+            devueltas[did] = devueltas.get(did, 0) + int(extra.get('cantidad') or 0)
+
+    compras = (Compra.objects.filter(proveedor=proveedor)
+               .exclude(estado='cancelada')
+               .prefetch_related('detalles__producto', 'detalles__lote')
+               .order_by('-fecha'))
+    data = []
+    for c in compras:
+        items = []
+        for det in c.detalles.all():
+            ya = devueltas.get(det.pk, 0)
+            items.append({
+                'detalle_id': det.pk,
+                'producto': det.producto.nombre if det.producto else 'Producto eliminado',
+                'comprada': det.cantidad,
+                'devuelta': ya,
+                'disponible': max(0, det.cantidad - ya),
+                'precio': float(det.precio_unitario),
+                'lote': det.lote.numero_lote if det.lote else '',
+            })
+        data.append({
+            'id': c.pk,
+            'fecha': c.fecha.strftime('%d/%m/%Y'),
+            'estado': c.estado,
+            'estado_label': c.get_estado_display(),
+            'devolvible': c.estado == 'recibida',
+            'valor': float(c.valor),
+            'items': items,
+        })
+    return JsonResponse({'compras': data})
+
+
+@login_required
+@require_POST
+def registrar_devolucion_proveedor(request):
+    """Registra una devolución sobre un producto de una compra real al proveedor."""
+    import json
+    destino = f"{reverse('lista_devoluciones')}?tab=proveedor"
+
+    def error(msg):
+        messages.error(request, msg)
+        return redirect(destino)
+
+    proveedor = Proveedor.objects.filter(pk=request.POST.get('proveedor', '').strip()).first()
+    if not proveedor:
+        return error('⚠️ Debes seleccionar un proveedor válido.')
+
+    detalle = (DetalleCompra.objects.select_related('compra', 'producto', 'lote')
+               .filter(pk=request.POST.get('detalle_compra') or 0, compra__proveedor=proveedor).first())
+    if not detalle:
+        return error('⚠️ Selecciona una compra de este proveedor y el producto a devolver.')
+    if detalle.compra.estado != 'recibida':
+        return error(f'⚠️ La compra #{detalle.compra.pk} aún no fue recibida; solo se devuelve mercancía recibida.')
+
+    try:
+        cantidad = int(request.POST.get('cantidad', '0').strip())
+        if cantidad <= 0:
+            raise ValueError
+    except ValueError:
+        return error('⚠️ La cantidad a devolver debe ser un número entero mayor a cero.')
+
+    disponible = detalle.cantidad - _cantidad_ya_devuelta(detalle.pk)
+    if cantidad > disponible:
+        return error(
+            f'⚠️ De "{detalle.producto.nombre if detalle.producto else "este producto"}" en la compra '
+            f'#{detalle.compra.pk} solo puedes devolver {max(disponible, 0)} unidades.'
+        )
+
+    producto = detalle.producto
+
+    motivo = request.POST.get('motivo', 'otro').strip()
+    if motivo not in dict(DevolucionProveedores.MOTIVO_CHOICES):
+        motivo = 'otro'
+    tipo_resolucion = request.POST.get('tipo_resolucion', 'nota_credito').strip()
+    if tipo_resolucion not in dict(DevolucionProveedores.RESOLUCION_CHOICES):
+        tipo_resolucion = 'nota_credito'
+
+    precio_unitario = detalle.precio_unitario
+    total = Decimal(cantidad) * precio_unitario
+
+    metadata = {
+        'total': float(total),
+        'cantidad': cantidad,
+        'precio_unitario': float(precio_unitario),
+        'compra_id': detalle.compra.pk,
+        'detalle_compra_id': detalle.pk,
+        'lote_id': detalle.lote_id,
+        'producto_id': producto.pk if producto else None,
+        'producto_nombre': producto.nombre if producto else 'Mercancía general',
+        'tipo_resolucion': tipo_resolucion,
+        'obs': request.POST.get('observaciones', '').strip(),
+    }
+
+    dev_prov = DevolucionProveedores.objects.create(
+        proveedor=proveedor,
+        motivo=motivo,
+        estado='pendiente',
+        observaciones=json.dumps(metadata, ensure_ascii=False),
+        fecha=timezone.now(),
+    )
+
+    messages.success(
+        request,
+        f'✅ Devolución {dev_prov.numero} registrada: {cantidad} × {metadata["producto_nombre"]} '
+        f'de la compra #{detalle.compra.pk} (${total:,.0f}).'
+    )
+    return redirect(destino)
+
+
+TRANSICIONES_DEV_PROVEEDOR = {
+    'pendiente': ('aprobada', 'rechazada'),
+    'aprobada': ('aplicada', 'rechazada'),
+    'aplicada': (),
+    'rechazada': (),
+}
+
+ACCIONES_DEV_PROVEEDOR = {
+    'aprobada': ('Aprobar', 'bi-check-lg', 'ok',
+                 'La devolución quedará aprobada y lista para aplicarse.'),
+    'rechazada': ('Rechazar', 'bi-x-lg', 'no',
+                  'La devolución se cerrará como rechazada. Las unidades quedan otra vez disponibles para devolver.'),
+    'aplicada': ('Aplicar', 'bi-check-all', 'apply',
+                 'Se descontará del inventario lo que exista de este producto y la devolución se cerrará.'),
+}
+
+
+@login_required
+def detalle_devolucion_proveedor(request, pk):
+    """Detalle de una devolución a proveedor. Con ?accion=… muestra la confirmación (sin JavaScript)."""
+    dev = get_object_or_404(DevolucionProveedores.objects.select_related('proveedor'), pk=pk)
+    extra = dev.datos_extra
+    compra = Compra.objects.filter(pk=extra.get('compra_id')).first()
+
+    accion = request.GET.get('accion', '')
+    confirmar = None
+    if accion in TRANSICIONES_DEV_PROVEEDOR.get(dev.estado, ()):
+        etiqueta, icono, tono, texto = ACCIONES_DEV_PROVEEDOR[accion]
+        confirmar = {'estado': accion, 'etiqueta': etiqueta, 'icono': icono, 'tono': tono, 'texto': texto}
+    elif accion:
+        messages.error(request, f'⚠️ No se puede pasar {dev.numero} de "{dev.estado}" a "{accion}".')
+
+    acciones = [
+        {'estado': e, 'etiqueta': ACCIONES_DEV_PROVEEDOR[e][0], 'icono': ACCIONES_DEV_PROVEEDOR[e][1],
+         'tono': ACCIONES_DEV_PROVEEDOR[e][2]}
+        for e in TRANSICIONES_DEV_PROVEEDOR.get(dev.estado, ())
+    ]
+    return render(request, 'devoluciones/detalle_devolucion_proveedor.html', {
+        'dev': dev,
+        'extra': extra,
+        'compra': compra,
+        'confirmar': confirmar,
+        'acciones': acciones,
+        'breadcrumb_items': [
+            {'nombre': 'Devoluciones', 'url': f"{reverse('lista_devoluciones')}?tab=proveedor"},
+            {'nombre': dev.numero, 'url': None},
+        ],
+    })
+
+
+@login_required
+@require_POST
+def cambiar_estado_devolucion_proveedor(request, pk):
+    """Cambia el estado de una devolución a proveedor respetando el flujo
+    pendiente → aprobada → aplicada (o rechazada). Al aplicar descuenta el inventario."""
+    import json
+    destino = f"{reverse('lista_devoluciones')}?tab=proveedor"
+    transiciones = TRANSICIONES_DEV_PROVEEDOR
+    nuevo_estado = request.POST.get('nuevo_estado', '').strip()
+
+    try:
+        with transaction.atomic():
+            dev_prov = get_object_or_404(DevolucionProveedores.objects.select_for_update(), pk=pk)
+
+            if nuevo_estado not in transiciones.get(dev_prov.estado, ()):
+                messages.error(
+                    request,
+                    f'⚠️ No se puede pasar {dev_prov.numero} de "{dev_prov.estado}" a "{nuevo_estado or "?"}".'
+                )
+                return redirect(destino)
+
+            if nuevo_estado == 'aplicada':
+                datos = dict(dev_prov.datos_extra)
+                prod_id = datos.get('producto_id')
+                pendiente = int(datos.get('cantidad') or 0)
+                if prod_id and pendiente > 0 and not datos.get('stock_descontado'):
+                    lote_id = datos.get('lote_id')
+                    lotes = list(Lote.objects.select_for_update()
+                                 .filter(producto_id=prod_id, stock_actual__gt=0)
+                                 .order_by('fecha_registro'))
+                    # El lote de la compra se descuenta primero
+                    lotes.sort(key=lambda l: 0 if l.pk == lote_id else 1)
+                    # Se descuenta solo lo que exista en inventario (nunca queda negativo)
+                    quitado_total = 0
+                    for lote in lotes:
+                        if pendiente <= 0:
+                            break
+                        quitar = min(lote.stock_actual, pendiente)
+                        Lote.objects.filter(pk=lote.pk).update(stock_actual=F('stock_actual') - quitar)
+                        pendiente -= quitar
+                        quitado_total += quitar
+                    datos['unidades_descontadas'] = quitado_total
+                    datos['stock_descontado'] = True
+                    dev_prov.observaciones = json.dumps(datos, ensure_ascii=False)
+
+            dev_prov.estado = nuevo_estado
+            dev_prov.save()
+    except Exception as e:
+        messages.error(request, f'⚠️ No se pudo actualizar la devolución: {e}')
+        return redirect(destino)
+
+    extra = ''
+    if nuevo_estado == 'aplicada':
+        desc = dev_prov.datos_extra.get('unidades_descontadas')
+        total_u = dev_prov.datos_extra.get('cantidad')
+        if desc is not None and total_u is not None:
+            extra = f' Inventario descontado: {desc} de {total_u} unidades.'
+            if desc < total_u:
+                extra += ' (El resto no estaba registrado en inventario.)'
+    messages.success(request, f'✅ {dev_prov.numero} ahora está "{nuevo_estado.capitalize()}".{extra}')
+    return redirect(f"{reverse('detalle_devolucion_proveedor', args=[dev_prov.pk])}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

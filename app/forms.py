@@ -181,6 +181,11 @@ class NuevaCompraForm(forms.Form):
                 f'El abono inicial (${monto_pagado:,.2f}) no puede superar el total de la compra (${total:,.2f}).'
             )
 
+        lote = cleaned_data.get('lote')
+        producto = cleaned_data.get('producto')
+        if lote and producto and lote.producto_id != producto.pk:
+            self.add_error('lote', 'El lote seleccionado no pertenece al producto elegido.')
+
         return cleaned_data
 #-----PRODUCTO-----#
 

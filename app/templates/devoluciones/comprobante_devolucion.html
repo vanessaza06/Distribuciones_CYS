@@ -53,7 +53,7 @@
           <!-- Tipo Reembolso -->
           <div class="info-block">
             <div class="info-block-title"><i class="bi bi-arrow-left-right me-1"></i>Tipo Reembolso</div>
-            <div class="info-block-value">{{ devolucion.get_tipo_reembolso_display }}</div>
+            <div class="info-block-value">{{ devolucion.get_tipo_devolucion_display }}</div>
           </div>
         </div>
 
@@ -130,10 +130,10 @@
 
           <!-- BOTONES -->
           <div class="botones-accion">
-            <button class="btn-print" onclick="window.print()">
+            <button class="btn-print" id="btnImprimirComprobante" type="button">
               <i class="bi bi-printer me-2"></i>Imprimir Comprobante
             </button>
-            <a href="{% url 'detalle_devolucion' devolucion.pk %}" class="btn-volver" style="text-decoration:none;">
+            <a href="{% url 'detalle_devolucion' devolucion.pk %}" class="btn-volver">
               <i class="bi bi-eye me-1"></i>Ver Detalle Completo
             </a>
             <a href="{% url 'lista_devoluciones' %}" class="btn-volver">
@@ -146,4 +146,16 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Imprimir: delegado en el documento para que funcione siempre
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#btnImprimirComprobante, .btn-print, .btn-print-action')) {
+      e.preventDefault();
+      window.print();
+    }
+  });
+</script>
 {% endblock %}

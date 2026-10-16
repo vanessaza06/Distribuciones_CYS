@@ -6,247 +6,30 @@
 {% block page_title %}Gestión de Métodos de Pago{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/reportes.css' %}">
+<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
-<style>
-  .mp-container {
-    padding: 1.75rem 1.25rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    color: #ffffff !important;
-  }
-
-  /* Asegurar legibilidad general de textos secundarios e inputs */
-  .mp-container .text-muted,
-  .mp-modal .text-muted,
-  .mp-container small,
-  .mp-modal small {
-    color: rgba(255, 255, 255, 0.88) !important;
-  }
-
-  .mp-container label,
-  .mp-modal label {
-    color: #ffffff !important;
-    font-weight: 700;
-  }
-
-  .mp-container input,
-  .mp-container select,
-  .mp-container textarea,
-  .mp-modal input,
-  .mp-modal select,
-  .mp-modal textarea {
-    color: #ffffff !important;
-    background-color: #07192e !important;
-    border: 1px solid rgba(77, 168, 218, 0.4) !important;
-    font-weight: 600;
-  }
-
-  .mp-container input::placeholder,
-  .mp-modal input::placeholder {
-    color: rgba(255, 255, 255, 0.55) !important;
-  }
-
-  /* Header Banner estilo Ventas / Caja */
-  .mp-header-banner {
-    background: linear-gradient(135deg, rgba(15, 32, 59, 0.95) 0%, rgba(8, 20, 38, 0.98) 100%);
-    border: 1px solid rgba(77, 168, 218, 0.35);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
-  }
-
-  /* Botones estilo Ventas (Gradiante Cyan/Azul y Borde 10px) */
-  .mp-btn-action {
-    height: 44px;
-    padding: 0 1.4rem;
-    font-size: 0.92rem;
-    font-weight: 800;
-    border-radius: 10px;
-    border: none !important;
-    background: linear-gradient(135deg, #4DA8DA, #2979a8) !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.55rem;
-    white-space: nowrap;
-    line-height: 1;
-    transition: all 0.2s ease;
-    color: #0A2A52 !important;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(77, 168, 218, 0.3);
-    cursor: pointer;
-  }
-  .mp-btn-action:hover {
-    background: linear-gradient(135deg, #5db5e5, #3187bb) !important;
-    transform: translateY(-2px);
-    color: #051833 !important;
-    box-shadow: 0 6px 20px rgba(77, 168, 218, 0.45);
-  }
-  .mp-btn-action:active {
-    transform: translateY(0);
-  }
-
-  .mp-btn-outline {
-    height: 44px;
-    padding: 0 1.25rem;
-    border-radius: 10px;
-    border: 1px solid rgba(77, 168, 218, 0.3) !important;
-    background: rgba(10, 42, 82, 0.8) !important;
-    color: #ffffff !important;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-    text-decoration: none;
-  }
-  .mp-btn-outline:hover {
-    background: rgba(77, 168, 218, 0.25) !important;
-    border-color: #4DA8DA !important;
-    color: #ffffff !important;
-  }
-
-  /* Grid de KPIs */
-  .mp-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-  }
-
-  .mp-kpi-card {
-    background: linear-gradient(145deg, rgba(16, 36, 66, 0.9), rgba(10, 23, 43, 0.95));
-    border: 1px solid rgba(77, 168, 218, 0.28);
-    border-radius: 18px;
-    padding: 1.35rem 1.5rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .mp-kpi-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(77, 168, 218, 0.55);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-  }
-
-  .mp-kpi-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.55rem;
-    flex-shrink: 0;
-  }
-
-  .mp-kpi-val {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: #ffffff;
-    font-family: 'Rajdhani', sans-serif;
-    line-height: 1.1;
-  }
-
-  .mp-kpi-label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.75);
-    margin-bottom: 0.15rem;
-  }
-
-  /* Toolbar de Filtros */
-  .mp-filter-card {
-    background: rgba(10, 26, 48, 0.9);
-    border: 1px solid rgba(77, 168, 218, 0.3);
-    border-radius: 18px;
-    padding: 1.35rem 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  }
-
-  /* Badges estilo Ventas */
-  .mp-badge {
-    padding: 0.4rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .mp-badge-efectivo {
-    background: rgba(46, 213, 115, 0.18);
-    color: #2ed573;
-    border: 1px solid rgba(46, 213, 115, 0.4);
-  }
-
-  .mp-badge-transaccion {
-    background: rgba(139, 92, 246, 0.18);
-    color: #a78bfa;
-    border: 1px solid rgba(139, 92, 246, 0.4);
-  }
-
-  .mp-badge-compra {
-    background: rgba(77, 168, 218, 0.18);
-    color: #4DA8DA;
-    border: 1px solid rgba(77, 168, 218, 0.4);
-  }
-
-  /* Modal de cristal oscuro acorde al sistema */
-  .modal-content-dark {
-    background: #091d36;
-    border: 1px solid rgba(77, 168, 218, 0.4);
-    color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-  }
-
-  .modal-content-dark .modal-header {
-    background: linear-gradient(135deg, rgba(15, 59, 108, 0.9), rgba(10, 42, 82, 0.95));
-    border-bottom: 1px solid rgba(77, 168, 218, 0.25);
-    border-radius: 20px 20px 0 0;
-    padding: 1.25rem 1.5rem;
-  }
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="mp-container">
+<div class="container-fluid p-0">
 
-  <!-- Header Banner -->
-  <div class="mp-header-banner">
+  <!-- Header Banner Unificado con estilo Productos -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-      <div class="d-flex align-items-center gap-2.5 mb-1 flex-wrap">
+      <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
         <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.3px;">Gestión de Métodos de Pago</h3>
-        <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-40 px-3 py-1.5 rounded-pill fs-6">
+        <span class="badge" style="background: color-mix(in srgb, var(--azul-claro) 15%, transparent); color: var(--azul-claro); border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
           <i class="bi bi-wallet2 me-1"></i> Control Centralizado
         </span>
       </div>
-      <p class="text-white opacity-85 small mb-0">
+      <p class="text-muted small mb-0">
         Registro de transacciones, abonos, efectivo y comprobantes integrados del sistema.
       </p>
     </div>
     <div>
-      <button type="button" class="mp-btn-action" data-bs-toggle="modal" data-bs-target="#modalNuevoPago" title="Registrar Pago">
-        <i class="bi bi-plus-lg fs-5"></i> Registrar Nuevo Pago
+      <button type="button" class="btn prod-btn-primary px-4 py-2 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNuevoPago" title="Registrar Pago">
+        <i class="bi bi-plus-lg"></i> Registrar Nuevo Pago
       </button>
     </div>
   </div>
@@ -261,166 +44,168 @@
     {% endfor %}
   {% endif %}
 
-  <!-- KPI Cards -->
-  <div class="mp-kpi-grid">
-    <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
-        <i class="bi bi-currency-dollar"></i>
-      </div>
-      <div>
-        <div class="mp-kpi-label">Total Registrado</div>
-        <div class="mp-kpi-val">${{ total_recaudado|floatformat:0|intcomma }}</div>
-      </div>
-    </div>
-
-    <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">
-        <i class="bi bi-cash-stack"></i>
-      </div>
-      <div>
-        <div class="mp-kpi-label">Total en Efectivo</div>
-        <div class="mp-kpi-val" style="color: #4ade80;">${{ total_efectivo|floatformat:0|intcomma }}</div>
+  <!-- KPI Cards Compactas estilo Productos -->
+  <div class="row g-3 mb-4 align-items-stretch">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); flex-shrink: 0;">
+          <i class="bi bi-currency-dollar fs-4"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total Registrado</div>
+          <div class="fw-bold text-white fs-4">${{ total_recaudado|floatformat:0|intcomma }}</div>
+        </div>
       </div>
     </div>
 
-    <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
-        <i class="bi bi-credit-card-2-front"></i>
-      </div>
-      <div>
-        <div class="mp-kpi-label">Total Transacciones / Banco</div>
-        <div class="mp-kpi-val" style="color: #c084fc;">${{ total_transaccion|floatformat:0|intcomma }}</div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); flex-shrink: 0;">
+          <i class="bi bi-cash-stack fs-4"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total en Efectivo</div>
+          <div class="fw-bold fs-4" style="color: #4ade80;">${{ total_efectivo|floatformat:0|intcomma }}</div>
+        </div>
       </div>
     </div>
 
-    <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
-        <i class="bi bi-receipt-cutoff"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); flex-shrink: 0;">
+          <i class="bi bi-credit-card-2-front fs-4"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Transacciones / Banco</div>
+          <div class="fw-bold fs-4" style="color: #c084fc;">${{ total_transaccion|floatformat:0|intcomma }}</div>
+        </div>
       </div>
-      <div>
-        <div class="mp-kpi-label">Total Registros</div>
-        <div class="mp-kpi-val" style="color: #fbbf24;">{{ total_registros }}</div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); flex-shrink: 0;">
+          <i class="bi bi-receipt-cutoff fs-4"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total Registros</div>
+          <div class="fw-bold fs-4" style="color: #fbbf24;">{{ total_registros }}</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Tabla idéntica a Ventas (cys-pos-card & cys-inv-table) -->
-  <section class="cys-pos-card mb-4" style="background: rgba(10, 26, 48, 0.95); border: 1px solid rgba(77, 168, 218, 0.3); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
-    <div class="cys-pos-card-header p-3.5 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(16, 40, 75, 0.95), rgba(10, 26, 48, 0.98)); border-bottom: 1px solid rgba(77, 168, 218, 0.3);">
-      <div class="cys-pos-card-title fw-bold text-white fs-6 d-flex align-items-center gap-2">
-        <i class="bi bi-clock-history" style="color: var(--azul-claro, #4DA8DA);"></i> Historial y Registro de Transacciones de Pago
+  <!-- Card Principal y Tabla con diseño idéntico a Productos -->
+  <div class="prod-card mb-4">
+    <div class="prod-card-header p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="fw-bold text-white fs-6 d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history" style="color: var(--azul-claro);"></i> Historial y Registro de Transacciones de Pago
       </div>
-      <span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-30 px-3 py-1.5 rounded-pill fs-6">
+      <span class="badge" style="background: color-mix(in srgb, var(--azul-claro) 15%, transparent); color: var(--azul-claro); border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
         Total {{ total_registros }} Registros
       </span>
     </div>
 
     <!-- Toolbar de Filtros Integrada -->
-    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3" style="background:rgba(10,42,82,0.4); border-bottom:1px solid rgba(77,168,218,0.2);">
+    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;">
       <div class="d-flex flex-wrap align-items-center gap-2">
-        <span style="font-size:.75rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:0.5px;">
+        <span class="small text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">
           Rango de fechas:
         </span>
         
-        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}" class="form-control form-control-sm prod-input" style="width: auto;">
         
-        <span style="color:#ffffff; font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
+        <span class="small fw-bold px-1 text-muted">a</span>
         
-        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;">
 
-        <select name="tipo" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; padding:4px 10px; font-size:0.85rem; outline:none;">
+        <select name="tipo" class="form-select form-select-sm prod-input" style="width: auto;">
           <option value="">— Todos los tipos —</option>
           <option value="efectivo" {% if tipo == 'efectivo' %}selected{% endif %}>Efectivo</option>
           <option value="transaccion" {% if tipo == 'transaccion' %}selected{% endif %}>Transacción / Banco</option>
         </select>
         
-        <button type="submit" class="btn btn-sm fw-bold"
-                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas"
-                style="background:rgba(77,168,218,0.15); color:var(--azul-claro,#4DA8DA); border:1px solid rgba(77,168,218,0.3); border-radius:8px;">
+        <button type="submit" class="btn btn-sm prod-btn-primary px-3" data-bs-toggle="tooltip" data-bs-title="Filtrar Fechas">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
-        <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm"
-           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"
-           style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.25); color:#ffffff; border-radius:8px; font-weight:600;">
+        <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm prod-btn-outline px-3" data-bs-toggle="tooltip" data-bs-title="Limpiar Filtros">
           <i class="bi bi-x-circle me-1"></i> Limpiar
         </a>
       </div>
 
       <!-- Buscador en tiempo real -->
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <div class="cys-search-group" style="min-width:240px;">
-          <i class="bi bi-search"></i>
-          <input type="text" name="q" id="buscadorTablaMetodosPago" class="form-control form-control-sm cys-search-input"
-                 value="{{ q }}" placeholder="Buscar referencia, comprobante..." style="padding-left:36px !important;">
+      <div class="d-flex align-items-center gap-2">
+        <div class="input-group input-group-sm" style="min-width: 240px;">
+          <span class="input-group-text prod-input" style="border-right: none; background: transparent;"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" id="buscadorTablaMetodosPago" class="form-control prod-input"
+                 value="{{ q }}" placeholder="Buscar referencia, comprobante..." style="border-left: none;">
         </div>
       </div>
     </form>
 
-    <div class="table-responsive p-3 pt-2">
-      <table class="cys-inv-table w-100">
-        <thead>
+    <div class="table-responsive p-0">
+      <table class="table mb-0 align-middle" style="color: var(--texto); font-family: 'Plus Jakarta Sans', sans-serif;">
+        <thead style="background: color-mix(in srgb, var(--texto) 3%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);">
           <tr>
-            <th style="width: 70px; text-align: center;">CÓDIGO</th>
-            <th style="text-align: center;">FECHA</th>
-            <th style="text-align: right;">VALOR TOTAL</th>
-            <th style="text-align: center;">EFECTIVO</th>
-            <th style="text-align: center;">TRANSACCIÓN</th>
-            <th>REFERENCIA</th>
-            <th>VÍNCULO / ORIGEN</th>
-            <th>OBSERVACIÓN</th>
-            <th style="text-align: center;">ACCIONES</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">CÓDIGO</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">FECHA</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">VALOR TOTAL</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">EFECTIVO</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">TRANSACCIÓN</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">REFERENCIA</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">VÍNCULO / ORIGEN</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">OBSERVACIÓN</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">ACCIONES</th>
           </tr>
         </thead>
         <tbody>
           {% for p in pagos %}
-            <tr class="fila-metodo-pago">
-              <td style="text-align: center;"><span class="fw-bold text-white">#{{ p.codigo_metodo }}</span></td>
-              <td style="text-align: center; color: var(--texto-muted);"><i class="bi bi-clock me-1"></i>{{ p.fecha|date:"d/m/Y H:i" }}</td>
-              <td style="text-align: right; font-weight: 800; font-family:'Rajdhani',sans-serif; color: #2ed573; font-size:1.1rem;">${{ p.valor|floatformat:0 }}</td>
-              <td style="text-align: center;">
+            <tr class="fila-metodo-pago" style="border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);">
+              <td style="text-align: center; padding: 0.75rem 1rem;"><span class="fw-bold text-white">#{{ p.codigo_metodo }}</span></td>
+              <td style="text-align: center; padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.85rem;"><i class="bi bi-clock me-1"></i>{{ p.fecha|date:"d/m/Y H:i" }}</td>
+              <td style="text-align: right; padding: 0.75rem 1rem; font-weight: 700; color: #4ade80; font-size: 0.95rem;">${{ p.valor|floatformat:0 }}</td>
+              <td style="text-align: center; padding: 0.75rem 1rem;">
                 {% if p.efectivo > 0 %}
                   <span class="mp-badge mp-badge-efectivo"><i class="bi bi-cash me-1"></i>${{ p.efectivo|floatformat:0 }}</span>
                 {% else %}
                   <span style="color: var(--texto-muted);">—</span>
                 {% endif %}
               </td>
-              <td style="text-align: center;">
+              <td style="text-align: center; padding: 0.75rem 1rem;">
                 {% if p.transaccion > 0 %}
                   <span class="mp-badge mp-badge-transaccion"><i class="bi bi-bank me-1"></i>${{ p.transaccion|floatformat:0 }}</span>
                 {% else %}
                   <span style="color: var(--texto-muted);">—</span>
                 {% endif %}
               </td>
-              <td>
-                <span style="color: #ffffff; font-weight: 600;">{{ p.referencia|default:"Sin referencia" }}</span>
+              <td style="padding: 0.75rem 1rem;">
+                <span style="color: #ffffff; font-weight: 600; font-size: 0.88rem;">{{ p.referencia|default:"Sin referencia" }}</span>
               </td>
-              <td>
+              <td style="padding: 0.75rem 1rem;">
                 {% if p.compra %}
                   <span class="mp-badge mp-badge-compra">
                     <i class="bi bi-cart3 me-1"></i>Compra #{{ p.compra.codigo_compra }}
                     {% if p.compra.proveedor %}({{ p.compra.proveedor.nombre_proveedor }}){% endif %}
                   </span>
                 {% else %}
-                  <span class="badge bg-secondary bg-opacity-30 text-white border border-secondary border-opacity-40 rounded-pill px-3 py-1">General / N/A</span>
+                  <span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-30 rounded-pill px-3 py-1 font-weight-normal" style="font-size: 0.75rem;">General / N/A</span>
                 {% endif %}
               </td>
-              <td style="color: var(--texto-muted); max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              <td style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.85rem; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 {{ p.observacion|default:"—" }}
               </td>
-              <td style="text-align: center;">
+              <td style="text-align: center; padding: 0.75rem 1rem;">
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                  <button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarPago_{{ p.pk }}"
-                          style="background:rgba(77,168,218,0.15); color:#4DA8DA; border:1px solid rgba(77,168,218,0.3); border-radius:8px; padding:.35rem .65rem;"
+                  <button type="button" class="btn btn-sm prod-btn-outline p-1" data-bs-toggle="modal" data-bs-target="#modalEditarPago_{{ p.pk }}"
+                          style="width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;"
                           title="Editar Pago">
                     <i class="bi bi-pencil-square fs-6"></i>
                   </button>
                   <form method="POST" action="{% url 'eliminar_metodo_pago' p.pk %}" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro de pago #{{ p.codigo_metodo }}?');">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Eliminar Pago"
-                            style="background:rgba(235,77,75,0.15); color:#ff7675; border:1px solid rgba(235,77,75,0.35); border-radius:8px; padding:.35rem .65rem;">
+                    <button type="submit" class="btn btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Eliminar Pago"
+                            style="width: 32px; height: 32px; border-radius: 8px; background: rgba(235,77,75,.15); color: #ff7675; border: 1px solid rgba(235,77,75,.35); display: inline-flex; align-items: center; justify-content: center;">
                       <i class="bi bi-trash3-fill fs-6"></i>
                     </button>
                   </form>
@@ -429,40 +214,40 @@
                 <!-- Modal Editar Pago #{{ p.pk }} -->
                 <div class="modal fade" id="modalEditarPago_{{ p.pk }}" tabindex="-1" aria-hidden="true">
                   <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content modal-content-dark">
-                      <div class="modal-header">
-                        <h5 class="modal-title fw-bold text-white"><i class="bi bi-pencil-square text-info me-2"></i>Editar Pago #{{ p.codigo_metodo }}</h5>
+                    <div class="modal-content prod-modal">
+                      <div class="modal-header prod-modal-header p-3 px-4">
+                        <h6 class="modal-title fw-bold text-white mb-0"><i class="bi bi-pencil-square text-info me-2"></i>Editar Pago #{{ p.codigo_metodo }}</h6>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <form method="POST" action="{% url 'editar_metodo_pago' p.pk %}">
                         {% csrf_token %}
                         <div class="modal-body text-start p-4">
                           <div class="mb-3">
-                            <label class="form-label text-muted small text-uppercase fw-bold">Valor del Pago ($)</label>
-                            <input type="number" step="0.01" min="1" name="valor" class="form-control py-2" value="{{ p.valor|stringformat:'.2f' }}" required>
+                            <label class="form-label prod-label text-uppercase">Valor del Pago ($)</label>
+                            <input type="number" step="0.01" min="1" name="valor" class="form-control prod-input" value="{{ p.valor|stringformat:'.2f' }}" required>
                           </div>
 
                           <div class="mb-3">
-                            <label class="form-label text-muted small text-uppercase fw-bold">Tipo de Método de Pago</label>
-                            <select name="tipo_pago" class="form-select py-2" required>
+                            <label class="form-label prod-label text-uppercase">Tipo de Método de Pago</label>
+                            <select name="tipo_pago" class="form-select prod-input" required>
                               <option value="efectivo" {% if p.efectivo > 0 %}selected{% endif %}>Efectivo</option>
                               <option value="transaccion" {% if p.transaccion > 0 %}selected{% endif %}>Transacción / Transferencia Banco</option>
                             </select>
                           </div>
 
                           <div class="mb-3">
-                            <label class="form-label text-muted small text-uppercase fw-bold">Referencia / Comprobante</label>
-                            <input type="text" name="referencia" class="form-control py-2" value="{{ p.referencia|default:'' }}">
+                            <label class="form-label prod-label text-uppercase">Referencia / Comprobante</label>
+                            <input type="text" name="referencia" class="form-control prod-input" value="{{ p.referencia|default:'' }}">
                           </div>
 
                           <div class="mb-3">
-                            <label class="form-label text-muted small text-uppercase fw-bold">Observación</label>
-                            <textarea name="observacion" class="form-control py-2" rows="2">{{ p.observacion|default:'' }}</textarea>
+                            <label class="form-label prod-label text-uppercase">Observación</label>
+                            <textarea name="observacion" class="form-control prod-input" rows="2">{{ p.observacion|default:'' }}</textarea>
                           </div>
                         </div>
-                        <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
-                          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
-                          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
+                        <div class="modal-footer prod-modal-footer p-3 px-4 d-flex justify-content-end gap-2">
+                          <button type="button" class="btn btn-sm prod-btn-outline px-3" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-sm prod-btn-primary px-3"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
                         </div>
                       </form>
                     </div>
@@ -482,50 +267,50 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center p-3" style="background: rgba(10,42,82,0.6); border-top: 1px solid rgba(77,168,218,0.2);">
+    <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;">
       <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
         Total Registrado ({{ total_registros }} registros)
       </span>
-      <span style="font-size: 1.5rem; font-weight: 800; font-family:'Rajdhani',sans-serif; color: #2ed573;">
+      <span style="font-size: 1.35rem; font-weight: 700; color: #4ade80;">
         ${{ total_recaudado|floatformat:0 }}
       </span>
     </div>
-  </section>
+  </div>
 
 </div>
 
 <!-- Modal Registrar Pago -->
 <div class="modal fade" id="modalNuevoPago" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-dark">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold text-white"><i class="bi bi-wallet2 text-info me-2"></i>Registrar Pago en Método de Pago</h5>
+    <div class="modal-content prod-modal">
+      <div class="modal-header prod-modal-header p-3 px-4">
+        <h6 class="modal-title fw-bold text-white mb-0"><i class="bi bi-wallet2 text-info me-2"></i>Registrar Pago en Método de Pago</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="POST" action="{% url 'crear_metodo_pago' %}">
         {% csrf_token %}
-        <div class="modal-body p-4">
+        <div class="modal-body p-4 text-start">
           <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Valor del Pago ($)</label>
-            <input type="number" step="0.01" min="1" name="valor" class="form-control py-2" placeholder="Ej: 50000" required>
+            <label class="form-label prod-label text-uppercase">Valor del Pago ($)</label>
+            <input type="number" step="0.01" min="1" name="valor" class="form-control prod-input" placeholder="Ej: 50000" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Tipo de Método de Pago</label>
-            <select name="tipo_pago" class="form-select py-2" required>
+            <label class="form-label prod-label text-uppercase">Tipo de Método de Pago</label>
+            <select name="tipo_pago" class="form-select prod-input" required>
               <option value="efectivo">Efectivo</option>
               <option value="transaccion">Transacción / Transferencia Banco</option>
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Referencia / Comprobante</label>
-            <input type="text" name="referencia" class="form-control py-2" placeholder="Ej: N° Transacción 98765 o N° Recibo">
+            <label class="form-label prod-label text-uppercase">Referencia / Comprobante</label>
+            <input type="text" name="referencia" class="form-control prod-input" placeholder="Ej: N° Transacción 98765 o N° Recibo">
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Vincular a Compra (Opcional)</label>
-            <select name="compra_id" class="form-select py-2">
+            <label class="form-label prod-label text-uppercase">Vincular a Compra (Opcional)</label>
+            <select name="compra_id" class="form-select prod-input">
               <option value="">— Ninguna (Pago Independiente) —</option>
               {% for c in compras_disponibles %}
                 <option value="{{ c.pk }}">Compra #{{ c.codigo_compra }} - Saldo: ${{ c.saldo|floatformat:0 }}</option>
@@ -534,13 +319,13 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Observación</label>
-            <textarea name="observacion" class="form-control py-2" rows="2" placeholder="Detalles u observaciones del pago..."></textarea>
+            <label class="form-label prod-label text-uppercase">Observación</label>
+            <textarea name="observacion" class="form-control prod-input" rows="2" placeholder="Detalles u observaciones del pago..."></textarea>
           </div>
         </div>
-        <div class="modal-footer border-top border-secondary p-3 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.55rem 1.2rem;">Cancelar</button>
-          <button type="submit" class="mp-btn-action" style="height:44px;"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
+        <div class="modal-footer prod-modal-footer p-3 px-4 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm prod-btn-outline px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm prod-btn-primary px-3"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
         </div>
       </form>
     </div>
