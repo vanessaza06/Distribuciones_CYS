@@ -53,7 +53,7 @@
           <!-- Tipo Reembolso -->
           <div class="info-block">
             <div class="info-block-title"><i class="bi bi-arrow-left-right me-1"></i>Tipo Reembolso</div>
-            <div class="info-block-value">{{ devolucion.get_tipo_reembolso_display }}</div>
+            <div class="info-block-value">{{ devolucion.get_tipo_devolucion_display }}</div>
           </div>
         </div>
 
@@ -149,5 +149,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/proveedores/devoluciones.js' %}"></script>
+<script>
+  // Imprimir: delegado en el documento para que funcione siempre
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#btnImprimirComprobante, .btn-print, .btn-print-action')) {
+      e.preventDefault();
+      window.print();
+    }
+  });
+</script>
 {% endblock %}
