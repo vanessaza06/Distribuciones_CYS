@@ -1,5 +1,6 @@
 (function () {
-    const cfg = JSON.parse(localStorage.getItem('cys_config') || '{}');
+    let cfg = {};
+    try { cfg = JSON.parse(localStorage.getItem('cys_config') || '{}'); } catch (e) { cfg = {}; }
     const root = document.documentElement;
 
     // ── FUENTE ÚNICA DE VERDAD DE TEMAS ──
@@ -63,8 +64,17 @@
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
     }
 
-    // Aplica de inmediato (antes del primer paint) según lo guardado en localStorage
-    aplicarTema(cfg.tema);
+    // Tema del sistema (lo fija un administrador; viene de <html data-tema-sistema="...">)
+    const temaSistema = temas[root.dataset.temaSistema] ? root.dataset.temaSistema : 'oscuro';
+
+    // Tema propio del usuario: SOLO cuenta si lleva la marca temaPersonal === true
+    // (la escribe configuracion.js cuando el usuario elige un tema él mismo).
+    // Un "tema" viejo sin marca (guardado por versiones anteriores) se ignora,
+    // así todos siguen el del sistema hasta que elijan uno propio.
+    const temaInicial = (cfg.temaPersonal === true && temas[cfg.tema]) ? cfg.tema : temaSistema;
+
+    // Aplica de inmediato (antes del primer paint)
+    aplicarTema(temaInicial);
     aplicarDensidad(cfg.densidad);
 
     // Expone todo para que otras páginas/scripts (ej. configuracion.js) lo reutilicen
@@ -73,10 +83,12 @@
     window.aplicarTemaCYS = aplicarTema;
     window.aplicarDensidadCYS = aplicarDensidad;
 
-    // Tema real elegido por el usuario en Configuración (fuente de verdad),
-    // para que el widget de accesibilidad pueda restaurarlo en vez de
-    // forzar 'oscuro' cuando su modo está en "predeterminado".
-    window.CYS_TEMA_SITIO = cfg.tema || 'oscuro';
+    // Tema predeterminado del sistema (servidor)
+    window.CYS_TEMA_SISTEMA = temaSistema;
+
+    // Tema efectivo de este usuario: el widget de accesibilidad lo restaura
+    // cuando su modo está en "predeterminado" en vez de forzar 'oscuro'.
+    window.CYS_TEMA_SITIO = temaInicial;
 })();
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('[title]').forEach(function (el) {
@@ -132,8 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         a11yRoot.style.fontSize = cfg.fontSize + '%';
 
         // Modo de color -> delega en aplicarTemaCYS (definida arriba en este archivo).
-        // "predeterminado" significa "usar el tema real elegido en Configuración",
-        // NO forzar 'oscuro' — antes eso pisaba basecys/sepia/claro en cada página.
+        // "predeterminado" = usar el tema efectivo del usuario (el suyo, o el del sistema).
         if (typeof window.aplicarTemaCYS === 'function') {
             if (cfg.modo === 'predeterminado') {
                 window.aplicarTemaCYS(window.CYS_TEMA_SITIO || 'oscuro');

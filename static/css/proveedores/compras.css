@@ -1,60 +1,39 @@
 /* ══════════════════════════════════════════════════════════════════════════════
    COMPRAS.CSS — CYS Ltda
-   Bootstrap 5 compatible — Paleta: #011936 / #912F40 / #AF8D86 / #EFF8E2
+   Bootstrap 5 compatible.
+   Todos los colores siguen las variables de tema de base.js
+   (--fondo, --fondo-card, --fondo-card2, --texto, --texto-muted,
+   --azul-claro, --azul-borde, --azul-oscuro, --verde, --rojo).
+   Este archivo NO define fondo ni color base de la página: eso lo pone el
+   CSS global, igual que home.css.
    ══════════════════════════════════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ────────────────────────────────────────────────────────────────────────────
-   VARIABLES GLOBALES (IDÉNTICAS A reportes.css)
+   TOKENS DEL MÓDULO
    ──────────────────────────────────────────────────────────────────────────── */
-
-* {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
 
 :root {
-  /* Paleta principal */
-  --color-bg:         #011936;
-  --color-bg-card:    #02224a;
-  --color-bg-hover:   #032d60;
-  --color-surface:    #031e3e;
-  --color-carmesi:    #4DA8DA;
-  --color-mauve:      #8FA3B1;
-  --color-menta:      #4DA8DA;
-  --color-blanco:     #FDFFFC;
+  /* Dorado de marca: acento fijo (igual que home.css) */
+  --cp-dorado:        var(--dorado, #CF9C48);
+  --cp-dorado-dim:    color-mix(in srgb, var(--cp-dorado) 20%, transparent);
+  --cp-dorado-borde:  color-mix(in srgb, var(--cp-dorado) 40%, transparent);
+  --cp-dorado-glow:   color-mix(in srgb, var(--cp-dorado) 35%, transparent);
+  --cp-dorado-texto:  #2A1E05;   /* texto sobre fondo dorado */
 
-  /* Acentos semánticos (TODOS los colores de reportes.css) */
-  --azul-borde:        rgba(239, 248, 226, 0.1);
-  --texto-muted:       #8FA3B1;
-  --azul-acento:       #4DA8DA;
-  --verde-acento:      #27ae60;
-  --morado-acento:     #8e44ad;
-  --naranja-acento:    #e8a87c;
-  --amarillo-acento:   #f0d080;
-  --rojo-acento:       #912F40;
-  --dorado-acento:     #c99040;
+  /* Morado de "pendiente": no existe variable de tema */
+  --cp-morado:        #9b5de5;
+
+  /* Derivados del tema */
+  --cp-borde:         color-mix(in srgb, var(--texto) 10%, transparent);
+  --cp-borde-suave:   color-mix(in srgb, var(--texto) 8%, transparent);
+  --cp-teal:          color-mix(in srgb, var(--azul-claro) 50%, var(--verde));
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   RESET TOTAL
-   ──────────────────────────────────────────────────────────────────────────── */
-
-/* SOLO aplicar estilos DENTRO de .cys-main, no globalmente */
-.cys-main {
-  background-color: var(--color-bg) !important;
-  color: var(--color-blanco) !important;
-}
-
-/* Asegurar que no haya fondos blancos dentro del contenido */
-.cys-main [class*="container"],
-.cys-main .container-fluid {
-  background-color: var(--color-bg) !important;
-  color: var(--color-blanco) !important;
-}
-
-/* Asegurar que no haya fondos blancos heredados de Bootstrap */
-main, .cys-main, main > * {
-  background-color: var(--color-bg) !important;
+/* Fuente del módulo (solo en sus componentes, no en todo el documento) */
+.card, .card-body, .kpi-card, .card-kpi, .table, .modal-content, .dropdown-menu,
+.form-control, .form-select, .proveedor-container, .detalle-card {
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -64,44 +43,42 @@ main, .cys-main, main > * {
 .card,
 .card-dev,
 .card-inner,
-.cys-card,
 .card-section,
 .chart-card,
 .proveedor-info-card,
 .cys-hv-table-wrap {
-  background-color: var(--color-bg-card) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-left: 4px solid #CF9C48 !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid var(--cp-borde) !important;
+  border-left: 4px solid var(--cp-dorado) !important;
   border-top: none !important;
   border-radius: 12px !important;
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   transition: all 0.3s ease !important;
 }
 
 .card:hover,
 .card-dev:hover,
 .card-inner:hover,
-.cys-card:hover,
 .card-section:hover,
 .chart-card:hover,
 .proveedor-info-card:hover {
-  border-color: rgba(207, 156, 72, 0.4) !important;
-  border-left-color: #CF9C48 !important;
-  box-shadow: 0 0 15px rgba(207, 156, 72, 0.35) !important;
+  border-color: var(--cp-dorado-borde) !important;
+  border-left-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 15px var(--cp-dorado-glow) !important;
 }
 
 .card-header-top {
-  border-left: 4px solid #CF9C48 !important;
+  border-left: 4px solid var(--cp-dorado) !important;
   border-top: none !important;
 }
 
 .card-header-top i {
-  color: #CF9C48 !important;
+  color: var(--cp-dorado) !important;
 }
 
 .card-body {
-  background-color: var(--color-bg-card) !important;
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
   padding: 1.5rem !important;
 }
 
@@ -137,13 +114,10 @@ main, .cys-main, main > * {
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
 .flex-start { display: flex; align-items: center; justify-content: flex-start; }
 .flex-end { display: flex; align-items: center; justify-content: flex-end; }
-.bg-gradient-cyan { background: linear-gradient(135deg, rgba(77, 168, 218, 0.1), rgba(77, 168, 218, 0.05)); }
-.bg-cyan-light { background: rgba(77, 168, 218, 0.05); }
+.bg-gradient-cyan { background: linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 10%, transparent), color-mix(in srgb, var(--azul-claro) 5%, transparent)); }
+.bg-cyan-light { background: color-mix(in srgb, var(--azul-claro) 5%, transparent); }
 
 .card-section {
-  background: linear-gradient(135deg, rgba(77, 168, 218, 0.1), rgba(77, 168, 218, 0.05));
-  border: 1px solid rgba(77, 168, 218, 0.2);
-  border-radius: 8px;
   padding: 1.25rem;
 }
 
@@ -158,16 +132,16 @@ main, .cys-main, main > * {
 .proveedor-icon {
   width: 50px;
   height: 50px;
-  background:  #CF9C48;
+  background: var(--cp-dorado);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color:  #CF9C48;
+  color: var(--cp-dorado);
   font-size: 1.5rem;
 }
 .proveedor-info { flex: 1; }
-.proveedor-nombre { font-size: 1.2rem; font-weight: 700; color: var(--color-blanco); }
+.proveedor-nombre { font-size: 1.2rem; font-weight: 700; color: var(--texto); }
 .proveedor-details {
   display: flex;
   align-items: center;
@@ -177,8 +151,8 @@ main, .cys-main, main > * {
   margin-top: 0.5rem;
 }
 .detail-badge {
-  background: rgba(77, 168, 218, 0.15);
-  color: var(--azul-acento);
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  color: var(--azul-claro);
   padding: 0.25rem 0.75rem;
   border-radius: 8px;
   font-size: 0.75rem;
@@ -195,10 +169,10 @@ main, .cys-main, main > * {
   font-size: 0.75rem;
   font-weight: 600;
 }
-.estado-activo { background: rgba(76, 175, 80, 0.2); color: #27ae60; }
+.estado-activo { background: color-mix(in srgb, var(--verde) 20%, transparent); color: var(--verde); }
 
-.header-th { color: var(--azul-acento); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
-.icon-primary { color: white; font-size: 1.2rem; }
+.header-th { color: var(--azul-claro); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
+.icon-primary { color: var(--texto); font-size: 1.2rem; }
 .icon-bg-primary {
   width: 40px !important;
   height: 40px !important;
@@ -207,37 +181,18 @@ main, .cys-main, main > * {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: 1.5px solid rgba(207, 156, 72, 0.3) !important;
+  border: 1.5px solid color-mix(in srgb, var(--cp-dorado) 30%, transparent) !important;
 }
-.icon-empty { color: var(--texto-lo); font-size: 2.5rem; }
 
 .hidden-element { display: none; }
 
 /* BADGES PERSONALIZADOS */
-.badge-success-custom {
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #CF9C48 !important;
-  border: 1px solid rgba(207, 156, 72, 0.4) !important;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem !important;
-  border-radius: 20px;
-  font-weight: 600;
-}
-.badge-warning-custom {
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #CF9C48 !important;
-  border: 1px solid rgba(207, 156, 72, 0.4) !important;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem !important;
-  border-radius: 20px;
-  font-weight: 600;
-}
+.badge-success-custom,
+.badge-warning-custom,
 .badge-pending-custom {
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #CF9C48 !important;
-  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  background: var(--cp-dorado-dim) !important;
+  color: var(--cp-dorado) !important;
+  border: 1px solid var(--cp-dorado-borde) !important;
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0.75rem !important;
@@ -247,9 +202,9 @@ main, .cys-main, main > * {
 
 /* BADGES DE ESTADO CON COLORES */
 .badge-estado-pendiente {
-  background: rgba(155, 93, 229, 0.2) !important;
-  color: #9b5de5 !important;
-  border: 1px solid rgba(155, 93, 229, 0.4) !important;
+  background: color-mix(in srgb, var(--cp-morado) 20%, transparent) !important;
+  color: var(--cp-morado) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-morado) 40%, transparent) !important;
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0.75rem !important;
@@ -258,9 +213,9 @@ main, .cys-main, main > * {
 }
 
 .badge-estado-confirmada {
-  background: rgba(77, 168, 218, 0.2) !important;
-  color: #4DA8DA !important;
-  border: 1px solid rgba(77, 168, 218, 0.4) !important;
+  background: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0.75rem !important;
@@ -269,9 +224,9 @@ main, .cys-main, main > * {
 }
 
 .badge-estado-recibida {
-  background: rgba(39, 174, 96, 0.2) !important;
-  color: #27ae60 !important;
-  border: 1px solid rgba(39, 174, 96, 0.4) !important;
+  background: color-mix(in srgb, var(--verde) 20%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 40%, transparent) !important;
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0.75rem !important;
@@ -280,9 +235,9 @@ main, .cys-main, main > * {
 }
 
 .badge-estado-cancelada {
-  background: rgba(231, 76, 60, 0.2) !important;
-  color: #e74c3c !important;
-  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  background: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent) !important;
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0.75rem !important;
@@ -293,46 +248,46 @@ main, .cys-main, main > * {
 /* MODALES PERSONALIZADOS */
 .modal-custom-header {
   background: transparent !important;
-  border-bottom: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   padding: 2rem !important;
 }
 .modal-custom-body {
   background: transparent !important;
-  color: #E2E8F0 !important;
+  color: var(--texto) !important;
   padding: 2rem !important;
 }
 .modal-custom-footer {
   background: transparent !important;
-  border-top: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   padding: 1.5rem 2rem !important;
 }
 .btn-modal-secondary {
   background: transparent !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
-  color: #E2E8F0 !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto) !important;
   font-weight: 600 !important;
 }
 .btn-modal-primary {
-  background: #f39c12 !important;
+  background: var(--cp-dorado) !important;
   border: none !important;
-  color: #fff !important;
+  color: var(--cp-dorado-texto) !important;
   font-weight: 700 !important;
 }
 
 .card-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid rgba(239, 248, 226, 0.1);
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card2);
+  border-bottom: 1px solid var(--cp-borde);
+  color: var(--texto) !important;
 }
 
 .gradient-header {
-  background: linear-gradient(135deg, var(--color-surface) 0%, rgba(77, 168, 218, 0.08) 100%);
-  border-bottom: 1px solid rgba(77, 168, 218, 0.15) !important;
+  background: linear-gradient(135deg, var(--fondo-card2) 0%, color-mix(in srgb, var(--azul-claro) 8%, transparent) 100%);
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
 }
 
 .gradient-footer {
-  background: var(--color-surface) !important;
-  border-top: 1px solid rgba(239, 248, 226, 0.1);
+  background: var(--fondo-card2) !important;
+  border-top: 1px solid var(--cp-borde);
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -347,9 +302,9 @@ main, .cys-main, main > * {
 }
 
 .kpi-card {
-  background: #02224a !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-left: 4px solid #CF9C48 !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid var(--cp-borde) !important;
+  border-left: 4px solid var(--cp-dorado) !important;
   border-radius: 12px !important;
   padding: 16px 16px 14px 16px;
   display: flex;
@@ -368,9 +323,9 @@ main, .cys-main, main > * {
 
 .kpi-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(207, 156, 72, 0.4) !important;
-  border-left-color: #CF9C48 !important;
-  box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
+  border-color: var(--cp-dorado-borde) !important;
+  border-left-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 15px var(--cp-dorado-glow) !important;
 }
 
 .kpi-card-top {
@@ -391,10 +346,14 @@ main, .cys-main, main > * {
   flex-shrink: 0;
 }
 
-.kpi-icon-box.cyan { background: rgba(207, 156, 72, 0.2) !important; color: #CF9C48 !important; border: 1px solid rgba(207, 156, 72, 0.3) !important; }
-.kpi-icon-box.green { background: rgba(207, 156, 72, 0.2) !important; color: #CF9C48 !important; border: 1px solid rgba(207, 156, 72, 0.3) !important; }
-.kpi-icon-box.purple { background: rgba(207, 156, 72, 0.2) !important; color: #CF9C48 !important; border: 1px solid rgba(207, 156, 72, 0.3) !important; }
-.kpi-icon-box.pink { background: rgba(207, 156, 72, 0.2) !important; color: #CF9C48 !important; border: 1px solid rgba(207, 156, 72, 0.3) !important; }
+.kpi-icon-box.cyan,
+.kpi-icon-box.green,
+.kpi-icon-box.purple,
+.kpi-icon-box.pink {
+  background: var(--cp-dorado-dim) !important;
+  color: var(--cp-dorado) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 30%, transparent) !important;
+}
 
 .kpi-badge {
   font-size: 9px;
@@ -406,10 +365,14 @@ main, .cys-main, main > * {
   width: fit-content;
 }
 
-.kpi-badge.cyan { background: rgba(207, 156, 72, 0.15); color: #CF9C48; border: 1px solid rgba(207, 156, 72, 0.3); }
-.kpi-badge.green { background: rgba(207, 156, 72, 0.15); color: #CF9C48; border: 1px solid rgba(207, 156, 72, 0.3); }
-.kpi-badge.purple { background: rgba(207, 156, 72, 0.15); color: #CF9C48; border: 1px solid rgba(207, 156, 72, 0.3); }
-.kpi-badge.pink { background: rgba(207, 156, 72, 0.15); color: #CF9C48; border: 1px solid rgba(207, 156, 72, 0.3); }
+.kpi-badge.cyan,
+.kpi-badge.green,
+.kpi-badge.purple,
+.kpi-badge.pink {
+  background: color-mix(in srgb, var(--cp-dorado) 15%, transparent);
+  color: var(--cp-dorado);
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 30%, transparent);
+}
 
 .kpi-value {
   font-size: 32px;
@@ -425,13 +388,13 @@ main, .cys-main, main > * {
   align-items: center;
 }
 
-.kpi-value.cyan { color: #CF9C48; }
-.kpi-value.green { color: #CF9C48; }
-.kpi-value.purple { color: #CF9C48; }
-.kpi-value.pink { color: #CF9C48; }
+.kpi-value.cyan,
+.kpi-value.green,
+.kpi-value.purple,
+.kpi-value.pink { color: var(--cp-dorado); }
 
 .kpi-title {
-  color: #e2e8f0;
+  color: var(--texto);
   font-size: 14px;
   font-weight: 600;
   margin: 2px 0 0 0;
@@ -439,7 +402,7 @@ main, .cys-main, main > * {
 }
 
 .kpi-sub {
-  color: #6b82a8;
+  color: var(--texto-muted);
   font-size: 11px;
   margin: 1px 0 0 0;
   line-height: 1.2;
@@ -455,26 +418,26 @@ main, .cys-main, main > * {
   gap: 4px;
 }
 
-.kpi-link.cyan { color: #CF9C48; }
-.kpi-link.green { color: #CF9C48; }
-.kpi-link.purple { color: #CF9C48; }
-.kpi-link.pink { color: #CF9C48; }
+.kpi-link.cyan,
+.kpi-link.green,
+.kpi-link.purple,
+.kpi-link.pink { color: var(--cp-dorado); }
 
-.kpi-card-cyan { border-left: 4px solid #CF9C48; }
-.kpi-card-green { border-left: 4px solid #CF9C48; }
-.kpi-card-purple { border-left: 4px solid #CF9C48; }
-.kpi-card-pink { border-left: 4px solid #CF9C48; }
+.kpi-card-cyan,
+.kpi-card-green,
+.kpi-card-purple,
+.kpi-card-pink { border-left: 4px solid var(--cp-dorado); }
 
 /* Mantener compatibilidad con estilos antiguos */
 .card-kpi {
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-start !important;
-  background: var(--color-bg-card) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid var(--cp-borde-suave) !important;
   border-radius: 10px !important;
   padding: 0.75rem 1rem !important;
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   cursor: pointer !important;
   transition: all 0.2s !important;
   position: relative !important;
@@ -484,129 +447,56 @@ main, .cys-main, main > * {
 
 .card-kpi:hover {
   transform: translateY(-6px) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
-}
-
-.card-kpi:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(77, 168, 218, 0.2) !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 /* ────────────────────────────────────
-   CARD 1 — GASTO (CYAN)
+   CARD 1 — GASTO (acento del tema)
    ──────────────────────────────────── */
-.card-kpi:nth-child(1) {
-  border-left-color: #5BC8F5 !important;
-}
-
-.card-kpi:nth-child(1) .text-primary {
-  color: #5BC8F5 !important;
-}
-
+.card-kpi:nth-child(1) { border-left-color: var(--azul-claro) !important; }
+.card-kpi:nth-child(1) .text-primary,
 .card-kpi:nth-child(1) h3,
 .card-kpi:nth-child(1) h5,
-.card-kpi:nth-child(1) h6 {
-  color: #5BC8F5 !important;
-}
-
-.card-kpi:nth-child(1) a {
-  color: #5BC8F5 !important;
-}
-
-.card-kpi:nth-child(1) .icon-bg-primary {
-  border-color: #5BC8F5 !important;
-}
-
-.card-kpi:nth-child(1) .icon-primary {
-  color: #5BC8F5 !important;
-}
+.card-kpi:nth-child(1) h6,
+.card-kpi:nth-child(1) a,
+.card-kpi:nth-child(1) .icon-primary { color: var(--azul-claro) !important; }
+.card-kpi:nth-child(1) .icon-bg-primary { border-color: var(--azul-claro) !important; }
 
 /* ────────────────────────────────────
-   CARD 2 — MES (VERDE)
+   CARD 2 — MES (verde del tema)
    ──────────────────────────────────── */
-.card-kpi:nth-child(2) {
-  border-left-color: #00C9A7 !important;
-}
-
-.card-kpi:nth-child(2) .text-secondary {
-  color: #00C9A7 !important;
-}
-
+.card-kpi:nth-child(2) { border-left-color: var(--verde) !important; }
+.card-kpi:nth-child(2) .text-secondary,
 .card-kpi:nth-child(2) h3,
 .card-kpi:nth-child(2) h5,
-.card-kpi:nth-child(2) h6 {
-  color: #00C9A7 !important;
-}
-
-.card-kpi:nth-child(2) a {
-  color: #00C9A7 !important;
-}
-
-.card-kpi:nth-child(2) .icon-bg-secondary {
-  border-color: #00C9A7 !important;
-}
-
-.card-kpi:nth-child(2) .icon-secondary {
-  color: #00C9A7 !important;
-}
+.card-kpi:nth-child(2) h6,
+.card-kpi:nth-child(2) a,
+.card-kpi:nth-child(2) .icon-secondary { color: var(--verde) !important; }
+.card-kpi:nth-child(2) .icon-bg-secondary { border-color: var(--verde) !important; }
 
 /* ────────────────────────────────────
-   CARD 3 — TOP (NARANJA)
+   CARD 3 — TOP (morado fijo)
    ──────────────────────────────────── */
-.card-kpi:nth-child(3) {
-  border-left-color: #9B59B6 !important;
-}
-
-.card-kpi:nth-child(3) .text-tertiary {
-  color: #9B59B6 !important;
-}
-
+.card-kpi:nth-child(3) { border-left-color: var(--cp-morado) !important; }
+.card-kpi:nth-child(3) .text-tertiary,
 .card-kpi:nth-child(3) h3,
 .card-kpi:nth-child(3) h5,
-.card-kpi:nth-child(3) h6 {
-  color: #9B59B6 !important;
-}
-
-.card-kpi:nth-child(3) a {
-  color: #9B59B6 !important;
-}
-
-.card-kpi:nth-child(3) .icon-bg-tertiary {
-  border-color: #9B59B6 !important;
-}
-
-.card-kpi:nth-child(3) .icon-tertiary {
-  color: #9B59B6 !important;
-}
+.card-kpi:nth-child(3) h6,
+.card-kpi:nth-child(3) a,
+.card-kpi:nth-child(3) .icon-tertiary { color: var(--cp-morado) !important; }
+.card-kpi:nth-child(3) .icon-bg-tertiary { border-color: var(--cp-morado) !important; }
 
 /* ────────────────────────────────────
-   CARD 4 — ACCIÓN (VERDEAZULADO)
+   CARD 4 — ACCIÓN (mezcla acento + verde)
    ──────────────────────────────────── */
-.card-kpi:nth-child(4) {
-  border-left-color: #00CED1 !important;
-}
-
-.card-kpi:nth-child(4) .text-quaternary {
-  color: #00CED1 !important;
-}
-
+.card-kpi:nth-child(4) { border-left-color: var(--cp-teal) !important; }
+.card-kpi:nth-child(4) .text-quaternary,
 .card-kpi:nth-child(4) h3,
 .card-kpi:nth-child(4) h5,
-.card-kpi:nth-child(4) h6 {
-  color: #00CED1 !important;
-}
-
-.card-kpi:nth-child(4) a {
-  color: #00CED1 !important;
-}
-
-.card-kpi:nth-child(4) .icon-bg-quaternary {
-  border-color: #00CED1 !important;
-}
-
-.card-kpi:nth-child(4) .icon-quaternary {
-  color: #00CED1 !important;
-}
+.card-kpi:nth-child(4) h6,
+.card-kpi:nth-child(4) a,
+.card-kpi:nth-child(4) .icon-quaternary { color: var(--cp-teal) !important; }
+.card-kpi:nth-child(4) .icon-bg-quaternary { border-color: var(--cp-teal) !important; }
 
 /* ────────────────────────────────────
    ESTILOS GENERALES DE TEXTO
@@ -636,7 +526,7 @@ main, .cys-main, main > * {
 .title-kpi {
   font-size: 1rem !important;
   font-weight: 700 !important;
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   line-height: 1.2 !important;
   margin: 0 0 0.4rem 0 !important;
 }
@@ -674,7 +564,7 @@ main, .cys-main, main > * {
   margin-bottom: 0.3rem !important;
 }
 
-/* Números - estilo Rajdhani (antiguo) */
+/* Números (antiguo) */
 .card-kpi h3,
 .card-kpi h5,
 .card-kpi h6 {
@@ -708,10 +598,9 @@ main, .cys-main, main > * {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   ICONOGRAFÍA — COLORES VARIADOS
+   ICONOGRAFÍA
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* ICONOGRAFÍA UNIFORME */
 .icon-bg-primary,
 .icon-bg-secondary,
 .icon-bg-tertiary,
@@ -735,45 +624,30 @@ main, .cys-main, main > * {
   font-weight: 600 !important;
 }
 
-/* CIELO BRILLANTE */
-.icon-bg-primary {
-  background:  #CF9C48;
-  border-color:  #CF9C48;
-}
+/* ACENTO DEL TEMA */
+.icon-bg-primary { border-color: var(--cp-dorado); }
+.icon-primary { color: var(--azul-claro) !important; }
 
-.icon-primary {
-  color: #5BC8F5 !important;
-}
-
-/* MENTA NEÓN */
+/* VERDE DEL TEMA */
 .icon-bg-secondary {
-  background: rgba(0, 201, 167, 0.1);
-  border-color: #00C9A7;
+  background: color-mix(in srgb, var(--verde) 10%, transparent);
+  border-color: var(--verde);
 }
+.icon-secondary { color: var(--verde) !important; }
 
-.icon-secondary {
-  color: #00C9A7 !important;
-}
-
-/* VIOLETA */
+/* MORADO */
 .icon-bg-tertiary {
-  background: rgba(155, 89, 182, 0.1);
-  border-color: #9B59B6;
+  background: color-mix(in srgb, var(--cp-morado) 10%, transparent);
+  border-color: var(--cp-morado);
 }
+.icon-tertiary { color: var(--cp-morado) !important; }
 
-.icon-tertiary {
-  color: #9B59B6 !important;
-}
-
-/* VERDEAZULADO */
+/* ACENTO + VERDE */
 .icon-bg-quaternary {
-  background: rgba(0, 206, 209, 0.1);
-  border-color: #00CED1;
+  background: color-mix(in srgb, var(--cp-teal) 10%, transparent);
+  border-color: var(--cp-teal);
 }
-
-.icon-quaternary {
-  color: #00CED1 !important;
-}
+.icon-quaternary { color: var(--cp-teal) !important; }
 
 .card-kpi:hover .icon-bg-primary,
 .card-kpi:hover .icon-bg-secondary,
@@ -788,7 +662,7 @@ main, .cys-main, main > * {
 
 .icon-empty {
   font-size: 2rem !important;
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
   opacity: 0.4 !important;
   margin-bottom: 12px !important;
   display: block !important;
@@ -798,72 +672,32 @@ main, .cys-main, main > * {
    TIPOGRAFÍA Y COLORES
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* SOLO dentro de .cys-main */
-.cys-main h1,
-.cys-main h2,
-.cys-main h3,
-.cys-main h4,
-.cys-main h5,
-.cys-main h6 {
-  color: var(--color-blanco) !important;
-  font-weight: 700 !important;
-}
-
-.cys-main p,
-.cys-main span,
-.cys-main div,
-.cys-main label,
-.cys-main small {
-  color: inherit !important;
-}
-
-/* Los iconos deben mantener sus colores específicos */
-i, .bi, [class*="icon"] {
-  color: inherit;
-  font-style: inherit;
-}
-
-.icon-muted {
-  color: var(--texto-muted) !important;
-}
-
-/* Iconos en el navegador/sidebar NO deben ser blancos */
-.cys-subnav i,
-.bi-search,
-.bi-bell,
-.bi-person,
-.bi-sliders2,
-[class^="bi-"] {
-  /* Restaurar color natural de Bootstrap Icons */
-  color: unset !important;
-}
-
 .text-muted {
   color: var(--texto-muted) !important;
 }
 
 .text-primary {
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
 }
 
 .text-secondary {
-  color: var(--amarillo-acento) !important;
+  color: var(--cp-dorado) !important;
 }
 
 .text-tertiary {
-  color: var(--naranja-acento) !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--rojo)) !important;
 }
 
 .text-quaternary {
-  color: var(--rojo-acento) !important;
+  color: var(--rojo) !important;
 }
 
 .text-success {
-  color: var(--verde-acento) !important;
+  color: var(--verde) !important;
 }
 
 .text-light {
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
 }
 
 .text-small-light {
@@ -899,48 +733,48 @@ i, .bi, [class*="icon"] {
   font-size: 0.88rem;
   background: transparent;
   --bs-table-bg: transparent !important;
-  --bs-table-color: rgba(255, 255, 255, 0.85) !important;
+  --bs-table-color: color-mix(in srgb, var(--texto) 85%, transparent) !important;
 }
 
 .table > :not(caption) > * > * {
   background-color: transparent !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.02) !important;
+  color: color-mix(in srgb, var(--texto) 85%, transparent) !important;
+  border-bottom-color: color-mix(in srgb, var(--texto) 2%, transparent) !important;
 }
 
 .table thead th {
-  background: rgba(255, 255, 255, 0.02);
-  color: #4DA8DA;
+  background: color-mix(in srgb, var(--texto) 2%, transparent);
+  color: var(--azul-claro);
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 14px 16px;
-  border-bottom: 2px solid rgba(77, 168, 218, 0.3) !important;
+  border-bottom: 2px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
 }
 
 .header-th {
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
 }
 
 .table tbody tr {
   background-color: transparent !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: color-mix(in srgb, var(--texto) 85%, transparent) !important;
   transition: all 0.2s ease;
 }
 
 .table tbody td {
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.01);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
-  color: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--texto) 1%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 2%, transparent) !important;
+  color: color-mix(in srgb, var(--texto) 85%, transparent);
   transition: all 0.2s ease;
 }
 
 .table tbody tr:hover td {
-  background: rgba(77, 168, 218, 0.08) !important;
-  color: var(--color-blanco);
-  border-bottom-color: rgba(77, 168, 218, 0.2) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  color: var(--texto);
+  border-bottom-color: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .table-scroll {
@@ -950,8 +784,8 @@ i, .bi, [class*="icon"] {
 }
 
 .tfoot-total {
-  background: rgba(77, 168, 218, 0.08) !important;
-  border-top: 2px solid rgba(77, 168, 218, 0.3) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border-top: 2px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
 }
 
 .grid-productos {
@@ -960,7 +794,7 @@ i, .bi, [class*="icon"] {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   FORMULARIOS (Estilos base oscuro)
+   FORMULARIOS
    ──────────────────────────────────────────────────────────────────────────── */
 
 .form-control,
@@ -970,12 +804,12 @@ input[type="text"],
 input[type="email"],
 input[type="number"],
 input[type="password"] {
-  --bs-form-control-bg: var(--color-surface) !important;
-  --bs-form-control-color: var(--color-blanco) !important;
-  --bs-form-control-border-color: rgba(239, 248, 226, 0.12) !important;
-  background-color: var(--color-surface) !important;
-  color: var(--color-blanco) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
+  --bs-form-control-bg: var(--fondo-card2) !important;
+  --bs-form-control-color: var(--texto) !important;
+  --bs-form-control-border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  background-color: var(--fondo-card2) !important;
+  color: var(--texto) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
   border-radius: 8px !important;
   transition: all 0.2s ease;
 }
@@ -988,15 +822,15 @@ textarea::placeholder {
 .form-control:focus,
 .form-select:focus,
 textarea:focus {
-  background-color: var(--color-surface) !important;
-  color: var(--color-blanco) !important;
-  border-color: var(--azul-acento) !important;
-  box-shadow: 0 0 0 3px rgba(77, 168, 218, 0.15) !important;
+  background-color: var(--fondo-card2) !important;
+  color: var(--texto) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
 }
 
 .form-select option {
-  background-color: var(--color-surface) !important;
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card2) !important;
+  color: var(--texto) !important;
 }
 
 .form-label,
@@ -1010,16 +844,16 @@ textarea:focus {
 }
 
 .input-group-text {
-  background-color: var(--color-surface) !important;
+  background-color: var(--fondo-card2) !important;
   color: var(--texto-muted) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
   border-right: none !important;
 }
 
 .btn-selector {
-  background-color: var(--color-surface) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  color: var(--texto) !important;
   padding: 10px 12px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
@@ -1030,8 +864,8 @@ textarea:focus {
 }
 
 .btn-selector:hover {
-  background-color: rgba(77, 168, 218, 0.1) !important;
-  border-color: var(--azul-acento) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border-color: var(--azul-claro) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1041,14 +875,14 @@ textarea:focus {
 .card-producto {
   cursor: pointer !important;
   transition: all 0.3s ease !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
-  background-color: var(--color-surface) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  background-color: var(--fondo-card2) !important;
 }
 
 .card-producto:hover {
-  border-color: var(--azul-acento) !important;
-  background-color: rgba(77, 168, 218, 0.08) !important;
-  box-shadow: 0 8px 20px rgba(77, 168, 218, 0.15) !important;
+  border-color: var(--azul-claro) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   transform: translateY(-2px);
 }
 
@@ -1058,7 +892,7 @@ textarea:focus {
 
 .icon-producto {
   font-size: 1.8rem !important;
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
   margin-bottom: 8px !important;
   transition: transform 0.3s ease;
 }
@@ -1069,7 +903,7 @@ textarea:focus {
 
 .nombre-producto {
   font-size: 0.8rem !important;
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   font-weight: 600;
 }
 
@@ -1079,16 +913,16 @@ textarea:focus {
 }
 
 .cantidad-badge {
-  background: rgba(77, 168, 218, 0.15) !important;
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   padding: 4px 6px !important;
   border-radius: 6px !important;
   font-size: 0.7rem !important;
-  color: #7ecfef !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
+  color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   BADGES (Todos los colores de reportes.css)
+   BADGES
    ──────────────────────────────────────────────────────────────────────────── */
 
 .badge,
@@ -1098,34 +932,34 @@ textarea:focus {
   border-radius: 12px;
   font-size: 0.73rem;
   font-weight: 600;
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #CF9C48 !important;
-  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  background: var(--cp-dorado-dim) !important;
+  color: var(--cp-dorado) !important;
+  border: 1px solid var(--cp-dorado-borde) !important;
 }
 
 .badge-verde {
-  background: rgba(200, 230, 160, 0.15) !important;
-  color: var(--verde-acento) !important;
+  background: color-mix(in srgb, var(--verde) 15%, transparent) !important;
+  color: var(--verde) !important;
 }
 
 .badge-amarillo {
-  background: rgba(240, 208, 128, 0.15) !important;
-  color: var(--amarillo-acento) !important;
+  background: color-mix(in srgb, var(--cp-dorado) 15%, transparent) !important;
+  color: var(--cp-dorado) !important;
 }
 
 .badge-rojo {
-  background: rgba(145, 47, 64, 0.2) !important;
-  color: #e87a8a !important;
+  background: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
+  color: var(--rojo) !important;
 }
 
 .badge-naranja {
-  background: rgba(232, 168, 124, 0.15) !important;
-  color: var(--naranja-acento) !important;
+  background: color-mix(in srgb, var(--cp-dorado) 15%, transparent) !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--rojo)) !important;
 }
 
 .badge-dorado {
-  background: rgba(201, 144, 64, 0.15) !important;
-  color: var(--dorado-acento) !important;
+  background: color-mix(in srgb, var(--cp-dorado) 15%, transparent) !important;
+  color: var(--cp-dorado) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1133,120 +967,119 @@ textarea:focus {
    ──────────────────────────────────────────────────────────────────────────── */
 
 .btn {
-  --bs-btn-color: var(--color-blanco) !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 }
 
 .btn-primary {
-  --bs-btn-bg: var(--azul-acento) !important;
-  --bs-btn-border-color: var(--azul-acento) !important;
-  background-color: var(--azul-acento) !important;
-  border-color: var(--azul-acento) !important;
-  color: #fff !important;
+  --bs-btn-bg: var(--azul-claro) !important;
+  --bs-btn-border-color: var(--azul-claro) !important;
+  background-color: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--azul-oscuro) !important;
 }
 
 .btn-primary:hover {
-  background-color: #3a93c4 !important;
-  border-color: #3a93c4 !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 85%, black) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 85%, black) !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(77, 168, 218, 0.25) !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
 }
 
 .btn-outline-secondary {
-  --bs-btn-color: var(--color-blanco) !important;
-  --bs-btn-border-color: rgba(239, 248, 226, 0.12) !important;
+  --bs-btn-color: var(--texto) !important;
+  --bs-btn-border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
   background-color: transparent !important;
-  color: var(--color-blanco) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
+  color: var(--texto) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
 }
 
 .btn-outline-secondary:hover {
-  background-color: rgba(77, 168, 218, 0.15) !important;
-  border-color: var(--azul-acento) !important;
-  color: var(--color-blanco) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
 }
 
 .btn-link {
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
   text-decoration: none !important;
 }
 
 .btn-link:hover {
-  color: #7ecfef !important;
+  color: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)) !important;
 }
 
 .link-primary {
-  color: var(--azul-acento) !important;
+  color: var(--azul-claro) !important;
   text-decoration: none !important;
   font-weight: 500 !important;
   transition: color 0.2s ease;
 }
 
 .link-primary:hover {
-  color: #7ecfef !important;
+  color: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)) !important;
 }
 
 .link-secondary {
-  color: var(--amarillo-acento) !important;
+  color: var(--cp-dorado) !important;
   text-decoration: none !important;
   font-weight: 500 !important;
 }
 
 .link-secondary:hover {
-  color: #f0e0a0 !important;
+  color: color-mix(in srgb, var(--cp-dorado) 75%, var(--texto)) !important;
 }
 
 .link-tertiary {
-  color: var(--naranja-acento) !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--rojo)) !important;
   text-decoration: none !important;
   font-weight: 500 !important;
 }
 
 .link-tertiary:hover {
-  color: #f5c5a0 !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--texto)) !important;
 }
 
 .link-quaternary {
-  color: var(--rojo-acento) !important;
+  color: var(--rojo) !important;
   text-decoration: none !important;
   font-weight: 500 !important;
 }
 
 .link-quaternary:hover {
-  color: #d46080 !important;
+  color: color-mix(in srgb, var(--rojo) 75%, var(--texto)) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   ALERTAS (Colores variados)
+   ALERTAS
    ──────────────────────────────────────────────────────────────────────────── */
 
 .alert {
-  --bs-alert-bg: var(--color-surface) !important;
-  --bs-alert-color: var(--color-blanco) !important;
-  --bs-alert-border-color: rgba(239, 248, 226, 0.1) !important;
-  background-color: var(--color-surface) !important;
-  border: 1px solid rgba(239, 248, 226, 0.1) !important;
-  color: var(--color-blanco) !important;
+  --bs-alert-bg: var(--fondo-card2) !important;
+  --bs-alert-color: var(--texto) !important;
+  --bs-alert-border-color: var(--cp-borde) !important;
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid var(--cp-borde) !important;
+  color: var(--texto) !important;
   border-radius: 8px !important;
 }
 
 .alert-success-dev {
-  background-color: rgba(39, 174, 96, 0.15) !important;
-  border-color: rgba(39, 174, 96, 0.3) !important;
-  color: var(--verde-acento) !important;
+  background-color: color-mix(in srgb, var(--verde) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--verde) 30%, transparent) !important;
+  color: var(--verde) !important;
 }
 
 .alert-danger-dev {
-  background-color: rgba(231, 76, 60, 0.15) !important;
-  border-color: rgba(231, 76, 60, 0.3) !important;
-  color: #e74c3c !important;
+  background-color: color-mix(in srgb, var(--rojo) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--rojo) 30%, transparent) !important;
+  color: var(--rojo) !important;
 }
 
 .alert-info-dev {
-  background-color: rgba(77, 168, 218, 0.15) !important;
-  border-color: rgba(77, 168, 218, 0.3) !important;
-  color: var(--azul-acento) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--azul-claro) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1254,37 +1087,38 @@ textarea:focus {
    ──────────────────────────────────────────────────────────────────────────── */
 
 .modal-content {
-  --bs-modal-bg: var(--color-bg-card) !important;
-  --bs-modal-border-color: rgba(239, 248, 226, 0.12) !important;
-  background-color: var(--color-bg-card) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
-  color: var(--color-blanco) !important;
+  --bs-modal-bg: var(--fondo-card) !important;
+  --bs-modal-border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  color: var(--texto) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45) !important;
 }
 
 .modal-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid rgba(239, 248, 226, 0.1);
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card2);
+  border-bottom: 1px solid var(--cp-borde);
+  color: var(--texto) !important;
 }
 
 .modal-body {
-  background-color: var(--color-bg-card) !important;
-  color: var(--color-blanco) !important;
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
 }
 
 .modal-footer {
-  background-color: var(--color-surface);
-  border-top: 1px solid rgba(239, 248, 226, 0.1);
+  background-color: var(--fondo-card2);
+  border-top: 1px solid var(--cp-borde);
 }
 
 .modal-title {
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   font-weight: 700 !important;
 }
 
+/* La X de cerrar: se invierte solo si el fondo del modal es oscuro */
 .btn-close {
-  filter: brightness(0) invert(1) !important;
+  filter: var(--btn-close-filter, none) !important;
 }
 
 /* Modal Backdrop Transparente — deja ver el fondo del proyecto detrás */
@@ -1303,9 +1137,6 @@ textarea:focus {
 /* ────────────────────────────────────────────────────────────────────────────
    COLLAPSE / ACCORDION
    ──────────────────────────────────────────────────────────────────────────── */
-/* ────────────────────────────────────────────────────────────────────────────
-   COLLAPSE / ACCORDION
-   ──────────────────────────────────────────────────────────────────────────── */
 
 .btn-link[data-bs-toggle="collapse"] i {
   transition: transform 0.3s ease;
@@ -1319,14 +1150,14 @@ textarea:focus {
   transform: rotate(0deg);
 }
 
-/* Botón "+" redondo azul — Nueva Compra en header del historial */
+/* Botón "+" redondo — Nueva Compra en header del historial */
 .btn-nueva-compra-small {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #4DA8DA;
+  background: var(--azul-claro);
   border: none;
-  color: #fff;
+  color: var(--azul-oscuro);
   font-size: 18px;
   cursor: pointer;
   display: flex;
@@ -1339,7 +1170,7 @@ textarea:focus {
 }
 
 .btn-nueva-compra-small:hover {
-  background: #3a93c4;
+  background: color-mix(in srgb, var(--azul-claro) 85%, black);
   transform: scale(1.08);
 }
 
@@ -1349,9 +1180,9 @@ textarea:focus {
 
 /* Botón Nueva Compra redondo con texto */
 .btn-nueva-compra {
-  background: #4DA8DA;
+  background: var(--azul-claro);
   border: none;
-  color:#011936;
+  color: var(--azul-oscuro);
   padding: 0.6rem 1.5rem;
   border-radius: 50px;
   cursor: pointer;
@@ -1365,7 +1196,7 @@ textarea:focus {
 }
 
 .btn-nueva-compra:hover {
-  background: #3a93c4;
+  background: color-mix(in srgb, var(--azul-claro) 85%, black);
   transform: translateY(-2px);
 }
 
@@ -1378,21 +1209,21 @@ textarea:focus {
    ──────────────────────────────────────────────────────────────────────────── */
 
 .dropdown-menu {
-  --bs-dropdown-bg: var(--color-bg-card) !important;
-  --bs-dropdown-border-color: rgba(239, 248, 226, 0.12) !important;
-  background-color: var(--color-bg-card) !important;
-  border: 1px solid rgba(239, 248, 226, 0.12) !important;
+  --bs-dropdown-bg: var(--fondo-card) !important;
+  --bs-dropdown-border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
 }
 
 .dropdown-item {
-  color: var(--color-blanco) !important;
+  color: var(--texto) !important;
   background-color: transparent !important;
   transition: all 0.2s ease !important;
 }
 
 .dropdown-item:hover {
-  background-color: rgba(77, 168, 218, 0.15) !important;
-  color: var(--color-blanco) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  color: var(--texto) !important;
 }
 
 .dropdown-item:disabled {
@@ -1401,40 +1232,40 @@ textarea:focus {
 }
 
 .dropdown-divider {
-  border-top: 1px solid rgba(239, 248, 226, 0.12) !important;
+  border-top: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
 }
 
 /* Estilos para botones de acción en dropdown */
 .dropdown-item.text-danger {
-  color: #e74c3c !important;
+  color: var(--rojo) !important;
 }
 
 .dropdown-item.text-danger:hover {
-  background-color: rgba(231, 76, 60, 0.2) !important;
+  background-color: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
 }
 
 .dropdown-item.text-success {
-  color: #27ae60 !important;
+  color: var(--verde) !important;
 }
 
 .dropdown-item.text-success:hover {
-  background-color: rgba(39, 174, 96, 0.2) !important;
+  background-color: color-mix(in srgb, var(--verde) 20%, transparent) !important;
 }
 
 .dropdown-item.text-info {
-  color: #4DA8DA !important;
+  color: var(--azul-claro) !important;
 }
 
 .dropdown-item.text-info:hover {
-  background-color: rgba(77, 168, 218, 0.2) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .dropdown-item.text-warning {
-  color: #f39c12 !important;
+  color: var(--cp-dorado) !important;
 }
 
 .dropdown-item.text-warning:hover {
-  background-color: rgba(243, 156, 18, 0.2) !important;
+  background-color: color-mix(in srgb, var(--cp-dorado) 20%, transparent) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1442,8 +1273,8 @@ textarea:focus {
    ──────────────────────────────────────────────────────────────────────────── */
 
 .card-highlight {
-  background: rgba(77, 168, 218, 0.12) !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
 }
 
 .hidden-element {
@@ -1453,8 +1284,8 @@ textarea:focus {
 .fila-proveedor {
   cursor: pointer !important;
   transition: all 0.3s ease !important;
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
-  background: var(--color-bg-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  background: var(--fondo-card) !important;
   border-radius: 8px !important;
   min-height: 100px;
   display: flex !important;
@@ -1462,30 +1293,10 @@ textarea:focus {
 }
 
 .fila-proveedor:hover {
-  border-color: rgba(77, 168, 218, 0.4) !important;
-  background: rgba(77, 168, 218, 0.08) !important;
-  box-shadow: 0 4px 12px rgba(77, 168, 218, 0.15) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   transform: translateY(-2px);
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   ELIMINACIÓN DEFINITIVA DE TODO BLANCO
-   ──────────────────────────────────────────────────────────────────────────── */
-
-.bg-white,
-[style*="background: white"],
-[style*="background-color: white"],
-[style*="background: #fff"],
-[style*="background-color: #fff"],
-[style*="background: #ffffff"],
-[style*="background-color: #ffffff"] {
-  background-color: var(--color-bg-card) !important;
-  background: var(--color-bg-card) !important;
-  color: var(--color-blanco) !important;
-}
-
-[style*="white"] {
-  color: var(--color-blanco) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -1497,37 +1308,33 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(77, 168, 218, 0.05) !important;
+  background: color-mix(in srgb, var(--azul-claro) 5%, transparent) !important;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(77, 168, 218, 0.3) !important;
+  background: color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   border-radius: 4px !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(77, 168, 218, 0.5) !important;
+  background: color-mix(in srgb, var(--azul-claro) 50%, transparent) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
    ESTILOS PERSONALIZADOS PARA MODALES KPI
-   (NOTA: ya no se redefine .modal-content / .modal-header aquí.
-   El bloque único definido arriba en "MODALES" es el que manda para
-   que TODOS los modales sean consistentes y dejen ver el fondo del
-   proyecto a través del backdrop translúcido, como en el resto del sistema)
    ──────────────────────────────────────────────────────────────────────────── */
 
 .modal-header h5 {
   font-size: 1.5rem !important;
   font-weight: 700 !important;
-  color: #5BC8F5 !important;
+  color: var(--azul-claro) !important;
   margin-bottom: 0.5rem !important;
 }
 
 .modal-header small {
   display: block !important;
   font-size: 0.9rem !important;
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-weight: 500 !important;
 }
 
@@ -1541,17 +1348,17 @@ textarea:focus {
 }
 
 .modal-body .card-inner {
-  background: linear-gradient(135deg, rgba(77, 168, 218, 0.15) 0%, rgba(77, 168, 218, 0.05) 100%) !important;
-  border: 2px solid rgba(77, 168, 218, 0.3) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 15%, transparent) 0%, color-mix(in srgb, var(--azul-claro) 5%, transparent) 100%) !important;
+  border: 2px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   transition: all 0.3s ease !important;
   border-radius: 12px !important;
 }
 
 .modal-body .card-inner:hover {
-  border-color: rgba(91, 200, 245, 0.8) !important;
-  box-shadow: 0 12px 30px rgba(77, 168, 218, 0.25) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 80%, transparent) !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
   transform: translateY(-6px) !important;
-  background: linear-gradient(135deg, rgba(77, 168, 218, 0.25) 0%, rgba(77, 168, 218, 0.1) 100%) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 25%, transparent) 0%, color-mix(in srgb, var(--azul-claro) 10%, transparent) 100%) !important;
 }
 
 .modal-body .card-inner .card-body {
@@ -1565,48 +1372,42 @@ textarea:focus {
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   margin-bottom: 1rem !important;
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
 }
 
 .modal-body .card-inner .card-body h3 {
   font-size: 2.5rem !important;
   font-weight: 800 !important;
   margin: 0 !important;
-  color: #5BC8F5 !important;
+  color: var(--azul-claro) !important;
   line-height: 1 !important;
 }
 
 /* Colores diferentes para cada card */
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(1) .card-inner {
-  border-left: 4px solid #5BC8F5 !important;
+  border-left: 4px solid var(--azul-claro) !important;
 }
 
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(1) .card-inner .card-body p {
-  color: #5BC8F5 !important;
+  color: var(--azul-claro) !important;
 }
 
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(2) .card-inner {
-  border-left: 4px solid #27ae60 !important;
+  border-left: 4px solid var(--verde) !important;
 }
 
-.modal-body .row.g-3.mb-4 .col-md-4:nth-child(2) .card-inner .card-body h3 {
-  color: #27ae60 !important;
-}
-
+.modal-body .row.g-3.mb-4 .col-md-4:nth-child(2) .card-inner .card-body h3,
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(2) .card-inner .card-body p {
-  color: #27ae60 !important;
+  color: var(--verde) !important;
 }
 
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(3) .card-inner {
-  border-left: 4px solid #f0d080 !important;
+  border-left: 4px solid var(--cp-dorado) !important;
 }
 
-.modal-body .row.g-3.mb-4 .col-md-4:nth-child(3) .card-inner .card-body h3 {
-  color: #f0d080 !important;
-}
-
+.modal-body .row.g-3.mb-4 .col-md-4:nth-child(3) .card-inner .card-body h3,
 .modal-body .row.g-3.mb-4 .col-md-4:nth-child(3) .card-inner .card-body p {
-  color: #f0d080 !important;
+  color: var(--cp-dorado) !important;
 }
 
 /* Tabla en Modal */
@@ -1615,57 +1416,57 @@ textarea:focus {
 }
 
 .modal-body .table thead th {
-  background: rgba(77, 168, 218, 0.1) !important;
-  color: #5BC8F5 !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--azul-claro) !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   font-size: 0.8rem !important;
   letter-spacing: 0.1em !important;
   padding: 1rem 0.75rem !important;
-  border-bottom: 2px solid rgba(77, 168, 218, 0.2) !important;
+  border-bottom: 2px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .modal-body .table tbody tr {
-  border-bottom: 1px solid rgba(77, 168, 218, 0.1) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
   transition: all 0.2s ease !important;
 }
 
 .modal-body .table tbody tr:hover {
-  background: rgba(77, 168, 218, 0.08) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
 }
 
 .modal-body .table tbody td {
   padding: 0.9rem 0.75rem !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: color-mix(in srgb, var(--texto) 85%, transparent) !important;
 }
 
 /* Footer Modal */
 .modal-footer {
-  background: rgba(3, 45, 96, 0.8) !important;
-  border-top: 1px solid rgba(77, 168, 218, 0.2) !important;
+  background: color-mix(in srgb, var(--fondo-card2) 80%, transparent) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   padding: 1.5rem !important;
 }
 
 .modal-footer .btn-outline-secondary {
-  border-color: rgba(77, 168, 218, 0.4) !important;
-  color: #5BC8F5 !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
+  color: var(--azul-claro) !important;
   font-weight: 600 !important;
   padding: 0.6rem 1.5rem !important;
   transition: all 0.3s ease !important;
 }
 
 .modal-footer .btn-outline-secondary:hover {
-  background: linear-gradient(135deg, #4DA8DA 0%, #3a93c4 100%) !important;
-  border-color: #4DA8DA !important;
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(77, 168, 218, 0.3) !important;
+  background: linear-gradient(135deg, var(--azul-claro) 0%, color-mix(in srgb, var(--azul-claro) 85%, black) 100%) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--azul-oscuro) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
 }
 
 /* Mensaje en Modal Nueva Compra */
 .modal-body .alert-info-dev {
-  background: rgba(77, 168, 218, 0.1) !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
-  color: #5BC8F5 !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--azul-claro) !important;
   padding: 1rem !important;
   border-radius: 8px !important;
 }
@@ -1673,16 +1474,16 @@ textarea:focus {
 /* Detalle de compra */
 .detalle-compra-modal {
   overflow: hidden;
-  border-color: rgba(91, 200, 245, 0.22) !important;
-  background: #06264d !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  background: var(--fondo-card) !important;
 }
 
 .detalle-compra-header {
   align-items: flex-start;
   background:
-    linear-gradient(135deg, rgba(77, 168, 218, 0.16), rgba(1, 25, 54, 0.45)),
-    var(--color-surface) !important;
-  border-bottom: 1px solid rgba(91, 200, 245, 0.18) !important;
+    linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 16%, transparent), color-mix(in srgb, var(--fondo-card2) 45%, transparent)),
+    var(--fondo-card2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
   padding: 1.35rem 1.5rem !important;
 }
 
@@ -1694,10 +1495,10 @@ textarea:focus {
 .detalle-compra-id {
   width: fit-content;
   padding: .22rem .65rem;
-  border: 1px solid rgba(91, 200, 245, 0.22);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent);
   border-radius: 999px;
-  background: rgba(91, 200, 245, 0.12);
-  color: #d8f4ff;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--texto);
   font-size: .72rem;
   font-weight: 800;
   line-height: 1;
@@ -1707,7 +1508,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: .65rem;
-  color: #5BC8F5 !important;
+  color: var(--azul-claro) !important;
   font-size: 1.75rem !important;
   line-height: 1.1;
 }
@@ -1717,14 +1518,14 @@ textarea:focus {
 }
 
 .detalle-compra-title-wrap small {
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-weight: 500;
 }
 
 .detalle-compra-body {
   background:
-    radial-gradient(circle at top right, rgba(91, 200, 245, 0.08), transparent 34%),
-    var(--color-bg-card) !important;
+    radial-gradient(circle at top right, color-mix(in srgb, var(--azul-claro) 8%, transparent), transparent 34%),
+    var(--fondo-card) !important;
   padding: .85rem !important;
 }
 
@@ -1737,16 +1538,16 @@ textarea:focus {
   min-height: 66px;
   height: 100%;
   padding: .65rem .75rem;
-  border: 1px solid rgba(91, 200, 245, 0.18);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
   border-radius: 8px;
-  background: rgba(6, 38, 77, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  color: var(--color-blanco);
+  background: color-mix(in srgb, var(--fondo-card2) 72%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--texto) 4%, transparent);
+  color: var(--texto);
 }
 
 .detalle-card:hover {
-  border-color: rgba(91, 200, 245, 0.42);
-  background: rgba(8, 48, 96, 0.82);
+  border-color: color-mix(in srgb, var(--azul-claro) 42%, transparent);
+  background: color-mix(in srgb, var(--azul-claro) 8%, var(--fondo-card2));
 }
 
 .detalle-card-producto,
@@ -1763,10 +1564,10 @@ textarea:focus {
   flex: 0 0 28px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(91, 200, 245, 0.24);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 24%, transparent);
   border-radius: 8px;
-  background: rgba(91, 200, 245, 0.1);
-  color: #5BC8F5;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
+  color: var(--azul-claro);
   font-size: .86rem;
   margin-bottom: .42rem;
 }
@@ -1778,7 +1579,7 @@ textarea:focus {
 
 .detalle-label {
   margin: 0 0 .2rem !important;
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-size: .62rem !important;
   font-weight: 800 !important;
   letter-spacing: .08em !important;
@@ -1787,7 +1588,7 @@ textarea:focus {
 
 .detalle-value {
   margin: 0 !important;
-  color: #eef8ff !important;
+  color: var(--texto) !important;
   font-size: .86rem !important;
   font-weight: 800 !important;
   letter-spacing: 0 !important;
@@ -1807,28 +1608,28 @@ textarea:focus {
 .detalle-card-proveedor .text-muted {
   display: block;
   margin-top: .12rem;
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-size: .74rem;
 }
 
 .detalle-card-total {
-  border-color: rgba(39, 174, 96, 0.32);
-  background: linear-gradient(135deg, rgba(39, 174, 96, 0.16), rgba(6, 38, 77, 0.78));
+  border-color: color-mix(in srgb, var(--verde) 32%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--verde) 16%, transparent), color-mix(in srgb, var(--fondo-card2) 78%, transparent));
 }
 
 .detalle-icon-total {
-  border-color: rgba(39, 174, 96, 0.34);
-  background: rgba(39, 174, 96, 0.14);
-  color: #35d07f;
+  border-color: color-mix(in srgb, var(--verde) 34%, transparent);
+  background: color-mix(in srgb, var(--verde) 14%, transparent);
+  color: var(--verde);
 }
 
 .detalle-total {
-  color: #35d07f !important;
+  color: var(--verde) !important;
 }
 
 .detalle-compra-footer {
-  background: var(--color-surface) !important;
-  border-top: 1px solid rgba(91, 200, 245, 0.16) !important;
+  background: var(--fondo-card2) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
   padding: .65rem .85rem !important;
 }
 
@@ -1871,15 +1672,11 @@ textarea:focus {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   RESPONSIVE
-   ──────────────────────────────────────────────────────────────────────────── */
-
-/* ────────────────────────────────────────────────────────────────────────────
    MÓDULO PROVEEDOR MEJORADO
    ──────────────────────────────────────────────────────────────────────────── */
 
 .card-proveedor-header {
-  border-left: 4px solid #CF9C48 !important;
+  border-left: 4px solid var(--cp-dorado) !important;
   overflow: hidden !important;
 }
 
@@ -1901,14 +1698,14 @@ textarea:focus {
 .proveedor-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, rgba(207, 156, 72, 0.2) 0%, rgba(207, 156, 72, 0.05) 100%);
-  border: 2px solid rgba(207, 156, 72, 0.5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cp-dorado) 20%, transparent) 0%, color-mix(in srgb, var(--cp-dorado) 5%, transparent) 100%);
+  border: 2px solid color-mix(in srgb, var(--cp-dorado) 50%, transparent);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  color: #CF9C48;
+  color: var(--cp-dorado);
   flex-shrink: 0;
 }
 
@@ -1919,7 +1716,7 @@ textarea:focus {
 .proveedor-nombre {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #FDFFFC;
+  color: var(--texto);
   margin: 0 0 0.75rem 0;
   text-transform: capitalize;
 }
@@ -1933,15 +1730,15 @@ textarea:focus {
 
 .detail-badge {
   display: inline-block;
-  background: rgba(77, 168, 218, 0.15);
-  color: #5BC8F5;
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  color: var(--azul-claro);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 1px solid rgba(77, 168, 218, 0.3);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
 }
 
 .detail-item {
@@ -1949,11 +1746,11 @@ textarea:focus {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #8FA3B1;
+  color: var(--texto-muted);
 }
 
 .detail-item i {
-  color: #4DA8DA;
+  color: var(--azul-claro);
   font-size: 0.85rem;
 }
 
@@ -1968,21 +1765,21 @@ textarea:focus {
 }
 
 .estado-activo {
-  background: rgba(39, 174, 96, 0.15) !important;
-  color: #27ae60 !important;
-  border: 1px solid rgba(39, 174, 96, 0.3);
+  background: color-mix(in srgb, var(--verde) 15%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent);
 }
 
 .estado-inactivo {
-  background: rgba(149, 165, 166, 0.15) !important;
-  color: #95a5a6 !important;
-  border: 1px solid rgba(149, 165, 166, 0.3);
+  background: color-mix(in srgb, var(--texto-muted) 15%, transparent) !important;
+  color: var(--texto-muted) !important;
+  border: 1px solid color-mix(in srgb, var(--texto-muted) 30%, transparent);
 }
 
 .estado-sancionado {
-  background: rgba(231, 76, 60, 0.15) !important;
-  color: #e74c3c !important;
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  background: color-mix(in srgb, var(--rojo) 15%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 30%, transparent);
 }
 
 .proveedor-actions {
@@ -1995,13 +1792,13 @@ textarea:focus {
 }
 
 .proveedor-actions .btn-outline-secondary {
-  background: linear-gradient(135deg, #4DA8DA) !important;
+  background: var(--azul-claro) !important;
   border: none !important;
-  color: #011936 !important;
+  color: var(--azul-oscuro) !important;
   padding: 0.6rem 1.5rem !important;
   border-radius: 25px !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(77, 168, 218, 0.3) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   transition: all 0.3s ease !important;
   display: flex !important;
   align-items: center !important;
@@ -2009,8 +1806,8 @@ textarea:focus {
 }
 
 .proveedor-actions .btn-outline-secondary:hover {
-  background: linear-gradient(135deg, #5BC8F5 0%, #4DA8DA 100%) !important;
-  box-shadow: 0 6px 16px rgba(77, 168, 218, 0.4) !important;
+  background: color-mix(in srgb, var(--azul-claro) 85%, var(--texto)) !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -2026,13 +1823,13 @@ textarea:focus {
 .proveedor-icon-empty {
   width: 80px;
   height: 80px;
-  background: rgba(77, 168, 218, 0.1);
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  color: #4DA8DA;
+  color: var(--azul-claro);
   margin-bottom: 1rem;
   opacity: 0.5;
 }
@@ -2040,12 +1837,12 @@ textarea:focus {
 .proveedor-empty h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #FDFFFC;
+  color: var(--texto);
   margin: 0 0 0.5rem 0;
 }
 
 .proveedor-empty p {
-  color: #8FA3B1;
+  color: var(--texto-muted);
   margin: 0;
   font-size: 0.95rem;
 }
@@ -2089,10 +1886,10 @@ textarea:focus {
 
   .table tbody tr {
     margin-bottom: 1.25rem;
-    border: 1px solid rgba(239, 248, 226, 0.12);
+    border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent);
     border-radius: 10px;
     padding: 10px;
-    background: var(--color-bg-card);
+    background: var(--fondo-card);
     display: block;
   }
 
@@ -2101,7 +1898,7 @@ textarea:focus {
     justify-content: space-between;
     padding: 8px 10px !important;
     border: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent) !important;
   }
 
   .table tbody td:last-child {
@@ -2139,33 +1936,33 @@ textarea:focus {
 /* BADGES ESTADOS PERSONALIZADOS */
 /* ════════════════════════════════════════════════════════════════ */
 .badge-success-dev {
-  background: rgba(39, 174, 96, 0.2) !important;
-  color: #27ae60 !important;
-  border: 1px solid rgba(39, 174, 96, 0.3) !important;
+  background: color-mix(in srgb, var(--verde) 20%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent) !important;
 }
 .badge-warning-dev {
-  background: rgba(243, 156, 18, 0.2) !important;
-  color: #f39c12 !important;
-  border: 1px solid rgba(243, 156, 18, 0.3) !important;
+  background: color-mix(in srgb, var(--cp-dorado) 20%, transparent) !important;
+  color: var(--cp-dorado) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 30%, transparent) !important;
 }
 .badge-pending-dev {
-  background: rgba(155, 93, 229, 0.2) !important;
-  color: #9b5de5 !important;
-  border: 1px solid rgba(155, 93, 229, 0.3) !important;
+  background: color-mix(in srgb, var(--cp-morado) 20%, transparent) !important;
+  color: var(--cp-morado) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-morado) 30%, transparent) !important;
 }
 .badge-cyan-dev {
-  background: rgba(77, 168, 218, 0.2) !important;
-  color: #4DA8DA !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
+  background: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
 }
 
 /* CARD INFO BOX */
 .card-info-box {
-  background: linear-gradient(135deg, rgba(77, 168, 218, 0.1), rgba(77, 168, 218, 0.05));
-  border-left: 4px solid #4DA8DA;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--azul-claro) 10%, transparent), color-mix(in srgb, var(--azul-claro) 5%, transparent));
+  border-left: 4px solid var(--azul-claro);
   border-radius: 8px;
   padding: 1.25rem;
-  border: 1px solid rgba(77, 168, 218, 0.2);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
 }
 
 /* SPACING UTILITIES */
@@ -2177,16 +1974,13 @@ textarea:focus {
 
 /* TEXT UTILITIES */
 .text-center { text-align: center; }
-.text-light { color: #FDFFFC; }
-.text-muted { color: #AF8D86; }
-.text-cyan { color: #4DA8DA; }
+.text-cyan { color: var(--azul-claro); }
 .text-xs { font-size: 0.75rem; }
 .fs-small { font-size: 0.9rem; }
 .fw-bold { font-weight: 700 !important; }
 .fw-600 { font-weight: 600 !important; }
 
 /* FLEX UTILITIES */
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
 .flex-start { display: flex; align-items: center; }
 .gap-1 { gap: 1rem; }
 .gap-15 { gap: 1.5rem; }
@@ -2197,22 +1991,22 @@ textarea:focus {
 
 .modal-header i,
 .modal-header .bi {
-  color: #CF9C48 !important;
+  color: var(--cp-dorado) !important;
 }
 
 .modal-header h5,
 .modal-header .modal-title {
-  color: #CF9C48 !important;
+  color: var(--cp-dorado) !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
 .modal-custom-body i,
 .modal-custom-body .bi {
-  color: #CF9C48 !important;
+  color: var(--cp-dorado) !important;
 }
 
 .modal-custom-body label {
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
@@ -2221,12 +2015,12 @@ textarea:focus {
 .modal-custom-body input[type="datetime-local"],
 .modal-custom-body select {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  color: #FDFFFC !important;
+  color: var(--texto) !important;
 }
 
 .modal-custom-body small {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -2234,7 +2028,7 @@ textarea:focus {
    ════════════════════════════════════════════════════════════════ */
 
 .metodos-pago-container {
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   border-radius: 8px !important;
   overflow: hidden;
 }
@@ -2244,24 +2038,24 @@ textarea:focus {
   align-items: center !important;
   justify-content: space-between !important;
   padding: 12px 16px !important;
-  background: rgba(77, 168, 218, 0.1) !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
   cursor: pointer !important;
   user-select: none !important;
   transition: all 0.2s ease !important;
-  border-bottom: 1px solid rgba(77, 168, 218, 0.2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .metodos-pago-header:hover {
-  background: rgba(77, 168, 218, 0.15) !important;
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
 }
 
 .metodos-pago-header span {
-  color: #8FA3B1 !important;
+  color: var(--texto-muted) !important;
   font-size: 0.95rem !important;
 }
 
 .metodos-pago-header i {
-  color: #4DA8DA !important;
+  color: var(--azul-claro) !important;
 }
 
 .metodos-pago-list {
@@ -2275,8 +2069,8 @@ textarea:focus {
   padding: 12px 16px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  border-bottom: 1px solid rgba(77, 168, 218, 0.1) !important;
-  color: #FDFFFC !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--texto) !important;
   user-select: none !important;
   margin-bottom: 0 !important;
 }
@@ -2286,16 +2080,16 @@ textarea:focus {
 }
 
 .metodo-pago-item:hover {
-  background: rgba(77, 168, 218, 0.1) !important;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
 }
 
 .metodo-pago-item input[type="radio"] {
   cursor: pointer !important;
-  accent-color: #4DA8DA !important;
+  accent-color: var(--azul-claro) !important;
 }
 
 .metodo-pago-item i {
-  color: #4DA8DA !important;
+  color: var(--azul-claro) !important;
   font-size: 1rem !important;
   flex-shrink: 0;
 }
@@ -2393,7 +2187,7 @@ textarea:focus {
   .table tbody tr {
     display: block !important;
     margin-bottom: 12px;
-    border: 1px solid rgba(77, 168, 218, 0.15) !important;
+    border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
     border-radius: 8px;
     padding: 10px;
   }
@@ -2678,8 +2472,8 @@ textarea:focus {
   }
 
   .dropdown-menu-dark {
-    background-color: #111f33 !important;
-    border: 1px solid rgba(77, 168, 218, 0.4) !important;
+    background-color: var(--fondo-card2) !important;
+    border: 1px solid color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
   }
 
   .dropdown-item {
@@ -2690,12 +2484,12 @@ textarea:focus {
   }
 
   .dropdown-item:hover {
-    background-color: rgba(77, 168, 218, 0.2) !important;
+    background-color: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   }
 
   .dropdown-divider {
     margin: 4px 0 !important;
-    border-color: rgba(77, 168, 218, 0.2) !important;
+    border-color: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   }
 
   /* Tabla en móvil - mejor visualización de acciones */
@@ -2707,8 +2501,8 @@ textarea:focus {
 
   .table tbody tr {
     display: block !important;
-    background: rgba(77, 168, 218, 0.08) !important;
-    border: 1px solid rgba(77, 168, 218, 0.15) !important;
+    background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
     border-radius: 8px !important;
     padding: 10px !important;
     margin-bottom: 10px !important;
@@ -2733,7 +2527,7 @@ textarea:focus {
     font-weight: 700;
     font-size: 0.75rem;
     text-transform: uppercase;
-    color: #4DA8DA;
+    color: var(--azul-claro);
     margin-bottom: 4px;
   }
 
@@ -2926,13 +2720,8 @@ textarea:focus {
   }
 }
 
-/* RESPONSIVE GENERAL - OPTIMIZACIONES GLOBALES */
+/* RESPONSIVE GENERAL - OPTIMIZACIONES */
 @media (min-width: 320px) {
-  /* Base para todos los dispositivos */
-  body {
-    font-size: calc(14px + (18 - 14) * ((100vw - 320px) / (1920 - 320)));
-  }
-
   .container-fluid {
     transition: padding 0.3s ease;
   }
@@ -2976,13 +2765,13 @@ textarea:focus {
 /* ── DataTables genérico (mismo estilo que Inventario/Reportes) ── */
 .dataTables_wrapper .dataTables_paginate .paginate_button { background: transparent !important; border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important; border-radius: 6px !important; color: var(--azul-claro) !important; padding: 0.3rem 0.8rem !important; margin: 0 2px !important; font-size: 0.85rem; transition: all 0.2s ease; }
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important; color: var(--texto) !important; border-color: var(--azul-claro) !important; }
-.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover { background: var(--azul-claro) !important; color: var(--fondo) !important; border-color: var(--azul-claro) !important; font-weight: bold; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover { background: var(--azul-claro) !important; color: var(--azul-oscuro) !important; border-color: var(--azul-claro) !important; font-weight: bold; }
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active { color: color-mix(in srgb, var(--texto) 30%, transparent) !important; border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; background: transparent !important; cursor: not-allowed !important; box-shadow: none !important; }
 .dataTables_wrapper .dataTables_info { color: color-mix(in srgb, var(--texto) 60%, transparent) !important; font-size: 0.85rem; padding-top: 0 !important; }
 .dt-paging .pagination { gap: 0.3rem; margin-top: 0 !important; margin-bottom: 0 !important; }
 .dt-paging .pagination .page-link { background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important; border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important; color: var(--azul-claro) !important; border-radius: 50px !important; padding: 0.28rem 0.9rem !important; font-size: 0.78rem !important; font-weight: 600 !important; transition: all 0.2s ease !important; box-shadow: none !important; }
-.dt-paging .pagination .page-item:not(.disabled):not(.active) .page-link:hover { background: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important; border-color: color-mix(in srgb, var(--azul-claro) 55%, transparent) !important; color: color-mix(in srgb, var(--azul-claro) 70%, white) !important; }
-.dt-paging .pagination .page-item.active .page-link { background: var(--azul-claro) !important; border-color: var(--azul-claro) !important; color: var(--fondo) !important; }
+.dt-paging .pagination .page-item:not(.disabled):not(.active) .page-link:hover { background: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important; border-color: color-mix(in srgb, var(--azul-claro) 55%, transparent) !important; color: color-mix(in srgb, var(--azul-claro) 70%, var(--texto)) !important; }
+.dt-paging .pagination .page-item.active .page-link { background: var(--azul-claro) !important; border-color: var(--azul-claro) !important; color: var(--azul-oscuro) !important; }
 .dt-paging .pagination .page-item.disabled .page-link { background: transparent !important; border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; color: color-mix(in srgb, var(--texto) 30%, transparent) !important; cursor: not-allowed !important; }
 div.dt-container div.dt-info { color: color-mix(in srgb, var(--texto) 60%, transparent) !important; font-size: 0.85rem; padding-top: 0 !important; }
 table.dataTable thead > tr > th div.dt-column-header, table.dataTable thead > tr > td div.dt-column-header { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; align-items: center !important; gap: 6px !important; }
@@ -2994,4 +2783,3 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 #tablaHistorialCompras thead > tr > th .dt-column-order:before, #tablaHistorialCompras thead > tr > th .dt-column-order:after { color: var(--azul-claro); opacity: 0.4; }
 #tablaHistorialCompras thead > tr > th.dt-ordering-asc .dt-column-order:before, #tablaHistorialCompras thead > tr > th.dt-ordering-desc .dt-column-order:after { opacity: 1; color: var(--azul-claro); }
 #tablaHistorialCompras thead > tr > th.dt-orderable-asc:hover, #tablaHistorialCompras thead > tr > th.dt-orderable-desc:hover { outline: 2px solid color-mix(in srgb, var(--azul-claro) 15%, transparent); outline-offset: -2px; }
-
