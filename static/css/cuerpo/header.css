@@ -1,3 +1,10 @@
+/* ════════════════════════════════════════════════════════════════
+   HEADER, USUARIO Y CAMPANA — sigue el tema (base.js)
+   Pegar al FINAL de compras.css para que gane sobre las reglas
+   genéricas de .dropdown-menu / .dropdown-item / .nav-tabs.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Menú de usuario (hover) ── */
 #userHoverWrapper {
   position: relative;
 }
@@ -40,6 +47,7 @@
   background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
 }
 
+/* ── Links del sidebar / header ── */
 .cys-sb-link:hover,
 .cys-sb-sublink:hover {
   background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
@@ -58,7 +66,6 @@
   pointer-events: none;
 }
 
-/* NUEVO */
 .cys-sb-link {
   display: flex;
   align-items: center;
@@ -82,4 +89,67 @@
 
 .collapse .cys-sb-sublink {
   margin-left: .7rem;
+}
+
+/* ── Ícono de la campana: siempre sigue el tema (claro y oscuro) ── */
+.bi-bell,
+.bi-bell-fill {
+  color: var(--azul-claro) !important;
+}
+
+/* ══════════════════════════════════════════
+   CAMPANA DE NOTIFICACIONES
+   (sobrescribe Bootstrap y las reglas genéricas de este archivo)
+   ══════════════════════════════════════════ */
+
+/* Contenedor del desplegable */
+#notif-dropdown-menu {
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+/* 1. Pestañas (Stock, Compras, Historial) */
+.notif-tab-btn {
+  color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
+  background: transparent !important;
+}
+
+.notif-tab-btn:hover {
+  color: var(--azul-claro) !important;
+}
+
+.notif-tab-btn.active {
+  color: var(--azul-claro) !important;
+  background: transparent !important;
+  border-color: var(--azul-claro) var(--azul-claro) transparent !important;
+}
+
+/* 2. Mensajes de alerta (ítems dinámicos dentro de los paneles) */
+#notif-dropdown-menu .dropdown-item {
+  color: var(--azul-claro) !important; /* usa var(--texto) si prefieres un tono más neutro */
+  background-color: transparent !important;
+}
+
+#notif-dropdown-menu .dropdown-item:hover,
+#notif-dropdown-menu .dropdown-item:focus {
+  background-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--azul-claro) !important;
+}
+
+/* Texto secundario dentro de los mensajes */
+#notif-dropdown-menu .dropdown-item small,
+#notif-dropdown-menu .text-muted {
+  color: var(--texto-muted) !important;
+}
+
+/* 3. Enlace inferior ("Ver stock completo →") */
+.notif-footer-link {
+  color: var(--azul-claro) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
+}
+
+.notif-footer-link:hover {
+  background-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--azul-borde) !important;
 }
