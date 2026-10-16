@@ -146,7 +146,7 @@ function inicializarValidacionFormulario() {
     btn.addEventListener('click', () => {
       const input = document.getElementById(btn.dataset.target);
       if (!input) return;
-      const step = parseFloat(input.step) || 1;
+      const step = parseFloat(input.dataset.salto) || parseFloat(input.step) || 1;
       const min = input.min !== '' ? parseFloat(input.min) : -Infinity;
       let valor = parseFloat(input.value) || 0;
       valor = btn.classList.contains('lote-spin-up') ? valor + step : valor - step;
