@@ -204,8 +204,8 @@ path(
     path("configuracion/empresa/verificar/", config_views.verificar_clave_empresa, name="verificar_clave_empresa"),
     path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
     path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
+    path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),  # <-- NUEVA
     path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
-    
         # AYUDA
     path("ayuda/", ayuda_views.index, name="ayuda_index"),
     path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),

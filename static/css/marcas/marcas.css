@@ -737,6 +737,17 @@
   font-weight: 700;
 }
 
+.cys-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--cys-text-muted);
+  font-weight: 700;
+  user-select: none;
+}
+
 /* ---------- Modales ---------- */
 
 .cys-modal-overlay {

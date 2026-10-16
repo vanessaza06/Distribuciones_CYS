@@ -112,11 +112,13 @@ def lista_marcas(request):
 
     paginator = Paginator(marcas, 10)
     page_obj = paginator.get_page(request.GET.get('page', 1))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=2, on_ends=1)
 
     return render(request, 'marcas/marcas.html', {
         'marcas': page_obj,
         'page_obj': page_obj,
         'paginator': paginator,
+        'page_range': page_range,
         'total_marcas': stats['total'],
         'total_activas': stats['activas'],
         'total_inactivas': stats['inactivas'],

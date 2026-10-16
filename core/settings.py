@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-_$sb+_^d@5%ka**#r0dxnyegte(aw854zz_^(@r2$alyo%*o0+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -72,6 +72,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'app.context_processors.aside_stats',
+                "app.context_processors.config_empresa",
             ],
         },
     },
@@ -87,7 +88,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'distribuciones_cys'),
+        'NAME': os.getenv('DB_NAME', 'distribuidora_cys'),
         'USER': os.getenv('DB_USER', 'root'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -95,7 +96,8 @@ DATABASES = {
         'CONN_MAX_AGE': 60,           # reutiliza la conexión (~40 ms menos por petición)
         'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES', NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'",
         }
     }
 }
