@@ -28,7 +28,19 @@ SECRET_KEY = 'django-insecure-_$sb+_^d@5%ka**#r0dxnyegte(aw854zz_^(@r2$alyo%*o0+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:8000',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 
 # Application definition
@@ -42,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuarios',
     'app',
-
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
