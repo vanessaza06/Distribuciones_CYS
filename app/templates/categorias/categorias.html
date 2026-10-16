@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/categorias/categorias.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -27,17 +28,17 @@
       <div class="card cat-card border-0 rounded-4 shadow-sm position-sticky cat-card-sticky">
         <div class="card-body p-4">
           <h5 class="card-title fw-bold mb-4">
-            <i class="bi bi-plus-circle me-2 cat-icon-tag"></i> Nueva Categoría 
+            <i class="bi bi-plus-circle me-2 cat-icon-tag"></i> Nueva Categoría
           </h5>
 
-          <form method="POST" action="{% url 'categoria_crear' %}">
+          <form method="POST" action="{% url 'categoria_crear' %}" id="form-crear-categoria">
             {% csrf_token %}
 
             <div class="mb-3">
               <label class="form-label fw-semibold small cat-label-form">
                 Nombre <span class="text-danger">*</span>
               </label>
-              <input type="text" name="nombre" class="form-control" placeholder="Ej: Vinos" required>
+              <input type="text" name="nombre" id="cat-input-nombre" class="form-control" placeholder="Ej: Vinos" required>
             </div>
 
             <div class="mb-3">
@@ -65,13 +66,37 @@
       <div class="card cat-card border-0 rounded-4 shadow-sm">
         <div class="card-body p-4">
 
-          <div class="d-flex align-items-center justify-content-between mb-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
             <h5 class="card-title fw-bold mb-0">
               <i class="bi bi-tags me-2 cat-icon-tag"></i> Categorías
             </h5>
-            <div class="d-flex gap-2">
-              <span class="badge rounded-pill text-bg-success">{{ total_activas }} activas</span>
-              <span class="badge rounded-pill text-bg-secondary">{{ total_inactivas }} inactivas</span>
+
+            <div class="d-flex align-items-center gap-2">
+
+              <!-- Exportar -->
+              <div class="dropdown">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'categoria_exportar_pdf' %}">
+                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'categoria_exportar_excel' %}">
+                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Nueva categoría: lleva al formulario de la izquierda -->
+              <button type="button" class="btn cat-btn-crear cat-btn-nueva" id="btn-nueva-categoria">
+                <i class="bi bi-plus-lg me-1"></i> Nueva categoría
+              </button>
             </div>
           </div>
 
@@ -206,4 +231,13 @@
 
 {% block extra_js %}
 <script src="{% static 'js/categorias/categorias.js' %}"></script>
+<script>
+  // El botón "Nueva categoría" lleva el cursor al formulario de la izquierda
+  document.getElementById('btn-nueva-categoria')?.addEventListener('click', function () {
+    const input = document.getElementById('cat-input-nombre');
+    if (!input) return;
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => input.focus(), 300);
+  });
+</script>
 {% endblock %}

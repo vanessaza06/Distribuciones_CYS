@@ -9,54 +9,6 @@
 <link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}">
 <link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
-<style>
-  /* Pestañas superiores personalizadas CYS */
-  .cys-dev-tabs {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--dev-line);
-    padding-bottom: 0.75rem;
-  }
-  .cys-tab-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.4rem;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    border: 1px solid var(--dev-line);
-    background: var(--dev-surface);
-    color: var(--dev-muted);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.25s ease;
-  }
-  .cys-tab-btn:hover {
-    color: #CF9C48;
-    border-color: rgba(207, 156, 72, 0.4);
-    box-shadow: 0 0 12px rgba(207, 156, 72, 0.2);
-  }
-  .cys-tab-btn.active {
-    background: linear-gradient(135deg, rgba(207, 156, 72, 0.18) 0%, rgba(207, 156, 72, 0.05) 100%);
-    border-color: #CF9C48;
-    color: #FFF;
-    box-shadow: 0 0 15px rgba(207, 156, 72, 0.3);
-  }
-  .cys-tab-btn i {
-    font-size: 1.1rem;
-  }
-
-  .prov-dev-layout {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 1.35rem;
-  }
-  @media (max-width: 1100px) {
-    .prov-dev-layout { grid-template-columns: 1fr; }
-  }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -138,7 +90,7 @@
           <span class="badge badge-motivo"><i class="bi bi-arrow-return-left"></i> Proveedores</span>
         </div>
 
-        <form method="post" action="#" class="dev-form mt-3" novalidate>
+        <form method="post" action="{% url 'registrar_devolucion_proveedor' %}" class="dev-form mt-3" id="formDevolucionProveedor">
           {% csrf_token %}
 
           <div class="dev-form__intro">
@@ -161,16 +113,17 @@
               </select>
             </div>
 
-            <!-- Presentación del Producto -->
+            <!-- Presentación / Producto -->
             <div class="col-md-6">
-              <label class="dev-label" for="id_devprov_presentacion">Producto / Presentación <span class="text-danger">*</span></label>
-              {% if form_proveedor %}
-                {{ form_proveedor.presentacion }}
-              {% else %}
-                <select name="presentacion" id="id_devprov_presentacion" class="form-select dev-select" required>
-                  <option value="">Seleccionar presentación...</option>
-                </select>
-              {% endif %}
+              <label class="dev-label" for="id_devprov_presentacion">Producto / Mercancía <span class="text-danger">*</span></label>
+              <select name="presentacion" id="id_devprov_presentacion" class="form-select dev-select" required>
+                <option value="">-- Seleccionar producto --</option>
+                {% for prod in todos_productos %}
+                  <option value="{{ prod.id }}" data-precio="{{ prod.precio_base|default:0 }}">
+                    {{ prod.nombre }} {% if prod.categoria %}({{ prod.categoria.nombre }}){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
             </div>
 
             <!-- Cantidad -->
@@ -182,7 +135,7 @@
             <!-- Precio Unitario -->
             <div class="col-md-4">
               <label class="dev-label" for="id_devprov_precio">Precio Unitario ($) <span class="text-danger">*</span></label>
-              <input type="number" step="0.01" name="precio_unitario" id="id_devprov_precio" class="form-control dev-input-sm w-100" placeholder="0.00" required>
+              <input type="number" step="any" min="0.01" name="precio_unitario" id="id_devprov_precio" class="form-control dev-input-sm w-100" placeholder="0.00" required>
             </div>
 
             <!-- Motivo -->
@@ -211,7 +164,7 @@
             <!-- Observaciones -->
             <div class="col-md-6">
               <label class="dev-label" for="id_devprov_obs">Observaciones <span>opcional</span></label>
-              <input type="text" name="observaciones" id="id_devprov_obs" class="form-control dev-textarea" placeholder="Ej: Lote dañado de fábrica..." style="height: 38px;">
+              <input type="text" name="observaciones" id="id_devprov_obs" class="form-control dev-textarea dev-input-compact" placeholder="Ej: Lote dañado de fábrica...">
             </div>
           </div>
 
@@ -225,16 +178,19 @@
 
       <!-- HISTORIAL PROVEEDORES -->
       <section class="dev-card p-3">
-        <div class="dev-card__head mb-3">
+        <div class="dev-card__head mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
             <span class="dev-section-label">Historial</span>
             <h2>Devoluciones Registradas a Proveedores</h2>
           </div>
-          <span class="badge badge-motivo">{{ devoluciones_proveedor|length }} registros</span>
+          <div class="d-flex align-items-center gap-2">
+            <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2"></div>
+            <span class="badge badge-motivo">{{ devoluciones_proveedor|length }} registros</span>
+          </div>
         </div>
 
         <div class="table-responsive dev-table-wrap">
-          <table class="table dev-table align-middle mb-0">
+          <table class="table dev-table align-middle mb-0" id="tablaDevolucionesProveedor">
             <thead>
               <tr>
                 <th>Número</th>
@@ -266,19 +222,32 @@
                   {% endif %}
                 </td>
                 <td class="text-center">
-                  <a href="#" class="dev-table-action" title="Ver detalle proveedor">
-                    <i class="bi bi-eye"></i>
-                  </a>
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="7">
-                  <div class="dev-empty">
-                    <i class="bi bi-truck"></i>
-                    <strong>No hay devoluciones a proveedores registradas.</strong>
-                    <span>Completa el formulario de arriba para generar la primera solicitud.</span>
-                  </div>
+                  {% if dp.estado == 'pendiente' %}
+                    <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dp.numero_proveedor %}" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="nuevo_estado" value="aprobada">
+                      <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" title="Aprobar devolución">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    </form>
+                    <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dp.numero_proveedor %}" class="d-inline ms-1">
+                      {% csrf_token %}
+                      <input type="hidden" name="nuevo_estado" value="rechazada">
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Rechazar devolución">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </form>
+                  {% elif dp.estado == 'aprobada' %}
+                    <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dp.numero_proveedor %}" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="nuevo_estado" value="aplicada">
+                      <button type="submit" class="btn btn-sm btn-outline-info py-0 px-2" title="Marcar como aplicada">
+                        <i class="bi bi-check-all"></i>
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -389,6 +358,10 @@
           <span class="dev-count">{{ devoluciones|length }}</span>
         </button>
         <div class="dev-history-body d-none" id="devHistoryBody">
+          <div class="d-flex justify-content-between align-items-center mb-2 px-2 pt-2">
+            <span class="small text-muted fw-bold"><i class="bi bi-box-arrow-up-right me-1"></i>Exportar lista</span>
+            <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2"></div>
+          </div>
           <div class="table-responsive dev-history-table-wrap">
             <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">
               <thead><tr><th>Número</th><th>Cliente</th><th>Motivo</th><th>Solución</th><th>Total</th><th>Fecha</th><th></th></tr></thead>
@@ -409,7 +382,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/datatables.js' %}" defer></script>
-<script src="{% static 'js/proveedores/devoluciones.js' %}" defer></script>
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.js' %}"></script>
+<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261016d"></script>
 {% endblock %}
 

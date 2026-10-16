@@ -268,12 +268,23 @@ def registrar_pago_compra(request, id=None):
     if not url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
         destino = _url_lista(compra.proveedor_id)
 
+    if compra.saldo <= CERO:
+        messages.warning(request, f'⚠️ La compra #{compra.codigo_compra} ya se encuentra completamente pagada.')
+        return redirect(destino)
+
     try:
-        monto = Decimal(str(request.POST.get('monto_pagado', '0')).strip())
-        if not monto.is_finite():
-            raise InvalidOperation
+        raw_monto = str(request.POST.get('monto_pagado', '0')).strip().replace(',', '.')
+        monto = Decimal(raw_monto)
+        if not monto.is_finite() or monto <= CERO:
+            messages.error(request, '⚠️ El monto a abonar debe ser un valor numérico mayor a cero.')
+            return redirect(destino)
     except (InvalidOperation, ValueError):
-        monto = CERO
+        messages.error(request, '⚠️ Ingresa un monto numérico válido para el pago.')
+        return redirect(destino)
+
+    if monto > compra.saldo:
+        messages.error(request, f'⚠️ El abono ({cop(monto)}) no puede superar el saldo pendiente ({cop(compra.saldo)}).')
+        return redirect(destino)
 
     fecha_pago = parse_datetime(request.POST.get('fecha_pago') or '')
     if fecha_pago and timezone.is_naive(fecha_pago):

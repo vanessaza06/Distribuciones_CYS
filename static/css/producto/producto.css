@@ -887,3 +887,46 @@ html, body {
     padding: .5rem .75rem;
   }
 }
+
+/* ══════════════════════════════════════════
+   NUEVO — categorias.html: Exportar / Nueva categoría
+   ══════════════════════════════════════════ */
+
+.cat-btn-exportar {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent);
+  color: var(--texto);
+  border-radius: 999px;
+  padding: .45rem 1.1rem;
+  font-size: .9rem;
+  font-weight: 600;
+}
+.cat-btn-exportar:hover,
+.cat-btn-exportar:focus,
+.cat-btn-exportar.show {
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  border-color: var(--azul-claro);
+  color: var(--texto);
+}
+
+/* Se combina con .cat-btn-crear (color de fondo y hover ya definidos) */
+.cat-btn-nueva {
+  border-radius: 999px;
+  padding: .5rem 1.2rem;
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.cat-dropdown-export {
+  background: var(--fondo-card2);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  border-radius: .75rem;
+  padding: .4rem;
+  min-width: 190px;
+  z-index: 1030;
+}
+.cat-dropdown-export .dropdown-item {
+  color: var(--texto);
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+}

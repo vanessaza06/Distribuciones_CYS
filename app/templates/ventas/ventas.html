@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load l10n %}
+{% load humanize %}
  
 {% block title %}Ventas — CYS Ltda{% endblock %}
 {% block page_title %}Punto de Venta{% endblock %}
@@ -25,12 +26,12 @@
         <div class="d-flex align-items-center gap-3">
           <div>
             <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Apertura</div>
-            <div style="font-size:.92rem; font-weight:800; color:#ffffff;">{{ caja_abierta.fecha|date:"H:i" }}</div>
+            <div style="font-size:.92rem; font-weight:800; color:#f1f5f9;">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
           </div>
-          <div style="width:1px; height:24px; background:rgba(77,168,218,0.2);"></div>
+          <div style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
           <div>
             <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Base Inicial</div>
-            <div style="font-size:.92rem; font-weight:800; color:var(--azul-claro, #4DA8DA);">${{ caja_abierta.monto_base|floatformat:0 }}</div>
+            <div style="font-size:.92rem; font-weight:800; color:#38bdf8;">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
           </div>
         </div>
       {% else %}
@@ -39,48 +40,63 @@
         </div>
       {% endif %}
 
-      <div style="width:1px; height:28px; background:rgba(77,168,218,0.2);" class="d-none d-md-block"></div>
+      <div style="width:1px; height:28px; background:rgba(255,255,255,0.12);" class="d-none d-md-block"></div>
 
       <div class="d-flex align-items-center gap-2">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px; height:36px; background:rgba(46,213,115,0.12); color:#2ed573;">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
           <i class="bi bi-currency-dollar fs-5"></i>
         </div>
         <div>
           <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Ventas Hoy</div>
-          <div style="font-size:1.05rem; font-weight:800; color:#2ed573; font-family:'Rajdhani',sans-serif;">${{ total_dia|floatformat:0 }}</div>
+          <div style="font-size:1.1rem; font-weight:800; color:#4ade80; font-family:'Rajdhani',sans-serif;">${{ total_dia|floatformat:0|intcomma }}</div>
         </div>
       </div>
     </div>
 
     <div class="d-flex gap-2 flex-wrap align-items-center">
       {% if not caja_abierta %}
-        <button class="btn btn-sm fw-bold cys-btn-checkout"
-                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir Caja"
-                data-bs-target="#modalConteo">
+        <button type="button" class="btn btn-sm fw-bold cys-btn-checkout"
+                data-bs-toggle="modal"
+                data-bs-target="#modalConteo"
+                title="Abrir Caja">
           <i class="bi bi-unlock me-1"></i> Abrir Caja
         </button>
       {% endif %}
       {% if caja_abierta %}
-        <button class="btn btn-sm fw-bold" style="background:rgba(235,77,75,.15); color:#ff7675; border:1px solid rgba(235,77,75,.35); border-radius:10px; padding:.45rem 1.1rem;"
-                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cerrar Caja"
-                data-bs-target="#modalCierre">
+        <button type="button" class="btn btn-sm fw-bold cys-btn-danger-soft"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCierre"
+                title="Cerrar Caja">
           <i class="bi bi-lock me-1"></i> Cerrar Caja
         </button>
       {% endif %}
-      <a href="{% url 'ventas_dia' %}" class="btn btn-sm"
-         data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Ventas del Día"
-         style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:var(--texto-muted); border-radius:10px; padding:.45rem 1.1rem; font-weight:700;">
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm cys-btn-ghost-soft"
+         title="Ventas del Día">
         <i class="bi bi-bar-chart me-1"></i> Ventas del día
       </a>
     </div>
   </div>
  
   {% if messages %}
-    {% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
-      {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="cys-alerts-container mb-4">
+      {% for msg in messages %}
+      <div class="alert cys-soft-alert cys-soft-alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center gap-2">
+          {% if 'success' in msg.tags %}
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+          {% elif 'error' in msg.tags or 'danger' in msg.tags %}
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+          {% elif 'warning' in msg.tags %}
+            <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+          {% else %}
+            <i class="bi bi-info-circle-fill text-info fs-5"></i>
+          {% endif %}
+          <div class="cys-alert-msg">{{ msg }}</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   {% endif %}
  
   <!-- ── PUNTO DE VENTA (POS) ── -->
@@ -238,64 +254,64 @@
             <!-- Descuento -->
             <div id="seccionDescuento" style="display:none;" class="mb-3">
               <div class="d-flex justify-content-between align-items-center rounded-3 p-2 px-3"
-                   style="background:rgba(10,42,82,0.7); border:1px solid rgba(77,168,218,0.25);">
-                <span class="cys-filter-label" style="margin:0; font-weight:700; color:var(--texto-muted); font-size:.75rem; text-transform:uppercase;">
-                  <i class="bi bi-percent me-1"></i> Descuento Aplicado
+                   style="background:rgba(10,20,38,0.45); border:1px solid rgba(255,255,255,0.06);">
+                <span style="margin:0; font-weight:600; color:#94a3b8; font-size:.75rem; text-transform:uppercase;">
+                  <i class="bi bi-percent me-1" style="color:#38bdf8;"></i> Descuento Aplicado
                 </span>
                 <div class="d-flex align-items-center gap-1">
                   <input type="number" id="inputDescuento" name="descuento_porcentaje"
                          value="0" min="0" max="100" class="form-control text-center"
-                         style="width:75px; background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:var(--azul-claro,#4DA8DA); font-weight:800; font-family:'Rajdhani',sans-serif; font-size:1.1rem; border-radius:8px;">
-                  <span style="color:var(--texto-muted); font-weight:700;">%</span>
+                         style="width:75px; background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700; font-family:'Rajdhani',sans-serif; font-size:1.05rem; border-radius:8px;">
+                  <span style="color:#94a3b8; font-weight:600;">%</span>
                 </div>
               </div>
             </div>
 
             <!-- Total General Display -->
             <div id="totalGeneral" style="display:none;" class="mb-3 rounded-3 p-3"
-                 style="background:linear-gradient(135deg, rgba(77,168,218,.12), rgba(15,59,108,.4)); border:1px solid rgba(77,168,218,0.35);">
+                 style="background:linear-gradient(135deg, rgba(16,36,68,0.6), rgba(12,26,50,0.7)); border:1px solid rgba(56,189,248,0.18);">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="cys-filter-label" style="margin:0; font-weight:800; color:#fff; font-size:.88rem; text-transform:uppercase; letter-spacing:0.5px;">Total a Cobrar</span>
-                <span id="totalMonto" style="font-family:'Rajdhani',sans-serif; font-size:1.85rem; font-weight:800; color:var(--azul-claro,#4DA8DA); text-shadow:0 0 15px rgba(77,168,218,0.3);">$0</span>
+                <span style="margin:0; font-weight:700; color:#94a3b8; font-size:.84rem; text-transform:uppercase; letter-spacing:0.5px;">Total a Cobrar</span>
+                <span id="totalMonto" style="font-family:'Rajdhani',sans-serif; font-size:1.85rem; font-weight:800; color:#38bdf8;">$0</span>
               </div>
             </div>
 
             <!-- Métodos de pago y Calculadora de Vueltos -->
             <div id="seccionPagos" style="display:none;" class="cys-payment-panel mb-3">
-              <div class="cys-filter-label mb-2" style="font-weight:700; color:var(--azul-claro,#4DA8DA); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em;">
-                <i class="bi bi-wallet2 me-1"></i> Formas de Pago
+              <div class="mb-2" style="font-weight:700; color:#94a3b8; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em;">
+                <i class="bi bi-wallet2 me-1" style="color:#38bdf8;"></i> Formas de Pago
               </div>
               <div class="row g-2 mb-2">
                 <div class="col-6">
-                  <label style="font-size:.68rem; color:var(--texto-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Efectivo ($)</label>
+                  <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Efectivo ($)</label>
                   <input type="number" name="pago_efectivo" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; font-size:.9rem;">
+                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-6">
-                  <label style="font-size:.68rem; color:var(--texto-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Tarjeta ($)</label>
+                  <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Tarjeta ($)</label>
                   <input type="number" name="pago_tarjeta" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; font-size:.9rem;">
+                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
-                  <label style="font-size:.68rem; color:var(--texto-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Transfer ($)</label>
+                  <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Transfer ($)</label>
                   <input type="number" name="pago_transferencia" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; font-size:.9rem;">
+                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
-                  <label style="font-size:.68rem; color:var(--texto-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Nequi ($)</label>
+                  <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Nequi ($)</label>
                   <input type="number" name="pago_nequi" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; font-size:.9rem;">
+                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
-                  <label style="font-size:.68rem; color:var(--texto-muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;">Daviplata ($)</label>
+                  <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Daviplata ($)</label>
                   <input type="number" name="pago_daviplata" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,42,82,0.9); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; font-size:.9rem;">
+                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
               </div>
               
-              <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top:1px solid rgba(77,168,218,0.2);">
-                <span style="font-size:.78rem; font-weight:700; color:var(--texto-muted); text-transform:uppercase;">Total Ingresado</span>
-                <span id="totalPagado" style="font-family:'Rajdhani',sans-serif; font-size:1.25rem; font-weight:800; color:var(--azul-claro,#4DA8DA);">$0</span>
+              <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:.76rem; font-weight:600; color:#94a3b8; text-transform:uppercase;">Total Ingresado</span>
+                <span id="totalPagado" style="font-family:'Rajdhani',sans-serif; font-size:1.25rem; font-weight:800; color:#38bdf8;">$0</span>
               </div>
 
               <!-- Indicador Dinámico de Cambio/Vueltos -->
@@ -1413,10 +1429,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
       fetch("{% url 'apertura_caja' %}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify({ monto_base: montoFinal, observacion: obs, denominaciones: denoms })
       })
-      .then(r => r.json())
+      .then(async r => {
+        const text = await r.text();
+        try {
+          return JSON.parse(text);
+        } catch(e) {
+          throw new Error('Respuesta inválida del servidor (' + r.status + '): ' + text.slice(0, 100));
+        }
+      })
       .then(data => {
         if (data.ok) {
           window.location.reload();
@@ -1430,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error al guardar apertura:', err);
         btnConfirmarConteo.disabled = false;
         btnConfirmarConteo.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno';
-        alert('Error al procesar la apertura de caja.');
+        alert('Error al procesar la apertura de caja: ' + err.message);
       });
     });
   }
@@ -1462,17 +1489,28 @@ document.addEventListener('DOMContentLoaded', function() {
       const base = parseInt(document.getElementById('baseSiguiente') ? document.getElementById('baseSiguiente').value : 0, 10) || 0;
       fetch("{% url 'cierre_caja' %}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify({ total_contado: monto, monto_base_siguiente: base, total_retirado: Math.max(0, monto - base), denominaciones: denoms })
       })
-      .then(r => r.json())
+      .then(async r => {
+        const text = await r.text();
+        try {
+          return JSON.parse(text);
+        } catch(e) {
+          throw new Error('Respuesta del servidor (' + r.status + '): ' + text.slice(0, 100));
+        }
+      })
       .then(data => {
         if (data.ok) location.reload();
         else alert(data.error || 'Error al cerrar caja.');
       })
       .catch(err => {
         console.error('Error al guardar cierre:', err);
-        alert('Error al procesar el cierre de caja.');
+        alert('Error al procesar el cierre de caja: ' + err.message);
       });
     });
   }
@@ -1486,6 +1524,29 @@ document.addEventListener('DOMContentLoaded', function() {
   if (modalCierre) {
     modalCierre.addEventListener('shown.bs.modal', recalcCierre);
   }
+
+  // ── FORZAR APERTURA DE MODALES CON CLICK DIRECTO (EN CUALQUIER NAVEGADOR) ──
+  document.querySelectorAll('[data-bs-target="#modalConteo"]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const mEl = document.getElementById('modalConteo');
+      if (mEl && window.bootstrap) {
+        const m = bootstrap.Modal.getOrCreateInstance(mEl);
+        m.show();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-bs-target="#modalCierre"]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const mEl = document.getElementById('modalCierre');
+      if (mEl && window.bootstrap) {
+        const m = bootstrap.Modal.getOrCreateInstance(mEl);
+        m.show();
+      }
+    });
+  });
 
   // ── TOOLTIPS DINÁMICOS SOLO HOVER ──
   if (window.setupStrictCYSTooltips) {

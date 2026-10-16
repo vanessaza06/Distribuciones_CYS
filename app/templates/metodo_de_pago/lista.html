@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Métodos de Pago — CYS Ltda{% endblock %}
 {% block page_title %}Gestión de Métodos de Pago{% endblock %}
@@ -263,42 +264,42 @@
   <!-- KPI Cards -->
   <div class="mp-kpi-grid">
     <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(77, 168, 218, 0.2); color: #4DA8DA; border: 1px solid rgba(77, 168, 218, 0.4);">
+      <div class="mp-kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
         <i class="bi bi-currency-dollar"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Total Registrado</div>
-        <div class="mp-kpi-val">${{ total_recaudado|floatformat:0 }}</div>
+        <div class="mp-kpi-val">${{ total_recaudado|floatformat:0|intcomma }}</div>
       </div>
     </div>
 
     <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.4);">
+      <div class="mp-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">
         <i class="bi bi-cash-stack"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Total en Efectivo</div>
-        <div class="mp-kpi-val" style="color: #2ed573;">${{ total_efectivo|floatformat:0 }}</div>
+        <div class="mp-kpi-val" style="color: #4ade80;">${{ total_efectivo|floatformat:0|intcomma }}</div>
       </div>
     </div>
 
     <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4);">
+      <div class="mp-kpi-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
         <i class="bi bi-credit-card-2-front"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Total Transacciones / Banco</div>
-        <div class="mp-kpi-val" style="color: #a78bfa;">${{ total_transaccion|floatformat:0 }}</div>
+        <div class="mp-kpi-val" style="color: #c084fc;">${{ total_transaccion|floatformat:0|intcomma }}</div>
       </div>
     </div>
 
     <div class="mp-kpi-card">
-      <div class="mp-kpi-icon" style="background: rgba(255, 171, 0, 0.2); color: #ffab00; border: 1px solid rgba(255, 171, 0, 0.4);">
+      <div class="mp-kpi-icon" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
         <i class="bi bi-receipt-cutoff"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Total Registros</div>
-        <div class="mp-kpi-val" style="color: #ffab00;">{{ total_registros }}</div>
+        <div class="mp-kpi-val" style="color: #fbbf24;">{{ total_registros }}</div>
       </div>
     </div>
   </div>
