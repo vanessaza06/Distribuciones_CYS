@@ -1,23 +1,35 @@
 /* ══════════════════════════════════════════
    ordenes_compra.css — CYS Ltda
    Basado en inventario.css — Consistencia visual
+   Todos los colores siguen las variables de tema de base.js
+   (--fondo, --fondo-card, --fondo-card2, --texto, --azul-claro,
+   --azul-oscuro, --verde, --rojo).
+   Este archivo NO define fondo ni color base de la página.
    ══════════════════════════════════════════ */
 
 :root {
-  --ord-azul:       #4DA8DA;
-  --ord-azul-dim:   rgba(77, 168, 218, 0.15);
-  --ord-azul-borde: rgba(77, 168, 218, 0.25);
-  --ord-card:       #11233f;
-  --ord-card2:      #0d1c33;
-  --ord-fondo:      #0a1628;
-  --ord-texto:      #e2e8f0;
-  --ord-muted:      rgba(226, 232, 240, 0.5);
+  --ord-azul:       var(--azul-claro);
+  --ord-azul-dim:   color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  --ord-azul-borde: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  --ord-card:       var(--fondo-card);
+  --ord-card2:      var(--fondo-card2);
+  --ord-fondo:      var(--fondo);
+  --ord-texto:      var(--texto);
+  --ord-muted:      color-mix(in srgb, var(--texto) 50%, transparent);
   --ord-radius:     10px;
 
+  /* Texto sobre fondos de acento (mismo par que usa compras.css) */
+  --ord-sobre-acento: var(--azul-oscuro);
+
+  /* Morado: no existe variable de tema, se define una sola vez */
+  --ord-morado:        #9b5de5;
+  --ord-morado-dim:    color-mix(in srgb, var(--ord-morado) 15%, transparent);
+  --ord-morado-borde:  color-mix(in srgb, var(--ord-morado) 30%, transparent);
+
   /* Colores específicos para estados */
-  --ord-pendiente:   #4DA8DA;
-  --ord-confirmada:  #27ae60;
-  --ord-recibida:    #9b5de5;
+  --ord-pendiente:   var(--azul-claro);
+  --ord-confirmada:  var(--verde);
+  --ord-recibida:    var(--ord-morado);
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -53,7 +65,7 @@
 
 .btn-nueva-orden {
   background: var(--ord-azul);
-  color: #fff;
+  color: var(--ord-sobre-acento);
   border: none;
   border-radius: 50px;
   padding: 10px 22px;
@@ -68,8 +80,8 @@
 }
 
 .btn-nueva-orden:hover {
-  background: #3a93c4;
-  color: #fff;
+  background: color-mix(in srgb, var(--azul-claro) 85%, black);
+  color: var(--ord-sobre-acento);
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -104,12 +116,12 @@
 
 .stat-card-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(77, 168, 218, 0.2) !important;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .stat-card:hover {
   border-color: var(--ord-azul);
-  box-shadow: 0 4px 16px rgba(77, 168, 218, 0.15);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--azul-claro) 15%, transparent);
 }
 
 /* Estados de card */
@@ -118,8 +130,8 @@
 }
 
 .stat-card.pendiente .stat-card__icon-wrapper {
-  background: rgba(77, 168, 218, 0.15);
-  border: 1px solid rgba(77, 168, 218, 0.25);
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
   color: var(--ord-pendiente);
 }
 
@@ -128,8 +140,8 @@
 }
 
 .stat-card.confirmada .stat-card__icon-wrapper {
-  background: rgba(39, 174, 96, 0.15);
-  border: 1px solid rgba(39, 174, 96, 0.25);
+  background: color-mix(in srgb, var(--verde) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent);
   color: var(--ord-confirmada);
 }
 
@@ -138,8 +150,8 @@
 }
 
 .stat-card.recibida .stat-card__icon-wrapper {
-  background: rgba(155, 93, 229, 0.15);
-  border: 1px solid rgba(155, 93, 229, 0.25);
+  background: var(--ord-morado-dim);
+  border: 1px solid color-mix(in srgb, var(--ord-morado) 25%, transparent);
   color: var(--ord-recibida);
 }
 
@@ -170,7 +182,7 @@
 .stat-card__number {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--texto);
   line-height: 1;
   margin-bottom: 8px;
 }
@@ -193,7 +205,7 @@
 
 /* Footer con link */
 .stat-card__footer {
-  border-top: 1px solid rgba(77, 168, 218, 0.15);
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
   padding-top: 12px;
   margin-top: 12px;
   display: flex;
@@ -257,13 +269,13 @@
 }
 
 .cys-td--muted {
-  color: rgba(226, 232, 240, 0.5) !important;
+  color: color-mix(in srgb, var(--texto) 50%, transparent) !important;
   text-align: center;
 }
 
 .cys-td--bold {
   font-weight: 600 !important;
-  color: #ffffff !important;
+  color: var(--texto) !important;
   text-align: right;
 }
 
@@ -272,13 +284,13 @@
 }
 
 .cys-tr {
-  border-bottom: 1px solid rgba(77, 168, 218, 0.1) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
   background: transparent !important;
   transition: background 0.15s;
 }
 
 .cys-tr:hover {
-  background: rgba(77, 168, 218, 0.08) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
 }
 
 /* Alineación específica para encabezados */
@@ -331,13 +343,13 @@
 }
 
 .ordenes-table tbody tr {
-  border-bottom: 1px solid rgba(77, 168, 218, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent);
   background: transparent !important;
   transition: background 0.15s;
 }
 
 .ordenes-table tbody tr:hover {
-  background: rgba(77, 168, 218, 0.08) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
 }
 
 .ordenes-table td {
@@ -374,33 +386,33 @@
 }
 
 .cys-action-pill--view {
-  background: rgba(77, 168, 218, 0.12);
-  border-color: rgba(77, 168, 218, 0.25);
-  color: #4DA8DA;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  color: var(--azul-claro);
 }
 
 .cys-action-pill--confirm {
-  background: rgba(39, 174, 96, 0.12);
-  border-color: rgba(39, 174, 96, 0.25);
-  color: #27ae60;
+  background: color-mix(in srgb, var(--verde) 12%, transparent);
+  border-color: color-mix(in srgb, var(--verde) 25%, transparent);
+  color: var(--verde);
 }
 
 .cys-action-pill--receive {
-  background: rgba(39, 174, 96, 0.12);
-  border-color: rgba(39, 174, 96, 0.25);
-  color: #27ae60;
+  background: color-mix(in srgb, var(--verde) 12%, transparent);
+  border-color: color-mix(in srgb, var(--verde) 25%, transparent);
+  color: var(--verde);
 }
 
 .cys-action-pill--cancel {
-  background: rgba(231, 76, 60, 0.12);
-  border-color: rgba(231, 76, 60, 0.25);
-  color: #e74c3c;
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  border-color: color-mix(in srgb, var(--rojo) 25%, transparent);
+  color: var(--rojo);
 }
 
 .cys-action-pill--disabled {
-  background: rgba(145, 47, 64, 0.12);
-  border-color: rgba(145, 47, 64, 0.25);
-  color: #e74c3c;
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  border-color: color-mix(in srgb, var(--rojo) 25%, transparent);
+  color: var(--rojo);
   cursor: default;
 }
 
@@ -440,22 +452,22 @@
 }
 
 .text-cyan {
-  color: #4DA8DA !important;
+  color: var(--azul-claro) !important;
 }
 
 .btn-link {
-  color: #4DA8DA !important;
+  color: var(--azul-claro) !important;
   text-decoration: none !important;
 }
 
 .btn-link:hover {
-  color: #6bc0e8 !important;
+  color: color-mix(in srgb, var(--azul-claro) 80%, var(--texto)) !important;
   opacity: 0.9 !important;
 }
 
 .dropdown-menu-dark {
-  background-color: #111f33 !important;
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
   border-radius: 6px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
   padding: 0.35rem 0 !important;
@@ -463,7 +475,7 @@
 }
 
 .dropdown-menu-dark .dropdown-item {
-  color: #c8d4e0 !important;
+  color: color-mix(in srgb, var(--texto) 80%, transparent) !important;
   transition: all 0.15s ease !important;
   padding: 0.55rem 1rem !important;
   font-weight: 500 !important;
@@ -471,22 +483,22 @@
 }
 
 .dropdown-menu-dark .dropdown-item:hover {
-  background-color: rgba(77, 168, 218, 0.12) !important;
-  color: #4DA8DA !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  color: var(--azul-claro) !important;
 }
 
 .dropdown-menu-dark .dropdown-item.text-success:hover {
-  background-color: rgba(76, 175, 80, 0.12) !important;
-  color: #4caf50 !important;
+  background-color: color-mix(in srgb, var(--verde) 12%, transparent) !important;
+  color: var(--verde) !important;
 }
 
 .dropdown-menu-dark .dropdown-item.text-danger:hover {
-  background-color: rgba(232, 131, 74, 0.12) !important;
-  color: #e57373 !important;
+  background-color: color-mix(in srgb, var(--rojo) 12%, transparent) !important;
+  color: var(--rojo) !important;
 }
 
 .dropdown-menu-dark .dropdown-divider {
-  border-color: rgba(77, 168, 218, 0.15) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   margin: 0.25rem 0 !important;
 }
 
@@ -504,7 +516,7 @@
 /* Proveedor */
 .ordenes-table__proveedor {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--texto);
 }
 
 /* Fecha */
@@ -536,27 +548,27 @@
 }
 
 .ordenes-badge-pendiente {
-  background: rgba(77, 168, 218, 0.15);
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
   color: var(--ord-pendiente);
-  border-color: rgba(77, 168, 218, 0.3);
+  border-color: color-mix(in srgb, var(--azul-claro) 30%, transparent);
 }
 
 .ordenes-badge-confirmada {
-  background: rgba(39, 174, 96, 0.15);
+  background: color-mix(in srgb, var(--verde) 15%, transparent);
   color: var(--ord-confirmada);
-  border-color: rgba(39, 174, 96, 0.3);
+  border-color: color-mix(in srgb, var(--verde) 30%, transparent);
 }
 
 .ordenes-badge-recibida {
-  background: rgba(155, 93, 229, 0.15);
+  background: var(--ord-morado-dim);
   color: var(--ord-recibida);
-  border-color: rgba(155, 93, 229, 0.3);
+  border-color: var(--ord-morado-borde);
 }
 
 .ordenes-badge-cancelada {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
-  border-color: rgba(231, 76, 60, 0.3);
+  background: color-mix(in srgb, var(--rojo) 15%, transparent);
+  color: var(--rojo);
+  border-color: color-mix(in srgb, var(--rojo) 30%, transparent);
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -570,7 +582,7 @@
 
 .btn-menu-toggle {
   background: transparent;
-  border: 1px solid rgba(77, 168, 218, 0.3);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
   color: var(--ord-azul);
   padding: 6px 8px;
   border-radius: 6px;
@@ -583,8 +595,8 @@
 }
 
 .btn-menu-toggle:hover {
-  background: rgba(77, 168, 218, 0.12);
-  border-color: rgba(77, 168, 218, 0.55);
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 55%, transparent);
 }
 
 /* Dropdown menu */
@@ -628,7 +640,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.15s ease;
-  border-bottom: 1px solid rgba(77, 168, 218, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 8%, transparent);
   width: 100%;
   text-align: left;
 }
@@ -651,30 +663,30 @@
 }
 
 .ordenes-menu-item:hover {
-  background: rgba(77, 168, 218, 0.1);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
+  color: var(--texto);
 }
 
 .ordenes-menu-item:hover i {
-  color: #4fb3f0;
+  color: color-mix(in srgb, var(--azul-claro) 80%, var(--texto));
 }
 
 /* Item danger (cancelar) */
 .ordenes-menu-item-danger {
-  color: #e74c3c;
+  color: var(--rojo);
 }
 
 .ordenes-menu-item-danger i {
-  color: #e74c3c;
+  color: var(--rojo);
 }
 
 .ordenes-menu-item-danger:hover {
-  background: rgba(231, 76, 60, 0.1);
-  color: #ff6b6b;
+  background: color-mix(in srgb, var(--rojo) 10%, transparent);
+  color: color-mix(in srgb, var(--rojo) 80%, var(--texto));
 }
 
 .ordenes-menu-item-danger:hover i {
-  color: #ff6b6b;
+  color: color-mix(in srgb, var(--rojo) 80%, var(--texto));
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -712,7 +724,7 @@
 .pagination-item.active {
   background: var(--ord-azul);
   border-color: var(--ord-azul);
-  color: #fff;
+  color: var(--ord-sobre-acento);
 }
 
 .pagination-item.disabled {
@@ -732,7 +744,7 @@
 
 .ordenes-empty i {
   font-size: 48px;
-  color: rgba(77, 168, 218, 0.3);
+  color: color-mix(in srgb, var(--azul-claro) 30%, transparent);
   margin-bottom: 16px;
   display: block;
 }
@@ -758,9 +770,9 @@
 /* ════════════════════════════════════════════════════════════════ */
 
 .ordenes-estado-select-mini {
-  background: rgba(77, 168, 218, 0.12) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
   color: var(--ord-azul);
-  border: 1px solid rgba(77, 168, 218, 0.3);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
   border-radius: 4px;
   padding: 4px 6px;
   font-size: 0.68rem;
@@ -771,7 +783,7 @@
 .ordenes-estado-select-mini:focus {
   outline: none;
   border-color: var(--ord-azul);
-  box-shadow: 0 0 0 2px rgba(77, 168, 218, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--azul-claro) 20%, transparent);
 }
 
 .ordenes-estado-select-mini option {
@@ -781,8 +793,8 @@
 
 /* Botón cambiar estado */
 .btn-estado-cambiar {
-  background: rgba(77, 168, 218, 0.12);
-  border: 1px solid rgba(77, 168, 218, 0.3);
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
   color: var(--ord-azul);
   border-radius: 4px;
   padding: 4px 8px;
@@ -795,9 +807,9 @@
 }
 
 .btn-estado-cambiar:hover {
-  background: rgba(77, 168, 218, 0.22);
-  border-color: rgba(77, 168, 218, 0.55);
-  color: #7ecef4;
+  background: color-mix(in srgb, var(--azul-claro) 22%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 55%, transparent);
+  color: color-mix(in srgb, var(--azul-claro) 75%, var(--texto));
 }
 
 .btn-estado-cambiar i {
@@ -815,8 +827,8 @@
 }
 
 .ordenes-modal__header {
-  background: linear-gradient(135deg, var(--ord-azul) 0%, #3b82f6 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--ord-azul) 0%, color-mix(in srgb, var(--azul-claro) 75%, var(--azul-oscuro)) 100%);
+  color: var(--ord-sobre-acento);
   border: none;
   padding: 20px;
   border-top-left-radius: var(--ord-radius);
@@ -856,7 +868,7 @@
 }
 
 .ordenes-modal__required {
-  color: #e74c3c;
+  color: var(--rojo);
 }
 
 /* Estado Actual */
@@ -865,8 +877,8 @@
   align-items: center;
   gap: 15px;
   padding: 15px;
-  background: rgba(77, 168, 218, 0.08);
-  border: 1px solid rgba(77, 168, 218, 0.2);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   border-radius: 8px;
 }
 
@@ -879,8 +891,8 @@
 /* Select */
 .ordenes-modal__select {
   padding: 12px 14px;
-  background: rgba(77, 168, 218, 0.06);
-  border: 1px solid rgba(77, 168, 218, 0.25);
+  background: color-mix(in srgb, var(--azul-claro) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
   border-radius: 8px;
   color: var(--ord-texto);
   font-size: 0.95rem;
@@ -890,14 +902,14 @@
 }
 
 .ordenes-modal__select:hover {
-  background: rgba(77, 168, 218, 0.1);
-  border-color: rgba(77, 168, 218, 0.4);
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent);
+  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
 }
 
 .ordenes-modal__select:focus {
   outline: none;
   border-color: var(--ord-azul);
-  box-shadow: 0 0 0 3px rgba(77, 168, 218, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 20%, transparent);
 }
 
 .ordenes-modal__select option {
@@ -910,15 +922,15 @@
   display: flex;
   gap: 12px;
   padding: 15px;
-  background: rgba(52, 211, 153, 0.08);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: color-mix(in srgb, var(--verde) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent);
   border-radius: 8px;
-  border-left: 4px solid #34d399;
+  border-left: 4px solid var(--verde);
 }
 
 .ordenes-modal__info i {
   font-size: 1.2rem;
-  color: #34d399;
+  color: var(--verde);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -939,20 +951,20 @@
 
 /* Info Danger */
 .ordenes-modal__info-danger {
-  background: rgba(231, 76, 60, 0.08);
-  border-color: rgba(231, 76, 60, 0.25);
-  border-left-color: #e74c3c;
+  background: color-mix(in srgb, var(--rojo) 8%, transparent);
+  border-color: color-mix(in srgb, var(--rojo) 25%, transparent);
+  border-left-color: var(--rojo);
 }
 
 .ordenes-modal__info-danger i {
-  color: #e74c3c;
+  color: var(--rojo);
 }
 
 /* Footer */
 .ordenes-modal__footer {
   padding: 15px 25px;
-  background: rgba(0, 0, 0, 0.05);
-  border-top: 1px solid rgba(77, 168, 218, 0.1);
+  background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent);
   display: flex;
   gap: 10px;
   justify-content: flex-end;
@@ -973,25 +985,26 @@
 }
 
 .ordenes-modal__footer .btn-secondary {
-  background: #6b7280;
-  border: 1px solid #4b5563;
-  color: #ffffff;
+  background: var(--fondo-card2);
+  border: 1px solid color-mix(in srgb, var(--texto) 20%, transparent);
+  color: var(--texto);
 }
 
 .ordenes-modal__footer .btn-secondary:hover {
-  background: #5a6370;
-  border-color: #3d434e;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card2));
+  border-color: color-mix(in srgb, var(--texto) 35%, transparent);
+  color: var(--texto);
 }
 
 .ordenes-modal__footer .btn-primary {
   background: var(--ord-azul);
   border: 1px solid var(--ord-azul);
-  color: #ffffff;
+  color: var(--ord-sobre-acento);
 }
 
 .ordenes-modal__footer .btn-primary:hover {
-  background: #3b8fc9;
-  border-color: #2b6fa0;
+  background: color-mix(in srgb, var(--azul-claro) 85%, black);
+  border-color: color-mix(in srgb, var(--azul-claro) 70%, black);
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -999,18 +1012,18 @@
 /* ════════════════════════════════════════════════════════════════ */
 
 .modal-organizado {
-  background-color: #011936 !important;
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
 }
 
 .modal-organizado .modal-header {
   background: transparent !important;
-  border-bottom: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   padding: 1.5rem !important;
 }
 
 .modal-organizado .modal-title {
-  color: #E2E8F0 !important;
+  color: var(--texto) !important;
   font-weight: 700 !important;
   display: flex;
   align-items: center;
@@ -1019,18 +1032,19 @@
 
 .modal-organizado .modal-body {
   background: transparent !important;
-  color: #E2E8F0 !important;
+  color: var(--texto) !important;
   padding: 1.5rem !important;
 }
 
 .modal-organizado .modal-footer {
   background: transparent !important;
-  border-top: 1px solid rgba(77, 168, 218, 0.15) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   padding: 1rem 1.5rem !important;
 }
 
+/* La X de cerrar: el filtro lo define cada tema (--btn-close-filter) */
 .modal-organizado .btn-close {
-  filter: brightness(0) saturate(100%) invert(1);
+  filter: var(--btn-close-filter, none);
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -1089,31 +1103,30 @@
 /* ════════════════════════════════════════════════════════════════ */
 
 .badge-pendiente {
-  background: rgba(155, 93, 229, 0.2) !important;
-  color: #9b5de5 !important;
-  border: 1px solid rgba(155, 93, 229, 0.4) !important;
+  background: color-mix(in srgb, var(--ord-morado) 20%, transparent) !important;
+  color: var(--ord-morado) !important;
+  border: 1px solid color-mix(in srgb, var(--ord-morado) 40%, transparent) !important;
 }
 .badge-confirmada {
-  background: rgba(77, 168, 218, 0.2) !important;
-  color: #4DA8DA !important;
-  border: 1px solid rgba(77, 168, 218, 0.4) !important;
+  background: color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
 }
 .badge-recibida {
-  background: rgba(39, 174, 96, 0.2) !important;
-  color: #27ae60 !important;
-  border: 1px solid rgba(39, 174, 96, 0.4) !important;
+  background: color-mix(in srgb, var(--verde) 20%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 40%, transparent) !important;
 }
 .badge-cancelada {
-  background: rgba(231, 76, 60, 0.2) !important;
-  color: #e74c3c !important;
-  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  background: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent) !important;
 }
 
-.icon-cyan { color: #4DA8DA !important; }
-.icon-green { color: #27ae60 !important; }
-.icon-purple { color: #9b5de5 !important; }
-.icon-red { color: #e74c3c !important; }
+.icon-cyan { color: var(--azul-claro) !important; }
+.icon-green { color: var(--verde) !important; }
+.icon-purple { color: var(--ord-morado) !important; }
+.icon-red { color: var(--rojo) !important; }
 
 .dropdown-menu-custom { overflow: visible !important; max-height: none !important; }
 .btn-link-custom { text-decoration: none !important; font-size: 1.2rem !important; }
-

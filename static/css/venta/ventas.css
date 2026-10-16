@@ -1,9 +1,13 @@
 /* ════════════════════════════════════════════════════════════════
    VENTAS.CSS — Punto de Venta CYS Ltda
-   Paleta aplicada: FFFFFF · 0A2A52 · 011936 (base del módulo)
-   CF9C48 (dorado) queda reservado ÚNICAMENTE para lo que antes era
-   rojo/peligro (cancelar, eliminar, alertas, stock crítico, faltante).
-   Todo lo demás se mantiene entre azul oscuro (fondos) y blanco (texto/acentos).
+   Todos los colores siguen las variables de tema de base.js
+   (--fondo, --fondo-card, --fondo-card2, --texto, --texto-muted,
+   --azul-claro, --azul-oscuro, --azul-borde, --verde, --rojo).
+   Este archivo NO define fondo ni color base de la página: eso lo
+   pone el CSS global, igual que home.css y compras.css.
+   --cys-dorado (CF9C48) es el único color fijo de marca: queda
+   reservado para lo que antes era rojo/peligro (cancelar, eliminar,
+   alertas, stock crítico, faltante) y los acentos de borde/hover.
    ════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -16,33 +20,39 @@
   --cys-verde:          var(--verde);
   --cys-rojo:           var(--rojo);
   --cys-cian-brillante: var(--azul-claro);
+  --cys-dorado:         var(--dorado, #CF9C48);   /* color de marca fijo */
+  --cys-dorado-texto:   #2A1E05;                  /* texto sobre fondo dorado */
 }
 
-/* ── CONTENEDOR GENERAL ── */
+/* ── CONTENEDOR GENERAL ──
+   Solo altura mínima y fuente del módulo. El fondo y el color base
+   de la página los pone el CSS global. */
 body,
 #cys-layout,
 .cys-main,
 .cys-page-wrapper,
 .cys-pos-wrapper {
-  background-color: #0A2A52 !important;
-  background: #0A2A52 !important;
-  color: #ffffff !important;
   min-height: 100vh;
+}
+
+.cys-page-wrapper,
+.cys-pos-wrapper {
+  color: var(--texto);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ── Alertas de Bootstrap alineadas a la paleta CYS ── */
 .cys-pos-wrapper .alert-danger,
 .cys-page-wrapper .alert-danger {
-  background: rgba(207, 156, 72, 0.1) !important;
-  border: 1px solid rgba(207, 156, 72, 0.35) !important;
-  color: #CF9C48 !important;
+  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
+  color: var(--cys-dorado) !important;
 }
 .cys-pos-wrapper .alert-info,
 .cys-page-wrapper .alert-info {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
-  color: #ffffff !important;
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--texto) !important;
 }
 
 /* ══════════════════════════════════════
@@ -50,13 +60,13 @@ body,
 ══════════════════════════════════════ */
 .cys-estado-caja-bar,
 .cys-caja-card {
-  background-color: #0F3B6C !important;
-  background: #0F3B6C !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
-  border-left: 3px solid #CF9C48 !important;
+  background-color: var(--fondo-card) !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-left: 3px solid var(--cys-dorado) !important;
   border-radius: 12px;
   padding: 1.25rem;
-  color: #ffffff !important;
+  color: var(--texto) !important;
 }
 
 .cys-icon-circle {
@@ -69,8 +79,8 @@ body,
   margin-right: 12px;
   flex-shrink: 0;
 }
-.cys-icon-circle--verde { background: rgba(46, 204, 113, 0.1); }
-.cys-icon-circle--rojo  { background: rgba(207, 156, 72, 0.1); }
+.cys-icon-circle--verde { background: color-mix(in srgb, var(--verde) 10%, transparent); }
+.cys-icon-circle--rojo  { background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); }
 .cys-icon-circle--verde i { color: var(--cys-verde); font-size: 0.6rem; }
 .cys-icon-circle--rojo  i { color: var(--cys-rojo); font-size: 1.1rem; }
 
@@ -78,7 +88,7 @@ body,
   font-size: 1.8rem;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--texto, #fff);
+  color: var(--texto);
   display: block;
   margin: 2px 0;
 }
@@ -89,7 +99,7 @@ body,
 .cys-btn-action-cian {
   background: var(--cys-cian-brillante);
   border: none;
-  color: #001f38; /* texto oscuro sobre botón claro */
+  color: var(--azul-oscuro); /* texto sobre botón de acento */
   border-radius: 50px;
   padding: 8px 24px;
   font-size: 0.9rem;
@@ -102,8 +112,8 @@ body,
   cursor: pointer;
 }
 .cys-btn-action-cian:hover {
-  background: rgba(255, 255, 255, 0.85);
-  color: #001f38;
+  background: color-mix(in srgb, var(--azul-claro) 75%, var(--texto));
+  color: var(--azul-oscuro);
   transform: translateY(-1px);
 }
 
@@ -124,7 +134,7 @@ body,
 }
 .cys-btn-action-dark:hover {
   border-color: var(--cys-acento);
-  color: var(--texto, #fff);
+  color: var(--texto);
 }
 .cys-btn-action-dark.cys-btn-sm-pill {
   border-radius: 8px;
@@ -133,9 +143,9 @@ body,
 }
 
 .cys-btn-action-rojo {
-  background: rgba(207, 156, 72, 0.1);
-  border: 1px solid rgba(207, 156, 72, 0.3);
-  color: #CF9C48;
+  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
+  color: var(--cys-dorado);
   border-radius: 50px;
   padding: 8px 24px;
   font-size: 0.9rem;
@@ -147,8 +157,8 @@ body,
   cursor: pointer;
 }
 .cys-btn-action-rojo:hover {
-  background: rgba(207, 156, 72, 0.2);
-  border-color: #CF9C48;
+  background: color-mix(in srgb, var(--cys-dorado) 20%, transparent);
+  border-color: var(--cys-dorado);
 }
 
 /* ══════════════════════════════════════
@@ -169,7 +179,7 @@ body,
 .cys-panel-header {
   padding: 1.2rem 1.5rem;
   border-bottom: 1px solid var(--cys-borde);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--texto) 2%, transparent);
 }
 .cys-panel-header-title {
   font-size: 0.95rem;
@@ -228,7 +238,7 @@ body,
 .cys-kpi-value {
   font-size: 1.45rem;
   font-weight: 800;
-  color: var(--texto, #fff);
+  color: var(--texto);
   line-height: 1.1;
 }
 
@@ -242,9 +252,9 @@ body,
    INPUTS OSCUROS
 ══════════════════════════════════════ */
 .cys-input-dark {
-  background: #0A2A52 !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
-  color: #ffffff !important;
+  background: var(--fondo) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto) !important;
   border-radius: 8px !important;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -287,8 +297,8 @@ body,
   gap: 6px;
   margin-top: 6px;
   padding: 6px 10px;
-  background: rgba(207, 156, 72, 0.08);
-  border: 1px solid rgba(207, 156, 72, 0.25);
+  background: color-mix(in srgb, var(--cys-dorado) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 25%, transparent);
   border-radius: 6px;
   color: var(--cys-rojo);
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -305,28 +315,28 @@ body,
 /* Estado de error en el input */
 .cys-input-error {
   border-color: var(--cys-rojo) !important;
-  box-shadow: 0 0 0 2px rgba(207, 156, 72, 0.15) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cys-dorado) 15%, transparent) !important;
 }
 
 /* ══════════════════════════════════════
    TARJETAS DE CATEGORÍAS / PRODUCTOS
 ══════════════════════════════════════ */
 .cys-cat-card-premium {
-  background: var(--cys-bg-card, #0A2A52);
+  background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  border-left: 3px solid #CF9C48;
+  border-left: 3px solid var(--cys-dorado);
   border-radius: 12px;
   padding: 1.1rem 1rem;
   text-align: left;
-  color: var(--texto, #fff);
+  color: var(--texto);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
 .cys-cat-card-premium:hover {
-  border-color: #CF9C48 !important;
-  background: #124785 !important;
+  border-color: var(--cys-dorado) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
   transform: translateY(-3px);
-  box-shadow: 0 0 16px rgba(207, 156, 72, 0.4), inset 0 0 8px rgba(207, 156, 72, 0.05) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
 }
 
 /* Variante centrada (vista de categorías padre) */
@@ -354,8 +364,8 @@ body,
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #0A2A52 !important;
-  border: 1px solid rgba(207, 156, 72, 0.35) !important;
+  background: var(--fondo) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -373,7 +383,7 @@ body,
 .cys-cat-card-nombre {
   font-weight: 700;
   font-size: 0.85rem;
-  color: var(--texto, #fff);
+  color: var(--texto);
 }
 
 .cys-cat-card-precio {
@@ -401,9 +411,9 @@ body,
   white-space: nowrap;
   flex-shrink: 0;
 }
-.cys-stock-badge--ok      { color: var(--cys-verde); background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.25); }
-.cys-stock-badge--bajo    { color: var(--cys-rojo); background: rgba(207, 156, 72, 0.06); border-color: rgba(207, 156, 72, 0.18); }
-.cys-stock-badge--critico { color: var(--cys-rojo); background: rgba(207, 156, 72, 0.18); border-color: rgba(207, 156, 72, 0.4); }
+.cys-stock-badge--ok      { color: var(--cys-verde); background: color-mix(in srgb, var(--verde) 10%, transparent); border-color: color-mix(in srgb, var(--verde) 25%, transparent); }
+.cys-stock-badge--bajo    { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 6%, transparent); border-color: color-mix(in srgb, var(--cys-dorado) 18%, transparent); }
+.cys-stock-badge--critico { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 18%, transparent); border-color: color-mix(in srgb, var(--cys-dorado) 40%, transparent); }
 
 /* ══════════════════════════════════════
    FORMULARIO DE VENTA / CARRITO
@@ -428,17 +438,17 @@ body,
 .cys-sugerencias-item {
   background: var(--cys-surface) !important;
   border-color: var(--cys-borde) !important;
-  color: var(--texto, #fff) !important;
+  color: var(--texto) !important;
   font-size: 0.85rem;
 }
 .cys-sugerencias-item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: color-mix(in srgb, var(--texto) 8%, transparent) !important;
 }
 
 .cys-carrito-vacio {
   border: 1px dashed var(--cys-borde);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--texto) 1%, transparent);
   width: 100%;
   min-height: 250px;
   transition: all 0.3s ease;
@@ -447,7 +457,7 @@ body,
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -455,12 +465,12 @@ body,
 }
 .cys-carrito-vacio-icono-box i {
   font-size: 1.6rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--texto) 40%, transparent);
 }
 .cys-carrito-vacio-titulo {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--texto, #fff);
+  color: var(--texto);
   margin-bottom: 2px;
 }
 .cys-carrito-vacio-subtitulo {
@@ -486,8 +496,8 @@ body,
 }
 .cys-btn-ignorar-cliente:hover {
   border-color: var(--cys-acento);
-  color: var(--texto, #fff);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--texto);
+  background: color-mix(in srgb, var(--texto) 4%, transparent);
 }
 .cys-btn-ignorar-cliente i { font-size: 0.75rem; }
 
@@ -558,7 +568,7 @@ body,
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--texto, #fff);
+  color: var(--texto);
 }
 
 .cys-descuento-fila-valor--rojo {
@@ -570,13 +580,13 @@ body,
 
 /* ── Total general ── */
 .cys-total-box {
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--texto) 6%, transparent);
   border: 1px solid var(--cys-borde);
   border-radius: 8px;
   padding: 0.75rem 1rem;
 }
 .cys-total-label {
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -665,7 +675,7 @@ body,
 
 .cys-pago-card-header--verde        { color: var(--cys-verde); }
 .cys-pago-card-header--acento        { color: var(--cys-acento); }
-.cys-pago-card-header--azul          { color: #7eb8d4; } /* Transferencia: azul acero frío, combina con la paleta CYS */
+.cys-pago-card-header--azul          { color: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)); } /* Transferencia: azul acero frío */
 
 .cys-pago-input {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
@@ -728,13 +738,13 @@ body,
 }
 .cys-otro-metodo-btn:hover {
   border-color: var(--cys-acento);
-  color: var(--texto, #fff);
+  color: var(--texto);
 }
 .cys-otro-metodo-btn-icon {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -775,7 +785,7 @@ body,
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--texto, #fff);
+  color: var(--texto);
   padding: 9px 10px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -784,7 +794,7 @@ body,
   transition: background 0.15s;
 }
 .cys-otro-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
 }
 .cys-otro-dropdown-item i {
   color: var(--cys-acento);
@@ -800,7 +810,7 @@ body,
   flex: 1;
 }
 .cys-otro-cambiar {
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
   border: none;
   color: var(--cys-texto-muted);
   border-radius: 6px;
@@ -814,8 +824,8 @@ body,
   transition: all 0.15s;
 }
 .cys-otro-cambiar:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--texto, #fff);
+  background: color-mix(in srgb, var(--texto) 15%, transparent);
+  color: var(--texto);
 }
 
 /* ══════════════════════════════════════
@@ -823,7 +833,7 @@ body,
 ══════════════════════════════════════ */
 .cys-btn-submit {
   background: var(--cys-cian-brillante) !important;
-  color: #001f38 !important;
+  color: var(--azul-oscuro) !important;
   font-weight: 700 !important;
   border: none !important;
   border-radius: 50px !important;
@@ -834,7 +844,7 @@ body,
   align-items: center;
   gap: 6px;
 }
-.cys-btn-submit:hover { background: rgba(255, 255, 255, 0.85) !important; color: #001f38 !important; }
+.cys-btn-submit:hover { background: color-mix(in srgb, var(--azul-claro) 75%, var(--texto)) !important; color: var(--azul-oscuro) !important; }
 .cys-btn-submit:disabled {
   background: var(--cys-bg-card) !important;
   color: var(--cys-texto-muted) !important;
@@ -850,14 +860,14 @@ body,
 
 .cys-btn-cancel {
   background: transparent !important;
-  border: 1px solid rgba(207, 156, 72, 0.3) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent) !important;
   color: var(--cys-rojo) !important;
   border-radius: 8px !important;
   padding: 10px 14px;
   transition: all 0.2s;
 }
 .cys-btn-cancel:hover {
-  background: rgba(207, 156, 72, 0.1) !important;
+  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent) !important;
   border-color: var(--cys-rojo) !important;
 }
 .cys-btn-cancel.cys-btn-block-lg {
@@ -867,20 +877,20 @@ body,
 
 /* Variante sólida para acciones de "peligro" importantes (ej. cerrar caja) */
 .cys-btn-cancel--peligro {
-  background: rgba(207, 156, 72, 0.9) !important;
-  border: 1px solid #CF9C48 !important;
-  color: #1a1200 !important;
+  background: color-mix(in srgb, var(--cys-dorado) 90%, transparent) !important;
+  border: 1px solid var(--cys-dorado) !important;
+  color: var(--cys-dorado-texto) !important;
   font-weight: 700 !important;
 }
 .cys-btn-cancel--peligro:hover {
-  background: #CF9C48 !important;
-  border-color: #CF9C48 !important;
+  background: var(--cys-dorado) !important;
+  border-color: var(--cys-dorado) !important;
 }
 
 /* Botón eliminar fila (historial) */
 .cys-btn-eliminar-fila {
-  background: rgba(207, 156, 72, 0.08) !important;
-  border: 1px solid rgba(207, 156, 72, 0.2) !important;
+  background: color-mix(in srgb, var(--cys-dorado) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 20%, transparent) !important;
   color: var(--cys-rojo) !important;
   border-radius: 8px !important;
   padding: 5px 9px;
@@ -888,7 +898,7 @@ body,
   transition: all 0.2s;
 }
 .cys-btn-eliminar-fila:hover {
-  background: rgba(207, 156, 72, 0.18) !important;
+  background: color-mix(in srgb, var(--cys-dorado) 18%, transparent) !important;
   border-color: var(--cys-rojo) !important;
 }
 
@@ -908,7 +918,7 @@ body,
   color: var(--cys-texto-muted);
   text-align: center;
 }
-.cys-empty-box i { color: rgba(255, 255, 255, 0.2); }
+.cys-empty-box i { color: color-mix(in srgb, var(--texto) 20%, transparent); }
 
 /* ══════════════════════════════════════
    HISTORIAL — TOOLBAR (buscador + orden)
@@ -919,7 +929,7 @@ body,
   align-items: center;
   gap: 12px;
   padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--texto) 2%, transparent);
   border-bottom: 1px solid var(--cys-borde);
 }
 
@@ -941,7 +951,7 @@ body,
   width: 100%;
   background: var(--cys-surface);
   border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff);
+  color: var(--texto);
   border-radius: 50px;
   padding: 9px 16px 9px 38px;
   font-size: 0.88rem;
@@ -966,20 +976,23 @@ body,
   -webkit-appearance: none;
   background-color: var(--cys-surface);
   border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff);
+  color: var(--texto);
   border-radius: 50px;
   padding: 9px 34px 9px 38px;
   font-size: 0.85rem;
   cursor: pointer;
   outline: none;
   min-width: 170px;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  /* Flecha que sigue el color del texto del tema (antes: SVG blanco fijo) */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
 }
 .cys-hist-sort-select:focus { border-color: var(--cys-acento); }
-.cys-hist-sort-select option { background: var(--cys-surface); color: var(--texto, #fff); }
+.cys-hist-sort-select option { background: var(--cys-surface); color: var(--texto); }
 
 /* ══════════════════════════════════════
    HISTORIAL — TABLA ESTILO "INVENTARIO"
@@ -987,7 +1000,7 @@ body,
 .cys-hist-table {
   width: 100%;
   border-collapse: collapse;
-  background: #0A2A52 !important;
+  background: var(--fondo) !important;
 }
 
 .cys-hist-table thead tr {
@@ -1006,18 +1019,18 @@ body,
 }
 
 .cys-hist-table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent);
   transition: background 0.15s;
 }
 .cys-hist-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: color-mix(in srgb, var(--texto) 3.5%, transparent);
 }
 .cys-hist-table tbody tr:last-child { border-bottom: none; }
 
 .cys-hist-table tbody td {
   padding: 13px 16px;
   font-size: 0.85rem;
-  color: var(--texto, #ffffff);
+  color: var(--texto);
   vertical-align: middle;
 }
 
@@ -1027,7 +1040,7 @@ body,
 }
 
 .cys-hist-cliente {
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-weight: 700;
 }
 
@@ -1040,7 +1053,7 @@ body,
 
 .cys-hist-fecha {
   display: block;
-  color: var(--texto, #ffffff);
+  color: var(--texto);
   font-weight: 600;
   font-size: 0.82rem;
 }
@@ -1055,21 +1068,21 @@ body,
   padding: 3rem 1rem;
   color: var(--cys-texto-muted);
 }
-.cys-hist-sin-resultados i { color: rgba(255, 255, 255, 0.2); }
+.cys-hist-sin-resultados i { color: color-mix(in srgb, var(--texto) 20%, transparent); }
 
 /* ── Avatar + celda cliente ── */
 .cys-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--texto) 15%, transparent);
   color: var(--cys-acento);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--texto) 20%, transparent);
   flex-shrink: 0;
 }
 .cys-cliente-cell {
@@ -1082,9 +1095,9 @@ body,
 .cys-producto-badge {
   display: inline-flex;
   align-items: center;
-  background: rgba(46, 204, 113, 0.06);
+  background: color-mix(in srgb, var(--verde) 6%, transparent);
   color: var(--cys-verde);
-  border: 1px solid rgba(46, 204, 113, 0.18);
+  border: 1px solid color-mix(in srgb, var(--verde) 18%, transparent);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 0.85rem;
@@ -1095,9 +1108,9 @@ body,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(46, 204, 113, 0.1);
+  background: color-mix(in srgb, var(--verde) 10%, transparent);
   color: var(--cys-verde);
-  border: 1px solid rgba(46, 204, 113, 0.25);
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent);
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 0.78rem;
@@ -1110,7 +1123,7 @@ body,
 .cys-alert {
   background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff);
+  color: var(--texto);
 }
 
 /* ══════════════════════════════════════
@@ -1119,7 +1132,7 @@ body,
 .cys-modal-content {
   background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff);
+  color: var(--texto);
   border-radius: 12px;
 }
 .cys-modal-header {
@@ -1155,7 +1168,7 @@ body,
 }
 
 .cys-total-contado-box {
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--texto) 6%, transparent);
   border: 1px solid var(--cys-borde);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -1192,13 +1205,13 @@ body,
 }
 .cys-resumen-fila {
   font-size: 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
   padding: 6px 0;
   display: flex;
   justify-content: space-between;
 }
 .cys-resumen-fila-label  { color: var(--cys-texto-muted); }
-.cys-resumen-fila-valor  { font-weight: 700; color: var(--texto, #fff); }
+.cys-resumen-fila-valor  { font-weight: 700; color: var(--texto); }
 .cys-resumen-fila-valor--verde  { font-weight: 700; color: var(--cys-verde); }
 .cys-resumen-fila-valor--acento { font-weight: 700; color: var(--cys-acento); }
 .cys-resumen-total {
@@ -1209,7 +1222,7 @@ body,
   margin-top: 0.25rem;
   font-size: 0.95rem;
 }
-.cys-resumen-total-label { font-weight: 700; color: var(--texto, #fff); }
+.cys-resumen-total-label { font-weight: 700; color: var(--texto); }
 .cys-resumen-total-valor {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.4rem;
@@ -1232,7 +1245,7 @@ body,
 }
 .cys-detalle-item-nombre {
   font-weight: 700;
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-size: 0.9rem;
 }
 .cys-detalle-item-meta {
@@ -1250,11 +1263,11 @@ body,
   display: flex;
   justify-content: space-between;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
   font-size: 0.85rem;
 }
 .cys-detalle-info-label { color: var(--cys-texto-muted); }
-.cys-detalle-info-valor { color: var(--texto, #fff); font-weight: 700; }
+.cys-detalle-info-valor { color: var(--texto); font-weight: 700; }
 
 /* Fila clickeable en historial */
 .cys-hist-table tbody tr.fila-venta { cursor: pointer; }
@@ -1266,7 +1279,7 @@ body,
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(207, 156, 72, 0.1);
+  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1275,7 +1288,7 @@ body,
 .cys-confirm-icono-box i { font-size: 1.6rem; color: var(--cys-rojo); }
 .cys-confirm-texto {
   text-align: center;
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
@@ -1289,7 +1302,7 @@ body,
 
 /* ── COMPROBANTE DE PAGO ── */
 .cys-comprobante-box {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--texto) 4%, transparent);
   border: 1px dashed var(--cys-borde);
   border-radius: 12px;
   padding: 1rem;
@@ -1298,7 +1311,7 @@ body,
 .cys-comprobante-titulo {
   font-size: .78rem;
   font-weight: 700;
-  color: var(--texto, #fff);
+  color: var(--texto);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1312,7 +1325,7 @@ body,
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--texto) 6%, transparent);
   border: 1px solid var(--cys-borde);
   border-radius: 10px;
   padding: .6rem .8rem;
@@ -1323,14 +1336,14 @@ body,
 .cys-comprobante-input-wrap:hover,
 .cys-comprobante-input-wrap:focus-within {
   border-color: var(--cys-acento);
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--texto) 10%, transparent);
 }
 
 .cys-comprobante-icono {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--texto) 12%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1343,13 +1356,13 @@ body,
   min-width: 0;
   background: transparent;
   border: none;
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-size: .8rem;
 }
 
 .cys-comprobante-input-wrap input[type="file"]::file-selector-button {
   background: var(--cys-acento);
-  color: #001f38;
+  color: var(--azul-oscuro);
   border: none;
   border-radius: 6px;
   padding: 5px 12px;
@@ -1370,48 +1383,40 @@ body,
    tarjetas de producto/presentación y filas del carrito)
    ══════════════════════════════════════════════════════ */
 
-/* ── Estado de Caja (tarjetas KPI) ── */
-.cys-caja-card {
-  background: #0F3B6C !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
-  border-left: 3px solid #CF9C48 !important;
-  border-radius: 12px;
-  padding: 1.25rem;
-  color: #ffffff !important;
-}
-.cys-caja-card--abierta  { border-left-color: #CF9C48 !important; background: #0F3B6C !important; }
-.cys-caja-card--cerrada  { border-left-color: var(--cys-rojo) !important; background: #0F3B6C !important; }
-.cys-caja-card--base     { border-left-color: #CF9C48 !important; background: #0F3B6C !important; }
-.cys-caja-card--ventas   { border-left-color: #CF9C48 !important; background: #0F3B6C !important; }
+/* ── Estado de Caja (tarjetas KPI) — variantes ── */
+.cys-caja-card--abierta  { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--cerrada  { border-left-color: var(--cys-rojo) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--base     { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--ventas   { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
 
 .cys-caja-card-icono-box {
   width: 38px; height: 38px;
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  background: #0A2A52 !important;
-  border: 1px solid #CF9C48 !important;
+  background: var(--fondo) !important;
+  border: 1px solid var(--cys-dorado) !important;
 }
-.cys-caja-card-icono-box--verde  { background: #0A2A52 !important; }
-.cys-caja-card-icono-box--rojo   { background: #0A2A52 !important; }
-.cys-caja-card-icono-box--acento { background: #0A2A52 !important; }
+.cys-caja-card-icono-box--verde  { background: var(--fondo) !important; }
+.cys-caja-card-icono-box--rojo   { background: var(--fondo) !important; }
+.cys-caja-card-icono-box--acento { background: var(--fondo) !important; }
 
 .cys-caja-card-icono-box i { font-size: 1rem; }
-.cys-caja-card-icono-box--verde i  { color: #CF9C48 !important; }
+.cys-caja-card-icono-box--verde i  { color: var(--cys-dorado) !important; }
 .cys-caja-card-icono-box--rojo i   { color: var(--cys-rojo) !important; }
-.cys-caja-card-icono-box--acento i { color: #CF9C48 !important; }
-.cys-caja-card-icono-box--verde i.bi-circle-fill { font-size: 0.6rem; color: #CF9C48 !important; }
+.cys-caja-card-icono-box--acento i { color: var(--cys-dorado) !important; }
+.cys-caja-card-icono-box--verde i.bi-circle-fill { font-size: 0.6rem; color: var(--cys-dorado) !important; }
 
 /* Íconos en dorado para las cards Abierta / Base / Ventas */
 .cys-caja-card--abierta .cys-caja-card-icono-box,
 .cys-caja-card--base .cys-caja-card-icono-box,
 .cys-caja-card--ventas .cys-caja-card-icono-box {
-  background: #0A2A52 !important;
-  border: 1px solid #CF9C48 !important;
+  background: var(--fondo) !important;
+  border: 1px solid var(--cys-dorado) !important;
 }
 .cys-caja-card--abierta .cys-caja-card-icono-box i,
 .cys-caja-card--base .cys-caja-card-icono-box i,
 .cys-caja-card--ventas .cys-caja-card-icono-box i {
-  color: #CF9C48 !important;
+  color: var(--cys-dorado) !important;
 }
 
 .cys-caja-badge {
@@ -1419,9 +1424,9 @@ body,
   border-radius: 6px; padding: 3px 9px;
   text-transform: uppercase; letter-spacing: 0.4px;
 }
-.cys-caja-badge--verde  { color: var(--cys-verde); background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.25); }
-.cys-caja-badge--rojo   { color: var(--cys-rojo); background: rgba(207, 156, 72, 0.1); border: 1px solid rgba(207, 156, 72, 0.25); }
-.cys-caja-badge--acento { color: var(--cys-acento); background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.25); }
+.cys-caja-badge--verde  { color: var(--cys-verde); background: color-mix(in srgb, var(--verde) 10%, transparent); border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent); }
+.cys-caja-badge--rojo   { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-dorado) 25%, transparent); }
+.cys-caja-badge--acento { color: var(--cys-acento); background: color-mix(in srgb, var(--texto) 10%, transparent); border: 1px solid color-mix(in srgb, var(--texto) 25%, transparent); }
 
 .cys-caja-titulo       { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
 .cys-caja-titulo--verde  { color: var(--cys-verde); }
@@ -1430,7 +1435,7 @@ body,
 .cys-caja-titulo--muted  { color: var(--cys-texto-muted); }
 
 .cys-caja-sub { font-size: .78rem; color: var(--cys-texto-muted); margin-top: 4px; }
-.cys-caja-sub strong { color: var(--texto, #fff); font-weight: 700; }
+.cys-caja-sub strong { color: var(--texto); font-weight: 700; }
 
 /* ── Tarjetas de categoría/producto generadas por JS ── */
 .cys-cat-card-clickable { cursor: pointer; }
@@ -1439,18 +1444,18 @@ body,
 .cys-pres-item {
   display: flex; justify-content: space-between; align-items: center;
   border-radius: .75rem; padding: 1rem;
-  background: var(--cys-bg-card, #0A2A52);
+  background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .cys-pres-item:hover {
-  background: #124785 !important;
-  border-color: #CF9C48 !important;
-  box-shadow: 0 0 16px rgba(207, 156, 72, 0.4), inset 0 0 8px rgba(207, 156, 72, 0.05) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
+  border-color: var(--cys-dorado) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
 }
 .cys-pres-item--sin-stock { cursor: not-allowed; opacity: .5; }
-.cys-pres-nombre { font-weight: 700; color: var(--texto, #fff); font-size: .9rem; }
+.cys-pres-nombre { font-weight: 700; color: var(--texto); font-size: .9rem; }
 .cys-pres-meta   { font-size: .72rem; color: var(--cys-texto-muted); }
 .cys-pres-precio { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--cys-acento); }
 .cys-pres-precio--sin-stock { color: var(--cys-rojo); }
@@ -1459,26 +1464,26 @@ body,
 .cys-carrito-row {
   display: flex; justify-content: space-between; align-items: center;
   border-radius: .75rem; padding: .5rem .75rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--texto) 4%, transparent);
   border: 1px solid var(--cys-borde);
 }
 .cys-carrito-nombre {
-  font-weight: 700; font-size: .83rem; color: var(--texto, #fff);
+  font-weight: 700; font-size: .83rem; color: var(--texto);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cys-carrito-meta { font-size: .7rem; color: var(--cys-texto-muted); }
 .cys-carrito-btn-cant {
   width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1); border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff); font-size: .8rem; line-height: 1; padding: 0;
+  background: color-mix(in srgb, var(--texto) 10%, transparent); border: 1px solid var(--cys-borde);
+  color: var(--texto); font-size: .8rem; line-height: 1; padding: 0;
 }
-.cys-carrito-cant { min-width: 20px; text-align: center; font-weight: 700; color: var(--texto, #fff); }
+.cys-carrito-cant { min-width: 20px; text-align: center; font-weight: 700; color: var(--texto); }
 .cys-carrito-subtotal {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; color: var(--cys-acento);
   min-width: 70px; text-align: right; font-size: .9rem;
 }
 .cys-carrito-btn-quitar {
-  background: rgba(207, 156, 72, 0.1); border: 1px solid rgba(207, 156, 72, 0.2);
+  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-dorado) 20%, transparent);
   color: var(--cys-rojo); border-radius: 6px; padding: 2px 7px; font-size: .8rem;
 }
 /* ══════════════════════════════════════
@@ -1492,7 +1497,7 @@ body,
   align-items: center;
   gap: 12px;
   padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--texto) 2%, transparent);
   border-bottom: 1px solid var(--cys-borde);
 }
 
@@ -1509,7 +1514,7 @@ body,
 
 .cys-lotes-search-icon {
   background: var(--cys-cian-brillante);
-  color: #001f38;
+  color: var(--azul-oscuro);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1522,7 +1527,7 @@ body,
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--texto, #fff);
+  color: var(--texto);
   padding: 10px 14px;
   font-size: 0.88rem;
   outline: none;
@@ -1536,7 +1541,7 @@ body,
   -webkit-appearance: none;
   background-color: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  color: var(--texto, #fff);
+  color: var(--texto);
   border-radius: 10px;
   padding: 10px 34px 10px 16px;
   font-size: 0.88rem;
@@ -1544,13 +1549,16 @@ body,
   cursor: pointer;
   outline: none;
   min-width: 150px;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  /* Flecha que sigue el color del texto del tema (antes: SVG blanco fijo) */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
 }
 .cys-lotes-select:focus { border-color: var(--cys-acento); }
-.cys-lotes-select option { background: var(--cys-bg-card); color: var(--texto, #fff); }
+.cys-lotes-select option { background: var(--cys-bg-card); color: var(--texto); }
 
 /* ── Encabezados ordenables con flechas apiladas ── */
 .cys-th-orden {
@@ -1560,7 +1568,7 @@ body,
   color: var(--cys-acento) !important;
   text-decoration: none !important;
 }
-.cys-th-orden:hover { color: var(--texto, #fff) !important; }
+.cys-th-orden:hover { color: var(--texto) !important; }
 .cys-th-orden:visited { color: var(--cys-acento) !important; }
 
 .cys-th-carets {
@@ -1570,7 +1578,7 @@ body,
   font-size: 0.5rem;
 }
 .cys-th-carets i {
-  color: rgba(255, 255, 255, 0.25);
+  color: color-mix(in srgb, var(--texto) 25%, transparent);
 }
 .cys-th-carets i.cys-caret-activa {
   color: var(--cys-acento);
@@ -1579,7 +1587,7 @@ body,
 /* ── Producto / Presentación apilados ── */
 .cys-prodpres-nombre {
   font-weight: 700;
-  color: var(--texto, #fff);
+  color: var(--texto);
   font-size: 0.88rem;
 }
 .cys-prodpres-sub {
@@ -1591,8 +1599,8 @@ body,
 /* ── Píldora de cantidad ── */
 .cys-cantidad-pill {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: color-mix(in srgb, var(--texto) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--texto) 25%, transparent);
   color: var(--cys-acento);
   font-weight: 700;
   font-size: 0.78rem;
@@ -1604,8 +1612,8 @@ body,
    TARJETAS INTERACTIVAS DE DENOMINACIÓN (CONTEO DE CAJA)
 ══════════════════════════════════════ */
 .cys-denom-card {
-  background: #0F3B6C !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
   border-radius: 12px;
   padding: 0.85rem;
   transition: all 0.25s ease;
@@ -1614,24 +1622,24 @@ body,
 }
 
 .cys-denom-card:hover {
-  background: #124785 !important;
-  border-color: #CF9C48 !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
+  border-color: var(--cys-dorado) !important;
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(207, 156, 72, 0.4), inset 0 0 8px rgba(207, 156, 72, 0.05) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
 }
 
 .cys-denom-card--active {
-  background: #124785 !important;
-  border-color: #CF9C48 !important;
-  box-shadow: 0 0 18px rgba(207, 156, 72, 0.35) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
+  border-color: var(--cys-dorado) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
 }
 
 .cys-denom-card-header {
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  border-bottom: 1px dashed color-mix(in srgb, var(--texto) 12%, transparent);
   padding-bottom: 0.5rem;
 }
 
-/* Iconos y badges por denominación — Fondo azul marino CYS (#0A2A52) con borde dorado */
+/* Iconos y badges por denominación — fondo del tema con borde dorado */
 .cys-denom-icon-wrapper,
 .cys-denom-icon--billete-100000,
 .cys-denom-icon--billete-50000,
@@ -1652,19 +1660,19 @@ body,
   justify-content: center;
   font-size: 1.1rem;
   font-weight: bold;
-  color: #ffffff !important;
-  background: var(--cys-bg-card, #0A2A52) !important;
-  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  color: var(--texto) !important;
+  background: var(--cys-bg-card) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 40%, transparent) !important;
 }
 
 .cys-denom-icon-wrapper i {
-  color: #ffffff !important;
+  color: var(--texto) !important;
 }
 
 .cys-denom-title {
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--texto, #fff);
+  color: var(--texto);
   line-height: 1.1;
 }
 
@@ -1679,15 +1687,15 @@ body,
   font-weight: 700;
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--cys-texto-muted, #8e9aaf);
+  background: color-mix(in srgb, var(--texto) 5%, transparent);
+  color: var(--cys-texto-muted);
   transition: all 0.2s ease;
 }
 
 .cys-denom-card--active .cys-denom-subtotal-badge {
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #CF9C48 !important;
-  border: 1px solid rgba(207, 156, 72, 0.35) !important;
+  background: color-mix(in srgb, var(--cys-dorado) 20%, transparent) !important;
+  color: var(--cys-dorado) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
 }
 
 /* Stepper y botones */
@@ -1696,9 +1704,9 @@ body,
 }
 
 .cys-btn-step {
-  background: #0A2A52 !important;
-  border: 1px solid rgba(77, 168, 218, 0.3) !important;
-  color: #ffffff !important;
+  background: var(--fondo) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto) !important;
   width: 32px;
   display: flex;
   align-items: center;
@@ -1708,9 +1716,9 @@ body,
 }
 
 .cys-btn-step:hover {
-  background: #124785 !important;
-  border-color: #CF9C48 !important;
-  color: #ffffff !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
+  border-color: var(--cys-dorado) !important;
+  color: var(--texto) !important;
 }
 
 .cys-btn-step:active {
@@ -1722,16 +1730,16 @@ body,
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-  background: #0A2A52 !important;
-  border: 1px solid rgba(77, 168, 218, 0.25) !important;
-  color: #ffffff !important;
+  background: var(--fondo) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--texto) !important;
   transition: all 0.15s ease;
 }
 
 .cys-chip-btn:hover {
-  background: #124785 !important;
-  color: #CF9C48 !important;
-  border-color: #CF9C48 !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
+  color: var(--cys-dorado) !important;
+  border-color: var(--cys-dorado) !important;
   transform: translateY(-1px);
 }
 
@@ -1744,19 +1752,19 @@ body,
   font-weight: 600;
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
-  background: rgba(235, 77, 75, 0.1);
-  color: #ff7675;
-  border: 1px solid rgba(235, 77, 75, 0.2);
+  background: color-mix(in srgb, var(--rojo) 10%, transparent);
+  color: var(--rojo);
+  border: 1px solid color-mix(in srgb, var(--rojo) 20%, transparent);
   transition: all 0.2s ease;
 }
 
 .cys-btn-reset-conteo:hover {
-  background: rgba(235, 77, 75, 0.25);
-  color: var(--texto, #fff);
+  background: color-mix(in srgb, var(--rojo) 25%, transparent);
+  color: var(--texto);
 }
 
 /* ════════════════════════════════════════════════════════════════
-   TOOLTIPS PERSONALIZADOS ESTILO CYS (POPUP OSCURO CON BORDE CYAN)
+   TOOLTIPS PERSONALIZADOS ESTILO CYS (POPUP CON BORDE DE ACENTO)
    ════════════════════════════════════════════════════════════════ */
 .tooltip {
   opacity: 1 !important;
@@ -1765,37 +1773,37 @@ body,
 }
 
 .tooltip .tooltip-inner {
-  background-color: #091d36 !important;
-  color: #4DA8DA !important;
-  border: 1.5px solid #4DA8DA !important;
+  background-color: var(--fondo-card2) !important;
+  color: var(--azul-claro) !important;
+  border: 1.5px solid var(--azul-claro) !important;
   border-radius: 10px !important;
   padding: 6px 14px !important;
   font-size: 0.82rem !important;
   font-weight: 700 !important;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 12px rgba(77, 168, 218, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 12px color-mix(in srgb, var(--azul-claro) 40%, transparent) !important;
   letter-spacing: 0.3px !important;
   line-height: 1.3 !important;
 }
 
-/* Flechas de Tooltip en Cyan */
+/* Flechas de Tooltip en color de acento */
 .bs-tooltip-top .tooltip-arrow::before,
 .bs-tooltip-auto[data-popper-placement^="top"] .tooltip-arrow::before {
-  border-top-color: #4DA8DA !important;
+  border-top-color: var(--azul-claro) !important;
 }
 
 .bs-tooltip-bottom .tooltip-arrow::before,
 .bs-tooltip-auto[data-popper-placement^="bottom"] .tooltip-arrow::before {
-  border-bottom-color: #4DA8DA !important;
+  border-bottom-color: var(--azul-claro) !important;
 }
 
 .bs-tooltip-start .tooltip-arrow::before,
 .bs-tooltip-auto[data-popper-placement^="left"] .tooltip-arrow::before {
-  border-left-color: #4DA8DA !important;
+  border-left-color: var(--azul-claro) !important;
 }
 
 .bs-tooltip-end .tooltip-arrow::before,
 .bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
-  border-right-color: #4DA8DA !important;
+  border-right-color: var(--azul-claro) !important;
 }
 
 /* Transiciones de Elevación e Interacción para Tarjetas */
@@ -1812,6 +1820,6 @@ body,
 .cys-top-sales-card:hover,
 .cys-prod-card-item:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(77, 168, 218, 0.3) !important;
-  border-color: rgba(77, 168, 218, 0.6) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }

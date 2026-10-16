@@ -243,3 +243,23 @@ def crear_backup(request):
         return JsonResponse({'ok': False, 'error': 'mysqldump no esta instalado o no esta en el PATH del servidor.'})
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def guardar_tema_sistema(request):
+    """Fija el tema predeterminado de todo el sistema (solo administradores)."""
+    if not _es_admin(request):
+        return JsonResponse(
+            {'ok': False, 'error': 'Solo un administrador puede hacer esto.'},
+            status=403,
+        )
+
+    tema = request.POST.get('tema', '')
+    if tema not in ConfiguracionEmpresa.TEMAS_VALIDOS:
+        return JsonResponse({'ok': False, 'error': 'Tema no válido.'}, status=400)
+
+    config = ConfiguracionEmpresa.get_config()
+    config.tema_predeterminado = tema
+    config.save(update_fields=['tema_predeterminado'])
+    return JsonResponse({'ok': True, 'tema': tema})

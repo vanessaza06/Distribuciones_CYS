@@ -1,9 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-tema-sistema="{{ config.tema_predeterminado|default:'oscuro' }}">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="{% static 'js/cuerpo/base.js' %}"></script>
   <title>CYS — Acceso al Sistema</title>
   <link rel="icon" type="image/png" href="{% static 'img/logo.20.png' %}">
   <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"/>
@@ -187,39 +188,39 @@
       {% endif %}
 
       <!-- ── VERIFICAR CÓDIGO OTP ── -->
-{% if seccion == 'otp_verificar' %}
-<form id="secOtpVerificar" method="POST" action="{% url 'verificar_otp_correo' %}">
-  {% csrf_token %}
-  <input type="hidden" name="correo" value="{{ request.session.otp_correo }}">
+      {% if seccion == 'otp_verificar' %}
+      <form id="secOtpVerificar" method="POST" action="{% url 'verificar_otp_correo' %}">
+        {% csrf_token %}
+        <input type="hidden" name="correo" value="{{ request.session.otp_correo }}">
 
-  <div class="cys-title">Ingresa el Código</div>
-  <p class="text-center mb-3 cys-desc">
-    Revisa tu correo y escribe el código de 6 dígitos que te enviamos.
-  </p>
+        <div class="cys-title">Ingresa el Código</div>
+        <p class="text-center mb-3 cys-desc">
+          Revisa tu correo y escribe el código de 6 dígitos que te enviamos.
+        </p>
 
-  <div class="cys-method-badge cys-method-badge--otp mb-4" id="badgeTimer">
-    <i class="bi bi-clock"></i> Expira en <span id="cuentaRegresiva" class="timer-span">10:00</span>
-  </div>
+        <div class="cys-method-badge cys-method-badge--otp mb-4" id="badgeTimer">
+          <i class="bi bi-clock"></i> Expira en <span id="cuentaRegresiva" class="timer-span">10:00</span>
+        </div>
 
-  <div class="mb-4">
-    <label class="cys-label" for="inputOtp">Código de Verificación</label>
-    <input type="text" name="codigo" id="inputOtp" class="cys-input otp-input-custom"
-           placeholder="• • • • • •"
-           maxlength="6" autocomplete="off" required>
-  </div>
+        <div class="mb-4">
+          <label class="cys-label" for="inputOtp">Código de Verificación</label>
+          <input type="text" name="codigo" id="inputOtp" class="cys-input otp-input-custom"
+                 placeholder="• • • • • •"
+                 maxlength="6" autocomplete="off" required>
+        </div>
 
-  <button type="submit" class="cys-btn-primary mb-3" id="btnVerificar">
-    <i class="bi bi-check-circle me-1"></i> Verificar Código
-  </button>
+        <button type="submit" class="cys-btn-primary mb-3" id="btnVerificar">
+          <i class="bi bi-check-circle me-1"></i> Verificar Código
+        </button>
 
-  <div class="text-center">
-    <a href="?action=otp" class="cys-btn-link mx-auto text-decoration-none hidden-display"
-       id="enlaceReenviar">
-      <i class="bi bi-arrow-counterclockwise icon-small"></i> Reenviar código
-    </a>
-  </div>
- </form>
- {% endif %}
+        <div class="text-center">
+          <a href="?action=otp" class="cys-btn-link mx-auto text-decoration-none hidden-display"
+             id="enlaceReenviar">
+            <i class="bi bi-arrow-counterclockwise icon-small"></i> Reenviar código
+          </a>
+        </div>
+      </form>
+      {% endif %}
 
     </div>
   </div>

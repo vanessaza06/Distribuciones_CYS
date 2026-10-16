@@ -1,14 +1,32 @@
+(function () {
+'use strict';
+
+// Si la página no es la de Configuración (o htmx aún no puso el contenido), no hace nada.
+const cfgData = document.getElementById('cfg-data');
+if (!cfgData) return;
+
 // ══════════════════════════════════════════
 // URLs de Django (pasadas desde el template vía data-attributes)
 // ══════════════════════════════════════════
-const cfgData = document.getElementById('cfg-data');
-const URL_ACTIVIDAD          = cfgData.dataset.urlActividad;
-const URL_GUARDAR_EMPRESA    = cfgData.dataset.urlGuardarEmpresa;
-const URL_VERIFICAR_EMPRESA  = cfgData.dataset.urlVerificarEmpresa;
-const URL_BLOQUEAR_EMPRESA   = cfgData.dataset.urlBloquearEmpresa;
-const URL_GUARDAR_IMPUESTOS  = cfgData.dataset.urlGuardarImpuestos;
-const URL_CREAR_BACKUP       = cfgData.dataset.urlCrearBackup;
-const ES_ADMIN_EMPRESA       = cfgData.dataset.esAdmin === 'true';
+const URL_ACTIVIDAD            = cfgData.dataset.urlActividad;
+const URL_GUARDAR_EMPRESA      = cfgData.dataset.urlGuardarEmpresa;
+const URL_VERIFICAR_EMPRESA    = cfgData.dataset.urlVerificarEmpresa;
+const URL_BLOQUEAR_EMPRESA     = cfgData.dataset.urlBloquearEmpresa;
+const URL_GUARDAR_IMPUESTOS    = cfgData.dataset.urlGuardarImpuestos;
+const URL_CREAR_BACKUP         = cfgData.dataset.urlCrearBackup;
+const URL_GUARDAR_TEMA_SISTEMA = cfgData.dataset.urlGuardarTemaSistema;
+const ES_ADMIN_EMPRESA         = cfgData.dataset.esAdmin === 'true';
+
+// Tema predeterminado actual del sistema (viene del servidor)
+let TEMA_SISTEMA = cfgData.dataset.temaSistema || 'oscuro';
+
+const NOMBRES_TEMA = {
+  'oscuro': 'Oscuro',
+  'claro': 'Claro',
+  'alto-contraste': 'Alto contraste',
+  'basecys': 'Base CyS',
+  'sepia': 'Sepia',
+};
 
 // ══════════════════════════════════════════
 // CSRF helper
@@ -24,30 +42,46 @@ const CSRF_TOKEN = getCookie('csrftoken') ||
 
 // ══════════════════════════════════════════
 // ESTADO VISUAL (tema/pagina de inicio/brillo/fuente/zoom/toggles)
-// mismo objeto que ya lee/aplica base.html y aside.html: localStorage.cys_config
+// localStorage.cys_config
+//
+// IMPORTANTE: el "tema" solo cuenta como propio si lleva la marca
+// temaPersonal === true. Si no, el usuario sigue el tema del sistema.
 // ══════════════════════════════════════════
 const CFG_DEFAULT = {
-  tema: 'oscuro', paginaInicio: 'tablero', brillo: 100, fuente: 14, zoom: 100,
+  tema: TEMA_SISTEMA, paginaInicio: 'tablero', brillo: 100, fuente: 14, zoom: 100,
   sidebarAuto: false, resumenSidebar: true,
   alertaStock: true, widgetRotacion: true, silencioso: false,
 };
+
+let temaPersonal = false; // true si el usuario eligió un tema propio
 
 function cargarCfg() {
   let cfg = { ...CFG_DEFAULT };
   try {
     const g = JSON.parse(localStorage.getItem('cys_config') || '{}');
+    // Un "tema" viejo sin marca se ignora: ya no cuenta como elección personal
+    temaPersonal = g.temaPersonal === true && !!g.tema;
     cfg = { ...cfg, ...g };
   } catch (e) {}
+  if (!temaPersonal) cfg.tema = TEMA_SISTEMA;
   return cfg;
 }
 function guardarCfg(cfg) {
-  localStorage.setItem('cys_config', JSON.stringify(cfg));
+  const copia = { ...cfg };
+  if (temaPersonal) {
+    copia.temaPersonal = true;   // marca: este tema lo eligió el usuario
+  } else {
+    delete copia.tema;           // sigue el del sistema: no se persiste
+    delete copia.temaPersonal;
+  }
+  localStorage.setItem('cys_config', JSON.stringify(copia));
 }
 
 let cfgActual = cargarCfg();
 let perillaBrillo, perillaFuente, perillaZoom;
 let logoEmpresaFile = null; // archivo seleccionado, pendiente de subir al guardar
 let toastPrefTimeout = null;
+let temaPendiente = null;   // tema a confirmar como predeterminado del sistema
 
 // ══════════════════════════════════════════
 // PERILLAS (DIAL)
@@ -149,9 +183,7 @@ function crearPerilla(container, btnResetId) {
 
 // ══════════════════════════════════════════
 // APLICAR EN VIVO
-// El tema ya NO se define aquí: se reutiliza window.aplicarTemaCYS,
-// expuesto por base.js, para que los 5 temas nunca se desincronicen
-// entre archivos (fuente única de verdad).
+// El tema se reutiliza desde window.aplicarTemaCYS (base.js).
 // ══════════════════════════════════════════
 function aplicarBrillo(val) {
   document.documentElement.style.filter = val === 100 ? '' : `brightness(${val}%)`;
@@ -171,7 +203,7 @@ function aplicarTema(tema) {
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function () {
+function init() {
   perillaBrillo = crearPerilla(document.getElementById('knobBrillo'), 'btnResetBrillo');
   perillaFuente = crearPerilla(document.getElementById('knobFuente'), 'btnResetFuente');
   perillaZoom   = crearPerilla(document.getElementById('knobZoom'), 'btnResetZoom');
@@ -199,6 +231,8 @@ document.addEventListener('DOMContentLoaded', function () {
     el.classList.toggle('activo', el.dataset.tema === cfgActual.tema));
   document.querySelectorAll('#opcionesInicio .cfg-opt').forEach(el =>
     el.classList.toggle('activo', el.dataset.inicio === cfgActual.paginaInicio));
+
+  actualizarEtiquetaTemaSistema();
 
   document.getElementById('toggleSidebarAuto').checked    = cfgActual.sidebarAuto;
   document.getElementById('toggleResumenSidebar').checked = cfgActual.resumenSidebar;
@@ -269,19 +303,82 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
-});
+}
 
 // ══════════════════════════════════════════
 // TEMA / PÁGINA DE INICIO — se aplican y guardan al instante
 // ══════════════════════════════════════════
+function actualizarEtiquetaTemaSistema() {
+  const el = document.getElementById('temaSistemaLabel');
+  if (el) el.textContent = NOMBRES_TEMA[TEMA_SISTEMA] || TEMA_SISTEMA;
+}
+
 function seleccionarTema(tema, el) {
   document.querySelectorAll('#opcionesTema .cfg-opt').forEach(o => o.classList.remove('activo'));
   el.classList.add('activo');
   cfgActual.tema = tema;
+  // Si coincide con el del sistema no es una elección propia: sigue al sistema
+  temaPersonal = (tema !== TEMA_SISTEMA);
   aplicarTema(tema);
+  window.CYS_TEMA_SITIO = tema;
   guardarCfg(cfgActual);
   mostrarToastPreferencia();
+
+  if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
+    pedirConfirmacionTemaSistema(tema);
+  }
 }
+
+function pedirConfirmacionTemaSistema(tema) {
+  temaPendiente = tema;
+  document.getElementById('temaConfirmNombre').textContent = NOMBRES_TEMA[tema] || tema;
+  document.getElementById('temaConfirmError').style.display = 'none';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTemaSistema')).show();
+}
+
+async function confirmarTemaSistema() {
+  if (!temaPendiente) return;
+
+  const btn     = document.getElementById('btnConfirmarTemaSistema');
+  const errorEl = document.getElementById('temaConfirmError');
+  errorEl.style.display = 'none';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('tema', temaPendiente);
+
+  try {
+    const resp = await fetch(URL_GUARDAR_TEMA_SISTEMA, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN },
+      body: fd,
+    });
+    const data = await resp.json();
+
+    if (data.ok) {
+      TEMA_SISTEMA = temaPendiente;
+      temaPersonal = false;     // el admin ahora sigue el tema del sistema
+      guardarCfg(cfgActual);    // quita "tema" y la marca del localStorage
+      window.CYS_TEMA_SISTEMA = TEMA_SISTEMA;
+      window.CYS_TEMA_SITIO   = TEMA_SISTEMA;
+      // Mantiene <html data-tema-sistema> al día aunque htmx no recargue el <html>
+      document.documentElement.dataset.temaSistema = TEMA_SISTEMA;
+      actualizarEtiquetaTemaSistema();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTemaSistema')).hide();
+      mostrarToast('Tema predeterminado del sistema actualizado');
+      temaPendiente = null;
+    } else {
+      errorEl.textContent = data.error || 'No se pudo establecer el tema del sistema.';
+      errorEl.style.display = 'block';
+    }
+  } catch (e) {
+    errorEl.textContent = 'Error de conexión con el servidor.';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function seleccionarInicio(valor, el) {
   document.querySelectorAll('#opcionesInicio .cfg-opt').forEach(o => o.classList.remove('activo'));
   el.classList.add('activo');
@@ -359,7 +456,7 @@ async function verificarClaveEmpresa() {
       document.getElementById('empresaNit').value       = data.empresa.nit;
       document.getElementById('empresaDireccion').value = data.empresa.direccion;
       document.getElementById('empresaTelefono').value  = data.empresa.telefono;
-      document.getElementById('empresaEmail').value      = data.empresa.email;
+      document.getElementById('empresaEmail').value     = data.empresa.email;
 
       setTimeout(() => {
         document.getElementById('empresaLockScreen').style.display = 'none';
@@ -566,3 +663,27 @@ function mostrarToastPreferencia() {
     mostrarToast('Preferencia guardada', 'info');
   }, 250);
 }
+
+// ══════════════════════════════════════════
+// Funciones usadas por onclick="..." en el HTML
+// ══════════════════════════════════════════
+Object.assign(window, {
+  seleccionarTema,
+  seleccionarInicio,
+  confirmarTemaSistema,
+  previewLogoEmpresa,
+  verificarClaveEmpresa,
+  bloquearEmpresa,
+  guardarInfoEmpresa,
+  guardarImpuestos,
+  generarRespaldo,
+});
+
+// Inicializa aunque el script se cargue después de DOMContentLoaded (htmx)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
