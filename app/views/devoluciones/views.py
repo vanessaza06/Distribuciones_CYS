@@ -9,6 +9,7 @@ from django.db import transaction
 from django.db.models import F, Sum, Q
 from django.utils import timezone
 
+from app.validators import entero_estricto, limpiar_texto, validar_texto_libre
 from app.models import (
     Venta,
     DetalleVenta,
@@ -49,6 +50,14 @@ METODO_PAGO_CHOICES = [
     ('nequi', 'Nequi / Daviplata'),
     ('tarjeta', 'Tarjeta débito / crédito'),
 ]
+
+
+def _pendiente_detalle(venta, detalle):
+    """Unidades de un renglón de venta que aún se pueden devolver."""
+    ya = DetalleDevolucion.objects.filter(
+        devolucion__venta=venta, producto=detalle.producto
+    ).aggregate(t=Sum('cantidad'))['t'] or 0
+    return max(0, detalle.cantidad - ya)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -256,18 +265,24 @@ def devoluciones_flujo(request):
 
         for detalle_id in productos_ids:
             try:
-                det_id = int(detalle_id)
-                cant = int(request.POST.get(f'cantidad_devolucion_{det_id}', '0'))
-                detalle = venta_actual.detalles.get(pk=det_id)
-
-                if cant <= 0 or cant > detalle.cantidad:
-                    messages.error(request, f'⚠️ Cantidad inválida para {detalle.producto.nombre}.')
-                    return redirect('lista_devoluciones')
-
-                productos_con_cantidad[det_id] = cant
-            except (ValueError, TypeError, DetalleVenta.DoesNotExist):
+                det_id = entero_estricto(detalle_id, minimo=1, maximo=2_000_000_000)
+                detalle = venta_actual.detalles.select_related('producto').get(pk=det_id)
+            except (ValueError, DetalleVenta.DoesNotExist):
                 messages.error(request, '⚠️ Error en los datos del producto seleccionado.')
                 return redirect('lista_devoluciones')
+
+            pendiente = _pendiente_detalle(venta_actual, detalle)
+            nombre = detalle.producto.nombre if detalle.producto else 'el producto'
+            try:
+                cant = entero_estricto(request.POST.get(f'cantidad_devolucion_{det_id}'), minimo=1, maximo=max(pendiente, 1))
+            except ValueError as e:
+                messages.error(request, f'⚠️ Cantidad inválida para {nombre}: {e}')
+                return redirect('lista_devoluciones')
+            if pendiente <= 0 or cant > pendiente:
+                messages.error(request, f'⚠️ De {nombre} solo puedes devolver {pendiente} unidades (ya devueltas o vendidas).')
+                return redirect('lista_devoluciones')
+
+            productos_con_cantidad[det_id] = cant
 
         if productos_con_cantidad:
             request.session['dev_productos'] = productos_con_cantidad
@@ -283,10 +298,13 @@ def devoluciones_flujo(request):
             return redirect('lista_devoluciones')
 
         motivo = request.POST.get('motivo', '').strip()
-        observaciones = request.POST.get('observaciones', '').strip()
+        observaciones = limpiar_texto(request.POST.get('observaciones'))
 
         motivos_validos = [m[0] for m in MOTIVO_CHOICES]
-        if motivo in motivos_validos:
+        error_obs = validar_texto_libre(observaciones)
+        if error_obs:
+            messages.error(request, f'⚠️ Observaciones: {error_obs}')
+        elif motivo in motivos_validos:
             request.session['dev_motivo'] = motivo
             request.session['dev_observaciones'] = observaciones
             request.session['dev_paso'] = 4
@@ -323,15 +341,20 @@ def devoluciones_flujo(request):
         tipo = request.session.get('dev_tipo_reembolso')
 
         if tipo == 'cambio':
-            prod_cambio_id = request.POST.get('producto_cambio', '').strip()
-            cant_cambio = request.POST.get('cantidad_cambio', '1').strip()
-            if prod_cambio_id and cant_cambio.isdigit() and int(cant_cambio) > 0:
-                request.session['dev_producto_cambio_id'] = int(prod_cambio_id)
-                request.session['dev_cantidad_cambio'] = int(cant_cambio)
-                request.session['dev_paso'] = 6
-                request.session.modified = True
-                return redirect('lista_devoluciones')
-            messages.error(request, '⚠️ Selecciona un producto y cantidad válida para el cambio.')
+            try:
+                prod_cambio_id = entero_estricto(request.POST.get('producto_cambio'), minimo=1, maximo=2_000_000_000)
+                cant_cambio = entero_estricto(request.POST.get('cantidad_cambio'), minimo=1, maximo=10_000)
+            except ValueError as e:
+                messages.error(request, f'⚠️ Producto o cantidad de cambio inválidos: {e}')
+            else:
+                if not Producto.objects.filter(pk=prod_cambio_id, activo=True).exists():
+                    messages.error(request, '⚠️ El producto de cambio no existe o está inactivo.')
+                else:
+                    request.session['dev_producto_cambio_id'] = prod_cambio_id
+                    request.session['dev_cantidad_cambio'] = cant_cambio
+                    request.session['dev_paso'] = 6
+                    request.session.modified = True
+                    return redirect('lista_devoluciones')
 
         elif tipo == 'reembolso':
             metodo = request.POST.get('metodo_pago_devolucion', '').strip()
@@ -370,6 +393,11 @@ def devoluciones_flujo(request):
                 total_devuelto = Decimal('0')
                 for det in detalles_venta:
                     cant_dev = detalles_dict.get(det.pk, det.cantidad)
+                    if cant_dev <= 0 or cant_dev > _pendiente_detalle(venta, det):
+                        messages.error(request, '⚠️ Una de las cantidades ya no está disponible para devolver. Revisa la venta.')
+                        request.session['dev_paso'] = 2
+                        request.session.modified = True
+                        return redirect('lista_devoluciones')
                     total_devuelto += Decimal(str(cant_dev)) * det.precio_unitario
 
                 detalle_principal = detalles_venta.first()
@@ -582,11 +610,14 @@ def registrar_devolucion_proveedor(request):
         return error(f'⚠️ La compra #{detalle.compra.pk} aún no fue recibida; solo se devuelve mercancía recibida.')
 
     try:
-        cantidad = int(request.POST.get('cantidad', '0').strip())
-        if cantidad <= 0:
-            raise ValueError
-    except ValueError:
-        return error('⚠️ La cantidad a devolver debe ser un número entero mayor a cero.')
+        cantidad = entero_estricto(request.POST.get('cantidad'), minimo=1, maximo=1_000_000)
+    except ValueError as e:
+        return error(f'⚠️ Cantidad a devolver: {e}')
+
+    observaciones = limpiar_texto(request.POST.get('observaciones'))
+    error_obs = validar_texto_libre(observaciones)
+    if error_obs:
+        return error(f'⚠️ Observaciones: {error_obs}')
 
     disponible = detalle.cantidad - _cantidad_ya_devuelta(detalle.pk)
     if cantidad > disponible:
@@ -617,7 +648,7 @@ def registrar_devolucion_proveedor(request):
         'producto_id': producto.pk if producto else None,
         'producto_nombre': producto.nombre if producto else 'Mercancía general',
         'tipo_resolucion': tipo_resolucion,
-        'obs': request.POST.get('observaciones', '').strip(),
+        'obs': observaciones,
     }
 
     dev_prov = DevolucionProveedores.objects.create(

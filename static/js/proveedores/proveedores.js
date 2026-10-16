@@ -283,7 +283,13 @@ $(document).ready(function() {
               const input = document.getElementById(`id_${field}`);
               if (errorDiv && input) {
                 const errorMsg = Array.isArray(messages) ? messages[0] : messages;
-                errorDiv.innerHTML = `<small class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>${errorMsg}</small>`;
+                errorDiv.textContent = '';
+                const small = document.createElement('small');
+                small.className = 'text-danger fw-bold';
+                const icon = document.createElement('i');
+                icon.className = 'bi bi-exclamation-circle me-1';
+                small.append(icon, document.createTextNode(String(errorMsg)));
+                errorDiv.appendChild(small);
                 errorDiv.classList.add('d-block');
                 input.classList.add('is-invalid');
               }

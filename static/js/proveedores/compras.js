@@ -368,7 +368,7 @@ function initNuevaCompra() {
 
     // Pre-cargar precio sugerido
     if (p.precio > 0) {
-      precio.value = p.precio;
+      precio.value = Math.round(p.precio);
     }
 
     // Filtrar lotes asociados a este producto
@@ -461,8 +461,8 @@ function initNuevaCompra() {
     itemsAMostrar.forEach((p) => {
       const esSeleccionado = hiddenProducto.value === p.id;
       const stockBadge = p.stock > 0
-        ? `<span class="badge" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.4);">${p.stock} und.</span>`
-        : `<span class="badge" style="background: rgba(255, 255, 255, 0.08); color: #adb5bd;">0 und.</span>`;
+        ? `<span class="badge cmp-stock-badge cmp-stock-badge--ok">${p.stock} und.</span>`
+        : `<span class="badge cmp-stock-badge cmp-stock-badge--cero">0 und.</span>`;
       const precioBadge = p.precio > 0
         ? `<div class="small fw-bold text-warning">${fmtCOP(p.precio)}</div>`
         : '';
@@ -486,7 +486,7 @@ function initNuevaCompra() {
 
     if (totalEncontrados > itemsAMostrar.length) {
       html += `
-        <div class="p-2 text-center text-muted small" style="background: rgba(0,0,0,0.3); font-size: 0.8rem;">
+        <div class="p-2 text-center text-muted small cmp-sug-mas">
           <i class="bi bi-info-circle me-1 text-info"></i>...y ${totalEncontrados - itemsAMostrar.length} productos más. Escribe más letras para afinar.
         </div>
       `;
