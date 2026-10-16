@@ -12,6 +12,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import escape
@@ -127,6 +128,11 @@ def lista_marcas(request):
         'desde': filtros['desde'],
         'hasta': filtros['hasta'],
         'filtro_fechas': _campo_fecha()[0] is not None,  # habilita Desde / Hasta solo si hay campo de fecha
+        # Breadcrumb: Tablero > Inventario > Marcas
+        'breadcrumb_items': [
+            {'nombre': 'Inventario', 'url': None},
+            {'nombre': 'Marcas', 'url': reverse('lista_marcas')},
+        ],
     })
 
 

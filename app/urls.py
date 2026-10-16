@@ -60,7 +60,7 @@ urlpatterns = [
     
 
 
-    # CATEGORIAS
+        # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
@@ -72,6 +72,16 @@ urlpatterns = [
         "categorias/toggle/<int:pk>/",
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
+    ),
+    path(
+        "categorias/exportar/pdf/",
+        cat_views.categoria_exportar_pdf,
+        name="categoria_exportar_pdf",
+    ),
+    path(
+        "categorias/exportar/excel/",
+        cat_views.categoria_exportar_excel,
+        name="categoria_exportar_excel",
     ),
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
