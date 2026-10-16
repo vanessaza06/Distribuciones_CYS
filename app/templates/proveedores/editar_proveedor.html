@@ -62,47 +62,39 @@
           <h5 class="text-info mb-3"><i class="bi bi-building me-2"></i>Información Básica</h5>
           <div class="row g-3">
             <div class="col-12 col-md-6">
-              <label for="{{ form.nombre_empresa.id_for_label }}" class="form-label prod-label">Empresa <span class="text-danger">*</span></label>
-              {{ form.nombre_empresa }}
-              {% if form.nombre_empresa.errors %}
-                <div class="alert alert-danger-dev mt-2 mb-0">
-                  {{ form.nombre_empresa.errors }}
-                </div>
-              {% endif %}
+              <label for="id_nombre_empresa" class="form-label prod-label">Empresa <span class="text-danger">*</span></label>
+              <input type="text" name="nombre_empresa" id="id_nombre_empresa" class="form-control prod-input" value="{{ proveedor.nombre_empresa }}" required placeholder="Nombre de la empresa">
             </div>
             <div class="col-12 col-md-6">
-              <label for="{{ form.nit.id_for_label }}" class="form-label prod-label">NIT</label>
-              {{ form.nit }}
-              {% if form.nit.errors %}
-                <div class="alert alert-danger-dev mt-2 mb-0">
-                  {{ form.nit.errors }}
-                </div>
-              {% endif %}
+              <label for="id_nit" class="form-label prod-label">NIT / Documento</label>
+              <input type="text" name="nit" id="id_nit" class="form-control prod-input" value="{{ proveedor.nit_proveedores }}" readonly style="opacity: 0.75; cursor: not-allowed;" title="El NIT es el identificador único y no puede modificarse">
             </div>
           </div>
         </div>
 
-        <!-- CONTACTO -->
+        <!-- CONTACTO Y CLASIFICACIÓN -->
         <div class="mb-4">
-          <h5 class="text-info mb-3"><i class="bi bi-telephone me-2"></i>Datos de Contacto</h5>
+          <h5 class="text-info mb-3"><i class="bi bi-telephone me-2"></i>Datos de Contacto y Clasificación</h5>
           <div class="row g-3">
             <div class="col-12 col-md-6">
-              <label for="{{ form.email.id_for_label }}" class="form-label prod-label">Correo <span class="text-danger">*</span></label>
-              {{ form.email }}
-              {% if form.email.errors %}
-                <div class="alert alert-danger-dev mt-2 mb-0">
-                  {{ form.email.errors }}
-                </div>
-              {% endif %}
+              <label for="id_email" class="form-label prod-label">Correo <span class="text-danger">*</span></label>
+              <input type="email" name="correo" id="id_email" class="form-control prod-input" value="{{ proveedor.correo }}" required placeholder="correo@empresa.com">
             </div>
             <div class="col-12 col-md-6">
-              <label for="{{ form.telefono.id_for_label }}" class="form-label prod-label">Número de Teléfono</label>
-              {{ form.telefono }}
-              {% if form.telefono.errors %}
-                <div class="alert alert-danger-dev mt-2 mb-0">
-                  {{ form.telefono.errors }}
-                </div>
-              {% endif %}
+              <label for="id_telefono" class="form-label prod-label">Número de Teléfono</label>
+              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" value="{{ proveedor.telefono }}" pattern="\d{7,15}" placeholder="Ej: 3001234567">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="id_tipo_proveedor" class="form-label prod-label">Tipo de Proveedor</label>
+              <select name="tipo_proveedor" id="id_tipo_proveedor" class="form-select prod-input">
+                {% for val, lab in tipos_proveedor %}
+                  <option value="{{ val }}" {% if proveedor.tipo_proveedor == val %}selected{% endif %}>{{ lab }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="id_observacion" class="form-label prod-label">Observaciones</label>
+              <input type="text" name="observacion" id="id_observacion" class="form-control prod-input" value="{{ proveedor.observacion|default:'' }}" placeholder="Observaciones opcionales...">
             </div>
           </div>
         </div>

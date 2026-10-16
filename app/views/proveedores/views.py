@@ -77,7 +77,7 @@ def lista_proveedores(request):
     gastos_porcentajes = [int((g / gastos_total) * 100) for g in gastos_data]
 
     context = {
-        'proveedores': page_obj,
+        'proveedores': proveedores,
         'page_obj': page_obj,
         'paginator': paginator,
         'total_proveedores': total_proveedores,
@@ -100,24 +100,41 @@ def crear_proveedor(request):
     if request.method == 'POST':
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-        # Obtenemos los campos soportando tanto 'nit' como 'nit_proveedores', y 'email' como 'correo'
-        nit = request.POST.get('nit') or request.POST.get('nit_proveedores')
-        nombre = request.POST.get('nombre_empresa')
-        correo = request.POST.get('email') or request.POST.get('correo')
-        telefono = request.POST.get('telefono', '')
+        nit = (request.POST.get('nit') or request.POST.get('nit_proveedores') or '').strip()
+        nombre = (request.POST.get('nombre_empresa') or '').strip()
+        correo = (request.POST.get('email') or request.POST.get('correo') or '').strip()
+        telefono = (request.POST.get('telefono') or '').strip()
         tipo = request.POST.get('tipo_proveedor', 'distribuidor')
 
-        if not nit or not nombre or not correo:
-            if is_ajax:
-                return JsonResponse({'success': False, 'errors': {'nombre_empresa': 'Complete los campos obligatorios.'}}, status=400)
-            messages.error(request, 'NIT, Nombre y Correo son obligatorios.')
-            return redirect('lista_proveedores')
+        errors = {}
+        if not nit:
+            errors['nit'] = 'El NIT o documento es obligatorio.'
+        elif Proveedor.objects.filter(pk=nit).exists():
+            errors['nit'] = f'El proveedor con NIT {nit} ya se encuentra registrado.'
 
-        if Proveedor.objects.filter(pk=nit).exists():
-            error_msg = f'El proveedor con NIT {nit} ya se encuentra registrado.'
+        if not nombre:
+            errors['nombre_empresa'] = 'El nombre de la empresa es obligatorio.'
+
+        if not correo:
+            errors['email'] = 'El correo electrónico es obligatorio.'
+        else:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError as DjangoValError
+            try:
+                validate_email(correo)
+            except DjangoValError:
+                errors['email'] = 'Ingresa un correo electrónico válido.'
+
+        if telefono:
+            import re
+            if not re.match(r'^\d{7,15}$', telefono):
+                errors['telefono'] = 'El teléfono debe contener entre 7 y 15 dígitos numéricos.'
+
+        if errors:
             if is_ajax:
-                return JsonResponse({'success': False, 'errors': {'nit': error_msg}}, status=400)
-            messages.error(request, error_msg)
+                return JsonResponse({'success': False, 'errors': errors}, status=400)
+            for msg in errors.values():
+                messages.error(request, f'⚠️ {msg}')
             return redirect('lista_proveedores')
 
         proveedor = Proveedor.objects.create(
@@ -132,7 +149,7 @@ def crear_proveedor(request):
         if is_ajax:
             return JsonResponse({'success': True, 'message': f'Proveedor {proveedor.nombre_empresa} registrado correctamente.'})
         
-        messages.success(request, f'Proveedor {proveedor.nombre_empresa} registrado correctamente.')
+        messages.success(request, f'✅ Proveedor {proveedor.nombre_empresa} registrado correctamente.')
         return redirect('lista_proveedores')
 
     return redirect('lista_proveedores')
@@ -143,15 +160,43 @@ def editar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
 
     if request.method == 'POST':
-        proveedor.nombre_empresa = request.POST.get('nombre_empresa', proveedor.nombre_empresa)
-        proveedor.correo = request.POST.get('email') or request.POST.get('correo', proveedor.correo)
-        proveedor.telefono = request.POST.get('telefono', proveedor.telefono)
-        proveedor.tipo_proveedor = request.POST.get('tipo_proveedor', proveedor.tipo_proveedor)
-        proveedor.observacion = request.POST.get('observacion', proveedor.observacion)
-        proveedor.save()
+        nombre = (request.POST.get('nombre_empresa') or '').strip()
+        correo = (request.POST.get('email') or request.POST.get('correo') or '').strip()
+        telefono = (request.POST.get('telefono') or '').strip()
+        tipo = request.POST.get('tipo_proveedor', proveedor.tipo_proveedor)
+        observacion = (request.POST.get('observacion') or '').strip()
 
-        messages.success(request, f'Proveedor {proveedor.nombre_empresa} actualizado con éxito.')
-        return redirect('lista_proveedores')
+        errors = []
+        if not nombre:
+            errors.append('El nombre de la empresa es obligatorio.')
+        if not correo:
+            errors.append('El correo electrónico es obligatorio.')
+        else:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError as DjangoValError
+            try:
+                validate_email(correo)
+            except DjangoValError:
+                errors.append('Ingresa un correo electrónico válido.')
+
+        if telefono:
+            import re
+            if not re.match(r'^\d{7,15}$', telefono):
+                errors.append('El teléfono debe tener entre 7 y 15 dígitos numéricos.')
+
+        if errors:
+            for err in errors:
+                messages.error(request, f'⚠️ {err}')
+        else:
+            proveedor.nombre_empresa = nombre
+            proveedor.correo = correo
+            proveedor.telefono = telefono
+            proveedor.tipo_proveedor = tipo
+            proveedor.observacion = observacion
+            proveedor.save()
+
+            messages.success(request, f'✅ Proveedor {proveedor.nombre_empresa} actualizado con éxito.')
+            return redirect('lista_proveedores')
 
     # Aliases para template
     proveedor.id = proveedor.pk
@@ -160,6 +205,7 @@ def editar_proveedor(request, id):
 
     context = {
         'proveedor': proveedor,
+        'tipos_proveedor': Proveedor.TIPO_CHOICES,
         'breadcrumb_items': [
             {'nombre': 'Proveedores', 'url': reverse('lista_proveedores')},
             {'nombre': f'Editar: {proveedor.nombre_empresa}', 'url': None},

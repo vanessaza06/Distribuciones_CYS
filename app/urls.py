@@ -49,6 +49,8 @@ urlpatterns = [
     path( "devoluciones/venta/<int:venta_id>/registrar/",dev_views.registrar_devolucion,name="registrar_devolucion",),
     path( "devoluciones/detalle/<int:venta_id>/",dev_views.detalle_venta_devolucion,name="detalle_venta_devolucion",),
     path("devoluciones/comprobante/<int:pk>/",dev_views.comprobante_devolucion,name="comprobante_devolucion",),
+    path("devoluciones/proveedor/registrar/", dev_views.registrar_devolucion_proveedor, name="registrar_devolucion_proveedor"),
+    path("devoluciones/proveedor/<int:pk>/estado/", dev_views.cambiar_estado_devolucion_proveedor, name="cambiar_estado_devolucion_proveedor"),
     path("devoluciones/ultima/", dev_views.ultima_devolucion, name="ultima_devolucion"),
     path("devoluciones/<int:pk>/", dev_views.detalle_devolucion, name="detalle_devolucion",),
     path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
@@ -64,7 +66,7 @@ urlpatterns = [
     
 
 
-    # CATEGORIAS
+        # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
     path(
@@ -76,6 +78,16 @@ urlpatterns = [
         "categorias/toggle/<int:pk>/",
         cat_views.categoria_toggle_activo,
         name="categoria_toggle_activo",
+    ),
+    path(
+        "categorias/exportar/pdf/",
+        cat_views.categoria_exportar_pdf,
+        name="categoria_exportar_pdf",
+    ),
+    path(
+        "categorias/exportar/excel/",
+        cat_views.categoria_exportar_excel,
+        name="categoria_exportar_excel",
     ),
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),

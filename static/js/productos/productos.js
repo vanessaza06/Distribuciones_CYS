@@ -1,11 +1,25 @@
 /**
  * PRODUCTOS.JS — Gestión de Productos
- * DataTable, filtrado por categoría, creación
+ * DataTable, filtrado por categoría, creación, estadísticas (donut + últimos)
  */
 
 let ultimaCatPk = null;
 let dtInstance = null;
 let GESTION_URL, CREAR_URL, CSRF_TOKEN, NEXT_PATH, todoProductos;
+
+const COLORES_DONUT = [
+  '#4da8da', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6',
+  '#1abc9c', '#e67e22', '#3498db', '#f1c40f', '#95a5a6'
+];
+
+function escaparHtml(valor) {
+  return String(valor === null || valor === undefined ? '' : valor)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const configEl = document.getElementById('productos-config');
@@ -39,23 +53,100 @@ document.addEventListener('DOMContentLoaded', function () {
     console.error('No se pudo inicializar DataTable:', e);
   }
 
-  // Protegido: si inicializarGraficos() no existe todavía en ningún archivo
-  // cargado, esto ya NO detiene la ejecución del resto del script.
-  if (typeof inicializarGraficos === 'function') {
-    try {
-      inicializarGraficos();
-    } catch (e) {
-      console.error('Error en inicializarGraficos():', e);
-    }
-  } else {
-    console.warn('inicializarGraficos() no está definida — se omite (revisar si falta cargar su <script>).');
+  try {
+    inicializarGraficos();
+  } catch (e) {
+    console.error('Error en inicializarGraficos():', e);
   }
 });
 
+// ═══════ ESTADÍSTICAS: DONUT + ÚLTIMOS AGREGADOS ═══════
+function inicializarGraficos() {
+  pintarDonut();
+  pintarUltimos();
+}
+
+function pintarDonut() {
+  const svg = document.getElementById('donut-svg');
+  const leyenda = document.getElementById('donut-leyenda');
+  if (!svg || !leyenda) return;
+
+  // Contar productos por nombre de categoría
+  const conteo = {};
+  todoProductos.forEach(p => {
+    const nombre = p.categoria_nombre || 'Sin categoría';
+    conteo[nombre] = (conteo[nombre] || 0) + 1;
+  });
+
+  const grupos = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+  const total = todoProductos.length;
+
+  leyenda.innerHTML = '';
+
+  if (!total) {
+    leyenda.innerHTML = '<span class="prod-label small">Sin productos todavía.</span>';
+    return;
+  }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const R = 53;
+  const CIRCUNFERENCIA = 2 * Math.PI * R;
+  let acumulado = 0;
+
+  grupos.forEach(([nombre, cantidad], i) => {
+    const color = COLORES_DONUT[i % COLORES_DONUT.length];
+    const largo = (cantidad / total) * CIRCUNFERENCIA;
+
+    const arco = document.createElementNS(NS, 'circle');
+    arco.setAttribute('cx', 65);
+    arco.setAttribute('cy', 65);
+    arco.setAttribute('r', R);
+    arco.setAttribute('fill', 'none');
+    arco.setAttribute('stroke', color);
+    arco.setAttribute('stroke-width', 20);
+    arco.setAttribute('stroke-dasharray', largo + ' ' + (CIRCUNFERENCIA - largo));
+    arco.setAttribute('stroke-dashoffset', -acumulado);
+    arco.setAttribute('transform', 'rotate(-90 65 65)');
+    const tooltip = document.createElementNS(NS, 'title');
+    tooltip.textContent = nombre + ': ' + cantidad;
+    arco.appendChild(tooltip);
+    svg.appendChild(arco);
+
+    acumulado += largo;
+
+    const fila = document.createElement('div');
+    fila.className = 'd-flex align-items-center gap-2 mb-1 small';
+    fila.innerHTML =
+      '<span style="width:10px;height:10px;border-radius:50%;background:' + color + ';flex-shrink:0"></span>' +
+      '<span class="text-truncate">' + escaparHtml(nombre) + '</span>' +
+      '<span class="ms-auto fw-semibold">' + cantidad + '</span>';
+    leyenda.appendChild(fila);
+  });
+}
+
+function pintarUltimos() {
+  const lista = document.getElementById('lista-ultimos2');
+  if (!lista) return;
+
+  // El pk más alto = el más reciente
+  const ultimos = [...todoProductos]
+    .sort((a, b) => b.pk - a.pk)
+    .slice(0, 5);
+
+  if (!ultimos.length) {
+    lista.innerHTML = '<li class="prod-label small">Sin productos todavía.</li>';
+    return;
+  }
+
+  lista.innerHTML = ultimos.map(p =>
+    '<li class="d-flex justify-content-between align-items-center py-1">' +
+      '<span class="text-truncate me-2 fw-semibold">' + escaparHtml(p.nombre) + '</span>' +
+      '<span class="prod-label small flex-shrink-0">' + escaparHtml(p.categoria_nombre || 'Sin categoría') + '</span>' +
+    '</li>'
+  ).join('');
+}
+
 // ═══════ DROPDOWN CATEGORÍA (modal Nuevo Producto) ═══════
-// Delegado en document para que funcione sin importar cuándo/cómo
-// se pinta el DOM, y para que un fallo en otra parte del script
-// (gráficos, DataTable, etc.) NUNCA le impida quedar activo.
 document.addEventListener('click', function (e) {
   const item = e.target.closest('.crear-cat-item');
   if (!item) return;
@@ -75,14 +166,14 @@ function filasHtmlDe(filtrados) {
     const pres = p.presentaciones.length
       ? p.presentaciones.map(pr =>
           `<span class="badge prod-pres-badge me-1">
-            ${pr.nombre} · ${pr.cantidad} uds · $${parseInt(pr.precio_venta || 0).toLocaleString('es-CO')}
+            ${escaparHtml(pr.nombre)} · ${pr.cantidad} uds · $${parseInt(pr.precio_venta || 0).toLocaleString('es-CO')}
           </span>`).join('')
       : `<span class="prod-label prod-label-sm">Sin definir</span>`;
 
     return `<tr>
       <td class="px-4 prod-label text-center">${i + 1}</td>
-      <td class="fw-semibold prod-cell-nombre">${p.nombre}</td>
-      <td class="prod-cell-codigo text-center">${p.codigo || '—'}</td>
+      <td class="fw-semibold prod-cell-nombre">${escaparHtml(p.nombre)}</td>
+      <td class="prod-cell-codigo text-center">${escaparHtml(p.codigo) || '—'}</td>
       <td>${pres}</td>
     </tr>`;
   }).join('');
@@ -153,14 +244,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const pres = p.presentaciones.length
           ? p.presentaciones.map(pr =>
               `<span class="badge prod-badge-pres me-1">
-                ${pr.nombre} (${pr.cantidad} uds) — Stock: ${pr.stock_actual} — $${parseInt(pr.precio_venta||0).toLocaleString('es-CO')}
+                ${escaparHtml(pr.nombre)} (${pr.cantidad} uds) — Stock: ${pr.stock_actual} — $${parseInt(pr.precio_venta||0).toLocaleString('es-CO')}
               </span>`).join('')
           : `<span class="text-muted">Sin definir</span>`;
 
         return `<tr>
           <td class="text-center">${i + 1}</td>
-          <td class="fw-semibold">${p.nombre}</td>
-          <td class="text-center">${p.codigo || '—'}</td>
+          <td class="fw-semibold">${escaparHtml(p.nombre)}</td>
+          <td class="text-center">${escaparHtml(p.codigo) || '—'}</td>
           <td>${pres}</td>
         </tr>`;
       }).join('');
@@ -194,7 +285,6 @@ function enviarCrearProducto() {
     return;
   }
 
-  // Token tomado del propio formulario (más confiable que el data-attribute)
   const tokenInput = document.querySelector('#form-nuevo-producto-modal [name=csrfmiddlewaretoken]');
   const token = (tokenInput && tokenInput.value) || CSRF_TOKEN;
 
@@ -231,7 +321,6 @@ function enviarCrearProducto() {
       } else if (res.redirected) {
         mostrarErrorCrear(feedback, 'Tu sesión expiró. Recarga la página e inicia sesión de nuevo.');
       } else {
-        // El servidor devolvió HTML (error 500/403/404). Con DEBUG=True sacamos el motivo real.
         const doc = new DOMParser().parseFromString(texto, 'text/html');
         const titulo = doc.querySelector('title');
         const detalle = doc.querySelector('.exception_value');
