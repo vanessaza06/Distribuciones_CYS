@@ -110,14 +110,17 @@ def nueva_venta(request):
 
     caja_actual = obtener_caja_abierta()
     if not caja_actual:
+        denoms = {}
+        if vendedor:
+            denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
         caja_actual = Caja.objects.create(
             fecha_hora=timezone.now(),
             monto_base=Decimal('0'),
             total_efectivo=Decimal('0'),
             total_transferencias=Decimal('0'),
             total_retirado=Decimal('0'),
-            usuario=vendedor,
             observacion='Turno iniciado automáticamente al registrar venta',
+            denominaciones=denoms,
         )
 
     producto_ids = request.POST.getlist('producto_id[]')
@@ -558,9 +561,12 @@ def caja(request):
         estado_label = 'CERRADO' if es_cerrado else ('ACTIVO' if es_ultimo else 'FINALIZADO')
 
         # Operador
-        if item.usuario:
+        operador_nombre = None
+        if isinstance(item.denominaciones, dict):
+            operador_nombre = item.denominaciones.get('operador')
+        if not operador_nombre and item.usuario:
             operador_nombre = getattr(item.usuario, 'nombre', None) or item.usuario.get_full_name() or item.usuario.username or str(item.usuario.documento_usuario or '')
-        else:
+        if not operador_nombre:
             operador_nombre = 'Administrador / Sistema'
 
         monto_base_val = float(item.monto_base or 0)
@@ -708,15 +714,16 @@ def apertura_caja(request):
 
     vendedor = obtener_usuario_actual(request)
     observacion_clean = (data.get('observacion', '') or '').replace('[CERRADO]', '').strip()
+    denoms = data.get('denominaciones', {}) or {}
+    if vendedor:
+        denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
 
     try:
         caja_existente = obtener_caja_abierta()
         if caja_existente:
             caja_existente.monto_base = Decimal(str(monto_base))
             caja_existente.observacion = observacion_clean
-            caja_existente.denominaciones = data.get('denominaciones', {})
-            if vendedor:
-                caja_existente.usuario = vendedor
+            caja_existente.denominaciones = denoms
             caja_existente.save()
             codigo_caja = caja_existente.codigo_caja
         else:
@@ -726,9 +733,8 @@ def apertura_caja(request):
                 total_efectivo=Decimal('0'),
                 total_transferencias=Decimal('0'),
                 total_retirado=Decimal('0'),
-                usuario=vendedor,
                 observacion=observacion_clean,
-                denominaciones=data.get('denominaciones', {}),
+                denominaciones=denoms,
             )
             codigo_caja = nueva_caja.codigo_caja
         return JsonResponse({'ok': True, 'monto_base': monto_base, 'codigo_caja': codigo_caja})
