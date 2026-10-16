@@ -11,249 +11,6 @@
 {% endblock %}
 
 {% block content %}
-<style>
-  /* ── Compras: formulario y modales ── */
-  .cmp-input,
-  .cmp-input:focus {
-    background-color: #02224a;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.18);
-  }
-  .cmp-input:focus {
-    border-color: #CF9C48;
-    box-shadow: 0 0 0 .2rem rgba(207,156,72,0.18);
-  }
-  .cmp-input option { background: #02224a; color: #fff; }
-  .cmp-input option:disabled { display: none; }
-  .cmp-total-box {
-    background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.10) 100%);
-    border: 1px solid rgba(207,156,72,0.35);
-    border-left: 4px solid #CF9C48 !important;
-    border-radius: 12px;
-  }
-  .cmp-extra-box {
-    background: rgba(3,30,62,0.6);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-left: 4px solid #CF9C48 !important;
-    border-radius: 12px;
-  }
-  .cmp-label-mini { letter-spacing: .05em; font-size: .72rem; }
-  /* Confirmación del abono dentro del modal */
-  .cmp-confirm {
-    display: flex; gap: 14px; align-items: flex-start;
-    margin-top: 14px; padding: 16px 18px;
-    background: linear-gradient(135deg, rgba(207,156,72,0.14) 0%, rgba(3,30,62,0.85) 100%);
-    border: 1px solid rgba(207,156,72,0.45);
-    border-left: 4px solid #CF9C48 !important;
-    border-radius: 12px;
-    animation: cmpConfirmIn .25s ease-out;
-  }
-  .cmp-confirm.is-pagada {
-    background: linear-gradient(135deg, rgba(207,156,72,0.18) 0%, rgba(3,30,62,0.85) 100%);
-    border-color: rgba(207,156,72,0.5);
-    border-left-color: #CF9C48 !important;
-  }
-  .cmp-confirm__icon { font-size: 1.6rem; line-height: 1; color: #CF9C48 !important; }
-  .cmp-confirm.is-pagada .cmp-confirm__icon { color: #CF9C48 !important; }
-  .cmp-confirm__body { flex: 1; }
-  .cmp-confirm__title { margin: 0 0 4px; font-weight: 700; color: #fff; }
-  .cmp-confirm__text { margin: 0 0 12px; color: rgba(239,248,226,0.85); font-size: .92rem; }
-  .cmp-confirm__text strong { color: #fff; }
-  .cmp-confirm__actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-  .cmp-confirm__ok {
-    background: linear-gradient(135deg, #CF9C48, #e0b566); color: #011936;
-    font-weight: 700; border: none;
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .cmp-confirm__ok:hover { color: #011936; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(207,156,72,0.35); }
-  @keyframes cmpConfirmIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-  .cmp-inline-error {
-    margin-top: 6px; padding: 6px 10px; border-radius: 8px;
-    background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.4);
-    color: #ff8a7a; font-size: .85rem; font-weight: 600;
-  }
-  #tablaHistorialCompras td, #tablaHistorialCompras th { white-space: nowrap; }
-  .cmp-sug-item {
-    background: #02224a !important;
-    color: #fff !important;
-    border: none !important;
-    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-    padding: 10px 14px;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s ease, border-left 0.15s ease;
-    border-left: 3px solid transparent !important;
-  }
-  .cmp-sug-item:hover,
-  .cmp-sug-item:focus,
-  .cmp-sug-item.active {
-    background: rgba(207,156,72,0.22) !important;
-    color: #fff !important;
-    border-left: 3px solid #CF9C48 !important;
-    outline: none;
-  }
-  .cmp-sug-item:last-child { border-bottom: none !important; }
-  /* Buscador Premium de Producto */
-  .cmp-search-box-wrap {
-    position: relative;
-    border-radius: 12px;
-    background: rgba(2, 34, 74, 0.85);
-    border: 1.5px solid rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .cmp-search-box-wrap:focus-within,
-  .cmp-search-box-wrap.is-focused {
-    border-color: #CF9C48 !important;
-    background: #022045;
-    box-shadow: 0 0 0 3.5px rgba(207, 156, 72, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-  }
-  .cmp-search-box-wrap.has-error {
-    border-color: #e74c3c !important;
-    box-shadow: 0 0 0 3.5px rgba(231, 76, 60, 0.3) !important;
-  }
-  .cmp-search-box-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #4DA8DA;
-    font-size: 1.15rem;
-    pointer-events: none;
-    transition: color 0.2s ease;
-  }
-  .cmp-search-box-wrap:focus-within .cmp-search-box-icon {
-    color: #CF9C48;
-  }
-  .cmp-search-main-input {
-    background: transparent !important;
-    border: none !important;
-    color: #ffffff !important;
-    padding: 13px 44px 13px 44px !important;
-    font-size: 0.96rem !important;
-    font-weight: 500;
-    box-shadow: none !important;
-  }
-  .cmp-search-main-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.90rem;
-    font-weight: 400;
-  }
-  .cmp-search-box-clear {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.45);
-    font-size: 1.15rem;
-    padding: 4px 6px;
-    transition: color 0.2s ease, transform 0.2s ease;
-    cursor: pointer;
-  }
-  .cmp-search-box-clear:hover {
-    color: #ff7675;
-    transform: translateY(-50%) scale(1.15);
-  }
-
-  /* Tarjeta de producto seleccionado */
-  .cmp-selected-product {
-    background: linear-gradient(135deg, rgba(207, 156, 72, 0.16) 0%, rgba(3, 27, 56, 0.95) 100%);
-    border: 1px solid rgba(207, 156, 72, 0.45);
-    border-left: 4px solid #CF9C48 !important;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-    animation: cmpFadeIn 0.25s ease-out;
-  }
-  .cmp-selected-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    background: rgba(46, 204, 113, 0.2);
-    color: #2ecc71;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-    border: 1px solid rgba(46, 204, 113, 0.35);
-  }
-
-  /* Menú desplegable flotante de resultados */
-  .cmp-dropdown-menu {
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: #02162e;
-    border: 1.5px solid rgba(207, 156, 72, 0.45);
-    border-radius: 12px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
-    overflow-y: auto;
-    z-index: 1070;
-  }
-  .cmp-dropdown-menu::-webkit-scrollbar {
-    width: 6px;
-  }
-  .cmp-dropdown-menu::-webkit-scrollbar-thumb {
-    background: rgba(207, 156, 72, 0.45);
-    border-radius: 6px;
-  }
-  .cmp-dropdown-item {
-    background: transparent;
-    color: #fff;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 10px 16px;
-    width: 100%;
-    text-align: left;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background 0.15s ease, border-left 0.15s ease;
-    border-left: 3px solid transparent;
-  }
-  .cmp-dropdown-item:hover,
-  .cmp-dropdown-item:focus,
-  .cmp-dropdown-item.active {
-    background: rgba(207, 156, 72, 0.2) !important;
-    color: #fff !important;
-    border-left: 4px solid #CF9C48 !important;
-    outline: none;
-  }
-  .cmp-dropdown-item:last-child {
-    border-bottom: none;
-  }
-  @keyframes cmpFadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: none; }
-  }
-  /* Botones de modalidad de pago 100% Total / Crédito */
-  .btn-modo-pago {
-    transition: all 0.2s ease !important;
-    cursor: pointer;
-  }
-  .btn-modo-pago.is-active-total {
-    background: #0dcaf0 !important;
-    color: #011936 !important;
-    border-color: #0dcaf0 !important;
-    font-weight: 800 !important;
-    box-shadow: 0 0 10px rgba(13, 202, 240, 0.45) !important;
-  }
-  .btn-modo-pago.is-active-credito {
-    background: #6c757d !important;
-    color: #fff !important;
-    border-color: #6c757d !important;
-    font-weight: 800 !important;
-    box-shadow: 0 0 10px rgba(108, 117, 125, 0.45) !important;
-  }
-  @media (max-width: 576px) {
-    .container-fluid.px-4 { padding-left: .75rem !important; padding-right: .75rem !important; }
-    .proveedor-actions { width: 100%; }
-    .btn-nueva-compra { width: 100%; justify-content: center; }
-  }
-</style>
 <div class="container-fluid px-4 py-4">
 
   <!-- ====== MENSAJES ====== -->
@@ -353,12 +110,12 @@
         </div>
         <div class="proveedor-actions d-flex align-items-center gap-2 flex-wrap">
           <div class="dropdown">
-            <button class="btn btn-sm dropdown-toggle fw-bold d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver historial de compras de otro proveedor" style="background: rgba(207,156,72,0.18); color: #CF9C48; border: 1px solid rgba(207,156,72,0.4); padding: 0.45rem 0.9rem; border-radius: 8px;">
+            <button class="btn btn-sm dropdown-toggle fw-bold d-flex align-items-center gap-2 btn-filtro-proveedor" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver historial de compras de otro proveedor">
               <i class="bi bi-arrow-repeat"></i>
               <span>Cambiar Proveedor</span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="max-height: 320px; overflow-y: auto; min-width: 260px; border: 1px solid rgba(207,156,72,0.3);">
-              <li class="dropdown-header text-uppercase" style="color: #CF9C48; font-size: 0.72rem; letter-spacing: 0.05em;">Proveedores Activos</li>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg dropdown-menu-proveedores">
+              <li class="dropdown-header text-uppercase dropdown-header-proveedores">Proveedores Activos</li>
               {% for p in todos_proveedores %}
                 <li>
                   <a class="dropdown-item d-flex justify-content-between align-items-center py-2 {% if proveedor and p.pk == proveedor.pk %}active fw-bold{% endif %}" href="?proveedor={{ p.pk }}">
@@ -374,13 +131,13 @@
               {% endfor %}
               <li><hr class="dropdown-divider"></li>
               <li>
-                <a class="dropdown-item text-center small py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalProveedores" style="color: #4DA8DA;">
+                <a class="dropdown-item text-center small py-2 dropdown-item-todos-prov" href="#" data-bs-toggle="modal" data-bs-target="#modalProveedores">
                   <i class="bi bi-search me-1"></i>Buscar en directorio completo...
                 </a>
               </li>
             </ul>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalProveedores" title="Abrir el directorio completo de proveedores" style="color: #e2e8f0; border-color: rgba(255,255,255,0.2); padding: 0.45rem 0.85rem; border-radius: 8px;">
+          <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 btn-abrir-directorio" data-bs-toggle="modal" data-bs-target="#modalProveedores" title="Abrir el directorio completo de proveedores">
             <i class="bi bi-grid-3x3-gap"></i>
             <span>Ver Directorio</span>
           </button>
@@ -421,6 +178,8 @@
                       title="Nueva compra">
                 <i class="bi bi-plus-circle me-2"></i>Nueva compra
               </button>
+              <!-- Botones Exportar DataTables (Excel y PDF) -->
+              <div id="cys-dt-export-compras-historial" class="d-inline-flex align-items-center gap-2"></div>
               <span class="badge badge-cyan" title="Total de compras registradas para este proveedor">{{ compras_count|default:0 }}</span>
               <!-- Solo el chevron controla el collapse -->
               <i class="bi bi-chevron-down" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
@@ -459,7 +218,7 @@
                       <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-box icon-primary"></i>
                         <div>
-                          <div class="fw-semibold small text-truncate" style="max-width: 180px;" title="{{ compra.producto.nombre|default:'Sin producto' }}">{{ compra.producto.nombre|default:"Sin producto" }}</div>
+                          <div class="fw-semibold small text-truncate text-truncate-180" title="{{ compra.producto.nombre|default:'Sin producto' }}">{{ compra.producto.nombre|default:"Sin producto" }}</div>
                         </div>
                       </div>
                     </td>
@@ -553,7 +312,7 @@
                           <li><hr class="dropdown-divider"></li>
                           {% if compra.estado == 'pendiente' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="confirmada">
                                 <button type="submit" class="dropdown-item text-info" title="Cambiar a Confirmada">
@@ -563,7 +322,7 @@
                             </li>
                           {% elif compra.estado == 'confirmada' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="recibida">
                                 <button type="submit" class="dropdown-item text-success" title="Cambiar a Recibida">
@@ -575,10 +334,10 @@
 
                           {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
                             <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" style="display: inline;">
+                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline form-confirm-action" data-confirm="¿Seguro que deseas cancelar esta compra?">
                                 {% csrf_token %}
                                 <input type="hidden" name="estado" value="cancelada">
-                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra" onclick="return confirm('¿Seguro que deseas cancelar esta compra?');">
+                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra">
                                   <i class="bi bi-x-circle me-2"></i>Cancelar
                                 </button>
                               </form>
@@ -595,7 +354,7 @@
                     <td colspan="5" class="text-end fw-bold text-uppercase small">
                       <i class="bi bi-calculator me-1"></i>Subtotal
                     </td>
-                    <td class="text-end fw-bold text-success" style="white-space: nowrap;"><span id="subtotal-formatted">{{ subtotal_compras|default:0|cop }}</span></td>
+                    <td class="text-end fw-bold text-success cmp-table-nowrap"><span id="subtotal-formatted">{{ subtotal_compras|default:0|cop }}</span></td>
                     <td colspan="3"></td>
                   </tr>
                 </tfoot>
@@ -652,7 +411,7 @@
 <!-- ====== MODALES ====== -->
 
 <!-- MODAL: NUEVA COMPRA -->
-<div class="modal fade" id="modalNuevaCompra" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+<div class="modal fade" id="modalNuevaCompra" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" {% if form.errors %}data-auto-open="true"{% endif %}>
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header gradient-header">
@@ -666,6 +425,18 @@
       </div>
 
       <div class="modal-body p-4">
+        {% if form.errors %}
+          <div class="alert alert-danger-dev mb-3 p-3 rounded cmp-alert-danger">
+            <div class="fw-bold text-danger mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Corrige los siguientes errores:</div>
+            <ul class="mb-0 ps-3 small text-white-50">
+              {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
         <form method="POST" action="{% url 'lista_compras' %}" id="formNuevaCompra" autocomplete="off">
           {% csrf_token %}
 
@@ -689,7 +460,7 @@
               <label for="buscarProductoInput" class="dev-form-label fw-bold d-flex align-items-center gap-1 mb-0">
                 <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
               </label>
-              <span id="cmpProdContador" class="badge" style="background: rgba(77, 168, 218, 0.15); color: #4DA8DA; font-size: 0.72rem; font-weight: 600;">
+              <span id="cmpProdContador" class="badge cmp-badge-contador">
                 {{ form.producto.field.queryset|length }} disponibles
               </span>
             </div>
@@ -735,12 +506,11 @@
 
             <!-- Menú desplegable flotante con scroll suave -->
             <div id="cmpSugerenciasList"
-                 class="cmp-dropdown-menu shadow-lg position-absolute w-100 d-none"
-                 style="z-index: 1060; max-height: 290px; overflow-y: auto;">
+                 class="cmp-dropdown-menu shadow-lg position-absolute w-100 d-none cmp-dropdown-menu-scroll">
             </div>
 
             <!-- Campo oculto para el envío del formulario a Django -->
-            <input type="hidden" name="producto" id="formCompraProducto" required>
+            <input type="hidden" name="producto" id="formCompraProducto" value="{{ form.producto.value|default:'' }}" required>
 
             <!-- Fuente de datos de productos (oculta para alimentar el buscador instantáneo) -->
             <select id="formCompraProductoSource" class="d-none">
@@ -761,7 +531,7 @@
             <select id="formCompraLote" name="lote" class="form-select form-select-lg cmp-input" title="Lote donde entrará esta mercancía al recibirla">
               <option value="">-- Sin lote asignado / Registrar después --</option>
               {% for l in form.lote.field.queryset %}
-                <option value="{{ l.pk }}" data-producto="{{ l.producto_id }}">
+                <option value="{{ l.pk }}" data-producto="{{ l.producto_id }}" {% if form.lote.value|stringformat:"s" == l.pk|stringformat:"s" %}selected{% endif %}>
                   Lote: {{ l.numero_lote }} (Stock actual: {{ l.stock_actual }} und.)
                 </option>
               {% endfor %}
@@ -772,13 +542,13 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label for="formCompraCantidad" class="dev-form-label fw-bold">Cantidad (Unidades) <span class="text-danger">*</span></label>
-              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg cmp-input" min="1" value="1" required title="Cuántas unidades estás comprando">
+              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg cmp-input" min="1" value="{{ form.cantidad.value|default:'1' }}" required title="Cuántas unidades estás comprando">
             </div>
             <div class="col-md-6">
               <label for="formCompraPrecio" class="dev-form-label fw-bold">Precio Unitario ($) <span class="text-danger">*</span></label>
               <div class="input-group input-group-lg">
-                <span class="input-group-text" style="background: rgba(207,156,72,0.2); color: #CF9C48; border-color: rgba(207,156,72,0.3);">$</span>
-                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg cmp-input" step="any" min="0.01" placeholder="Ej: 25000" required title="Precio de compra por cada unidad">
+                <span class="input-group-text cmp-input-group-prefix">$</span>
+                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg cmp-input" step="any" min="0.01" placeholder="Ej: 25000" value="{{ form.precio_unitario.value|default:'' }}" required title="Precio de compra por cada unidad">
               </div>
             </div>
           </div>
@@ -792,7 +562,7 @@
               </div>
               <div class="text-end">
                 <small class="text-muted text-uppercase fw-bold cmp-label-mini" >Total Compra</small>
-                <div class="fs-4 fw-extrabold text-success" id="calculoTotalDisplay" style="color: #2ecc71 !important; font-weight: 800;">$0</div>
+                <div class="fs-4 fw-extrabold text-success cmp-calculo-total" id="calculoTotalDisplay">$0</div>
               </div>
             </div>
           </div>
@@ -810,21 +580,21 @@
               </div>
               <div class="col-md-6">
                 <label for="formCompraFactura" class="dev-form-label fw-semibold">N° Factura / Referencia</label>
-                <input type="text" id="formCompraFactura" name="numero_factura" class="form-control cmp-input" placeholder="Ej: FAC-2026-001">
+                <input type="text" id="formCompraFactura" name="numero_factura" class="form-control cmp-input" placeholder="Ej: FAC-2026-001" value="{{ form.numero_factura.value|default:'' }}">
               </div>
               <div class="col-md-6">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
                   <div class="btn-group btn-group-sm" role="group" aria-label="Modalidad de pago">
-                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago" style="font-size:0.75rem;" id="btnPagarTotalNueva">
+                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago cmp-btn-modo" id="btnPagarTotalNueva">
                       <i class="bi bi-check2-circle me-1"></i>100% Total
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago is-active-credito" style="font-size:0.75rem;" id="btnCreditoNueva">
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago is-active-credito cmp-btn-modo" id="btnCreditoNueva">
                       <i class="bi bi-clock-history me-1"></i>Crédito ($0)
                     </button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="any" min="0" placeholder="0 para crédito total" value="0" autocomplete="off">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="any" min="0" placeholder="0 para crédito total" value="{{ form.monto_pagado.value|default:'0' }}" autocomplete="off">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
                   Saldo pendiente: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
@@ -891,30 +661,29 @@
           <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, NIT o teléfono..." title="Filtra la lista de proveedores mientras escribes">
         </div>
 
-        <div id="tablaProveedores" class="table-scroll" style="max-height: 400px; overflow-y: auto;">
+        <div id="tablaProveedores" class="table-scroll cmp-prov-scroll">
           {% if todos_proveedores %}
             {% for prov in todos_proveedores %}
-            <a href="?proveedor={{ prov.pk }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none transition-all {% if proveedor and prov.pk == proveedor.pk %}border-warning bg-opacity-25 bg-warning{% endif %}" 
+            <a href="?proveedor={{ prov.pk }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none transition-all cmp-prov-card {% if proveedor and prov.pk == proveedor.pk %}border-warning bg-opacity-25 bg-warning{% endif %}" 
                data-nombre="{{ prov.nombre_empresa|lower }}" 
                data-nit="{{ prov.pk|lower }}" 
                data-telefono="{{ prov.telefono|lower|default:'' }}" 
                data-id="{{ prov.pk }}" 
                data-proveedor-name="{{ prov.nombre_empresa }}"
-               title="Ver historial de compras de {{ prov.nombre_empresa }}"
-               style="border-radius: 10px; border: 1px solid rgba(239,248,226,0.12); transition: all 0.2s ease;">
+               title="Ver historial de compras de {{ prov.nombre_empresa }}">
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="icon-bg-primary d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 10px; background: rgba(207,156,72,0.15); color: #CF9C48; font-size: 1.25rem;">
+                  <div class="icon-bg-primary d-flex align-items-center justify-content-center cmp-prov-icon">
                     <i class="bi bi-truck"></i>
                   </div>
                   <div>
                     <div class="d-flex align-items-center gap-2">
                       <h6 class="mb-0 fw-bold text-white">{{ prov.nombre_empresa }}</h6>
-                      <span class="badge" style="background: rgba(207,156,72,0.25); color: #CF9C48; font-size: 0.7rem; font-family: monospace;">NIT: {{ prov.pk }}</span>
+                      <span class="badge cmp-prov-badge-nit">NIT: {{ prov.pk }}</span>
                     </div>
                     <div class="d-flex flex-wrap gap-3 mt-1 small text-muted">
                       {% if prov.tipo_proveedor %}
-                        <span style="color: #4DA8DA;"><i class="bi bi-tag me-1"></i>{{ prov.get_tipo_proveedor_display }}</span>
+                        <span class="cmp-prov-tipo"><i class="bi bi-tag me-1"></i>{{ prov.get_tipo_proveedor_display }}</span>
                       {% endif %}
                       {% if prov.telefono %}
                         <span><i class="bi bi-telephone me-1"></i>{{ prov.telefono }}</span>
@@ -931,7 +700,7 @@
                       <i class="bi bi-check-circle-fill"></i> Activo
                     </span>
                   {% else %}
-                    <span class="btn btn-sm btn-outline-warning px-3 py-1 fw-semibold" style="border-color: #CF9C48; color: #CF9C48;">
+                    <span class="btn btn-sm btn-outline-warning px-3 py-1 fw-semibold cmp-prov-btn-select">
                       Elegir <i class="bi bi-chevron-right ms-1"></i>
                     </span>
                   {% endif %}
@@ -976,12 +745,12 @@
                 <div class="modal-body modal-custom-body">
 
                     <!-- Alerta si está pagada -->
-                    <div id="alertaPagada" class="alert alert-success-dev d-none mb-4" role="alert" style="padding: 20px; border-left: 4px solid #27ae60; background-color: rgba(39, 174, 96, 0.15);">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <i class="bi bi-check-circle-fill" style="font-size: 2rem; color: #27ae60;"></i>
+                    <div id="alertaPagada" class="alert alert-success-dev d-none mb-4 cmp-alerta-pagada" role="alert">
+                        <div class="cmp-alerta-pagada-inner">
+                            <i class="bi bi-check-circle-fill cmp-alerta-pagada-icon"></i>
                             <div>
-                                <h5 style="margin: 0 0 5px 0; color: #27ae60; font-weight: 700;">✓ Compra Pagada</h5>
-                                <p style="margin: 0; color: #27ae60; font-size: 0.95rem;">Esta compra ya fue pagada completamente. No se puede agregar más pagos.</p>
+                                <h5 class="cmp-alerta-pagada-title">✓ Compra Pagada</h5>
+                                <p class="cmp-alerta-pagada-text">Esta compra ya fue pagada completamente. No se puede agregar más pagos.</p>
                             </div>
                         </div>
                     </div>
@@ -1042,18 +811,18 @@
                     </div>
 
                     <!-- Tarjeta de Estado Financiero de la Compra -->
-                    <div class="p-3 mb-4 rounded" style="background: rgba(2, 34, 74, 0.6); border: 1px solid rgba(77, 168, 218, 0.2);">
+                    <div class="p-3 mb-4 rounded cmp-tarjeta-financiera">
                         <div class="row g-2 text-center">
                             <div class="col-4 border-end border-secondary border-opacity-25">
-                                <small class="text-muted d-block" style="font-size:0.75rem;">Total Compra</small>
+                                <small class="text-muted d-block cmp-text-mini">Total Compra</small>
                                 <span class="fw-bold text-light fs-6" id="resumenMontoTotal">$0</span>
                             </div>
                             <div class="col-4 border-end border-secondary border-opacity-25">
-                                <small class="text-muted d-block" style="font-size:0.75rem;">Ya Pagado</small>
+                                <small class="text-muted d-block cmp-text-mini">Ya Pagado</small>
                                 <span class="fw-bold text-success fs-6" id="resumenMontoPagado">$0</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block text-warning fw-semibold" style="font-size:0.75rem;">Saldo pendiente</small>
+                                <small class="text-muted d-block text-warning fw-semibold cmp-text-mini">Saldo pendiente</small>
                                 <span class="fw-bold text-danger fs-5" id="resumenSaldoPendiente">$0</span>
                             </div>
                         </div>
@@ -1068,7 +837,7 @@
                                 <i class="bi bi-cash-stack me-1 text-success"></i>Monto a Pagar Ahora
                                 <span class="text-danger">*</span>
                             </label>
-                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" id="btnPagarTodoSaldo" title="Llenar el monto con todo lo que falta pagar" style="font-size:0.8rem;">
+                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold cmp-btn-pagar-todo-saldo" id="btnPagarTodoSaldo" title="Llenar el monto con todo lo que falta pagar">
                                 <i class="bi bi-check2-all me-1"></i>Pagar Todo el Saldo
                             </button>
                         </div>
@@ -1088,7 +857,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="text" id="saldoPendiente" class="form-control fw-bold" readonly style="background-color: rgba(231, 76, 60, 0.1); cursor: not-allowed; color: #e74c3c;">
+                                <input type="text" id="saldoPendiente" class="form-control fw-bold cmp-input-saldo-pendiente" readonly>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1096,7 +865,7 @@
                                 <i class="bi bi-tag me-1"></i>Estado tras este Pago
                             </label>
                             <div id="badgeNuevoEstadoWrap" class="d-flex align-items-center mt-1">
-                                <span id="badgeNuevoEstado" class="badge badge-pending-custom px-3 py-2 w-100 text-center" style="font-size: 0.95rem;">
+                                <span id="badgeNuevoEstado" class="badge badge-pending-custom px-3 py-2 w-100 text-center cmp-badge-nuevo-estado">
                                     Sin abono
                                 </span>
                             </div>
@@ -1125,33 +894,19 @@
     </div>
 </div>
 
-<script type="application/json" id="compras-datos">{
-  "meses_labels": {{ meses_labels_json|safe }},
-  "meses_data": {{ meses_data_json|safe }},
-  "productos_labels": {{ productos_labels_json|safe }},
-  "productos_data": {{ productos_data_json|safe }}
-}</script>
-
-{# Con hx-boost solo se recarga #cys-page-wrap: los scripts de la página deben vivir aquí dentro. #}
-<script>
-(function () {
-  function cargar(src, yaEsta) {
-    if (yaEsta()) return Promise.resolve();
-    return new Promise(function (ok, fallo) {
-      var s = document.createElement('script');
-      s.src = src;
-      s.onload = ok;
-      s.onerror = function () { fallo(new Error('No se pudo cargar ' + src)); };
-      document.head.appendChild(s);
-    });
-  }
-  cargar("{% static 'vendor/chartjs/chart.umd.min.js' %}", function () { return window.Chart; })
-    .then(function () { return cargar("{% static 'vendor/jquery/jquery-3.7.1.min.js' %}", function () { return window.jQuery; }); })
-    .then(function () { return cargar("{% static 'js/datatables.min.js' %}", function () { return window.jQuery.fn.DataTable; }); })
-    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}?v=20261015c", function () { return false; }); })
-    .then(function () { if (window.ComprasPage && window.ComprasPage.init) window.ComprasPage.init(); })
-    .catch(function (e) { console.error(e); });
-})();
-</script>
+<div id="compras-datos" class="d-none"
+  data-meses-labels="{{ meses_labels_json }}"
+  data-meses-data="{{ meses_data_json }}"
+  data-productos-labels="{{ productos_labels_json }}"
+  data-productos-data="{{ productos_data_json }}">
+</div>
 
 {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.js' %}"></script>
+<script src="{% static 'js/proveedores/compras.js' %}"></script>
+{% endblock %}
+

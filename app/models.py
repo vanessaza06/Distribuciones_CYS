@@ -756,11 +756,82 @@ class DevolucionProveedores(models.Model):
         "Proveedor", on_delete=models.CASCADE, db_column="nit_proveedores"
     )
 
+    MOTIVO_CHOICES = [
+        ("defectuoso", "Producto defectuoso"),
+        ("equivocado", "Producto equivocado"),
+        ("vencido", "Producto vencido"),
+        ("empaque_danado", "Empaque dañado"),
+        ("exceso", "Exceso de pedido"),
+        ("otro", "Otro motivo"),
+    ]
+    RESOLUCION_CHOICES = [
+        ("nota_credito", "Nota Crédito"),
+        ("reembolso", "Reembolso en efectivo"),
+        ("reposicion", "Reposición de producto"),
+    ]
+
     class Meta:
         db_table = "devolucion_proveedores"
 
     def __str__(self):
         return f"Devolución Proveedor #{self.numero_proveedor} - {self.proveedor}"
+
+    @property
+    def numero(self):
+        return f"DP-{self.numero_proveedor:04d}"
+
+    def get_motivo_display(self):
+        return dict(self.MOTIVO_CHOICES).get(self.motivo, self.motivo or "Otro motivo")
+
+    @property
+    def datos_extra(self):
+        if not self.observaciones:
+            return {}
+        try:
+            import json
+            texto = str(self.observaciones).strip()
+            if texto.startswith('{') and texto.endswith('}'):
+                return json.loads(texto)
+        except Exception:
+            pass
+        return {}
+
+    @property
+    def total_devuelto(self):
+        d = self.datos_extra
+        if 'total' in d:
+            try:
+                return Decimal(str(d['total']))
+            except Exception:
+                pass
+        return Decimal('0.00')
+
+    @property
+    def tipo_resolucion(self):
+        return self.datos_extra.get('tipo_resolucion', 'nota_credito')
+
+    def get_tipo_resolucion_display(self):
+        tr = self.tipo_resolucion
+        return dict(self.RESOLUCION_CHOICES).get(tr, tr.replace('_', ' ').capitalize())
+
+    @property
+    def producto_nombre(self):
+        return self.datos_extra.get('producto_nombre', '')
+
+    @property
+    def cantidad_devuelta(self):
+        return self.datos_extra.get('cantidad', 1)
+
+    @property
+    def precio_unitario_devuelto(self):
+        return self.datos_extra.get('precio_unitario', 0)
+
+    @property
+    def texto_observaciones(self):
+        d = self.datos_extra
+        if d and 'obs' in d:
+            return d['obs']
+        return self.observaciones or ""
 
 
 # ── 18. CAJA ──

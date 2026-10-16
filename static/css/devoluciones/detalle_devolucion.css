@@ -1,4 +1,4 @@
-﻿/* ================================================
+/* ================================================
    DETALLE DEVOLUCIÓN — CYS Ltda
    Paleta dorada fija: #CF9C48  |  Variables: --dev-*
    ================================================ */
@@ -147,3 +147,40 @@
   .dd-layout { grid-template-columns: 1fr !important; }
   .dd-card { box-shadow: none !important; border: 1px solid #ddd !important; }
 }
+
+/* Utilidades limpias para detalle_devolucion */
+.dd-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.dd-card__body--compact {
+  padding: 1rem 1.3rem;
+}
+.dd-actions--column {
+  margin-top: 0;
+  flex-direction: column;
+}
+.dd-btn--block {
+  width: 100%;
+  justify-content: center;
+}
+.text-gold-icon {
+  color: #CF9C48 !important;
+}
+
+.text-estado-completada { color: #29b8a6; }
+.text-estado-pendiente { color: #CF9C48; }
+.text-estado-rechazada { color: #ef4444; }
+.dd-obs-title { font-size: .75rem; color: #CF9C48; text-transform: uppercase; letter-spacing: .08em; }
+.dd-obs-text { margin: .25rem 0 0; }
+.dd-text-muted { color: var(--dev-muted); }
+.dd-table-subtotal-label { text-align: right; color: var(--dev-muted); font-size: .8rem; }
+.dd-table-subtotal-val { font-size: 1.05rem; }
+.dd-venta-total { color: #CF9C48; font-weight: 700; margin-top: 2px; }
+.dd-mt-1 { margin-top: 1rem; }
+.dd-resumen-total-item { border-top: 2px solid rgba(207, 156, 72, .3) !important; margin-top: .35rem !important; padding-top: 1rem !important; }
+.dd-font-bold { font-weight: 700; }
+.dd-money-lg { font-size: 1.1rem; }
+
+

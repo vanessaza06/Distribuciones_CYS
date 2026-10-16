@@ -24,11 +24,47 @@ function init() {
   if (params.get('modal') === 'proveedores' && modalProv && window.bootstrap) {
     new bootstrap.Modal(modalProv).show();
   }
+
+  const modalNuevaCompra = byId('modalNuevaCompra');
+  if (modalNuevaCompra && window.bootstrap) {
+    if (modalNuevaCompra.dataset.autoOpen === 'true' ||
+        modalNuevaCompra.querySelector('.alert-danger-dev') ||
+        modalNuevaCompra.querySelector('.cmp-inline-error') ||
+        modalNuevaCompra.querySelector('.is-invalid')) {
+      const bsModal = bootstrap.Modal.getInstance(modalNuevaCompra) || new bootstrap.Modal(modalNuevaCompra);
+      bsModal.show();
+    }
+  }
+
+  document.querySelectorAll('.form-confirm-action').forEach(form => {
+    if (!form.dataset.confirmBound) {
+      form.dataset.confirmBound = 'true';
+      form.addEventListener('submit', function(e) {
+        const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
+        if (!window.confirm(msg)) {
+          e.preventDefault();
+        }
+      });
+    }
+  });
 }
 
 function leerDatos() {
   const el = byId('compras-datos');
-  try { return el ? JSON.parse(el.textContent) : {}; } catch (e) { return {}; }
+  if (!el) return {};
+  if (el.tagName === 'SCRIPT') {
+    try { return JSON.parse(el.textContent); } catch (e) { return {}; }
+  }
+  try {
+    return {
+      meses_labels: JSON.parse(el.dataset.mesesLabels || '[]'),
+      meses_data: JSON.parse(el.dataset.mesesData || '[]'),
+      productos_labels: JSON.parse(el.dataset.productosLabels || '[]'),
+      productos_data: JSON.parse(el.dataset.productosData || '[]')
+    };
+  } catch (e) {
+    return {};
+  }
 }
 
 // ── Tabla del historial (DataTables) ───────────────────────────
@@ -36,7 +72,7 @@ function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
-  jQuery(tabla).DataTable({
+  const dt = jQuery(tabla).DataTable({
     paging: true,
     searching: false,
     info: true,
@@ -51,8 +87,52 @@ function initTabla() {
       emptyTable: 'Sin compras registradas aún.',
       paginate: { first: '«', previous: '‹', next: '›', last: '»' }
     },
-    dom: 'rt<"d-flex justify-content-center align-items-center mt-3"ip>'
+    layout: {
+      topStart: null,
+      topEnd: null,
+      bottomStart: 'info',
+      bottomEnd: 'paging'
+    },
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
+        className: 'cys-dt-btn-excel',
+        title: 'Distribuciones CYS Ltda - Historial de Compras',
+        filename: 'Compras_CYS',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5, 6, 7]
+        }
+      },
+      {
+        extend: 'pdfHtml5',
+        text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
+        className: 'cys-dt-btn-pdf',
+        title: 'Distribuciones CYS Ltda - Historial de Compras',
+        filename: 'Compras_CYS',
+        orientation: 'landscape',
+        pageSize: 'A4',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5, 6, 7]
+        },
+        customize: function (doc) {
+          doc.defaultStyle.fontSize = 9;
+          if (doc.styles && doc.styles.tableHeader) {
+            doc.styles.tableHeader.fontSize = 10;
+            doc.styles.tableHeader.bold = true;
+            doc.styles.tableHeader.fillColor = '#011936';
+            doc.styles.tableHeader.color = '#CF9C48';
+            doc.styles.tableHeader.alignment = 'center';
+          }
+        }
+      }
+    ]
   });
+
+  if (byId('cys-dt-export-compras-historial')) {
+    byId('cys-dt-export-compras-historial').innerHTML = '';
+    dt.buttons().container().removeClass('d-none').appendTo('#cys-dt-export-compras-historial');
+  }
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -892,4 +972,15 @@ function initializeCharts() {
 
 window.ComprasPage = { init };
 
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+if (document.body) {
+  document.body.addEventListener('htmx:afterSettle', init);
+}
+
 })();
+

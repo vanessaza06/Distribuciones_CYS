@@ -69,7 +69,7 @@ $(document).ready(function() {
 
   var table = $('#tablaProveedores').DataTable({
     paging: true,
-    searching: true,
+    searching: false,
     info: true,
     lengthChange: false,
     pageLength: 10,
@@ -84,8 +84,56 @@ $(document).ready(function() {
       zeroRecords: "Sin resultados para tu búsqueda.",
       paginate: { first:'«', previous:'‹', next:'›', last:'»' }
     },
-    dom: 'rt<"d-flex justify-content-center align-items-center mt-3"ip>'
+    layout: {
+      topStart: null,
+      topEnd: null,
+      bottomStart: 'info',
+      bottomEnd: 'paging'
+    },
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
+        className: 'cys-dt-btn-excel',
+        title: 'Distribuciones CYS Ltda - Reporte de Proveedores',
+        filename: 'Proveedores_CYS',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5, 6, 7]
+        }
+      },
+      {
+        extend: 'pdfHtml5',
+        text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
+        className: 'cys-dt-btn-pdf',
+        title: 'Distribuciones CYS Ltda - Reporte de Proveedores',
+        filename: 'Proveedores_CYS',
+        orientation: 'landscape',
+        pageSize: 'A4',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5, 6, 7]
+        },
+        customize: function (doc) {
+          doc.defaultStyle.fontSize = 9;
+          if (doc.styles && doc.styles.tableHeader) {
+            doc.styles.tableHeader.fontSize = 10;
+            doc.styles.tableHeader.bold = true;
+            doc.styles.tableHeader.fillColor = '#011936';
+            doc.styles.tableHeader.color = '#CF9C48';
+            doc.styles.tableHeader.alignment = 'center';
+          }
+          if (doc.content && doc.content[1] && doc.content[1].table) {
+            doc.content[1].table.widths = ['5%', '24%', '12%', '14%', '12%', '10%', '13%', '10%'];
+          }
+        }
+      }
+    ]
   });
+
+  // Colocar el botón de exportación PDF en la barra de herramientas
+  if ($('#cys-dt-export-proveedores').length) {
+    $('#cys-dt-export-proveedores').empty();
+    table.buttons().container().removeClass('d-none').appendTo('#cys-dt-export-proveedores');
+  }
 
   // Conectar input personalizado de búsqueda
   $('#buscar-proveedores').on('input', function() {
@@ -175,31 +223,7 @@ $(document).ready(function() {
   const modalNuevoProveedor = document.getElementById('modalNuevoProveedor');
 
   if (formNuevoProveedor && modalNuevoProveedor) {
-    // Prevenir cierre del modal si hay errores usando evento hide.bs.modal
-    modalNuevoProveedor.addEventListener('hide.bs.modal', function(e) {
-      const hasErrors = document.querySelectorAll('#formNuevoProveedor .invalid-feedback.d-block').length > 0;
-      if (hasErrors) {
-        e.preventDefault();
-      }
-    });
-
-    // Prevenir cierre del modal al hacer clic en botones con data-bs-dismiss (fase de captura)
-    document.addEventListener('click', function(e) {
-      if (e.target.closest('#modalNuevoProveedor [data-bs-dismiss="modal"]')) {
-        const hasErrors = document.querySelectorAll('#formNuevoProveedor .invalid-feedback.d-block').length > 0;
-        if (hasErrors) {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        }
-      }
-    }, true);
-
-    // Manejar el envío del formulario
-    formNuevoProveedor.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      // Limpiar errores previos
+    const limpiarErroresProveedor = () => {
       document.querySelectorAll('#formNuevoProveedor .invalid-feedback').forEach(el => {
         el.innerHTML = '';
         el.classList.remove('d-block');
@@ -207,6 +231,30 @@ $(document).ready(function() {
       document.querySelectorAll('#formNuevoProveedor .prod-input').forEach(el => {
         el.classList.remove('is-invalid');
       });
+    };
+
+    // Limpiar errores cuando se cierre el modal
+    modalNuevoProveedor.addEventListener('hidden.bs.modal', function() {
+      limpiarErroresProveedor();
+      formNuevoProveedor.reset();
+    });
+
+    // Limpiar error de un campo individual al escribir
+    formNuevoProveedor.querySelectorAll('.prod-input').forEach(input => {
+      input.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        const errDiv = this.parentElement.querySelector('.invalid-feedback');
+        if (errDiv) {
+          errDiv.innerHTML = '';
+          errDiv.classList.remove('d-block');
+        }
+      });
+    });
+
+    // Manejar el envío del formulario
+    formNuevoProveedor.addEventListener('submit', function(e) {
+      e.preventDefault();
+      limpiarErroresProveedor();
 
       // Enviar formulario via AJAX
       const formData = new FormData(this);
