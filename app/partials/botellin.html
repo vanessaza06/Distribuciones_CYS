@@ -1,0 +1,37 @@
+{% load static %}
+<div id="botellin" class="bot-wrap" hx-preserve="true" hx-boost="false"
+     data-url="{% url 'ayuda_chatbot' %}"
+     data-csrf="{{ csrf_token }}"
+     data-img-cara="{% static 'img/botellin/botellin_avatar.png' %}">
+
+  <section id="bot-chat" class="bot-chat" hidden role="dialog" aria-label="Chat con Botellín">
+    <header class="bot-chat-header">
+      <div class="bot-chat-avatar"><img src="{% static 'img/botellin/botellin_avatar.png' %}" alt=""></div>
+      <div class="flex-grow-1">
+        <div class="bot-chat-nombre">Botellín</div>
+        <div class="bot-chat-estado"><span class="bot-punto"></span>Asistente de CYS</div>
+      </div>
+      <button type="button" class="bot-chat-cerrar" id="bot-cerrar" aria-label="Cerrar chat">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <div class="bot-chat-body" id="bot-body" aria-live="polite"></div>
+
+    <form class="bot-chat-footer" id="bot-form" autocomplete="off">
+      <input type="text" id="bot-input" class="bot-chat-input" maxlength="500"
+             placeholder="Pregúntame algo del sistema…" aria-label="Tu mensaje">
+      <button type="submit" class="bot-chat-enviar" id="bot-enviar" aria-label="Enviar">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </form>
+  </section>
+
+  <div class="bot-burbuja" id="bot-burbuja">¡Hola! Soy <strong>Botellín</strong> 👋<br>¿Te ayudo con el sistema?</div>
+
+  <!-- La mascota ES el botón -->
+  <button type="button" class="bot-mascota" id="bot-mascota" aria-label="Abrir chat con Botellín" aria-expanded="false">
+    <img class="bot-img bot-img-saludo" src="{% static 'img/botellin/botellin_saludo.png' %}" alt="Botellín saludando" draggable="false">
+    <img class="bot-img bot-img-reposo" src="{% static 'img/botellin/botellin_reposo.png' %}" alt="" draggable="false">
+  </button>
+</div>
