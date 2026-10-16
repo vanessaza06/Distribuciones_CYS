@@ -48,7 +48,7 @@
         </div>
         <div>
           <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Ventas Hoy</div>
-          <div style="font-size:1.1rem; font-weight:800; color:#4ade80; font-family:'Rajdhani',sans-serif;">${{ total_dia|floatformat:0|intcomma }}</div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_dia|floatformat:0|intcomma }}</div>
         </div>
       </div>
     </div>
@@ -261,7 +261,7 @@
                 <div class="d-flex align-items-center gap-1">
                   <input type="number" id="inputDescuento" name="descuento_porcentaje"
                          value="0" min="0" max="100" class="form-control text-center"
-                         style="width:75px; background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700; font-family:'Rajdhani',sans-serif; font-size:1.05rem; border-radius:8px;">
+                         style="width:75px; background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700; font-size:1.05rem; border-radius:8px;">
                   <span style="color:#94a3b8; font-weight:600;">%</span>
                 </div>
               </div>
@@ -272,7 +272,7 @@
                  style="background:linear-gradient(135deg, rgba(16,36,68,0.6), rgba(12,26,50,0.7)); border:1px solid rgba(56,189,248,0.18);">
               <div class="d-flex justify-content-between align-items-center">
                 <span style="margin:0; font-weight:700; color:#94a3b8; font-size:.84rem; text-transform:uppercase; letter-spacing:0.5px;">Total a Cobrar</span>
-                <span id="totalMonto" style="font-family:'Rajdhani',sans-serif; font-size:1.85rem; font-weight:800; color:#38bdf8;">$0</span>
+                <span id="totalMonto" style="font-size:1.85rem; font-weight:800; color:var(--azul-claro, #38bdf8);">$0</span>
               </div>
             </div>
 
@@ -311,7 +311,7 @@
               
               <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
                 <span style="font-size:.76rem; font-weight:600; color:#94a3b8; text-transform:uppercase;">Total Ingresado</span>
-                <span id="totalPagado" style="font-family:'Rajdhani',sans-serif; font-size:1.25rem; font-weight:800; color:#38bdf8;">$0</span>
+                <span id="totalPagado" style="font-size:1.25rem; font-weight:800; color:var(--azul-claro, #38bdf8);">$0</span>
               </div>
 
               <!-- Indicador Dinámico de Cambio/Vueltos -->
@@ -422,7 +422,7 @@
                 <td class="cys-td text-center" data-label="Cantidad">{{ det.cantidad }}</td>
                 <td class="cys-td text-end" data-label="Precio Uni.">${{ det.precio_unitario|floatformat:0 }}</td>
                 {% if forloop.first %}
-                <td class="cys-qty text-end" data-label="Total" rowspan="{{ venta.detalles.all|length }}" style="font-family:'Rajdhani',sans-serif; font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
+                <td class="cys-qty text-end" data-label="Total" rowspan="{{ venta.detalles.all|length }}" style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha" rowspan="{{ venta.detalles.all|length }}">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
                 <td data-label="" rowspan="{{ venta.detalles.all|length }}">
                   <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
@@ -444,7 +444,7 @@
                 <td class="cys-td" data-label="Producto">Venta #{{ venta.pk }}</td>
                 <td class="cys-td text-center" data-label="Cantidad">—</td>
                 <td class="cys-td text-end" data-label="Precio Uni.">—</td>
-                <td class="cys-qty text-end" data-label="Total" style="font-family:'Rajdhani',sans-serif; font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
+                <td class="cys-qty text-end" data-label="Total" style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
                 <td data-label="">
                   <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
@@ -567,10 +567,10 @@
               <div style="font-size:.8rem; color:rgba(255,255,255,0.7); font-weight:600;">Monto acumulado o ingresado manualmente</div>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <input type="number" min="0" id="inputMontoBaseManual" class="form-control text-end fw-bold fs-4 text-success border-success" placeholder="0" style="max-width:200px; background:#06172b !important; color:#2ed573 !important; font-family:'Rajdhani',sans-serif;">
+              <input type="number" min="0" id="inputMontoBaseManual" class="form-control text-end fw-bold fs-4 text-success border-success" placeholder="0" style="max-width:200px; background:#06172b !important; color:#2ed573 !important;">
             </div>
           </div>
-          <div class="mt-2 text-end" style="font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:800; color:#2ed573;" id="totalConteo">$0</div>
+          <div class="mt-2 text-end" style="font-size:1.1rem; font-weight:800; color:var(--verde, #2ed573);" id="totalConteo">$0</div>
         </div>
 
         <!-- Observaciones -->
@@ -673,7 +673,7 @@
             <i class="bi bi-wallet2 me-1"></i> Monto Base Reservado para Mañana ($)
           </label>
           <input type="number" class="form-control" id="baseSiguiente" placeholder="Ej: 100000" min="0"
-                 style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.65rem 1rem; font-size:1rem; font-weight:700; font-family:'Rajdhani',sans-serif;">
+                 style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.65rem 1rem; font-size:1rem; font-weight:700;">
         </div>
 
         <!-- Balance General Card -->
@@ -693,7 +693,7 @@
           </div>
           <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
             <span style="color:var(--texto-muted);">Total física contado</span>
-            <span style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-family:'Rajdhani',sans-serif; font-size:1.1rem;" id="totalCierre">$0</span>
+            <span style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1.1rem;" id="totalCierre">$0</span>
             <span id="resumenTotalContado" style="display:none;">$0</span>
           </div>
           <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
@@ -702,7 +702,7 @@
           </div>
           <div class="d-flex justify-content-between align-items-center pt-3 mt-1" style="font-size:1rem;">
             <span style="font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">Efectivo a Retirar</span>
-            <span style="font-family:'Rajdhani',sans-serif; font-size:1.6rem; font-weight:800; color:#2ed573; text-shadow:0 0 12px rgba(46,213,115,0.3);" id="resumenRetirar">$0</span>
+            <span style="font-size:1.6rem; font-weight:800; color:var(--verde, #2ed573);" id="resumenRetirar">$0</span>
           </div>
         </div>
 
@@ -1068,11 +1068,11 @@ function renderCarrito() {
       <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <button type="button" class="cys-qty-btn" onclick="cambiarCantidad(${idx}, -1)">−</button>
-          <span style="font-family:'Rajdhani',sans-serif; font-weight:800; font-size:1.15rem; min-width:24px; text-align:center; color:#fff;">${item.cantidad}</span>
+          <span style="font-weight:800; font-size:1.15rem; min-width:24px; text-align:center; color:#fff;">${item.cantidad}</span>
           <button type="button" class="cys-qty-btn" onclick="cambiarCantidad(${idx}, 1)">+</button>
           <span style="font-size:.75rem; color:var(--texto-muted); margin-left:4px;">× $${parseInt(item.precio).toLocaleString('es-CO')}</span>
         </div>
-        <span style="font-family:'Rajdhani',sans-serif; font-weight:800; font-size:1.15rem; color:var(--azul-claro,#4DA8DA);">$${(item.precio * item.cantidad).toLocaleString('es-CO')}</span>
+        <span style="font-weight:800; font-size:1.15rem; color:var(--azul-claro,#4DA8DA);">$${(item.precio * item.cantidad).toLocaleString('es-CO')}</span>
       </div>`;
     lista.appendChild(div);
  

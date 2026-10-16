@@ -363,5 +363,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/proveedores/devoluciones.js' %}"></script>
+<script>
+  // Imprimir: delegado en el documento para que funcione siempre
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#btnImprimirComprobante, .btn-print, .btn-print-action')) {
+      e.preventDefault();
+      window.print();
+    }
+  });
+</script>
 {% endblock %}
