@@ -454,35 +454,22 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-<<<<<<< HEAD
   color: #64748b;
   font-size: 0.92rem;
-=======
-  color: var(--texto-muted);
-  font-size: 0.95rem;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   pointer-events: none;
 }
 
 .cys-search-input {
-<<<<<<< HEAD
   padding-left: 40px !important;
   background: rgba(10, 20, 38, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
   color: #f1f5f9 !important;
-=======
-  padding-left: 42px !important;
-  background: color-mix(in srgb, var(--fondo-card2) 80%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
-  color: var(--texto) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 10px !important;
   font-size: 0.88rem !important;
   transition: all 0.2s ease !important;
 }
 
 .cys-search-input:focus {
-<<<<<<< HEAD
   border-color: rgba(56, 189, 248, 0.4) !important;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
   background: rgba(10, 20, 38, 0.7) !important;
@@ -499,23 +486,6 @@
   border-radius: 12px;
   padding: 1.1rem 0.85rem;
   min-height: 120px;
-=======
-  border-color: var(--azul-claro) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
-  background: color-mix(in srgb, var(--fondo-card2) 95%, transparent) !important;
-}
-
-/* Tarjetas de Categoría y Producto con Tamaños y Estilos Uniformes */
-.cys-cat-card-item,
-.cys-prod-card-item {
-  background: linear-gradient(145deg,
-    color-mix(in srgb, var(--fondo-card2) 85%, transparent),
-    color-mix(in srgb, var(--fondo-card) 85%, transparent));
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
-  border-radius: 14px;
-  padding: 1.15rem 0.95rem;
-  min-height: 125px;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   height: 100%;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -524,7 +494,6 @@
   align-items: center;
   justify-content: space-between;
   text-align: center;
-<<<<<<< HEAD
   color: #f1f5f9 !important;
 }
 
@@ -622,8 +591,8 @@
 }
 
 .cys-prod-price {
-  font-family: 'Rajdhani', sans-serif !important;
-  font-size: 1.25rem !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.15rem !important;
   font-weight: 700 !important;
   color: #38bdf8 !important;
   line-height: 1;
@@ -769,8 +738,8 @@
 }
 
 .cys-pres-price {
-  font-family: 'Rajdhani', sans-serif !important;
-  font-size: 1.25rem !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.15rem !important;
   font-weight: 700 !important;
   color: #38bdf8 !important;
   line-height: 1;
@@ -819,102 +788,6 @@
 }
 
 /* Stock Badges Suaves */
-=======
-  color: var(--texto) !important;
-}
-
-.cys-cat-card-item:hover {
-  transform: translateY(-4px);
-  border-color: var(--azul-claro);
-  box-shadow: 0 10px 25px color-mix(in srgb, var(--azul-claro) 22%, transparent);
-  background: linear-gradient(145deg,
-    color-mix(in srgb, var(--fondo-card) 95%, transparent),
-    color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)));
-}
-
-.cys-cat-icon-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.4rem;
-  color: var(--azul-claro);
-  font-size: 1.25rem;
-  transition: all 0.25s ease;
-}
-
-.cys-cat-card-item:hover .cys-cat-icon-circle {
-  background: var(--azul-claro);
-  color: var(--azul-oscuro);
-  transform: scale(1.08);
-}
-
-/* Forzar Texto del tema en Todos los Elementos del POS */
-.cys-pos-card,
-.cys-pos-card *,
-.cys-pos-card input,
-.cys-pos-card select,
-.cys-pos-card label,
-.cys-pos-card span,
-.cys-pos-card div,
-.cys-pos-card button,
-.cys-pos-card h4,
-.cys-pos-card h5 {
-  color: var(--texto);
-}
-
-.cys-pos-card-title,
-.cys-pos-card-title * {
-  color: var(--azul-claro) !important;
-}
-
-.cys-search-input,
-.pago-input,
-#inputClienteNombre,
-#inputDescuento,
-#ctObservacion,
-#baseSiguiente,
-.cys-pos-card .form-control {
-  color: var(--texto) !important;
-  background-color: color-mix(in srgb, var(--fondo-card2) 85%, transparent) !important;
-}
-
-.cys-search-input::placeholder,
-#inputClienteNombre::placeholder,
-#ctObservacion::placeholder,
-#baseSiguiente::placeholder,
-.cys-pos-card .form-control::placeholder {
-  color: color-mix(in srgb, var(--texto) 50%, transparent) !important;
-}
-
-/* Autocomplete de Sugerencias de Cliente */
-#sugerenciasClientes .list-group-item-action {
-  background: var(--fondo-card) !important;
-  color: var(--texto) !important;
-}
-
-#sugerenciasClientes .list-group-item-action:hover,
-#sugerenciasClientes .list-group-item-action:focus {
-  background: color-mix(in srgb, var(--azul-claro) 20%, var(--fondo-card)) !important;
-  color: var(--texto) !important;
-}
-
-/* Override autofill del navegador */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-select:-webkit-autofill {
-  -webkit-text-fill-color: var(--texto) !important;
-  -webkit-box-shadow: 0 0 0px 1000px var(--fondo-card2) inset !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 .cys-stock-badge {
   font-size: 0.7rem;
   font-weight: 600;
@@ -926,7 +799,6 @@ select:-webkit-autofill {
 }
 
 .cys-stock-badge--ok {
-<<<<<<< HEAD
   background: rgba(34, 197, 94, 0.1) !important;
   color: #4ade80 !important;
   border: 1px solid rgba(34, 197, 94, 0.22) !important;
@@ -987,66 +859,30 @@ select:-webkit-autofill {
   -webkit-text-fill-color: #f1f5f9 !important;
   -webkit-box-shadow: 0 0 0px 1000px #0a1b32 inset !important;
   transition: background-color 5000s ease-in-out 0s;
-=======
-  background: color-mix(in srgb, var(--verde) 15%, transparent);
-  color: var(--verde);
-  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
-}
-
-.cys-stock-badge--low {
-  background: color-mix(in srgb, var(--cys-dorado) 15%, transparent);
-  color: var(--cys-dorado);
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent);
-}
-
-.cys-stock-badge--empty {
-  background: color-mix(in srgb, var(--rojo) 15%, transparent);
-  color: var(--rojo);
-  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Items del Carrito */
 .cys-cart-item {
-<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 0.7rem 0.85rem;
-=======
-  background: color-mix(in srgb, var(--fondo-card2) 65%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease;
 }
 
 .cys-cart-item:hover {
-<<<<<<< HEAD
   border-color: rgba(56, 189, 248, 0.25);
   background: rgba(14, 26, 48, 0.6);
-=======
-  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
-  background: color-mix(in srgb, var(--fondo-card2) 85%, transparent);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-qty-btn {
   width: 26px;
   height: 26px;
   padding: 0;
-<<<<<<< HEAD
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #f1f5f9;
-=======
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
-  color: var(--texto);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1056,26 +892,15 @@ select:-webkit-autofill {
 }
 
 .cys-qty-btn:hover {
-<<<<<<< HEAD
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.4);
-=======
-  background: var(--azul-claro);
-  color: var(--azul-oscuro);
-  border-color: var(--azul-claro);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Panel de Desglose de Pagos y Calculadora de Cambio */
 .cys-payment-panel {
-<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.06);
-=======
-  background: color-mix(in srgb, var(--fondo-card2) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-radius: 12px;
   padding: 1rem;
 }
@@ -1083,7 +908,7 @@ select:-webkit-autofill {
 .cys-change-indicator {
   border-radius: 10px;
   padding: 0.65rem 0.9rem;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1091,7 +916,6 @@ select:-webkit-autofill {
 }
 
 .cys-change-indicator--ok {
-<<<<<<< HEAD
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.22);
   color: #4ade80;
@@ -1101,22 +925,10 @@ select:-webkit-autofill {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.22);
   color: #fbbf24;
-=======
-  background: color-mix(in srgb, var(--verde) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--verde) 30%, transparent);
-  color: var(--verde);
-}
-
-.cys-change-indicator--pending {
-  background: color-mix(in srgb, var(--cys-dorado) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
-  color: var(--cys-dorado);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 /* Botones Principales POS */
 .cys-btn-checkout {
-<<<<<<< HEAD
   background: linear-gradient(135deg, #059669, #10b981) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
@@ -1126,31 +938,14 @@ select:-webkit-autofill {
   letter-spacing: 0.02em !important;
   border: none !important;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
-=======
-  background: linear-gradient(135deg, var(--azul-claro), color-mix(in srgb, var(--azul-claro) 70%, black));
-  color: var(--azul-oscuro) !important;
-  font-weight: 800 !important;
-  border-radius: 12px !important;
-  padding: 0.75rem 1.2rem !important;
-  font-size: 0.95rem !important;
-  letter-spacing: 0.04em !important;
-  border: none !important;
-  box-shadow: 0 4px 15px color-mix(in srgb, var(--azul-claro) 30%, transparent);
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   transition: all 0.2s ease !important;
 }
 
 .cys-btn-checkout:hover:not(:disabled) {
-<<<<<<< HEAD
   background: linear-gradient(135deg, #047857, #059669) !important;
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
   color: #ffffff !important;
-=======
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--azul-claro) 45%, transparent);
-  color: var(--azul-oscuro) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
 }
 
 .cys-btn-checkout:disabled {
@@ -1240,7 +1035,7 @@ select:-webkit-autofill {
 }
 
 .cys-denom-val {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--texto);
@@ -1282,7 +1077,7 @@ select:-webkit-autofill {
   border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   color: var(--texto) !important;
   font-weight: 800 !important;
-  font-family: 'Rajdhani', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-size: 1.05rem !important;
   border-radius: 6px !important;
   text-align: center !important;
@@ -1306,7 +1101,7 @@ select:-webkit-autofill {
 
 .cys-denom-subtotal span {
   color: var(--azul-claro);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -1470,7 +1265,7 @@ select:-webkit-autofill {
   background: color-mix(in srgb, var(--rojo) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--rojo) 45%, transparent);
   color: var(--rojo);
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 0.85rem;
   letter-spacing: 1.5px;
@@ -1520,7 +1315,6 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table thead th {
-<<<<<<< HEAD
   background: rgba(10, 20, 38, 0.5) !important;
   color: #94a3b8 !important;
   font-weight: 700 !important;
@@ -1530,17 +1324,6 @@ select:-webkit-autofill {
   padding: 0.75rem 1rem !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-=======
-  background: color-mix(in srgb, var(--fondo-card2) 85%, transparent) !important;
-  color: var(--azul-claro) !important;
-  font-weight: 800 !important;
-  font-size: 0.78rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.6px !important;
-  padding: 0.85rem 1rem !important;
-  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   white-space: nowrap;
 }
 
@@ -1555,7 +1338,6 @@ select:-webkit-autofill {
 }
 
 .cys-inv-table tbody tr {
-<<<<<<< HEAD
   background: rgba(14, 28, 52, 0.4);
   transition: all 0.2s ease;
 }
@@ -1570,45 +1352,19 @@ select:-webkit-autofill {
   padding: 0.8rem 1rem !important;
   border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-=======
-  background: color-mix(in srgb, var(--fondo-card2) 60%, transparent);
-  transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.cys-inv-table tbody tr:hover {
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--fondo-card) 85%, transparent),
-    color-mix(in srgb, var(--fondo-card2) 95%, transparent)) !important;
-  transform: translateY(-1px);
-  box-shadow: inset 3px 0 0 var(--azul-claro), 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-}
-
-.cys-inv-table tbody td {
-  padding: 0.85rem 1rem !important;
-  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   vertical-align: middle;
   font-size: 0.86rem;
   color: #e2e8f0;
 }
 
 .cys-inv-table tbody td:first-child {
-<<<<<<< HEAD
   border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
-=======
-  border-left: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
 }
 
 .cys-inv-table tbody td:last-child {
-<<<<<<< HEAD
   border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-=======
-  border-right: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
@@ -1624,7 +1380,6 @@ select:-webkit-autofill {
   gap: 5px;
 }
 .cys-stock-badge--ok {
-<<<<<<< HEAD
   background: rgba(46, 213, 115, 0.15);
   color: #2ed573;
   border: 1px solid rgba(46, 213, 115, 0.35);
@@ -1632,7 +1387,10 @@ select:-webkit-autofill {
 
 /* ════════════════════════════════════════════════════════════════
    SISTEMA DE DISEÑO UNIFICADO Y NO SATURADO (CYS SUITE)
-   Aplica idéntica tipografía, colores no saturados y formas a:
+/* ════════════════════════════════════════════════════════════════
+   SISTEMA DE DISEÑO UNIFICADO Y LIGERO (ESTILO PRODUCTOS)
+   Aplica idéntica tipografía ('Plus Jakarta Sans'), colores del tema,
+   bordes suaves y componentes sencillos y limpios a:
    1. Ventas (POS)
    2. Ventas del Día
    3. Caja y Turnos
@@ -1641,369 +1399,601 @@ select:-webkit-autofill {
 
 :root {
   --cys-font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --cys-font-num: 'Rajdhani', sans-serif;
+  --cys-font-num:  'Plus Jakarta Sans', sans-serif;
   
-  /* Superficies y Fondos Suaves (Sin saturación) */
-  --cys-bg-card: rgba(13, 24, 45, 0.72);
-  --cys-bg-banner: linear-gradient(135deg, rgba(16, 30, 56, 0.88) 0%, rgba(10, 22, 42, 0.94) 100%);
-  --cys-border-subtle: rgba(255, 255, 255, 0.08);
-  --cys-border-light: rgba(255, 255, 255, 0.12);
+  /* Superficies y Fondos Limpios (alineados con --fondo-card de base y productos) */
+  --cys-bg-card:       var(--fondo-card);
+  --cys-bg-card-sub:   color-mix(in srgb, var(--texto) 3%, var(--fondo-card));
+  --cys-border-subtle: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  --cys-border-light:  color-mix(in srgb, var(--azul-claro) 20%, transparent);
   
-  /* Acentos Armónicos No Saturados */
-  --cys-primary: #38bdf8;
-  --cys-primary-bg: rgba(56, 189, 248, 0.10);
-  --cys-primary-border: rgba(56, 189, 248, 0.25);
+  /* Acentos Armónicos */
+  --cys-primary:        var(--azul-claro);
+  --cys-primary-bg:     color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  --cys-primary-border: color-mix(in srgb, var(--azul-claro) 25%, transparent);
   
-  --cys-success: #4ade80;
-  --cys-success-bg: rgba(74, 222, 128, 0.10);
-  --cys-success-border: rgba(74, 222, 128, 0.25);
+  --cys-success:        var(--verde);
+  --cys-success-bg:     color-mix(in srgb, var(--verde) 12%, transparent);
+  --cys-success-border: color-mix(in srgb, var(--verde) 25%, transparent);
   
-  --cys-warning: #fbbf24;
-  --cys-warning-bg: rgba(251, 191, 36, 0.10);
-  --cys-warning-border: rgba(251, 191, 36, 0.25);
+  --cys-warning:        #f39c12;
+  --cys-warning-bg:     color-mix(in srgb, #f39c12 12%, transparent);
+  --cys-warning-border: color-mix(in srgb, #f39c12 25%, transparent);
   
-  --cys-danger: #f87171;
-  --cys-danger-bg: rgba(248, 113, 113, 0.10);
-  --cys-danger-border: rgba(248, 113, 113, 0.25);
+  --cys-danger:         var(--rojo);
+  --cys-danger-bg:      color-mix(in srgb, var(--rojo) 12%, transparent);
+  --cys-danger-border:  color-mix(in srgb, var(--rojo) 25%, transparent);
   
   /* Textos */
-  --cys-text-main: #f1f5f9;
-  --cys-text-muted: #94a3b8;
-  --cys-text-subtle: #64748b;
+  --cys-text-main:   var(--texto);
+  --cys-text-muted:  var(--texto-muted);
+  --cys-text-subtle: color-mix(in srgb, var(--texto) 40%, transparent);
   
-  --cys-radius-lg: 16px;
+  --cys-radius-lg: 14px;
   --cys-radius-md: 12px;
   --cys-radius-sm: 8px;
 }
 
-/* Tipografía y Contenedores */
+/* Tipografía y Contenedores Generales */
 .cys-module-container,
 .cys-caja-container,
-.mp-container {
-  font-family: var(--cys-font-main) !important;
-  color: var(--cys-text-main) !important;
+.mp-container,
+.cys-pos-wrapper,
+.cys-page-wrapper {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  color: var(--texto) !important;
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* Forzar tipografía Plus Jakarta Sans en todos los valores numéricos y elementos que tenían Rajdhani */
 .cys-num-val,
 .cys-kpi-value,
-.cys-price-val {
-  font-family: var(--cys-font-num) !important;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+.cys-price-val,
+.mp-kpi-val,
+.cys-kpi-value-lg,
+[style*="Rajdhani"] {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  letter-spacing: normal !important;
 }
 
-/* Banners de Encabezado Unificados */
+/* ── Banners de Encabezado Limpios y Sencillos (Sin gradientes pesados) ── */
 .cys-module-banner,
 .cys-caja-header-banner,
 .mp-header-banner {
-  background: var(--cys-bg-banner) !important;
-  border: 1px solid var(--cys-border-subtle) !important;
-  border-radius: var(--cys-radius-lg) !important;
-  padding: 1.25rem 1.6rem !important;
-  margin-bottom: 1.75rem !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
-  backdrop-filter: blur(12px) !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-radius: var(--cys-radius-md) !important;
+  padding: 1rem 1.4rem !important;
+  margin-bottom: 1.25rem !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .cys-module-banner h3,
 .cys-caja-header-banner h3,
 .mp-header-banner h3 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--cys-text-main);
-  margin-bottom: 0.25rem;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--texto) !important;
+  margin-bottom: 0.2rem !important;
   letter-spacing: -0.2px;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
 .cys-module-banner p,
 .cys-caja-header-banner p,
 .mp-header-banner p {
-  color: var(--cys-text-muted) !important;
-  font-size: 0.86rem;
+  color: var(--texto-muted) !important;
+  font-size: 0.84rem !important;
   margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* Tarjetas KPI Suaves Unificadas */
+/* ── Tarjetas KPI y Contenedores Ligeros (Estilo Productos) ── */
 .cys-kpi-card,
 .cys-pos-card,
-.mp-kpi-card {
-  background: var(--cys-bg-card) !important;
-  border: 1px solid var(--cys-border-subtle) !important;
+.mp-kpi-card,
+.cys-turno-card,
+.cys-top-sales-card,
+.cys-stat-bar-container,
+.mp-filter-card {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
   border-radius: var(--cys-radius-md) !important;
-  padding: 1.1rem 1.3rem !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
-  backdrop-filter: blur(10px) !important;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 1rem 1.25rem !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  color: var(--texto) !important;
 }
 
 .cys-kpi-card:hover,
 .cys-pos-card:hover,
-.mp-kpi-card:hover {
+.mp-kpi-card:hover,
+.cys-top-sales-card:hover {
   transform: translateY(-2px);
-  border-color: var(--cys-primary-border) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
 }
 
-.cys-kpi-icon {
-  width: 46px !important;
-  height: 46px !important;
-  border-radius: var(--cys-radius-md) !important;
+/* Íconos KPI limpios y proporcionales */
+.cys-kpi-icon,
+.mp-kpi-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem !important;
+  font-size: 1.25rem !important;
   flex-shrink: 0;
 }
 
 .cys-kpi-icon--primary {
-  background: var(--cys-primary-bg) !important;
-  color: var(--cys-primary) !important;
-  border: 1px solid var(--cys-primary-border) !important;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
 }
 
 .cys-kpi-icon--success {
-  background: var(--cys-success-bg) !important;
-  color: var(--cys-success) !important;
-  border: 1px solid var(--cys-success-border) !important;
+  background: color-mix(in srgb, var(--verde) 12%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent) !important;
 }
 
 .cys-kpi-icon--warning {
-  background: var(--cys-warning-bg) !important;
-  color: var(--cys-warning) !important;
-  border: 1px solid var(--cys-warning-border) !important;
+  background: color-mix(in srgb, #f39c12 12%, transparent) !important;
+  color: #f39c12 !important;
+  border: 1px solid color-mix(in srgb, #f39c12 25%, transparent) !important;
 }
 
 .cys-kpi-icon--danger {
-  background: var(--cys-danger-bg) !important;
-  color: var(--cys-danger) !important;
-  border: 1px solid var(--cys-danger-border) !important;
+  background: color-mix(in srgb, var(--rojo) 12%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 25%, transparent) !important;
 }
 
-/* Botones Unificados (Acabado Satinado, No Saturado) */
+/* ── Botones Redondeados Estilo Productos (Pills) ── */
 .cys-btn-primary,
-.mp-btn-action {
-  height: 40px !important;
-  padding: 0 1.25rem !important;
+.mp-btn-action,
+.cys-btn-header-action,
+.cys-btn-abrir-turno,
+.cys-btn-checkout {
+  min-height: 38px !important;
+  height: auto !important;
+  padding: 0.45rem 1.25rem !important;
   font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  font-family: var(--cys-font-main) !important;
-  border-radius: 10px !important;
-  border: 1px solid #0284c7 !important;
-  background: #0284c7 !important;
-  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  border-radius: 20px !important;
+  border: none !important;
+  background: var(--azul-claro) !important;
+  color: var(--azul-oscuro, #0A2A52) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25) !important;
+  box-shadow: none !important;
   cursor: pointer;
 }
 
 .cys-btn-primary:hover,
-.mp-btn-action:hover {
-  background: #0369a1 !important;
-  border-color: #0369a1 !important;
-  color: #ffffff !important;
+.mp-btn-action:hover,
+.cys-btn-header-action:hover,
+.cys-btn-checkout:hover {
+  background: var(--azul-claro) !important;
+  opacity: 0.88 !important;
+  color: var(--azul-oscuro, #0A2A52) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
 }
 
 .cys-btn-secondary,
-.mp-btn-outline {
-  height: 40px !important;
-  padding: 0 1.2rem !important;
+.mp-btn-outline,
+.cys-btn-pos-link,
+.cys-btn-ghost-soft {
+  min-height: 38px !important;
+  height: auto !important;
+  padding: 0.45rem 1.25rem !important;
   font-size: 0.88rem !important;
   font-weight: 600 !important;
-  font-family: var(--cys-font-main) !important;
-  border-radius: 10px !important;
-  border: 1px solid var(--cys-border-light) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #e2e8f0 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  border-radius: 20px !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+  background: transparent !important;
+  color: var(--azul-claro) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
+  box-shadow: none !important;
   cursor: pointer;
 }
 
 .cys-btn-secondary:hover,
-.mp-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+.mp-btn-outline:hover,
+.cys-btn-pos-link:hover,
+.cys-btn-ghost-soft:hover {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--azul-claro) !important;
   transform: translateY(-1px);
 }
 
-.cys-btn-danger-soft {
-  height: 40px !important;
-  padding: 0 1.2rem !important;
+.cys-btn-danger-soft,
+.cys-btn-cerrar-turno {
+  min-height: 38px !important;
+  height: auto !important;
+  padding: 0.45rem 1.25rem !important;
   font-size: 0.88rem !important;
   font-weight: 600 !important;
-  font-family: var(--cys-font-main) !important;
-  border-radius: 10px !important;
-  border: 1px solid var(--cys-danger-border) !important;
-  background: var(--cys-danger-bg) !important;
-  color: var(--cys-danger) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  border-radius: 20px !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent) !important;
+  background: color-mix(in srgb, var(--rojo) 12%, transparent) !important;
+  color: var(--rojo) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
+  box-shadow: none !important;
   cursor: pointer;
 }
 
-.cys-btn-danger-soft:hover {
-  background: rgba(248, 113, 113, 0.2) !important;
-  border-color: var(--cys-danger) !important;
+.cys-btn-danger-soft:hover,
+.cys-btn-cerrar-turno:hover {
+  background: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
+  border-color: var(--rojo) !important;
   color: #ffffff !important;
   transform: translateY(-1px);
 }
 
-/* Badges Suaves */
-.cys-badge-soft {
-  font-size: 0.76rem;
-  font-weight: 600;
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
+/* ── Badges Sencillos ── */
+.cys-badge-soft,
+.cys-stock-badge {
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: 20px !important;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
 .cys-badge-soft--primary {
-  background: var(--cys-primary-bg);
-  color: var(--cys-primary);
-  border: 1px solid var(--cys-primary-border);
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
 }
 
-.cys-badge-soft--success {
-  background: var(--cys-success-bg);
-  color: var(--cys-success);
-  border: 1px solid var(--cys-success-border);
+.cys-badge-soft--success,
+.cys-stock-badge--ok {
+  background: color-mix(in srgb, var(--verde) 12%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent) !important;
 }
 
-.cys-badge-soft--warning {
-  background: var(--cys-warning-bg);
-  color: var(--cys-warning);
-  border: 1px solid var(--cys-warning-border);
+.cys-badge-soft--warning,
+.cys-stock-badge--low {
+  background: color-mix(in srgb, #f39c12 12%, transparent) !important;
+  color: #f39c12 !important;
+  border: 1px solid color-mix(in srgb, #f39c12 25%, transparent) !important;
 }
 
-.cys-badge-soft--danger {
-  background: var(--cys-danger-bg);
-  color: var(--cys-danger);
-  border: 1px solid var(--cys-danger-border);
+.cys-badge-soft--danger,
+.cys-stock-badge--empty {
+  background: color-mix(in srgb, var(--rojo) 12%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 25%, transparent) !important;
 }
 
-/* Tablas Suaves Homologadas */
-.cys-table-wrapper {
-  background: var(--cys-bg-card);
-  border: 1px solid var(--cys-border-subtle);
+/* ── Tablas Limpias y Elegantes (Exactas al Estilo Productos) ── */
+.cys-table-wrapper,
+.cys-pos-card .table-responsive {
+  background: var(--fondo-card);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
   border-radius: var(--cys-radius-md);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
 }
 
-.cys-clean-table {
+.cys-clean-table,
+.cys-inv-table {
   width: 100%;
   margin-bottom: 0;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-.cys-clean-table th {
-  background: rgba(10, 20, 38, 0.75) !important;
-  color: var(--cys-text-muted) !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
+.cys-clean-table th,
+.cys-inv-table thead th {
+  background: color-mix(in srgb, var(--texto) 3%, transparent) !important;
+  color: var(--texto-muted) !important;
+  font-size: 0.76rem !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  padding: 0.85rem 1.1rem !important;
-  border-bottom: 1px solid var(--cys-border-subtle) !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-top: none !important;
   white-space: nowrap;
 }
 
-.cys-clean-table td {
-  padding: 0.85rem 1.1rem !important;
-  color: #e2e8f0 !important;
-  font-size: 0.86rem !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+.cys-clean-table td,
+.cys-inv-table tbody td {
+  padding: 0.75rem 1rem !important;
+  color: var(--texto) !important;
+  font-size: 0.88rem !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border-top: none !important;
   vertical-align: middle;
+  background: transparent !important;
 }
 
-.cys-clean-table tbody tr {
+.cys-clean-table tbody tr,
+.cys-inv-table tbody tr {
+  background: transparent !important;
   transition: background-color 0.15s ease;
 }
 
-.cys-clean-table tbody tr:hover {
-  background-color: rgba(56, 189, 248, 0.04) !important;
+.cys-clean-table tbody tr:hover,
+.cys-inv-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--azul-claro) 6%, transparent) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-/* Modales Suaves Unificados */
-.cys-modal-clean {
-  background: #0b172a !important;
-  border: 1px solid var(--cys-border-light) !important;
-  border-radius: var(--cys-radius-lg) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
-  color: var(--cys-text-main) !important;
+/* ── Modales Limpios (Estilo prod-modal) ── */
+.cys-modal-clean,
+.modal-content-dark,
+.cys-modal-content,
+.modal-content {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+  color: var(--texto) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-.cys-modal-clean .modal-header {
-  border-bottom: 1px solid var(--cys-border-subtle) !important;
-  background: rgba(15, 28, 50, 0.8) !important;
-  padding: 1.25rem 1.5rem !important;
+.cys-modal-clean .modal-header,
+.modal-content-dark .modal-header,
+.cys-modal-header,
+.modal-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  background: color-mix(in srgb, var(--texto) 3%, transparent) !important;
+  padding: 1rem 1.4rem !important;
 }
 
-.cys-modal-clean .modal-footer {
-  border-top: 1px solid var(--cys-border-subtle) !important;
-  background: rgba(15, 28, 50, 0.5) !important;
-  padding: 1rem 1.5rem !important;
+.cys-modal-clean .modal-footer,
+.modal-content-dark .modal-footer,
+.cys-modal-footer,
+.modal-footer {
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  background: transparent !important;
+  padding: 0.85rem 1.4rem !important;
 }
 
-/* Form Controls Limpios */
+/* ── Controles de Formulario Limpios (Estilo prod-input) ── */
 .cys-input-clean,
+.cys-search-input,
 .cys-caja-container input,
 .cys-caja-container select,
 .cys-caja-container textarea,
 .mp-container input,
 .mp-container select,
-.mp-container textarea {
-  background-color: rgba(10, 20, 36, 0.7) !important;
-  border: 1px solid var(--cys-border-light) !important;
-  border-radius: 10px !important;
-  color: var(--cys-text-main) !important;
+.mp-container textarea,
+.cys-pos-card .form-control {
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--texto) !important;
   font-size: 0.88rem !important;
-  padding: 0.55rem 0.9rem !important;
+  padding: 0.5rem 0.85rem !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cys-input-clean:focus,
+.cys-search-input:focus,
 .cys-caja-container input:focus,
 .cys-caja-container select:focus,
 .mp-container input:focus,
-.mp-container select:focus {
-  border-color: var(--cys-primary) !important;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+.mp-container select:focus,
+.cys-pos-card .form-control:focus {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
   outline: none !important;
 }
 
-
-
-
-=======
-  background: color-mix(in srgb, var(--verde) 15%, transparent);
-  color: var(--verde);
-  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+.cys-input-clean::placeholder,
+.cys-search-input::placeholder,
+.cys-caja-container input::placeholder,
+.mp-container input::placeholder,
+.cys-pos-card .form-control::placeholder {
+  color: color-mix(in srgb, var(--texto) 35%, transparent) !important;
 }
->>>>>>> 7bd5a5764d634b5cd9b72ee7c4a0347f0efd690b
+
+/* ── Barra de Estadística Visual Multi-Segmento ── */
+.cys-stat-bar-container {
+  background: var(--fondo-card);
+  border-radius: var(--cys-radius-md);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent);
+}
+
+.cys-multi-progress {
+  height: 18px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
+  display: flex;
+  overflow: hidden;
+}
+
+.cys-multi-progress__bar {
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* ── Ranking Badges ── */
+.cys-rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+.cys-rank-1 { background: #f59e0b; color: #1e293b; }
+.cys-rank-2 { background: #94a3b8; color: #0f172a; }
+.cys-rank-3 { background: #d97706; color: #fff; }
+.cys-rank-other {
+  background: color-mix(in srgb, var(--azul-claro) 20%, transparent);
+  color: var(--azul-claro);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent);
+}
+
+/* ── Pulse para turno activo ── */
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(46, 213, 115, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+}
+.cys-pulse-badge {
+  animation: pulseGreen 2s infinite;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MÉTODOS DE PAGO — Estilo Unificado con Productos
+   ════════════════════════════════════════════════════════════════ */
+.mp-container {
+  padding: 1.5rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.mp-header-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mp-btn-action {
+  background: var(--azul-claro);
+  color: var(--azul-oscuro) !important;
+  border: none;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 0.6rem 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+.mp-btn-action:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  color: var(--azul-oscuro) !important;
+}
+
+.mp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mp-kpi-card {
+  background: var(--fondo-card);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.mp-kpi-card:hover {
+  border-color: color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  transform: translateY(-2px);
+}
+
+.mp-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.mp-kpi-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-muted);
+}
+
+.mp-kpi-val {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--texto);
+  line-height: 1.2;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.mp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+}
+.mp-badge-efectivo {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.3);
+}
+.mp-badge-transaccion {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.mp-badge-compra {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+

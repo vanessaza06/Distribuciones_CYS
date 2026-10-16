@@ -40,7 +40,7 @@
           </div>
           <div>
             <span style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; display:block;">Transacciones</span>
-            <span style="font-size:1.75rem; font-weight:800; color:#fff; font-family:'Rajdhani',sans-serif; line-height:1.1;">{{ ventas|length }}</span>
+            <span style="font-size:1.75rem; font-weight:800; color:#fff; line-height:1.1;">{{ ventas|length }}</span>
             <span style="font-size:.72rem; color:var(--cys-text-muted);">Ventas registradas hoy</span>
           </div>
         </div>
@@ -55,7 +55,7 @@
           </div>
           <div>
             <span style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; display:block;">Total Recaudado</span>
-            <span style="font-size:1.75rem; font-weight:800; color:#4ade80; font-family:'Rajdhani',sans-serif; line-height:1.1;">${{ total_dia|floatformat:0|intcomma }}</span>
+            <span style="font-size:1.75rem; font-weight:800; color:var(--verde, #2ed573); line-height:1.1;">${{ total_dia|floatformat:0|intcomma }}</span>
             <span style="font-size:.72rem; color:#4ade80; font-weight:600;">Ingresos acumulados</span>
           </div>
         </div>
@@ -70,7 +70,7 @@
           </div>
           <div>
             <span style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; display:block;">Ítems Vendidos</span>
-            <span style="font-size:1.75rem; font-weight:800; color:#fff; font-family:'Rajdhani',sans-serif; line-height:1.1;">{{ total_productos }}</span>
+            <span style="font-size:1.75rem; font-weight:800; color:#fff; line-height:1.1;">{{ total_productos }}</span>
             <span style="font-size:.72rem; color:var(--cys-text-muted);">Unidades despachadas</span>
           </div>
         </div>
@@ -86,7 +86,7 @@
         <i class="bi bi-clock-history me-2" style="color:var(--azul-claro,#4DA8DA);"></i>Flujo de Ventas por Franja Horaria
       </div>
       <span style="font-size:.78rem; color:var(--texto-muted); font-weight:600;">
-        Hora Pico de Facturación: <strong style="color:#ffab00; font-family:'Rajdhani',sans-serif; font-size:1.05rem;">{{ hora_pico_nombre }}</strong>
+        Hora Pico de Facturación: <strong style="color:#ffab00; font-size:1.05rem;">{{ hora_pico_nombre }}</strong>
       </span>
     </div>
 
@@ -112,7 +112,7 @@
           </div>
 
           <div class="my-2">
-            <div style="font-family:'Rajdhani',sans-serif; font-size:1.6rem; font-weight:800; color:{{ item.color }}; line-height:1.1;">
+            <div style="font-size:1.6rem; font-weight:800; color:{{ item.color }}; line-height:1.1;">
               ${{ item.monto|floatformat:0 }}
             </div>
           </div>
@@ -196,7 +196,7 @@
                   <span style="width: 10px; height: 10px; background-color: {{ v.color }}; border-radius: 2px; display: inline-block;"></span>
                   <div>
                     <div style="font-size: 0.8rem; color: #a0aec0; line-height: 1.1;">Venta #{{ v.codigo }}</div>
-                    <div class="fw-bold text-white" style="font-size: 1.1rem; line-height: 1.1; font-family:'Rajdhani',sans-serif;">${{ v.monto|floatformat:0 }}</div>
+                    <div class="fw-bold text-white" style="font-size: 1.1rem; line-height: 1.1;">${{ v.monto|floatformat:0 }}</div>
                   </div>
                 </div>
                 {% endfor %}
@@ -315,7 +315,7 @@
                 </td>
                 <td style="text-align: center; color: #e2e8f0;">{{ det.cantidad }}</td>
                 <td style="text-align: right; color: #e2e8f0;">${{ det.precio_unitario|floatformat:0 }}</td>
-                <td style="text-align: right; font-weight: 800; font-family:'Rajdhani',sans-serif; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">${{ det.subtotal|floatformat:0 }}</td>
+                <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">${{ det.subtotal|floatformat:0 }}</td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
               </tr>
               {% endfor %}
@@ -334,7 +334,7 @@
                 <td style="color: #e2e8f0;">Venta #{{ venta.codigo_venta }} ({{ venta.metodo_pago }})</td>
                 <td style="text-align: center; color: #e2e8f0;">—</td>
                 <td style="text-align: right; color: #e2e8f0;">—</td>
-                <td style="text-align: right; font-weight: 800; font-family:'Rajdhani',sans-serif; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">${{ venta.total_venta|floatformat:0 }}</td>
+                <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">${{ venta.total_venta|floatformat:0 }}</td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
               </tr>
             {% endif %}
@@ -347,7 +347,7 @@
       <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
         Total acumulado ({{ ventas.count }} transacciones)
       </span>
-      <span style="font-size: 1.5rem; font-weight: 800; font-family:'Rajdhani',sans-serif; color: var(--azul-claro,#4DA8DA);">
+      <span style="font-size: 1.5rem; font-weight: 800; color: var(--azul-claro,#4DA8DA);">
         ${{ total_dia|floatformat:0 }}
       </span>
     </div>

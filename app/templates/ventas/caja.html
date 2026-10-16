@@ -8,196 +8,6 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
-<style>
-  .cys-caja-container {
-    padding: 1.75rem 1.25rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    color: #ffffff !important;
-  }
-  
-  /* Asegurar que todos los textos secundarios (muted) sean de color blanco/brillante legible */
-  .cys-caja-container .text-muted,
-  .cys-modal .text-muted,
-  .cys-caja-container small,
-  .cys-modal small {
-    color: rgba(255, 255, 255, 0.88) !important;
-  }
-
-  .cys-caja-container label,
-  .cys-modal label {
-    color: #ffffff !important;
-    font-weight: 700;
-  }
-
-  .cys-caja-container input,
-  .cys-modal input {
-    color: #ffffff !important;
-    background-color: #07192e !important;
-    border: 1px solid rgba(77, 168, 218, 0.4) !important;
-    font-weight: 600;
-  }
-
-  .cys-caja-container input::placeholder,
-  .cys-modal input::placeholder {
-    color: rgba(255, 255, 255, 0.55) !important;
-  }
-
-  /* Header Card Banner */
-  .cys-caja-header-banner {
-    background: linear-gradient(135deg, rgba(15, 32, 59, 0.95) 0%, rgba(8, 20, 38, 0.98) 100%);
-    border: 1px solid rgba(77, 168, 218, 0.35);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
-  }
-  
-  /* Tarjetas KPI Superiores */
-  .cys-kpi-card {
-    background: linear-gradient(145deg, rgba(16, 36, 66, 0.9), rgba(10, 23, 43, 0.95));
-    border: 1px solid rgba(77, 168, 218, 0.28);
-    border-radius: 18px;
-    padding: 1.35rem 1.5rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-  .cys-kpi-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(77, 168, 218, 0.55);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-  }
-  .cys-kpi-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.55rem;
-    flex-shrink: 0;
-  }
-
-  /* Tarjetas de Turnos */
-  .cys-turno-card {
-    background: rgba(10, 26, 48, 0.92);
-    border: 1px solid rgba(77, 168, 218, 0.25);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    margin-bottom: 2.25rem;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-  }
-  .cys-turno-card--activo {
-    border: 2px solid #2ed573 !important;
-    box-shadow: 0 0 30px rgba(46, 213, 115, 0.25) !important;
-  }
-
-  .cys-turno-header {
-    background: linear-gradient(135deg, rgba(16, 40, 75, 0.95), rgba(10, 26, 48, 0.98));
-    padding: 1.35rem 1.75rem;
-    border-bottom: 1px solid rgba(77, 168, 218, 0.2);
-  }
-
-  /* Botones de Acción Estilizados */
-  .cys-btn-header-action {
-    height: 48px;
-    padding: 0 1.6rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border-radius: 50px;
-    border: 2px solid #ffffff !important;
-    background: linear-gradient(135deg, #0d6efd 0%, #054a91 100%) !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    white-space: nowrap;
-    line-height: 1;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #ffffff !important;
-    text-decoration: none;
-    box-shadow: 0 4px 18px rgba(13, 110, 253, 0.4);
-    cursor: pointer;
-  }
-  .cys-btn-header-action:hover {
-    background: linear-gradient(135deg, #2b7fff 0%, #0d6efd 100%) !important;
-    border-color: #ffffff !important;
-    transform: translateY(-2px);
-    color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6), 0 0 15px rgba(255, 255, 255, 0.4);
-  }
-  .cys-btn-header-action:active {
-    transform: translateY(0);
-  }
-  
-  .cys-btn-abrir-turno {
-    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
-  }
-
-  .cys-btn-cerrar-turno {
-    background: linear-gradient(135deg, #1e40af 0%, #0f172a 100%) !important;
-  }
-
-  .cys-btn-pos-link {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-  }
-
-  /* Barra de Estadística Visual Multi-Segmento */
-  .cys-stat-bar-container {
-    background: rgba(5, 19, 38, 0.95);
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    border: 1px solid rgba(77, 168, 218, 0.25);
-  }
-  
-  .cys-multi-progress {
-    height: 22px;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, 0.08);
-    display: flex;
-    overflow: hidden;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
-  }
-  .cys-multi-progress__bar {
-    height: 100%;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-
-  /* Ranking Badges */
-  .cys-rank-badge {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-  }
-  .cys-rank-1 { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #2d3436; }
-  .cys-rank-2 { background: linear-gradient(135deg, #dfe6e9, #b2bec3); color: #2d3436; }
-  .cys-rank-3 { background: linear-gradient(135deg, #fab1a0, #e17055); color: #fff; }
-  .cys-rank-other { background: rgba(77, 168, 218, 0.25); color: #4DA8DA; border: 1px solid rgba(77, 168, 218, 0.4); }
-
-  /* Pulse para turno activo */
-  @keyframes pulseGreen {
-    0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
-  }
-  .cys-pulse-badge {
-    animation: pulseGreen 2s infinite;
-  }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -280,7 +90,7 @@
         </div>
         <div>
           <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Base Inicial Actual</div>
-          <div class="fw-bold text-white fs-5" style="font-family:'Rajdhani',sans-serif;">
+          <div class="fw-bold text-white fs-5">
             {% if turno_activo %}
               ${{ turno_activo.monto_base|floatformat:0 }}
             {% elif ultimo_cierre %}
@@ -302,7 +112,7 @@
         </div>
         <div>
           <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Generado en Turno</div>
-          <div class="fw-bold fs-5" style="font-family:'Rajdhani',sans-serif; color:#2ed573 !important;">
+          <div class="fw-bold fs-5" style="color:var(--verde, #2ed573) !important;">
             {% if turno_activo %}
               ${{ turno_activo.total_ventas|floatformat:0 }}
             {% else %}
@@ -324,7 +134,7 @@
         </div>
         <div>
           <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem; letter-spacing:0.5px;">Histórico Recaudado</div>
-          <div class="fw-bold text-white fs-5" style="font-family:'Rajdhani',sans-serif;">
+          <div class="fw-bold text-white fs-5">
             ${{ ventas_totales_historicas|floatformat:0 }}
           </div>
           <div class="small text-white opacity-85" style="font-size:.78rem;">{{ total_turnos }} turnos registrados</div>
@@ -379,7 +189,7 @@
 
       <div class="text-md-end">
         <div class="small text-white opacity-75 text-uppercase fw-bold" style="font-size:.72rem;">Total Acumulado Turno</div>
-        <div class="fw-bold text-white fs-4" style="font-family:'Rajdhani',sans-serif;">
+        <div class="fw-bold text-white fs-4">
           ${{ t.monto_total_acumulado|floatformat:0 }}
         </div>
       </div>
@@ -399,7 +209,7 @@
               <span class="small text-white font-weight-bold text-uppercase" style="font-size:.75rem;"><i class="bi bi-cash-coin me-1" style="color:#4DA8DA;"></i> Base Inicial</span>
               <span class="badge" style="background:rgba(77,168,218,0.25); color:#4DA8DA;">{{ t.pct_base }}% del total</span>
             </div>
-            <div class="fw-bold text-white fs-4" style="font-family:'Rajdhani',sans-serif;">
+            <div class="fw-bold text-white fs-4">
               ${{ t.monto_base|floatformat:0 }}
             </div>
             <div class="small text-white opacity-85" style="font-size:.78rem;">Fondo base registrado al abrir el turno</div>
@@ -413,7 +223,7 @@
               <span class="small font-weight-bold text-uppercase" style="font-size:.75rem; color:#2ed573;"><i class="bi bi-cash-stack me-1"></i> Generado en Turno</span>
               <span class="badge" style="background:rgba(46,213,115,0.25); color:#2ed573;">{{ t.pct_generado }}% del total</span>
             </div>
-            <div class="fw-bold fs-4" style="font-family:'Rajdhani',sans-serif; color:#2ed573;">
+            <div class="fw-bold fs-4" style="color:var(--verde, #2ed573);">
               ${{ t.total_ventas|floatformat:0 }}
             </div>
             <div class="small text-white opacity-85" style="font-size:.78rem;">Total de ventas recaudadas ({{ t.cant_ventas }} ventas)</div>
@@ -427,7 +237,7 @@
               <span class="small font-weight-bold text-uppercase" style="font-size:.75rem; color:#ffab00;"><i class="bi bi-wallet-fill me-1"></i> Total en Caja</span>
               <span class="badge" style="background:rgba(255,171,0,0.25); color:#ffab00;">Base + Generado</span>
             </div>
-            <div class="fw-bold fs-4 text-white" style="font-family:'Rajdhani',sans-serif;">
+            <div class="fw-bold fs-4 text-white">
               ${{ t.monto_total_acumulado|floatformat:0 }}
             </div>
             <div class="small text-white opacity-85" style="font-size:.78rem;">Suma total disponible en caja para este turno</div>
@@ -459,14 +269,14 @@
           <div class="d-flex align-items-center gap-2">
             <span class="d-inline-block rounded-circle" style="width:12px; height:12px; background:#4DA8DA;"></span>
             <span class="text-white opacity-85">Base Inicial:</span>
-            <strong class="text-white" style="font-family:'Rajdhani',sans-serif;">${{ t.monto_base|floatformat:0 }}</strong>
+            <strong class="text-white">${{ t.monto_base|floatformat:0 }}</strong>
             <span class="badge bg-secondary bg-opacity-25 text-info ms-1">{{ t.pct_base }}%</span>
           </div>
 
           <div class="d-flex align-items-center gap-2">
             <span class="d-inline-block rounded-circle" style="width:12px; height:12px; background:#2ed573;"></span>
             <span class="text-white opacity-85">Generado en Turno:</span>
-            <strong style="color:#2ed573; font-family:'Rajdhani',sans-serif;">${{ t.total_ventas|floatformat:0 }}</strong>
+            <strong style="color:#2ed573;">${{ t.total_ventas|floatformat:0 }}</strong>
             <span class="badge bg-success bg-opacity-25 text-success ms-1">{{ t.pct_generado }}%</span>
           </div>
         </div>
@@ -539,7 +349,7 @@
                 </div>
 
                 <div class="text-end">
-                  <span class="fw-bold text-white me-2" style="font-family:'Rajdhani',sans-serif; font-size:1.05rem;">
+                  <span class="fw-bold text-white me-2" style="font-size:1.05rem;">
                     ${{ prod.total|floatformat:0 }}
                   </span>
                   <span class="badge bg-primary bg-opacity-30 text-info border border-info border-opacity-40">
@@ -618,7 +428,7 @@
                     <span class="text-muted">Venta directa</span>
                   {% endfor %}
                 </td>
-                <td class="text-end fw-bold fs-6" style="font-family:'Rajdhani',sans-serif; color:#4ade80;">
+                <td class="text-end fw-bold fs-6" style="color:var(--verde, #2ed573);">
                   ${{ v.total_con_descuento|default:v.total_venta|floatformat:0|intcomma }}
                 </td>
               </tr>
@@ -744,7 +554,7 @@
         <!-- Resumen Fondo Total -->
         <div class="p-3 rounded-3 d-flex align-items-center justify-content-between" style="background:rgba(46,213,115,0.15); border:1px solid rgba(46,213,115,0.4);">
           <span class="fw-bold text-white fs-6">Total Base Inicial Calculada:</span>
-          <span class="fw-bold fs-4" style="color:#2ed573; font-family:'Rajdhani',sans-serif;" id="totalConteo">$0</span>
+          <span class="fw-bold fs-4" style="color:var(--verde, #2ed573);" id="totalConteo">$0</span>
         </div>
       </div>
 
@@ -846,15 +656,15 @@
         <div class="p-3 rounded-3" style="background:rgba(235,77,75,0.15); border:1px solid rgba(235,77,75,0.4);">
           <div class="d-flex justify-content-between small text-white py-1">
             <span class="fw-bold">Total Efectivo Contado:</span>
-            <strong id="totalCierre" style="font-family:'Rajdhani',sans-serif; font-size:1.15rem;">$0</strong>
+            <strong id="totalCierre" style="font-size:1.15rem;">$0</strong>
           </div>
           <div class="d-flex justify-content-between small text-white opacity-90 py-1">
             <span>Monto Base para Siguiente Turno:</span>
-            <strong id="resumenBaseSig" class="text-white" style="font-family:'Rajdhani',sans-serif;">$0</strong>
+            <strong id="resumenBaseSig" class="text-white">$0</strong>
           </div>
           <div class="d-flex justify-content-between small text-warning py-1 fw-bold">
             <span class="fs-6">Total a Retirar:</span>
-            <strong id="resumenRetirar" style="font-family:'Rajdhani',sans-serif; font-size:1.2rem;">$0</strong>
+            <strong id="resumenRetirar" style="font-size:1.2rem;">$0</strong>
           </div>
         </div>
       </div>
