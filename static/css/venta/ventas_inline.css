@@ -392,7 +392,7 @@
     color-mix(in srgb, var(--fondo-card) 85%, transparent));
   border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
   border-radius: 14px;
-  padding: 1rem 0.85rem;
+  padding: 1.15rem 0.95rem;
   min-height: 125px;
   height: 100%;
   cursor: pointer;
@@ -405,8 +405,7 @@
   color: var(--texto) !important;
 }
 
-.cys-cat-card-item:hover,
-.cys-prod-card-item:hover {
+.cys-cat-card-item:hover {
   transform: translateY(-4px);
   border-color: var(--azul-claro);
   box-shadow: 0 10px 25px color-mix(in srgb, var(--azul-claro) 22%, transparent);

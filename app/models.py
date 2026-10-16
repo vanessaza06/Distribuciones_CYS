@@ -330,7 +330,6 @@ class Marca(models.Model):
     nombre = models.CharField(max_length=100, db_column="nombre")
     descripcion = models.TextField(db_column="descripcion")
     estado = models.CharField(max_length=20, db_column="estado")
-    fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True, db_column="fecha_creacion")
 
     class Meta:
         db_table = "marca"
