@@ -4,7 +4,7 @@
 {% block page_title %}Marcas{% endblock %}
 {% block nav_marcas %}active{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=15" />
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=16" />
 {% endblock %}
 {% block content %}
 
@@ -80,7 +80,14 @@
         </ul>
       </div>
 
-      <button class="cys-btn cys-btn--primary" id="btnNuevaMarca" type="button">
+      <!-- Botón Nueva marca (con tooltip "Crear nueva marca") -->
+      <button
+        class="cys-btn cys-btn--primary"
+        id="btnNuevaMarca"
+        type="button"
+        data-tooltip="Crear nueva marca"
+        aria-label="Crear nueva marca"
+      >
         <i class="bi bi-plus-lg"></i>
         Nueva marca
       </button>
