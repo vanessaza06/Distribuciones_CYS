@@ -146,6 +146,42 @@ class NuevaCompraForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select form-select-lg', 'id': 'formCompraMetodoPago'}),
         label="Método de Pago"
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'producto' in self.fields:
+            self.fields['producto'].queryset = (
+                Producto.objects.filter(activo=True)
+                .select_related('categoria')
+                .prefetch_related('presentaciones', 'lotes')
+                .order_by('nombre')
+            )
+        if 'proveedor' in self.fields:
+            self.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre_empresa')
+        if 'lote' in self.fields:
+            self.fields['lote'].queryset = Lote.objects.all().order_by('numero_lote')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cantidad = cleaned_data.get('cantidad') or 0
+        precio = cleaned_data.get('precio_unitario') or Decimal('0.00')
+        monto_pagado = cleaned_data.get('monto_pagado')
+
+        if monto_pagado is None:
+            monto_pagado = Decimal('0.00')
+            cleaned_data['monto_pagado'] = monto_pagado
+
+        if monto_pagado < Decimal('0.00'):
+            self.add_error('monto_pagado', 'El abono inicial no puede ser negativo.')
+
+        total = Decimal(cantidad) * Decimal(precio)
+        if total > Decimal('0.00') and monto_pagado > total:
+            self.add_error(
+                'monto_pagado',
+                f'El abono inicial (${monto_pagado:,.2f}) no puede superar el total de la compra (${total:,.2f}).'
+            )
+
+        return cleaned_data
 #-----PRODUCTO-----#
 
 class ProductoRegistroForm(forms.ModelForm):

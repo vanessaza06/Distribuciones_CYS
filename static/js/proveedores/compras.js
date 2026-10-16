@@ -57,80 +57,474 @@ function initTabla() {
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
 function initNuevaCompra() {
-  const producto = byId('formCompraProducto');
+  const hiddenProducto = byId('formCompraProducto');
+  const sourceSelect = byId('formCompraProductoSource');
   const lote = byId('formCompraLote');
   const cantidad = byId('formCompraCantidad');
   const precio = byId('formCompraPrecio');
   const pago = byId('formCompraPago');
-  if (!producto || !cantidad || !precio) return;
+  if (!hiddenProducto || !cantidad || !precio) return;
+
+  const btnTotal = byId('btnPagarTotalNueva');
+  const btnCredito = byId('btnCreditoNueva');
+  const searchWrap = byId('cmpSearchBoxWrap');
+  const searchInput = byId('buscarProductoInput');
+  const btnLimpiar = byId('limpiarBuscarProducto');
+  const sugList = byId('cmpSugerenciasList');
+  const contador = byId('cmpProdContador');
+  const selectedCard = byId('cmpProductoSeleccionadoCard');
+  const selectedNombre = byId('cmpSelectedNombre');
+  const selectedCat = byId('cmpSelectedCat');
+  const selectedStock = byId('cmpSelectedStock');
+  const btnCambiar = byId('btnCambiarProducto');
+
+  const normalizar = (str) =>
+    (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+  function escapeHtml(str) {
+    return (str || '').replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+  }
+
+  // Cargar catálogo de productos en memoria para búsquedas instantáneas
+  const productosData = sourceSelect
+    ? Array.from(sourceSelect.options)
+        .filter((opt) => opt.value)
+        .map((opt) => ({
+          id: String(opt.value),
+          nombre: (opt.dataset.nombre || opt.text || '').trim(),
+          precio: parseFloat(opt.dataset.precio) || 0,
+          stock: parseInt(opt.dataset.stock, 10) || 0,
+          categoria: (opt.dataset.categoria || 'General').trim(),
+          textoNorm: normalizar(`${opt.dataset.nombre || opt.text} ${opt.dataset.categoria || ''}`)
+        }))
+    : [];
+
+  const totalProds = productosData.length;
+
+  // Modalidad de pago: 'credito' ($0) | 'total' (100% total automático) | 'manual'
+  let modoPago = 'credito';
 
   const total = () => (parseInt(cantidad.value, 10) || 0) * (parseFloat(precio.value) || 0);
 
+  function actualizarBotonesModoPago() {
+    const t = total();
+    const val = parseFloat(pago && pago.value) || 0;
+
+    if (btnTotal && btnCredito) {
+      if (t > 0 && val > t) {
+        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+        return;
+      }
+
+      if (modoPago === 'total' || (t > 0 && Math.abs(val - t) < 0.01)) {
+        btnTotal.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-total';
+        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+      } else if (modoPago === 'credito' || val === 0) {
+        btnCredito.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-credito';
+        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+      } else {
+        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+      }
+    }
+  }
+
   function recalcular() {
     const cant = parseInt(cantidad.value, 10) || 0;
+    const p = parseFloat(precio.value) || 0;
+    const t = total();
     const txt = byId('calculoDetalleTexto');
     const disp = byId('calculoTotalDisplay');
-    if (txt) txt.textContent = `${cant} und. × ${fmtCOP(precio.value)}`;
-    if (disp) disp.textContent = fmtCOP(total());
+    if (txt) txt.textContent = `${cant} und. × ${fmtCOP(p)}`;
+    if (disp) disp.textContent = fmtCOP(t);
+
+    if (pago) {
+      pago.max = t > 0 ? t : 0;
+    }
+
+    if (modoPago === 'total') {
+      if (pago) pago.value = t > 0 ? (Number.isInteger(t) ? t : t.toFixed(2)) : 0;
+    } else if (modoPago === 'credito') {
+      if (pago) pago.value = 0;
+    }
+
     recalcularSaldo();
+    actualizarBotonesModoPago();
   }
 
   function recalcularSaldo() {
     const t = total();
-    const abono = parseFloat(pago && pago.value) || 0;
+    const val = parseFloat(pago && pago.value) || 0;
     const fb = byId('formCompraSaldoFeedback');
     if (!fb) return;
+
+    if (pago) pago.classList.remove('is-invalid');
+
     if (t === 0) {
-      fb.innerHTML = '<span class="text-muted">Ingresa producto, cantidad y precio.</span>';
-    } else if (abono >= t) {
-      fb.innerHTML = '<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>';
-    } else if (abono > 0) {
-      fb.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago parcial</span> Falta por pagar: <strong class="text-danger">${fmtCOP(t - abono)}</strong>`;
-    } else {
-      fb.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">${fmtCOP(t)}</strong>`;
+      fb.innerHTML = '<span class="text-muted"><i class="bi bi-info-circle me-1"></i>Ingresa producto, cantidad y precio.</span>';
+      return;
     }
+
+    if (val < 0) {
+      if (pago) pago.classList.add('is-invalid');
+      fb.innerHTML = '<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Monto inválido</span> El abono no puede ser negativo.';
+      return;
+    }
+
+    if (val > t) {
+      if (pago) pago.classList.add('is-invalid');
+      const exceso = val - t;
+      fb.innerHTML = `<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el total</span> El abono de <strong>${fmtCOP(val)}</strong> supera el total de la compra (<strong>${fmtCOP(t)}</strong>). Exceso: <strong class="text-danger">${fmtCOP(exceso)}</strong>`;
+      return;
+    }
+
+    if (Math.abs(val - t) < 0.01) {
+      fb.innerHTML = '<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>';
+      return;
+    }
+
+    if (val === 0) {
+      fb.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">${fmtCOP(t)}</strong>`;
+      return;
+    }
+
+    fb.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago parcial</span> Falta por pagar: <strong class="text-danger">${fmtCOP(t - val)}</strong>`;
   }
 
-  producto.addEventListener('change', function () {
-    const opt = this.options[this.selectedIndex];
-    const sugerido = parseFloat(opt && opt.dataset.precio) || 0;
-    precio.value = sugerido > 0 ? sugerido : '';
+  function aplicarModoTotal() {
+    modoPago = 'total';
+    const t = total();
+    if (pago) pago.value = t > 0 ? (Number.isInteger(t) ? t : t.toFixed(2)) : 0;
+    recalcularSaldo();
+    actualizarBotonesModoPago();
+  }
+
+  function aplicarModoCredito() {
+    modoPago = 'credito';
+    if (pago) pago.value = 0;
+    recalcularSaldo();
+    actualizarBotonesModoPago();
+  }
+
+  if (btnTotal) {
+    btnTotal.addEventListener('click', (e) => {
+      e.preventDefault();
+      aplicarModoTotal();
+    });
+  }
+
+  if (btnCredito) {
+    btnCredito.addEventListener('click', (e) => {
+      e.preventDefault();
+      aplicarModoCredito();
+    });
+  }
+
+  [cantidad, precio].forEach((el) => el.addEventListener('input', recalcular));
+
+  if (pago) {
+    pago.addEventListener('focus', () => {
+      if (pago.value === '0' || pago.value === '0.00' || parseFloat(pago.value) === 0) {
+        pago.select();
+      }
+    });
+
+    pago.addEventListener('input', () => {
+      const val = parseFloat(pago.value) || 0;
+      const t = total();
+
+      if (val > t) {
+        modoPago = 'invalido';
+      } else if (t > 0 && Math.abs(val - t) < 0.01) {
+        modoPago = 'total';
+      } else if (val === 0) {
+        modoPago = 'credito';
+      } else {
+        modoPago = 'manual';
+      }
+
+      recalcularSaldo();
+      actualizarBotonesModoPago();
+    });
+
+    pago.addEventListener('blur', () => {
+      if (pago.value.trim() === '') {
+        pago.value = 0;
+        modoPago = 'credito';
+      } else {
+        const num = parseFloat(pago.value);
+        if (!isNaN(num)) {
+          pago.value = Number.isInteger(num) ? num : num.toFixed(2);
+        }
+      }
+      recalcularSaldo();
+      actualizarBotonesModoPago();
+    });
+  }
+
+  // ── Selección y Limpieza de Producto ──
+  function seleccionarProducto(id) {
+    const p = productosData.find((item) => item.id === String(id));
+    if (!p) return;
+
+    hiddenProducto.value = p.id;
+    if (searchWrap) searchWrap.classList.remove('has-error');
+
+    // Actualizar tarjeta visual de producto seleccionado
+    if (selectedNombre) selectedNombre.textContent = p.nombre;
+    if (selectedCat) selectedCat.innerHTML = `<i class="bi bi-tag me-1 text-info"></i>${escapeHtml(p.categoria)}`;
+    if (selectedStock) {
+      selectedStock.textContent = `Stock actual: ${p.stock} und.`;
+      selectedStock.className = p.stock > 0 ? 'text-success fw-semibold' : 'text-warning';
+    }
+    if (selectedCard) selectedCard.classList.remove('d-none');
+
+    // Sincronizar input de búsqueda con el producto seleccionado
+    if (searchInput) searchInput.value = p.nombre;
+    if (btnLimpiar) btnLimpiar.classList.remove('d-none');
+
+    // Pre-cargar precio sugerido
+    if (p.precio > 0) {
+      precio.value = p.precio;
+    }
+
+    // Filtrar lotes asociados a este producto
     if (lote) {
       Array.from(lote.options).forEach((o, i) => {
         if (i === 0) return;
-        const visible = !o.dataset.producto || o.dataset.producto === this.value;
+        const visible = !o.dataset.producto || o.dataset.producto === p.id;
         o.hidden = !visible;
         o.disabled = !visible;
       });
       lote.value = '';
     }
-    recalcular();
-  });
 
-  [cantidad, precio].forEach((el) => el.addEventListener('input', recalcular));
-  if (pago) {
-    pago.addEventListener('input', recalcularSaldo);
-    // El abono no puede superar el total
-    pago.addEventListener('blur', () => {
-      const t = total();
-      if (t > 0 && parseFloat(pago.value) > t) pago.value = t;
-      recalcularSaldo();
+    // Cerrar menú flotante
+    if (sugList) {
+      sugList.innerHTML = '';
+      sugList.classList.add('d-none');
+    }
+
+    recalcular();
+  }
+
+  function limpiarSeleccion(enfocarInput = true) {
+    hiddenProducto.value = '';
+    if (selectedCard) selectedCard.classList.add('d-none');
+    if (searchInput) {
+      searchInput.value = '';
+      if (enfocarInput) searchInput.focus();
+    }
+    if (btnLimpiar) btnLimpiar.classList.add('d-none');
+    if (searchWrap) searchWrap.classList.remove('has-error');
+
+    if (lote) {
+      Array.from(lote.options).forEach((o, i) => {
+        if (i === 0) return;
+        o.hidden = false;
+        o.disabled = false;
+      });
+      lote.value = '';
+    }
+
+    renderizarSugerencias('');
+    recalcular();
+  }
+
+  // ── Renderizado del Menú de Sugerencias ──
+  function renderizarSugerencias(q) {
+    if (!sugList) return;
+    const query = normalizar(q);
+
+    if (!query) {
+      sugList.innerHTML = '';
+      sugList.classList.add('d-none');
+      if (btnLimpiar && !hiddenProducto.value) btnLimpiar.classList.add('d-none');
+      if (contador) {
+        contador.textContent = `${totalProds} disponibles`;
+        contador.className = 'badge';
+        contador.style.background = 'rgba(77, 168, 218, 0.15)';
+        contador.style.color = '#4DA8DA';
+      }
+      return;
+    }
+
+    if (btnLimpiar) btnLimpiar.classList.remove('d-none');
+
+    const coincidencias = productosData.filter((p) => p.textoNorm.includes(query));
+    const totalEncontrados = coincidencias.length;
+    const itemsAMostrar = coincidencias.slice(0, 30);
+
+    if (contador) {
+      contador.textContent = `${totalEncontrados} encontrado${totalEncontrados === 1 ? '' : 's'}`;
+      contador.className = totalEncontrados > 0 ? 'badge bg-info text-dark' : 'badge bg-danger';
+      contador.style.background = '';
+      contador.style.color = '';
+    }
+
+    if (totalEncontrados === 0) {
+      sugList.innerHTML = `
+        <div class="p-4 text-center text-muted">
+          <i class="bi bi-search fs-3 d-block mb-2 text-warning opacity-75"></i>
+          <div>No se encontraron productos para "<strong>${escapeHtml(q)}</strong>"</div>
+          <small class="text-white-50">Intenta buscar por otra palabra o marca.</small>
+        </div>
+      `;
+      sugList.classList.remove('d-none');
+      return;
+    }
+
+    let html = '';
+    itemsAMostrar.forEach((p) => {
+      const esSeleccionado = hiddenProducto.value === p.id;
+      const stockBadge = p.stock > 0
+        ? `<span class="badge" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.4);">${p.stock} und.</span>`
+        : `<span class="badge" style="background: rgba(255, 255, 255, 0.08); color: #adb5bd;">0 und.</span>`;
+      const precioBadge = p.precio > 0
+        ? `<div class="small fw-bold text-warning">${fmtCOP(p.precio)}</div>`
+        : '';
+
+      html += `
+        <button type="button"
+                class="cmp-dropdown-item ${esSeleccionado ? 'active' : ''}"
+                data-val="${p.id}"
+                tabindex="0">
+          <div class="text-truncate pe-2">
+            <div class="fw-bold text-white text-truncate">${escapeHtml(p.nombre)}</div>
+            <small class="text-muted"><i class="bi bi-tag me-1 text-info"></i>${escapeHtml(p.categoria)}</small>
+          </div>
+          <div class="text-end text-nowrap ms-2">
+            ${stockBadge}
+            ${precioBadge}
+          </div>
+        </button>
+      `;
+    });
+
+    if (totalEncontrados > itemsAMostrar.length) {
+      html += `
+        <div class="p-2 text-center text-muted small" style="background: rgba(0,0,0,0.3); font-size: 0.8rem;">
+          <i class="bi bi-info-circle me-1 text-info"></i>...y ${totalEncontrados - itemsAMostrar.length} productos más. Escribe más letras para afinar.
+        </div>
+      `;
+    }
+
+    sugList.innerHTML = html;
+    sugList.classList.remove('d-none');
+  }
+
+  // Eventos del buscador
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      if (searchWrap) searchWrap.classList.remove('has-error');
+      // Si el usuario edita el texto y ya no coincide con el producto seleccionado, deseleccionar
+      if (hiddenProducto.value) {
+        const prodActual = productosData.find((p) => p.id === hiddenProducto.value);
+        if (prodActual && normalizar(searchInput.value) !== normalizar(prodActual.nombre)) {
+          hiddenProducto.value = '';
+          if (selectedCard) selectedCard.classList.add('d-none');
+        }
+      }
+      renderizarSugerencias(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (sugList) sugList.classList.add('d-none');
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const primero = sugList ? sugList.querySelector('.cmp-dropdown-item') : null;
+        if (primero) primero.focus();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const primero = sugList ? sugList.querySelector('.cmp-dropdown-item') : null;
+        if (primero) {
+          seleccionarProducto(primero.dataset.val);
+        }
+      }
+    });
+
+    searchInput.addEventListener('focus', () => {
+      if (searchInput.value.trim() && sugList && sugList.children.length > 0) {
+        sugList.classList.remove('d-none');
+      }
     });
   }
 
-  const btnTotal = byId('btnPagarTotalNueva');
-  const btnCredito = byId('btnCreditoNueva');
-  if (btnTotal) btnTotal.addEventListener('click', () => { pago.value = total(); recalcularSaldo(); });
-  if (btnCredito) btnCredito.addEventListener('click', () => { pago.value = 0; recalcularSaldo(); });
+  if (sugList) {
+    sugList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.cmp-dropdown-item');
+      if (btn && btn.dataset.val) {
+        seleccionarProducto(btn.dataset.val);
+      }
+    });
+
+    sugList.addEventListener('keydown', (e) => {
+      const actual = document.activeElement;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const sig = actual.nextElementSibling;
+        if (sig && sig.classList.contains('cmp-dropdown-item')) sig.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = actual.previousElementSibling;
+        if (prev && prev.classList.contains('cmp-dropdown-item')) {
+          prev.focus();
+        } else if (searchInput) {
+          searchInput.focus();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (actual && actual.dataset.val) {
+          seleccionarProducto(actual.dataset.val);
+        }
+      } else if (e.key === 'Escape') {
+        sugList.classList.add('d-none');
+        if (searchInput) searchInput.focus();
+      }
+    });
+  }
+
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', (e) => {
+      e.preventDefault();
+      limpiarSeleccion(true);
+    });
+  }
+
+  if (btnCambiar) {
+    btnCambiar.addEventListener('click', (e) => {
+      e.preventDefault();
+      limpiarSeleccion(true);
+    });
+  }
+
+  // Cerrar lista flotante al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    const wrap = byId('cmpProductoWrapper');
+    if (wrap && !wrap.contains(e.target)) {
+      if (sugList) sugList.classList.add('d-none');
+    }
+  });
 
   const modal = byId('modalNuevaCompra');
   if (modal) {
-    // Cada compra nueva arranca SIN pago (a crédito); el abono se escribe a propósito
-    modal.addEventListener('show.bs.modal', () => { if (pago) pago.value = 0; });
-    modal.addEventListener('shown.bs.modal', recalcular);
+    modal.addEventListener('show.bs.modal', () => {
+      modoPago = 'credito';
+      if (pago) pago.value = 0;
+      limpiarSeleccion(false);
+      actualizarBotonesModoPago();
+    });
+    modal.addEventListener('shown.bs.modal', () => {
+      recalcular();
+      if (searchInput) searchInput.focus();
+    });
   }
 
-  // Confirmación dentro del modal: evita marcar como PAGADA una compra que aún no se ha pagado
+  // Confirmación dentro del modal
   const form = byId('formNuevaCompra');
   const panel = byId('cmpConfirmPago');
   let confirmado = false;
@@ -138,7 +532,7 @@ function initNuevaCompra() {
   const ocultarConfirmacion = () => { if (panel) panel.classList.add('d-none'); confirmado = false; };
 
   function mostrarConfirmacion(abono, t) {
-    const pagada = abono >= t;
+    const pagada = Math.abs(abono - t) < 0.01;
     panel.classList.toggle('is-pagada', pagada);
     byId('cmpConfirmIcono').className = pagada ? 'bi bi-cash-coin' : 'bi bi-question-circle-fill';
     byId('cmpConfirmTitulo').textContent = pagada ? '¿Ya le pagaste al proveedor?' : 'Confirma el abono inicial';
@@ -151,7 +545,7 @@ function initNuevaCompra() {
   }
 
   if (form && pago && panel) {
-    [producto, cantidad, precio, pago].forEach((el) => el.addEventListener('input', ocultarConfirmacion));
+    [cantidad, precio, pago].forEach((el) => el.addEventListener('input', ocultarConfirmacion));
     if (btnTotal) btnTotal.addEventListener('click', ocultarConfirmacion);
     if (btnCredito) btnCredito.addEventListener('click', ocultarConfirmacion);
     if (modal) modal.addEventListener('show.bs.modal', ocultarConfirmacion);
@@ -163,12 +557,63 @@ function initNuevaCompra() {
     });
 
     form.addEventListener('submit', (e) => {
+      // 1. Validar selección de producto antes de enviar
+      if (!hiddenProducto.value) {
+        e.preventDefault();
+        if (searchWrap) {
+          searchWrap.classList.add('has-error');
+          searchWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.placeholder = '¡Debes seleccionar un producto de la lista!';
+        }
+        return;
+      }
+
+      // 2. Validar cantidad y precio
+      const cant = parseInt(cantidad.value, 10) || 0;
+      const p = parseFloat(precio.value) || 0;
       const t = total();
-      let abono = parseFloat(pago.value) || 0;
-      if (abono < 0) abono = 0;
-      if (t > 0 && abono > t) abono = t;
-      pago.value = abono;
-      if (confirmado || abono <= 0 || t <= 0) return;   // a crédito o ya confirmado: se guarda
+
+      if (cant <= 0) {
+        e.preventDefault();
+        cantidad.focus();
+        return;
+      }
+      if (p <= 0 || t <= 0) {
+        e.preventDefault();
+        precio.focus();
+        return;
+      }
+
+      // 3. Validar abono inicial
+      const rawAbono = pago ? pago.value.trim() : '0';
+      const abono = parseFloat(rawAbono) || 0;
+
+      if (abono < 0) {
+        e.preventDefault();
+        pago.classList.add('is-invalid');
+        pago.focus();
+        recalcularSaldo();
+        return;
+      }
+
+      // Validación estricta: el abono no puede superar el total
+      if (abono > t) {
+        e.preventDefault();
+        pago.classList.add('is-invalid');
+        pago.focus();
+        recalcularSaldo();
+        return;
+      }
+
+      // 4. Si el abono es 0 (crédito) o cubre el total (100% Total), o ya confirmó: enviar directamente
+      if (confirmado || abono <= 0 || modoPago === 'total' || Math.abs(abono - t) < 0.01) {
+        return;
+      }
+
+      // 5. Abono parcial: solicitar confirmación amigable
       e.preventDefault();
       mostrarConfirmacion(abono, t);
     });
@@ -192,13 +637,21 @@ function initModalPago() {
 
     const badge = byId('badgeNuevoEstado');
     if (!badge) return;
-    if (abono > 0 && abono >= saldo) {
+
+    if (abono > saldo) {
+      monto.classList.add('is-invalid');
+      badge.className = 'badge bg-danger px-3 py-2 w-100 text-center';
+      badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el saldo pendiente (${fmtCOP(saldo)})`;
+    } else if (abono > 0 && Math.abs(abono - saldo) < 0.01) {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-success-custom px-3 py-2 w-100 text-center';
       badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
     } else if (abono > 0) {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-warning-custom px-3 py-2 w-100 text-center';
-      badge.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Quedará PARCIAL';
+      badge.innerHTML = `<i class="bi bi-dash-circle me-1"></i>Abono parcial (aún debe ${fmtCOP(saldo - abono)})`;
     } else {
+      monto.classList.remove('is-invalid');
       badge.className = 'badge badge-pending-custom px-3 py-2 w-100 text-center';
       badge.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono nuevo';
     }

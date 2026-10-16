@@ -12,9 +12,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
+from django.contrib.auth import get_user_model
+
 from app.models import (
     Venta, DetalleVenta, Caja, Devolucion, DetalleDevolucion,
-    Producto, Categoria, PresentacionProducto, Usuario
+    Producto, Categoria, PresentacionProducto, Lote
 )
 
 BILLETES_DENOM = [100000, 50000, 20000, 10000, 5000, 2000, 1000]
@@ -47,8 +49,16 @@ def obtener_caja_abierta(hoy=None):
 
 @session_required
 def ventas_lista(request):
-    ventas = Venta.objects.all().order_by('-fecha')
-    categorias = Categoria.objects.all()
+    ventas = (
+        Venta.objects.all()
+        .order_by('-fecha')
+        .select_related('vendedor')
+        .prefetch_related('detalles__producto', 'detalles__presentacion', 'detalles__lote')[:50]
+    )
+    categorias = (
+        Categoria.objects.filter(activo=True)
+        .prefetch_related('productos__presentaciones__lotes')
+    )
     hoy = timezone.localdate()
     ventas_hoy = Venta.objects.filter(fecha__date=hoy)
     total_dia = int(sum(v.total_venta for v in ventas_hoy))
@@ -107,6 +117,7 @@ def nueva_venta(request):
     pago_transferencia = to_decimal('pago_transferencia')
     pago_nequi = to_decimal('pago_nequi')
     pago_daviplata = to_decimal('pago_daviplata')
+    cliente_nombre = (request.POST.get('cliente_nombre') or '').strip() or 'Consumidor final'
 
     if not producto_ids:
         messages.error(request, "El carrito está vacío.")
@@ -134,12 +145,22 @@ def nueva_venta(request):
         pres_id = presentacion_ids[i] if i < len(presentacion_ids) else ''
         presentacion = None
 
-        if pres_id and pres_id != 'null':
+        if pres_id and pres_id != 'null' and pres_id != 'None':
             try:
                 presentacion = PresentacionProducto.objects.get(pk=pres_id)
             except PresentacionProducto.DoesNotExist:
                 messages.error(request, f"Presentación inválida para {producto.nombre}.")
                 return redirect('ventas')
+
+        # Verificar stock disponible en lotes
+        stock_disponible = presentacion.stock_real if presentacion else producto.stock_total
+        if cantidad > stock_disponible:
+            item_label = f"{producto.nombre} ({presentacion.nombre})" if presentacion else producto.nombre
+            messages.error(
+                request,
+                f"Stock insuficiente para {item_label}. Stock disponible en lotes: {stock_disponible}, solicitado: {cantidad}."
+            )
+            return redirect('ventas')
 
         items_validados.append({
             'producto': producto,
@@ -150,7 +171,7 @@ def nueva_venta(request):
         subtotal_venta += precio * cantidad
 
     monto_descuento = (subtotal_venta * descuento_pct) / Decimal('100')
-    total_final = subtotal_venta - monto_descuento
+    total_final = max(Decimal('0'), subtotal_venta - monto_descuento)
     total_pagado = pago_efectivo + pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
 
     if total_pagado > Decimal('0') and total_pagado < total_final:
@@ -167,24 +188,69 @@ def nueva_venta(request):
     elif pago_daviplata > 0:
         metodo_pago = 'daviplata'
 
-    venta = Venta.objects.create(
-        total_venta=total_final,
-        metodo_pago=metodo_pago,
-        usuario=vendedor,
-        caja=caja_actual,
-    )
-
-    for item in items_validados:
-        DetalleVenta.objects.create(
-            venta=venta,
-            producto=item['producto'],
-            cantidad=item['cantidad'],
-            precio_unitario=item['precio'],
-            subtotal=item['precio'] * item['cantidad'],
-            total=item['precio'] * item['cantidad'],
+    with transaction.atomic():
+        venta = Venta.objects.create(
+            cliente_nombre=cliente_nombre,
+            vendedor=vendedor,
+            total_venta=total_final,
+            metodo_pago=metodo_pago,
+            descuento_porcentaje=descuento_pct,
+            total_con_descuento=total_final,
+            pago_efectivo=pago_efectivo,
+            pago_tarjeta=pago_tarjeta,
+            pago_transferencia=pago_transferencia,
+            pago_nequi=pago_nequi,
+            pago_daviplata=pago_daviplata,
+            caja=caja_actual,
         )
 
-    messages.success(request, f"Venta registrada — Total: ${total_final:,.0f}".replace(',', '.'))
+        for item in items_validados:
+            subtotal_item = item['precio'] * item['cantidad']
+            cant_a_descontar = item['cantidad']
+
+            # Descontar de lotes (FIFO: lotes más antiguos primero)
+            lotes_qs = Lote.objects.select_for_update().filter(stock_actual__gt=0)
+            if item['presentacion']:
+                lotes_qs = lotes_qs.filter(presentacion=item['presentacion'])
+            else:
+                lotes_qs = lotes_qs.filter(producto=item['producto'])
+            lotes_qs = lotes_qs.order_by('fecha_registro', 'codigo_lote')
+
+            lote_asignado = None
+            for lote in lotes_qs:
+                if cant_a_descontar <= 0:
+                    break
+                lote_asignado = lote
+                if lote.stock_actual >= cant_a_descontar:
+                    lote.stock_actual -= cant_a_descontar
+                    lote.save(update_fields=['stock_actual'])
+                    cant_a_descontar = 0
+                else:
+                    cant_a_descontar -= lote.stock_actual
+                    lote.stock_actual = 0
+                    lote.save(update_fields=['stock_actual'])
+
+            DetalleVenta.objects.create(
+                venta=venta,
+                producto=item['producto'],
+                presentacion=item['presentacion'],
+                lote=lote_asignado,
+                cantidad=item['cantidad'],
+                precio_unitario=item['precio'],
+                subtotal_val=subtotal_item,
+                total_val=subtotal_item,
+            )
+
+        # Actualizar totales en caja
+        if metodo_pago == 'efectivo' or pago_efectivo > 0:
+            monto_efec = pago_efectivo if pago_efectivo > 0 else total_final
+            caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + monto_efec
+        if pago_tarjeta > 0 or pago_transferencia > 0 or pago_nequi > 0 or pago_daviplata > 0:
+            monto_trans = (pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata)
+            caja_actual.total_transferencias = (caja_actual.total_transferencias or Decimal('0')) + monto_trans
+        caja_actual.save(update_fields=['total_efectivo', 'total_transferencias'])
+
+    messages.success(request, f"Venta #{venta.pk} registrada con éxito — Total: ${total_final:,.0f}".replace(',', '.'))
     return redirect('ventas')
 
 
@@ -192,23 +258,35 @@ def nueva_venta(request):
 def eliminar_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
     if request.method == 'POST':
-        venta.delete()
-        messages.success(request, "Venta eliminada.")
+        with transaction.atomic():
+            # Restaurar stock a los lotes asociados
+            for det in venta.detalles.all():
+                if det.lote:
+                    det.lote.stock_actual += det.cantidad
+                    det.lote.save(update_fields=['stock_actual'])
+            venta.delete()
+            messages.success(request, "Venta eliminada y stock restituido a bodega.")
     return redirect('ventas')
 
 
 def producto_stock_json(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     presentaciones = []
-    if hasattr(producto, 'presentaciones'):
-        presentaciones = [
-            {'id': p.id, 'nombre': p.nombre, 'cantidad': getattr(p, 'cantidad', 0), 'precio': float(getattr(p, 'precio_venta', 0))}
-            for p in producto.presentaciones.all()
-        ]
+    for p in producto.presentaciones.filter(activo=True):
+        presentaciones.append({
+            'id': p.pk,
+            'nombre': p.nombre,
+            'unidades': p.cantidad,
+            'stock': p.stock_real,
+            'precio': float(p.precio_venta or 0)
+        })
+    precio_base_val = producto.precio_base()
     return JsonResponse({
-        'stock': getattr(producto, 'cantidad_disponible', 0),
-        'precio': float(getattr(producto, 'precio_unitario', 0)),
-        'unidad': getattr(producto, 'unidad', 'Unid'),
+        'id': producto.pk,
+        'nombre': producto.nombre,
+        'stock': producto.stock_total,
+        'precio': float(precio_base_val) if precio_base_val is not None else 0.0,
+        'unidad': 'Und',
         'presentaciones': presentaciones,
     })
 
@@ -544,19 +622,22 @@ def caja(request):
 
 
 def obtener_usuario_actual(request):
+    UserModel = get_user_model()
     vendedor = None
     if hasattr(request, 'user') and request.user and request.user.is_authenticated:
-        try:
-            vendedor = Usuario.objects.get(pk=request.user.pk)
-        except (AttributeError, Usuario.DoesNotExist):
-            if hasattr(request.user, '_wrapped') and isinstance(request.user._wrapped, Usuario):
-                vendedor = request.user._wrapped
+        if isinstance(request.user, UserModel):
+            vendedor = request.user
+        else:
+            try:
+                vendedor = UserModel.objects.get(pk=request.user.pk)
+            except Exception:
+                pass
 
     if not vendedor and request.session.get('usuario_id'):
-        vendedor = Usuario.objects.filter(pk=request.session.get('usuario_id')).first()
+        vendedor = UserModel.objects.filter(pk=request.session.get('usuario_id')).first()
 
-    if not vendedor or not isinstance(vendedor, Usuario):
-        vendedor = Usuario.objects.first()
+    if not vendedor:
+        vendedor = UserModel.objects.first()
 
     return vendedor
 

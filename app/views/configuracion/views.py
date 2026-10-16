@@ -1,6 +1,7 @@
 ﻿import os
 import subprocess
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -8,15 +9,18 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import connection
+from django.utils import timezone
+from django.utils.html import escape
 
 from app.models import ConfiguracionEmpresa, BackupRegistro
+from usuarios.models import RegistroActividad
 
 
 # -- Helpers --------------------------------------------------
 
 def _db_stats():
     """Estadisticas basicas de la base de datos MySQL."""
-    stats = {'registros': 0, 'tablas': 0, 'tamano': '-'}
+    stats = {'registros': 0, 'tablas': 0, 'tamaño': '-'}
     try:
         db_name = settings.DATABASES['default']['NAME']
         with connection.cursor() as cur:
@@ -43,16 +47,21 @@ def _db_stats():
             )
             size_bytes = cur.fetchone()[0] or 0
             if size_bytes < 1024 * 1024:
-                stats['tamano'] = f'{size_bytes / 1024:.1f} KB'
+                stats['tamaño'] = f'{size_bytes / 1024:.1f} KB'
             else:
-                stats['tamano'] = f'{size_bytes / (1024 * 1024):.2f} MB'
+                stats['tamaño'] = f'{size_bytes / (1024 * 1024):.2f} MB'
     except Exception:
         pass
     return stats
 
 
 def _es_admin(request):
-    return request.user.is_authenticated and request.user.rol == 'admin'
+    u = request.user
+    return u.is_authenticated and (
+        getattr(u, 'rol', '') == 'admin'
+        or getattr(u, 'is_admin', False)
+        or getattr(u, 'is_superuser', False)
+    )
 
 
 # -- Vistas -----------------------------------------------------
@@ -74,6 +83,29 @@ def index(request):
         ],
     }
     return render(request, 'configuracion/configuracion.html', context)
+
+
+@login_required
+def actividad_usuarios(request):
+    """Inicios de sesion: el admin ve todos, los demas solo los suyos."""
+    es_admin = _es_admin(request)
+
+    registros_qs = RegistroActividad.objects.select_related('usuario')
+    if not es_admin:
+        registros_qs = registros_qs.filter(usuario=request.user)
+
+    registros = []
+    for r in registros_qs[:100]:
+        fecha = r.fecha_hora
+        if timezone.is_aware(fecha):
+            fecha = timezone.localtime(fecha)
+        registros.append({
+            'usuario':    escape(r.usuario.nombre_completo or r.usuario.username),
+            'fecha_hora': fecha.strftime('%d/%m/%Y %H:%M:%S'),
+            'ip':         r.ip_address or '—',
+        })
+
+    return JsonResponse({'es_admin': es_admin, 'registros': registros})
 
 
 @login_required
@@ -134,10 +166,17 @@ def guardar_empresa(request):
 @require_POST
 def guardar_impuestos(request):
     config = ConfiguracionEmpresa.get_config()
-    try:
-        config.iva_porcentaje = float(request.POST.get('iva_porcentaje', config.iva_porcentaje))
-    except (ValueError, TypeError):
-        pass
+
+    iva_raw = request.POST.get('iva_porcentaje')
+    if iva_raw not in (None, ''):
+        try:
+            iva = Decimal(str(iva_raw))
+        except InvalidOperation:
+            return JsonResponse({'ok': False, 'error': 'El IVA no es un numero valido.'})
+        if iva < 0 or iva > 100:
+            return JsonResponse({'ok': False, 'error': 'El IVA debe estar entre 0 y 100.'})
+        config.iva_porcentaje = iva
+
     config.moneda = request.POST.get('moneda', config.moneda)
 
     unidades = request.POST.getlist('unidades[]')
@@ -195,13 +234,12 @@ def crear_backup(request):
         )
 
         return JsonResponse({
-            'ok':    True,
+            'ok':     True,
             'nombre': nombre,
             'fecha':  registro.fecha.strftime('%d/%m/%Y %H:%M'),
-            'tamano': tamano_str,
+            'tamaño': tamano_str,
         })
     except FileNotFoundError:
         return JsonResponse({'ok': False, 'error': 'mysqldump no esta instalado o no esta en el PATH del servidor.'})
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
-

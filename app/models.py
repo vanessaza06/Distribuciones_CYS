@@ -171,20 +171,59 @@ class Producto(models.Model):
 
     @property
     def stock_total(self):
-        return (
-            Lote.objects.filter(producto=self).aggregate(total=Sum("stock_actual"))[
-                "total"
-            ]
-            or 0
-        )
+        # Se memoriza por instancia: las plantillas lo llaman varias veces por producto.
+        if not hasattr(self, "_stock_total_cache"):
+            if hasattr(self, "stock_total_anotado"):
+                # Viene de .annotate(stock_total_anotado=Sum("lotes__stock_actual"))
+                valor = self.stock_total_anotado or 0
+            elif "lotes" in getattr(self, "_prefetched_objects_cache", {}):
+                valor = sum(l.stock_actual for l in self.lotes.all())
+            else:
+                valor = (
+                    Lote.objects.filter(producto=self).aggregate(total=Sum("stock_actual"))[
+                        "total"
+                    ]
+                    or 0
+                )
+            self._stock_total_cache = valor
+        return self._stock_total_cache
 
     @property
     def stock_critico(self):
         return self.stock_total <= 5
 
+    @property
+    def detalle_principal(self):
+        """Equivale a detalles.first(), pero reutiliza prefetch_related('detalles')."""
+        detalles = list(self.detalles.all())
+        return min(detalles, key=lambda d: d.pk) if detalles else None
+
+    @property
+    def lote_referencia(self):
+        """Equivale a presentaciones.first().lotes.last(), reutilizando
+        prefetch_related('presentaciones__lotes')."""
+        presentaciones = sorted(self.presentaciones.all(), key=lambda p: p.pk)
+        if not presentaciones:
+            return None
+        lotes = list(presentaciones[0].lotes.all())
+        return lotes[-1] if lotes else None
+
     def precio_base(self):
-        pres = self.presentaciones.order_by("precio_venta").first()
-        return pres.precio_venta if pres else None
+        if not hasattr(self, "_precio_base_cache"):
+            if hasattr(self, "precio_base_anotado"):
+                valor = self.precio_base_anotado
+            elif "presentaciones" in getattr(self, "_prefetched_objects_cache", {}):
+                precios = [
+                    p.precio_venta
+                    for p in self.presentaciones.all()
+                    if p.precio_venta is not None
+                ]
+                valor = min(precios) if precios else None
+            else:
+                pres = self.presentaciones.order_by("precio_venta").first()
+                valor = pres.precio_venta if pres else None
+            self._precio_base_cache = valor
+        return self._precio_base_cache
 
 
 # ── 5. PRESENTACION PRODUCTO ──
@@ -1265,3 +1304,4 @@ class BackupRegistro(models.Model):
 
     def __str__(self):
         return self.nombre
+

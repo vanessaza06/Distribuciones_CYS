@@ -1,23 +1,41 @@
+/* ════════════════════════════════════════════════
+   LOGIN — todo el color sale de variables del tema
+   Los valores de :root son el respaldo (tema oscuro por defecto).
+   ════════════════════════════════════════════════ */
+
 :root {
+  /* Respaldo: se sobrescriben cuando se aplica un tema */
   --azul-oscuro: #011936;
-  --azul-claro: #4DA8DA;
-  --azul-borde: rgba(77,168,218,.35);
-  --azul-glow: rgba(77,168,218,.15);
-  --fondo-card: #0D1B2E;
+  --azul-medio:  #0F3B6C;
+  --azul-claro:  #4DA8DA;
+  --fondo:       #060c16;
+  --fondo-card:  #0D1B2E;
   --fondo-card2: #111f33;
-  --texto: #E8EDF2;
-  --texto-muted: rgba(232,237,242,.45);
+  --texto:       #E8EDF2;
+  --texto-muted: #7a9bbf;
+  --rojo:        #e87070;
+  --verde:       #5edb97;
+
+  --azul-borde: color-mix(in srgb, var(--azul-claro) 35%, transparent);
+  --azul-glow:  color-mix(in srgb, var(--azul-claro) 15%, transparent);
   --radius: 12px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  height: 100%;
+  overflow-y: auto !important;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   color: var(--texto);
-  min-height: 100vh;
+  min-height: 100%;
+  height: auto !important;
+  overflow-y: auto !important;
   position: relative;
-  background-color: #060c16;
+  background-color: var(--fondo);
 }
 
 body::before {
@@ -26,9 +44,9 @@ body::before {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(6,12,22,1)    0%,
-    rgba(8,32,90,0.92) 50%,
-    rgba(4,16,50,1)    100%
+    var(--fondo) 0%,
+    color-mix(in srgb, var(--azul-medio) 92%, var(--fondo)) 50%,
+    var(--fondo) 100%
   );
   z-index: 0;
 }
@@ -38,21 +56,10 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 65% 35%, rgba(10,50,120,0.5) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 80%, rgba(5,25,70,0.4)  0%, transparent 50%);
+    radial-gradient(ellipse at 65% 35%, color-mix(in srgb, var(--azul-medio) 50%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, color-mix(in srgb, var(--azul-oscuro) 40%, transparent) 0%, transparent 50%);
   z-index: 1;
   pointer-events: none;
-}
-
-html {
-  height: 100%;
-  overflow-y: auto !important;
-}
-
-body {
-  min-height: 100%;
-  height: auto !important;
-  overflow-y: auto !important;
 }
 
 .cys-wrap {
@@ -138,16 +145,14 @@ body {
   align-items: center;
 }
 
-.cys-input-eye .cys-input {
-  padding-right: 2.6rem !important;
-}
+.cys-input-eye .cys-input { padding-right: 2.6rem !important; }
 
 .cys-eye-btn {
   position: absolute;
   right: .75rem;
   background: transparent;
   border: none;
-  color: rgba(77,168,218,.4);
+  color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
   cursor: pointer;
   padding: 0;
   font-size: .95rem;
@@ -162,7 +167,7 @@ body {
 .cys-field-icon {
   position: absolute;
   left: .85rem;
-  color: rgba(77,168,218,.5);
+  color: color-mix(in srgb, var(--azul-claro) 50%, transparent);
   font-size: .9rem;
   pointer-events: none;
   z-index: 2;
@@ -183,14 +188,17 @@ body {
   text-transform: uppercase;
   cursor: pointer;
   transition: all .22s ease;
-  box-shadow: 0 4px 14px rgba(77,168,218,.4);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--azul-claro) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: .4rem;
 }
 
-.cys-btn-primary:hover { background: #6dc0e8; transform: translateY(-2px); }
+.cys-btn-primary:hover {
+  background: color-mix(in srgb, var(--azul-claro) 85%, white);
+  transform: translateY(-2px);
+}
 
 .cys-divider {
   height: 1px;
@@ -220,8 +228,7 @@ body {
   color: var(--azul-claro);
 }
 
-/* ── Mensajes de alerta (legacy, ya no se usan para login pero se
-     mantienen por si otras vistas los reutilizan) ── */
+/* ── Mensajes de alerta (legacy) ── */
 .cys-msg {
   border-radius: 8px;
   padding: .65rem .9rem;
@@ -231,15 +238,15 @@ body {
 }
 
 .cys-msg--ok {
-  background: rgba(46,204,113,.1);
-  border: 1px solid rgba(46,204,113,.35);
-  color: #5edb97;
+  background: color-mix(in srgb, var(--verde) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+  color: var(--verde);
 }
 
 .cys-msg--err {
-  background: rgba(192,57,43,.1);
-  border: 1px solid rgba(192,57,43,.35);
-  color: #e87070;
+  background: color-mix(in srgb, var(--rojo) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent);
+  color: var(--rojo);
 }
 
 /* ── Shake ── */
@@ -285,15 +292,15 @@ body {
 }
 
 .cys-login-hint--doc {
-  background: rgba(77,168,218,.08);
-  border: 1px solid rgba(77,168,218,.22);
-  color: #7ec8e3;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent);
+  color: var(--azul-claro);
 }
 
 .cys-login-hint--user {
-  background: rgba(94,219,151,.07);
-  border: 1px solid rgba(94,219,151,.22);
-  color: #5edb97;
+  background: color-mix(in srgb, var(--verde) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 22%, transparent);
+  color: var(--verde);
 }
 
 .cys-login-hint i {
@@ -304,43 +311,34 @@ body {
 
 /* ── Badge de método ── */
 .cys-method-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: .4rem;
   font-size: .73rem;
   font-weight: 600;
   color: var(--azul-claro);
-  background: rgba(77,168,218,.08);
-  border: 1px solid rgba(77,168,218,.22);
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent);
   border-radius: 20px;
   padding: .35rem 1rem;
   width: auto;
   margin: 0 auto;
-  display: flex;
 }
 
 .cys-method-badge--otp {
-  color: #5edb97;
-  background: rgba(94,219,151,.08);
-  border-color: rgba(94,219,151,.22);
+  color: var(--verde);
+  background: color-mix(in srgb, var(--verde) 8%, transparent);
+  border-color: color-mix(in srgb, var(--verde) 22%, transparent);
 }
 
 /* ════════════════════════════════════════════════
    ESTILOS EN LÍNEA EXTRAÍDOS
    ════════════════════════════════════════════════ */
 
-.hidden-display {
-  display: none;
-}
-
-.msg-display-block {
-  display: block;
-}
-
-.icon-small {
-  font-size: 0.75rem;
-}
+.hidden-display { display: none; }
+.msg-display-block { display: block; }
+.icon-small { font-size: 0.75rem; }
 
 .cys-desc {
   font-size: 0.78rem;
@@ -348,19 +346,10 @@ body {
   line-height: 1.6;
 }
 
-.btn-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
+.btn-title { font-size: 0.85rem; font-weight: 600; }
+.btn-subtitle { font-size: 0.72rem; opacity: 0.75; }
 
-.btn-subtitle {
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-
-.input-email-left-padding {
-  padding-left: 2.6rem !important;
-}
+.input-email-left-padding { padding-left: 2.6rem !important; }
 
 .otp-input-custom {
   letter-spacing: 0.5rem;
@@ -369,10 +358,7 @@ body {
   font-weight: 700;
 }
 
-.timer-span {
-  font-weight: 700;
-  margin-left: 0.25rem;
-}
+.timer-span { font-weight: 700; margin-left: 0.25rem; }
 
 /* ══════════════════════════════════════════════
    OVERLAY ACCESO CONCEDIDO / DENEGADO
@@ -384,7 +370,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 8, 20, .82);
+  background: color-mix(in srgb, var(--fondo) 85%, transparent);
   backdrop-filter: blur(6px);
   animation: accessOverlayIn .25s ease both;
   transition: opacity .2s ease;
@@ -411,13 +397,13 @@ body {
 }
 
 .cys-access-box--ok {
-  border: 1px solid rgba(46,204,113,.35);
-  box-shadow: 0 0 50px rgba(46,204,113,.15), 0 20px 60px rgba(0,0,0,.6);
+  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+  box-shadow: 0 0 50px color-mix(in srgb, var(--verde) 15%, transparent), 0 20px 60px rgba(0,0,0,.6);
 }
 
 .cys-access-box--err {
-  border: 1px solid rgba(192,57,43,.4);
-  box-shadow: 0 0 50px rgba(192,57,43,.15), 0 20px 60px rgba(0,0,0,.6);
+  border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent);
+  box-shadow: 0 0 50px color-mix(in srgb, var(--rojo) 15%, transparent), 0 20px 60px rgba(0,0,0,.6);
 }
 
 .cys-access-icon {
@@ -432,23 +418,23 @@ body {
 }
 
 .cys-access-icon--ok {
-  background: rgba(46,204,113,.12);
-  border: 1px solid rgba(46,204,113,.35);
-  color: #5edb97;
-  box-shadow: 0 0 30px rgba(46,204,113,.2);
+  background: color-mix(in srgb, var(--verde) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 35%, transparent);
+  color: var(--verde);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--verde) 20%, transparent);
   animation: accessPulseOk 1s ease infinite;
 }
 
 .cys-access-icon--err {
-  background: rgba(192,57,43,.12);
-  border: 1px solid rgba(192,57,43,.4);
-  color: #e87070;
-  box-shadow: 0 0 30px rgba(192,57,43,.2);
+  background: color-mix(in srgb, var(--rojo) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rojo) 40%, transparent);
+  color: var(--rojo);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--rojo) 20%, transparent);
 }
 
 @keyframes accessPulseOk {
-  0%,100% { box-shadow: 0 0 20px rgba(46,204,113,.2); }
-  50%     { box-shadow: 0 0 38px rgba(46,204,113,.4); }
+  0%,100% { box-shadow: 0 0 20px color-mix(in srgb, var(--verde) 20%, transparent); }
+  50%     { box-shadow: 0 0 38px color-mix(in srgb, var(--verde) 40%, transparent); }
 }
 
 .cys-access-title {
@@ -460,8 +446,8 @@ body {
   margin-bottom: .5rem;
 }
 
-.cys-access-title--ok  { color: #5edb97; }
-.cys-access-title--err { color: #e87070; }
+.cys-access-title--ok  { color: var(--verde); }
+.cys-access-title--err { color: var(--rojo); }
 
 .cys-access-sub {
   font-size: .8rem;
@@ -473,8 +459,8 @@ body {
 .cys-access-spinner {
   width: 26px;
   height: 26px;
-  border: 3px solid rgba(94,219,151,.2);
-  border-top-color: #5edb97;
+  border: 3px solid color-mix(in srgb, var(--verde) 20%, transparent);
+  border-top-color: var(--verde);
   border-radius: 50%;
   margin: 0 auto;
   animation: accessSpin .7s linear infinite;
@@ -498,6 +484,6 @@ body {
 }
 
 .cys-access-btn:hover {
-  background: #6dc0e8;
+  background: color-mix(in srgb, var(--azul-claro) 85%, white);
   transform: translateY(-1px);
 }

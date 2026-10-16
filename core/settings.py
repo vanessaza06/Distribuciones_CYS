@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 pymysql.install_as_MySQLdb()
 load_dotenv()
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 # Evitar comprobación de versión de MySQL (permite usar MySQL 8.0 con Django 6.1)
 import django.db.backends.base.base
 django.db.backends.base.base.BaseDatabaseWrapper.check_database_version_supported = lambda self: None
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'app.perf_middleware.PerfLogMiddleware',  # TEMPORAL: diagnóstico de lentitud (escribe perf.log)
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,6 +92,8 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
+        'CONN_MAX_AGE': 60,           # reutiliza la conexión (~40 ms menos por petición)
+        'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES', NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'",

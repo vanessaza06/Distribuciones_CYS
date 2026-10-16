@@ -848,7 +848,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}">
+      <form method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}" onsubmit="return validarPagoDetalle()">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'detalle_compra' compra.codigo_compra %}">
 
@@ -875,13 +875,18 @@
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label class="form-label mb-0 fw-semibold">Monto a Pagar Ahora ($) <span class="text-danger">*</span></label>
-              <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" style="font-size:0.78rem;" onclick="document.getElementById('inputMontoDetalle').value = '{{ compra.saldo|stringformat:'.2f' }}'; recalcularPagoDetalle();">
+              <button type="button" id="btnPagarTodoDetalle" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold" style="font-size:0.78rem;" onclick="pagarTodoDetalle()">
                 <i class="bi bi-check2-all me-1"></i>Pagar Todo ({{ compra.saldo|cop }})
               </button>
             </div>
             <div class="input-group input-group-lg">
               <span class="input-group-text" style="background:#011936; border-color:rgba(255,255,255,0.15); color:#CF9C48;">$</span>
-              <input type="number" id="inputMontoDetalle" name="monto_pagado" class="form-control form-control-lg" step="0.01" min="0.01" max="{{ compra.saldo|stringformat:'.2f' }}" placeholder="Ingresa cuánto vas a pagar" required style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);" oninput="recalcularPagoDetalle()">
+              {# Campo visible con separador de miles (es-CO); el valor limpio viaja en el hidden #}
+              <input type="text" id="inputMontoDetalle" inputmode="numeric" autocomplete="off" class="form-control form-control-lg" placeholder="Ej: 50.000" required style="background:#011936; color:#fff; border-color:rgba(255,255,255,0.15);" oninput="formatearMontoDetalle(this)">
+              <input type="hidden" id="inputMontoDetalleRaw" name="monto_pagado" value="">
+            </div>
+            <div id="errorMontoDetalle" class="small text-danger mt-1 d-none">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i><span></span>
             </div>
           </div>
 
@@ -918,7 +923,7 @@
 
         <div class="modal-footer" style="border-top:1px solid rgba(239,248,226,0.1);">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="dc-btn-primary py-2 px-4">
+          <button type="submit" id="btnConfirmarPagoDetalle" class="dc-btn-primary py-2 px-4" disabled>
             <i class="bi bi-check-circle me-1"></i>Confirmar Pago
           </button>
         </div>
@@ -928,31 +933,61 @@
 </div>
 
 <script>
+var SALDO_DETALLE = parseFloat('{{ compra.saldo|stringformat:".2f" }}') || 0;
+var fmtCopDetalle = function (n) { return '$' + Math.round(n).toLocaleString('es-CO'); };
+
+// Solo dígitos: el punto se muestra como separador de miles, nunca como decimal
+function formatearMontoDetalle(el) {
+  var digitos = el.value.replace(/\D/g, '').replace(/^0+/, '');
+  el.value = digitos ? Number(digitos).toLocaleString('es-CO') : '';
+  document.getElementById('inputMontoDetalleRaw').value = digitos;
+  recalcularPagoDetalle();
+}
+
+function pagarTodoDetalle() {
+  document.getElementById('inputMontoDetalle').value = Math.round(SALDO_DETALLE).toLocaleString('es-CO');
+  document.getElementById('inputMontoDetalleRaw').value = SALDO_DETALLE.toFixed(2);
+  recalcularPagoDetalle();
+}
+
 function recalcularPagoDetalle() {
-  const saldoActual = parseFloat('{{ compra.saldo|stringformat:".2f" }}') || 0;
-  const inputEl = document.getElementById('inputMontoDetalle');
-  const abono = parseFloat(inputEl ? inputEl.value : 0) || 0;
-  const nuevoSaldo = Math.max(0, saldoActual - abono);
+  var abono = parseFloat(document.getElementById('inputMontoDetalleRaw').value) || 0;
+  var excede = abono > SALDO_DETALLE;
+  var nuevoSaldo = Math.max(0, SALDO_DETALLE - abono);
 
-  const saldoTexto = document.getElementById('saldoRestanteDetalleTexto');
-  if (saldoTexto) {
-    saldoTexto.textContent = '$' + nuevoSaldo.toLocaleString('es-CO');
-    saldoTexto.className = nuevoSaldo === 0 ? 'fw-bold text-success fs-6' : 'fw-bold text-danger fs-6';
-  }
+  var error = document.getElementById('errorMontoDetalle');
+  var input = document.getElementById('inputMontoDetalle');
+  error.querySelector('span').textContent = excede
+    ? 'El monto (' + fmtCopDetalle(abono) + ') supera el saldo pendiente (' + fmtCopDetalle(SALDO_DETALLE) + ').'
+    : '';
+  error.classList.toggle('d-none', !excede);
+  input.classList.toggle('is-invalid', excede);
+  document.getElementById('btnConfirmarPagoDetalle').disabled = excede || abono <= 0;
 
-  const badgeEl = document.getElementById('badgeEstadoDetalle');
-  if (badgeEl) {
-    if (abono >= saldoActual && saldoActual > 0) {
-      badgeEl.className = 'badge badge-success-custom px-2 py-1';
-      badgeEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
-    } else if (abono > 0) {
-      badgeEl.className = 'badge badge-warning-custom px-2 py-1';
-      badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Quedará PARCIAL';
-    } else {
-      badgeEl.className = 'badge badge-pending-custom px-2 py-1';
-      badgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono';
-    }
+  var saldoTexto = document.getElementById('saldoRestanteDetalleTexto');
+  saldoTexto.textContent = excede ? '—' : fmtCopDetalle(nuevoSaldo);
+  saldoTexto.className = nuevoSaldo === 0 && !excede ? 'fw-bold text-success fs-6' : 'fw-bold text-danger fs-6';
+
+  var badgeEl = document.getElementById('badgeEstadoDetalle');
+  if (excede) {
+    badgeEl.className = 'badge bg-danger px-2 py-1';
+    badgeEl.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i>Monto no válido';
+  } else if (abono > 0 && nuevoSaldo === 0) {
+    badgeEl.className = 'badge badge-success-custom px-2 py-1';
+    badgeEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Quedará PAGADA';
+  } else if (abono > 0) {
+    badgeEl.className = 'badge badge-warning-custom px-2 py-1';
+    badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Abono parcial (aún debe ' + fmtCopDetalle(nuevoSaldo) + ')';
+  } else {
+    badgeEl.className = 'badge badge-pending-custom px-2 py-1';
+    badgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sin abono';
   }
+}
+
+function validarPagoDetalle() {
+  var abono = parseFloat(document.getElementById('inputMontoDetalleRaw').value) || 0;
+  recalcularPagoDetalle();
+  return abono > 0 && abono <= SALDO_DETALLE;
 }
 </script>
 {% endif %}

@@ -6,7 +6,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import F, Sum
+from django.db.models import Count, F, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -65,20 +65,27 @@ def _usuario_de_compra(user):
 
 
 def _proveedores_disponibles():
-    activos = Proveedor.objects.filter(estado='activo').order_by('nombre_empresa')
-    return activos if activos.exists() else Proveedor.objects.order_by('nombre_empresa')
+    activos = list(Proveedor.objects.filter(estado='activo').order_by('nombre_empresa'))
+    return activos if activos else list(Proveedor.objects.order_by('nombre_empresa'))
 
 
 def _resolver_proveedor(request, disponibles):
     """Proveedor activo: parámetro GET -> sesión -> primero disponible."""
     candidatos = [request.GET.get('proveedor'), request.session.get('proveedor_id')]
+    proveedor = None
     for pk in candidatos:
         if pk:
-            proveedor = Proveedor.objects.filter(pk=str(pk).strip()).first()
+            pk_str = str(pk).strip()
+            for p in disponibles:
+                if str(p.pk) == pk_str:
+                    proveedor = p
+                    break
+            if not proveedor:
+                proveedor = Proveedor.objects.filter(pk=pk_str).first()
             if proveedor:
                 break
     else:
-        proveedor = disponibles.first()
+        proveedor = disponibles[0] if disponibles else None
     if proveedor:
         request.session['proveedor_id'] = str(proveedor.pk)
     return proveedor
@@ -165,11 +172,20 @@ def _estadisticas(compras_validas):
         if clave in totales:
             totales[clave] += valor
 
+    agg_totales = compras_validas.aggregate(
+        s=Sum('valor'),
+        g=Sum(F('valor') - F('saldo')),
+    )
+    agg_mes = del_mes.aggregate(
+        c=Count('codigo_compra'),
+        s=Sum('valor'),
+    )
+
     return {
-        'subtotal_compras': compras_validas.aggregate(s=Sum('valor'))['s'] or CERO,
-        'total_gastado': compras_validas.aggregate(g=Sum(F('valor') - F('saldo')))['g'] or CERO,
-        'count_mes': del_mes.count(),
-        'total_mes': del_mes.aggregate(s=Sum('valor'))['s'] or CERO,
+        'subtotal_compras': agg_totales['s'] or CERO,
+        'total_gastado': agg_totales['g'] or CERO,
+        'count_mes': agg_mes['c'] or 0,
+        'total_mes': agg_mes['s'] or CERO,
         'producto_top': top[0] if top else None,
         'meses_labels_json': json.dumps([f"{MESES_ABREV[m]} {y}" for y, m in meses]),
         'meses_data_json': json.dumps([float(totales[k]) for k in meses]),

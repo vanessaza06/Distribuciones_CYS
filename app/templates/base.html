@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}CYS Ltda{% endblock %}</title>
 
-    <link rel="icon" type="image/jpeg" href="{% static 'img/logo.jpeg' %}" />
     <link rel="icon" type="image/jpeg" href="{% static 'img/logo.20.png' %}" />
 
     <link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
@@ -19,8 +18,9 @@
     {% block extra_css %}{% endblock %}
 
     <!-- htmx: navegación por AJAX acotada solo al contenido de cada página -->
-    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/head-support.js"></script>
+    <!-- Copia local de htmx 1.9.12 (antes se cargaba desde unpkg y bloqueaba la página si la red iba lenta) -->
+    <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+    <script src="{% static 'vendor/htmx/head-support.js' %}"></script>
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/base.js' %}"></script>
@@ -185,9 +185,13 @@
     </div>
     <!-- ===== FIN WIDGET DE ACCESIBILIDAD ===== -->
 
+    <!-- ===== WIDGET FLOTANTE DE CHATBOT (global, en todas las páginas) ===== -->
+    {% include 'partials/chatbot.html' %}
+
     <script src="{% static 'js/cuerpo/reloj.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/principal.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/sidebar-init.js' %}" defer></script>
+    <script src="{% static 'js/cuerpo/chatbot.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 
@@ -207,6 +211,8 @@
         var root = container || document;
         root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
           if (el.getAttribute('data-bs-toggle') === 'modal') return;
+          // Los tooltips del aside los maneja aside.js (solo en modo compacto)
+          if (el.closest('#sidebarRight')) return;
 
           var existing = bootstrap.Tooltip.getInstance(el);
           if (existing) {

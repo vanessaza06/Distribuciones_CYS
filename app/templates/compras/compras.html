@@ -73,6 +73,181 @@
     color: #ff8a7a; font-size: .85rem; font-weight: 600;
   }
   #tablaHistorialCompras td, #tablaHistorialCompras th { white-space: nowrap; }
+  .cmp-sug-item {
+    background: #02224a !important;
+    color: #fff !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-left 0.15s ease;
+    border-left: 3px solid transparent !important;
+  }
+  .cmp-sug-item:hover,
+  .cmp-sug-item:focus,
+  .cmp-sug-item.active {
+    background: rgba(207,156,72,0.22) !important;
+    color: #fff !important;
+    border-left: 3px solid #CF9C48 !important;
+    outline: none;
+  }
+  .cmp-sug-item:last-child { border-bottom: none !important; }
+  /* Buscador Premium de Producto */
+  .cmp-search-box-wrap {
+    position: relative;
+    border-radius: 12px;
+    background: rgba(2, 34, 74, 0.85);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cmp-search-box-wrap:focus-within,
+  .cmp-search-box-wrap.is-focused {
+    border-color: #CF9C48 !important;
+    background: #022045;
+    box-shadow: 0 0 0 3.5px rgba(207, 156, 72, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+  .cmp-search-box-wrap.has-error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3.5px rgba(231, 76, 60, 0.3) !important;
+  }
+  .cmp-search-box-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4DA8DA;
+    font-size: 1.15rem;
+    pointer-events: none;
+    transition: color 0.2s ease;
+  }
+  .cmp-search-box-wrap:focus-within .cmp-search-box-icon {
+    color: #CF9C48;
+  }
+  .cmp-search-main-input {
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 13px 44px 13px 44px !important;
+    font-size: 0.96rem !important;
+    font-weight: 500;
+    box-shadow: none !important;
+  }
+  .cmp-search-main-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.90rem;
+    font-weight: 400;
+  }
+  .cmp-search-box-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 1.15rem;
+    padding: 4px 6px;
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+  }
+  .cmp-search-box-clear:hover {
+    color: #ff7675;
+    transform: translateY(-50%) scale(1.15);
+  }
+
+  /* Tarjeta de producto seleccionado */
+  .cmp-selected-product {
+    background: linear-gradient(135deg, rgba(207, 156, 72, 0.16) 0%, rgba(3, 27, 56, 0.95) 100%);
+    border: 1px solid rgba(207, 156, 72, 0.45);
+    border-left: 4px solid #CF9C48 !important;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    animation: cmpFadeIn 0.25s ease-out;
+  }
+  .cmp-selected-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(46, 204, 113, 0.35);
+  }
+
+  /* Menú desplegable flotante de resultados */
+  .cmp-dropdown-menu {
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #02162e;
+    border: 1.5px solid rgba(207, 156, 72, 0.45);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
+    overflow-y: auto;
+    z-index: 1070;
+  }
+  .cmp-dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+  }
+  .cmp-dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(207, 156, 72, 0.45);
+    border-radius: 6px;
+  }
+  .cmp-dropdown-item {
+    background: transparent;
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 16px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease, border-left 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+  .cmp-dropdown-item:hover,
+  .cmp-dropdown-item:focus,
+  .cmp-dropdown-item.active {
+    background: rgba(207, 156, 72, 0.2) !important;
+    color: #fff !important;
+    border-left: 4px solid #CF9C48 !important;
+    outline: none;
+  }
+  .cmp-dropdown-item:last-child {
+    border-bottom: none;
+  }
+  @keyframes cmpFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Botones de modalidad de pago 100% Total / Crédito */
+  .btn-modo-pago {
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+  }
+  .btn-modo-pago.is-active-total {
+    background: #0dcaf0 !important;
+    color: #011936 !important;
+    border-color: #0dcaf0 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 10px rgba(13, 202, 240, 0.45) !important;
+  }
+  .btn-modo-pago.is-active-credito {
+    background: #6c757d !important;
+    color: #fff !important;
+    border-color: #6c757d !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 10px rgba(108, 117, 125, 0.45) !important;
+  }
   @media (max-width: 576px) {
     .container-fluid.px-4 { padding-left: .75rem !important; padding-right: .75rem !important; }
     .proveedor-actions { width: 100%; }
@@ -508,16 +683,71 @@
             </select>
           </div>
 
-          <!-- Producto -->
-          <div class="mb-3">
-            <label for="formCompraProducto" class="dev-form-label fw-bold d-flex align-items-center gap-1">
-              <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
-            </label>
-            <select id="formCompraProducto" name="producto" class="form-select form-select-lg cmp-input" required title="Producto que estás comprando">
-              <option value="" disabled selected>-- Selecciona un Producto --</option>
+          <!-- Producto a Comprar (Buscador Único Premium) -->
+          <div class="mb-3 position-relative" id="cmpProductoWrapper">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="buscarProductoInput" class="dev-form-label fw-bold d-flex align-items-center gap-1 mb-0">
+                <i class="bi bi-box-seam text-info"></i> Producto a Comprar <span class="text-danger">*</span>
+              </label>
+              <span id="cmpProdContador" class="badge" style="background: rgba(77, 168, 218, 0.15); color: #4DA8DA; font-size: 0.72rem; font-weight: 600;">
+                {{ form.producto.field.queryset|length }} disponibles
+              </span>
+            </div>
+
+            <!-- Buscador único con diseño glassmorphism -->
+            <div class="cmp-search-box-wrap" id="cmpSearchBoxWrap">
+              <i class="bi bi-search cmp-search-box-icon"></i>
+              <input type="text"
+                     id="buscarProductoInput"
+                     class="form-control cmp-search-main-input"
+                     placeholder="Buscar por nombre o categoría (ej: Aguila, Pet, Agua)..."
+                     autocomplete="off"
+                     spellcheck="false">
+              <button type="button"
+                      class="btn cmp-search-box-clear d-none"
+                      id="limpiarBuscarProducto"
+                      title="Borrar y buscar otro producto">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </div>
+
+            <!-- Tarjeta de Producto Seleccionado -->
+            <div id="cmpProductoSeleccionadoCard" class="cmp-selected-product d-none mt-2 p-2 px-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2 text-truncate">
+                  <div class="cmp-selected-icon">
+                    <i class="bi bi-check2-circle"></i>
+                  </div>
+                  <div class="text-truncate">
+                    <div class="fw-bold text-white text-truncate" id="cmpSelectedNombre">Producto</div>
+                    <div class="d-flex align-items-center gap-2 small text-muted">
+                      <span id="cmpSelectedCat" class="text-info"><i class="bi bi-tag me-1"></i>General</span>
+                      <span class="text-white-50">•</span>
+                      <span id="cmpSelectedStock" class="text-warning">Stock: 0 und.</span>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-warning py-1 px-2 fw-semibold" id="btnCambiarProducto" title="Buscar otro producto">
+                  <i class="bi bi-arrow-repeat me-1"></i>Cambiar
+                </button>
+              </div>
+            </div>
+
+            <!-- Menú desplegable flotante con scroll suave -->
+            <div id="cmpSugerenciasList"
+                 class="cmp-dropdown-menu shadow-lg position-absolute w-100 d-none"
+                 style="z-index: 1060; max-height: 290px; overflow-y: auto;">
+            </div>
+
+            <!-- Campo oculto para el envío del formulario a Django -->
+            <input type="hidden" name="producto" id="formCompraProducto" required>
+
+            <!-- Fuente de datos de productos (oculta para alimentar el buscador instantáneo) -->
+            <select id="formCompraProductoSource" class="d-none">
+              <option value="" disabled selected></option>
               {% for p in form.producto.field.queryset %}
-                <option value="{{ p.pk }}" data-precio="{{ p.precio_base|default:0 }}" data-stock="{{ p.stock_total }}" data-categoria="{{ p.categoria.nombre|default:'General' }}">
-                  {{ p.nombre }} {% if p.categoria %}({{ p.categoria.nombre }}){% endif %} - Stock actual: {{ p.stock_total }} und.
+                <option value="{{ p.pk }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio_base|default:0 }}" data-stock="{{ p.stock_total }}" data-categoria="{{ p.categoria.nombre|default:'General' }}">
+                  {{ p.nombre }}
                 </option>
               {% endfor %}
             </select>
@@ -585,14 +815,18 @@
               <div class="col-md-6">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label for="formCompraPago" class="dev-form-label fw-semibold mb-0">Abono Inicial ($)</label>
-                  <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" title="Pagar el total de la compra de una vez" id="btnPagarTotalNueva">100% Total</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" title="Registrar la compra sin pagar nada todavía" id="btnCreditoNueva">Crédito ($0)</button>
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Modalidad de pago">
+                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago" style="font-size:0.75rem;" id="btnPagarTotalNueva">
+                      <i class="bi bi-check2-circle me-1"></i>100% Total
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago is-active-credito" style="font-size:0.75rem;" id="btnCreditoNueva">
+                      <i class="bi bi-clock-history me-1"></i>Crédito ($0)
+                    </button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="0.01" min="0" placeholder="0 para compra a crédito" value="0" autocomplete="off" title="Cuánto vas a pagar ahora de esta compra">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="any" min="0" placeholder="0 para crédito total" value="0" autocomplete="off">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
-                  Saldo pendiente que quedará: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
+                  Saldo pendiente: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
               </div>
               <div class="col-md-6">
@@ -914,8 +1148,8 @@
   cargar("{% static 'vendor/chartjs/chart.umd.min.js' %}", function () { return window.Chart; })
     .then(function () { return cargar("{% static 'vendor/jquery/jquery-3.7.1.min.js' %}", function () { return window.jQuery; }); })
     .then(function () { return cargar("{% static 'js/datatables.min.js' %}", function () { return window.jQuery.fn.DataTable; }); })
-    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}", function () { return window.ComprasPage; }); })
-    .then(function () { window.ComprasPage.init(); })
+    .then(function () { return cargar("{% static 'js/proveedores/compras.js' %}?v=20261015c", function () { return false; }); })
+    .then(function () { if (window.ComprasPage && window.ComprasPage.init) window.ComprasPage.init(); })
     .catch(function (e) { console.error(e); });
 })();
 </script>
