@@ -5,6 +5,7 @@ Requiere: pip install openpyxl reportlab
 import base64
 import io
 import os
+import re
 
 from django.conf import settings
 from django.contrib import messages
@@ -30,6 +31,36 @@ from reportlab.platypus import Image as RLImage
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import Marca  # type: ignore
+
+
+# ---------------------------------------------------------------------------
+# Validación de marcas.
+# Nombre: solo letras (con tildes/ñ) y espacios.
+# Descripción (opcional): solo letras; espacio único solo entre palabras.
+# ---------------------------------------------------------------------------
+PATRON_TEXTO = re.compile(r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+$')
+MSG_NOMBRE_INVALIDO = (
+    'El nombre solo puede tener letras y espacios, '
+    'sin números ni caracteres especiales.'
+)
+MSG_DESCRIPCION_INVALIDA = (
+    'La descripción solo puede tener letras, '
+    'sin números ni caracteres especiales.'
+)
+
+
+def _limpiar_texto(valor):
+    """Quita espacios sobrantes (inicio, fin y repetidos)."""
+    return " ".join((valor or "").split())
+
+
+def nombre_marca_valido(nombre):
+    return bool(PATRON_TEXTO.match(nombre))
+
+
+def descripcion_valida(descripcion):
+    # La descripción es opcional: vacía es válida
+    return descripcion == "" or bool(PATRON_TEXTO.match(descripcion))
 
 
 # ---------------------------------------------------------------------------
@@ -141,14 +172,18 @@ def lista_marcas(request):
 # ---------------------------------------------------------------------------
 def crear_marca(request):
     if request.method == 'POST':
-        nombre = (request.POST.get('nombre') or '').strip()
-        descripcion = (request.POST.get('descripcion') or '').strip()
+        nombre = _limpiar_texto(request.POST.get('nombre'))
+        descripcion = _limpiar_texto(request.POST.get('descripcion'))
         estado = request.POST.get('estado', 'activo')
         if estado not in ('activo', 'inactivo'):
             estado = 'activo'
 
         if not nombre:
             messages.error(request, 'El nombre de la marca es obligatorio.')
+        elif not nombre_marca_valido(nombre):
+            messages.error(request, MSG_NOMBRE_INVALIDO)
+        elif not descripcion_valida(descripcion):
+            messages.error(request, MSG_DESCRIPCION_INVALIDA)
         else:
             Marca.objects.create(nombre=nombre, descripcion=descripcion, estado=estado)
             messages.success(request, f'La marca "{nombre}" se creó correctamente.')
@@ -159,11 +194,22 @@ def editar_marca(request, codigo_marca):
     marca = get_object_or_404(Marca, codigo_marca=codigo_marca)
 
     if request.method == 'POST':
-        marca.nombre = request.POST.get('nombre')
-        marca.descripcion = request.POST.get('descripcion', '')
-        marca.estado = request.POST.get('estado', marca.estado)
-        marca.save()
-        messages.success(request, f'La marca "{marca.nombre}" se actualizó correctamente.')
+        nombre = _limpiar_texto(request.POST.get('nombre'))
+        descripcion = _limpiar_texto(request.POST.get('descripcion'))
+
+        if not nombre:
+            messages.error(request, 'El nombre de la marca es obligatorio.')
+        elif not nombre_marca_valido(nombre):
+            messages.error(request, MSG_NOMBRE_INVALIDO)
+        elif not descripcion_valida(descripcion):
+            messages.error(request, MSG_DESCRIPCION_INVALIDA)
+        else:
+            marca.nombre = nombre
+            marca.descripcion = descripcion
+            estado = request.POST.get('estado', marca.estado)
+            marca.estado = estado if estado in ('activo', 'inactivo') else marca.estado
+            marca.save()
+            messages.success(request, f'La marca "{marca.nombre}" se actualizó correctamente.')
 
     return redirect('lista_marcas')
 
