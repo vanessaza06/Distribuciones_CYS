@@ -12,6 +12,65 @@
 
   function $id(id) { return document.getElementById(id); }
 
+  /* ---------------- Validación ----------------
+     Nombre: solo letras (con tildes y ñ) y espacios.
+     Descripción: solo letras; espacio único solo entre palabras
+     (sin espacios al inicio, al final ni dobles). */
+
+  var REGEX_INVALIDOS = /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g;
+  var REGEX_VALIDO = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+$/;
+
+  function mostrarError(inputId, errId, msg) {
+    var input = $id(inputId);
+    if (!input) return;
+    var err = $id(errId);
+    if (!err) {
+      err = document.createElement("small");
+      err.id = errId;
+      err.style.cssText = "color:#e5484d;display:block;margin-top:6px;font-size:12px;";
+      var cont = input.closest(".cys-field") || input.parentElement;
+      cont.appendChild(err);
+    }
+    err.textContent = msg;
+    err.style.display = msg ? "block" : "none";
+    input.style.setProperty("border-color", msg ? "#e5484d" : "", msg ? "important" : "");
+  }
+
+  function mostrarErrorNombre(msg) { mostrarError("fieldNombre", "cysNombreError", msg); }
+  function mostrarErrorDescripcion(msg) { mostrarError("fieldDescripcion", "cysDescripcionError", msg); }
+
+  function validarNombre() {
+    var input = $id("fieldNombre");
+    if (!input) return true;
+    var valor = input.value.replace(/\s+/g, " ").trim();
+
+    if (!valor) {
+      mostrarErrorNombre("El nombre es obligatorio.");
+      return false;
+    }
+    if (!REGEX_VALIDO.test(valor)) {
+      mostrarErrorNombre("El nombre solo puede tener letras y espacios. Sin números ni símbolos.");
+      return false;
+    }
+    mostrarErrorNombre("");
+    input.value = valor;
+    return true;
+  }
+
+  function validarDescripcion() {
+    var input = $id("fieldDescripcion");
+    if (!input) return true;
+    var valor = input.value.replace(/\s+/g, " ").trim();
+
+    if (valor && !REGEX_VALIDO.test(valor)) {
+      mostrarErrorDescripcion("La descripción solo puede tener letras. Sin números ni símbolos.");
+      return false;
+    }
+    mostrarErrorDescripcion("");
+    input.value = valor;
+    return true;
+  }
+
   /* ---------------- Modal ---------------- */
 
   function mostrarOverlay(overlay) {
@@ -69,6 +128,8 @@
     setEstado(true);
     actualizarContador();
     resetBotonGuardar();
+    mostrarErrorNombre("");
+    mostrarErrorDescripcion("");
     mostrarOverlay(overlay);
     var nombre = $id("fieldNombre");
     if (nombre) nombre.focus();
@@ -86,6 +147,8 @@
     setEstado(btn.dataset.estado === "activo");
     actualizarContador();
     resetBotonGuardar();
+    mostrarErrorNombre("");
+    mostrarErrorDescripcion("");
     form.action = btn.dataset.url;   // URL propia de cada marca
     mostrarOverlay(overlay);
     $id("fieldNombre").focus();
@@ -95,9 +158,7 @@
     ocultarOverlay($id("cysModalOverlay"));
   }
 
-  /* ---------------- Select de estado (Todos los estados) ----------------
-     Se controla con estilo en línea (!important) para que ningún CSS
-     externo pueda dejarlo siempre oculto o siempre visible. */
+  /* ---------------- Select de estado (Todos los estados) ---------------- */
 
   function setSelectAbierto(abrir) {
     var sel = $id("cysEstadoSelect");
@@ -121,7 +182,6 @@
     if (box) box.classList.remove("cys-export--open");
   }
 
-  // URL de exportación con los filtros actuales (incluye Desde/Hasta aunque no se hayan aplicado)
   function urlExportacion(tipo) {
     var page = document.querySelector(".cys-marcas-page");
     if (!page || !page.dataset.urlLista) return null;
@@ -146,12 +206,11 @@
       return;
     }
 
-    // Excel / PDF: aviso visual mientras el servidor genera el archivo
     var label = $id("cysExportLabel");
     var trigger = $id("cysExportTrigger");
     if (label) label.textContent = "Generando…";
     if (trigger) trigger.disabled = true;
-    window.location.href = url;   // descarga directa (attachment): la página no se recarga
+    window.location.href = url;
     setTimeout(function () {
       if (label) label.textContent = "Exportar";
       if (trigger) trigger.disabled = false;
@@ -287,7 +346,29 @@
     var t = e.target;
     if (!t) return;
 
-    if (t.id === "fieldDescripcion") actualizarContador();
+    /* Descripción: solo letras; sin espacio al inicio ni dobles */
+    if (t.id === "fieldDescripcion") {
+      var d = t.value.replace(REGEX_INVALIDOS, "");
+      d = d.replace(/ {2,}/g, " ").replace(/^ /, "");
+      if (d !== t.value) {
+        t.value = d;
+        mostrarErrorDescripcion("Solo letras, con un espacio entre palabras.");
+      } else {
+        mostrarErrorDescripcion("");
+      }
+      actualizarContador();
+    }
+
+    /* Nombre de marca: elimina al instante todo lo que no sea letra o espacio */
+    if (t.id === "fieldNombre") {
+      var limpio = t.value.replace(REGEX_INVALIDOS, "");
+      if (limpio !== t.value) {
+        t.value = limpio;
+        mostrarErrorNombre("Solo se permiten letras y espacios.");
+      } else {
+        mostrarErrorNombre("");
+      }
+    }
 
     if (t.id === "inputBuscar") {
       clearTimeout(debounceTimer);
@@ -303,14 +384,20 @@
     if (!f) return;
 
     if (f.id === "cysMarcaForm") {
+      var okN = validarNombre();
+      var okD = validarDescripcion();
+      if (!okN || !okD) {
+        e.preventDefault();
+        var foco = $id(okN ? "fieldDescripcion" : "fieldNombre");
+        if (foco) foco.focus();
+        return;
+      }
       actualizarEstadoSeleccionado();
       var g = $id("cysGuardarBtn");
-      // se desactiva después del envío para evitar doble clic
       if (g) setTimeout(function () { g.disabled = true; }, 0);
       return;
     }
 
-    // Activar / desactivar: evita doble envío
     if (f.matches && f.matches(".cys-row-actions form")) {
       var b = f.querySelector("button");
       if (b) setTimeout(function () { b.disabled = true; }, 0);
@@ -327,15 +414,16 @@
   /* ---------------- Inicio ---------------- */
 
   function alListo() {
-    // Mover el modal al <body> para que ningún contenedor lo recorte
     var ov = $id("cysModalOverlay");
     if (ov && ov.parentElement !== document.body) document.body.appendChild(ov);
 
-    cerrarSelect();               // menú de estados cerrado al cargar
+    var nombre = $id("fieldNombre");
+    if (nombre) nombre.setAttribute("maxlength", "100");
+
+    cerrarSelect();
     validarRangoFechas(null);
     actualizarEstadoSeleccionado();
 
-    // Si venimos de una búsqueda, dejar el cursor al final del texto
     var buscar = $id("inputBuscar");
     if (buscar && buscar.value && new URLSearchParams(window.location.search).has("q")) {
       buscar.focus();
