@@ -103,6 +103,16 @@
               </span>
             </button>
             <ul class="dropdown-menu w-100 lote-presentacion-menu">
+                <li class="lote-buscador-item">
+    <div class="lote-buscador-wrap">
+      <i class="bi bi-search"></i>
+      <input type="text" id="buscador-presentacion-lote" class="lote-buscador-input"
+             placeholder="Buscar producto o presentación…" autocomplete="off">
+    </div>
+  </li>
+  <li id="presentacion-sin-resultados" class="px-3 py-2 small lote-sin-resultados d-none">
+    No se encontraron presentaciones.
+  </li>
               {% for p in productos %}
                 {% if p.presentaciones.all %}
                 <li><h6 class="dropdown-header">{{ p.nombre }}</h6></li>
@@ -145,8 +155,9 @@
         <div class="row g-3 mb-3">
           <div class="col-6">
             <label class="inv-label">Nº de Lote <span class="text-danger">*</span></label>
-            <input type="text" name="numero_lote" class="form-control inv-input"
-                   placeholder="Ej: LOT-2024-01" required>
+           <input type="text" name="numero_lote" class="form-control inv-input"
+         placeholder="Ej: LOT-2024-01" required maxlength="100"
+         data-validar-lote data-etiqueta="El número de lote">
           </div>
           <div class="col-6">
             <label class="inv-label">Cantidad inicial <span class="text-danger">*</span></label>
@@ -240,5 +251,6 @@
      data-data="{{ proveedores_data }}"
      class="d-none"></div>
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/lotes/gestion_lotes.js' %}"></script>
 {% endblock %}

@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django import forms
 from django.utils import timezone
+from app.validators import validar_nombre_producto, validar_nombre_presentacion, validar_numero_lote
 from app.models import (
     Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
     AgendaInventario,
@@ -191,6 +192,7 @@ class NuevaCompraForm(forms.Form):
 
 class ProductoRegistroForm(forms.ModelForm):
     class Meta:
+        
         model  = Producto
         fields = ['nombre', 'descripcion', 'categoria']
         widgets = {
@@ -206,7 +208,8 @@ class ProductoRegistroForm(forms.ModelForm):
                 'class': 'np-input',
             }),
         }
-
+    def clean_nombre(self):
+        return validar_nombre_producto(self.cleaned_data.get('nombre'))
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -226,6 +229,8 @@ class ProductoForm(forms.ModelForm):
                 'class': 'gp-input',
             }),
         }
+    def clean_nombre(self):
+        return validar_nombre_producto(self.cleaned_data.get('nombre'))
 #-----PRESENTACION-----#
 
 class PresentacionForm(forms.ModelForm):
@@ -238,6 +243,10 @@ class PresentacionForm(forms.ModelForm):
             'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0.01', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
+        
+    def clean_nombre(self):
+        return validar_nombre_presentacion(self.cleaned_data.get('nombre'))
+    
     def clean_cantidad(self):
         cantidad = self.cleaned_data.get('cantidad')
         if cantidad is None or cantidad < 1:
@@ -276,6 +285,22 @@ class LoteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['bodega'].required = False
+    
+    def clean_numero_lote(self):
+        valor = (self.cleaned_data.get('numero_lote') or '').strip()
+
+        # Al editar, si el número no cambió no se revalida (no bloquea lotes viejos)
+        if self.instance.pk and valor == self.instance.numero_lote:
+            return valor
+
+        codigo = validar_numero_lote(valor)
+
+        repetido = Lote.objects.filter(numero_lote__iexact=codigo)
+        if self.instance.pk:
+            repetido = repetido.exclude(pk=self.instance.pk)
+        if repetido.exists():
+            raise forms.ValidationError(f'Ya existe un lote con el número "{codigo}".')
+        return codigo
         
     def clean_cantidad_inicial(self):
         cantidad = self.cleaned_data.get('cantidad_inicial')

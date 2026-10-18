@@ -312,3 +312,50 @@ button.lote-btn-crear:active,
   transition: background .15s;
 }
 .lote-imagen-remove-btn:hover { background: rgba(207,80,80,.9); }
+/* ── Buscador dentro del desplegable de presentaciones ── */
+.lote-buscador-item {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: .5rem .75rem;
+  background: var(--inv-card2, #0d1b2a);
+  border-bottom: 1px solid rgba(77, 168, 218, .2);
+}
+.lote-buscador-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.lote-buscador-wrap i {
+  position: absolute;
+  left: .75rem;
+  color: #4DA8DA;
+  font-size: .85rem;
+  pointer-events: none;
+}
+.lote-buscador-input {
+  width: 100%;
+  background: #0a1e38;
+  border: 1px solid rgba(77, 168, 218, .35);
+  color: #c8d6e5;
+  border-radius: 6px;
+  padding: .45rem .75rem .45rem 2.1rem;
+  font-size: .85rem;
+}
+.lote-buscador-input:focus {
+  outline: none;
+  border-color: #4DA8DA;
+}
+.lote-buscador-input::placeholder {
+  color: rgba(200, 214, 229, .45);
+}
+.lote-sin-resultados {
+  color: rgba(220, 232, 242, .5);
+}
+
+/* ── Error de validación en rojo, debajo del campo ── */
+.aviso-validacion--inline {
+  color: #F2938F;
+  font-size: .75rem;
+  margin-top: .35rem;
+}

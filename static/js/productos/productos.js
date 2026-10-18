@@ -280,8 +280,14 @@ function enviarCrearProducto() {
   feedback.classList.add('d-none');
   feedback.innerHTML = '';
 
-  if (!nombre || !categoria || !fechaVencimiento) {
-    mostrarErrorCrear(feedback, 'Completa nombre, categoría y fecha de vencimiento antes de guardar.');
+  const errorNombre = window.validarNombreProducto(nombre);
+  if (errorNombre) {
+    mostrarErrorCrear(feedback, errorNombre);
+    document.getElementById('crear-nombre').focus();
+    return;
+  }
+  if (!categoria || !fechaVencimiento) {
+    mostrarErrorCrear(feedback, 'Completa la categoría y la fecha de vencimiento antes de guardar.');
     return;
   }
 

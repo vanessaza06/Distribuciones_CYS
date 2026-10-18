@@ -57,7 +57,8 @@
       </thead>
       <tbody>
         {% for pres in presentaciones %}
-        <tr data-producto="{{ pres.producto.nombre|lower }}" data-presentacion="{{ pres.nombre|lower }}">
+        <tr data-producto="{{ pres.producto.nombre|lower }}" data-presentacion="{{ pres.nombre|lower }}"
+    {% if pres.pk == resaltar_pk %}class="fila-resaltada"{% endif %}>
           <td class="ps-3">
             <div class="fw-semibold prod-cell-nombre">{{ pres.producto.nombre }}</div>
             <small class="text-muted">{{ pres.producto.categoria.nombre|default:"—" }}</small>
@@ -135,8 +136,8 @@
           </div>
           <div class="mb-3">
             <label class="form-label prod-label">Nombre <span class="text-danger">*</span></label>
-            <input type="text" name="nombre" class="form-control prod-input" placeholder="Ej: Six-pack" required>
-          </div>
+            <input type="text" name="nombre" class="form-control prod-input" placeholder="Ej: Six-pack" required
+       data-validar-nombre data-etiqueta="El nombre de la presentación">
           <div class="row g-3">
             <div class="col-6">
               <label class="form-label prod-label">Cantidad <span class="text-danger">*</span></label>
@@ -177,7 +178,8 @@
           <p class="prod-label mb-3">{{ pres.producto.nombre }}</p>
           <div class="mb-3">
             <label class="form-label prod-label">Nombre</label>
-            <input type="text" name="nombre" class="form-control prod-input" value="{{ pres.nombre }}">
+          <input type="text" name="nombre" class="form-control prod-input" value="{{ pres.nombre }}"
+       data-validar-nombre data-etiqueta="El nombre de la presentación">
           </div>
           <div class="row g-3">
             <div class="col-6">
@@ -207,5 +209,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/presentaciones/presentaciones.js' %}"></script>
 {% endblock %}
