@@ -1,7 +1,8 @@
 
 from decimal import Decimal, InvalidOperation
 from itertools import zip_longest
-
+from django.core.exceptions import ValidationError
+from app.validators import normalizar_nombre, validar_nombre_producto
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -11,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-
+from app.validators import normalizar_nombre, validar_nombre_producto, validar_nombre_presentacion
 from app.forms import ProductoRegistroForm
 from app.models import Categoria, Compra, PresentacionProducto, Producto
 
@@ -114,13 +115,15 @@ def crear_producto(request):
     ajax = _es_ajax(request)
     destino = _destino_seguro(request, request.POST.get('next') or request.GET.get('next'))
 
-    nombre = request.POST.get('nombre', '').strip()
     categoria_pk = request.POST.get('categoria', '').strip()
     descripcion = request.POST.get('descripcion', '').strip()
 
     errores = {}
-    if not nombre:
-        errores['nombre'] = ['El nombre es obligatorio.']
+    try:
+        nombre = validar_nombre_producto(request.POST.get('nombre', ''))
+    except ValidationError as e:
+        nombre = ''
+        errores['nombre'] = e.messages
 
     categoria = None
     if not categoria_pk:
@@ -179,11 +182,14 @@ def producto_editar(request, pk):
     avisos = []
 
     with transaction.atomic():
-        # ── Datos básicos ──
-        nombre = request.POST.get('nombre', '').strip()
-        if nombre and nombre != producto.nombre:
-            producto.nombre = nombre
-            cambios.append('nombre')
+                # ── Datos básicos ──
+        nombre_raw = request.POST.get('nombre')
+        if nombre_raw is not None and normalizar_nombre(nombre_raw) != producto.nombre:
+            try:
+                producto.nombre = validar_nombre_producto(nombre_raw)
+                cambios.append('nombre')
+            except ValidationError as e:
+                avisos.append(f'Nombre no actualizado: {e.messages[0]}')
 
         descripcion = request.POST.get('descripcion')
         if descripcion is not None:
@@ -218,10 +224,12 @@ def producto_editar(request, pk):
 
             modificado = False
 
-            nuevo_nombre = valor.strip()
-            if nuevo_nombre and nuevo_nombre != pres.nombre:
-                pres.nombre = nuevo_nombre
-                modificado = True
+            if valor.strip() and normalizar_nombre(valor) != pres.nombre:
+                try:
+                    pres.nombre = validar_nombre_presentacion(valor)
+                    modificado = True
+                except ValidationError as e:
+                    avisos.append(f'Nombre de presentación no actualizado: {e.messages[0]}')
 
             cant_raw = request.POST.get(f'pres_cantidad_{pres_id}', '').strip()
             if cant_raw:
@@ -251,8 +259,12 @@ def producto_editar(request, pk):
         precios = request.POST.getlist('nueva_pres_precio[]')
 
         for nombre_pres, cant_raw, precio_raw in zip_longest(nombres, cantidades, precios, fillvalue=''):
-            nombre_pres = nombre_pres.strip()
-            if not nombre_pres:
+            if not nombre_pres.strip():
+                continue
+            try:
+                nombre_pres = validar_nombre_presentacion(nombre_pres)
+            except ValidationError as e:
+                avisos.append(f'Presentación "{nombre_pres.strip()}" no creada: {e.messages[0]}')
                 continue
 
             cantidad_pres = _entero_positivo(cant_raw)

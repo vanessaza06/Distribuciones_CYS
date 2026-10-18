@@ -1,265 +1,133 @@
-/* ─── DETALLE PROVEEDOR — Estilos específicos (prefijo dp-) ─── */
+/* ─── DETALLE PROVEEDOR ───
+   Usa los componentes de la lista de proveedores (kpi-card, cys-card, cys-badge,
+   cys-tag, cys-inv-table, btn-nuevo-prov). Aquí solo van los detalles propios (prefijo dp-)
+   con los mismos colores del tema: --fondo-card, --texto, --texto-muted, --azul-claro, --dorado. */
 
-.dp-page {
-  --dp-oro: #CF9C48;
-  --dp-azul: var(--azul-claro, #4DA8DA);
-  --dp-verde: #2ecc71;
-  --dp-rojo: #e74c3c;
-  --dp-amarillo: #f0d080;
-  --dp-borde: color-mix(in srgb, var(--texto, #fff) 12%, transparent);
-  --dp-card: var(--fondo-card, #0b2447);
-  --dp-card2: var(--fondo-card2, #10305c);
-  --dp-texto: var(--texto, #f1f5f9);
-  --dp-muted: color-mix(in srgb, var(--dp-texto) 60%, transparent);
-  color: var(--dp-texto);
-}
-
-/* ── Encabezado ── */
-.dp-hero {
-  position: relative;
+/* ── Cabecera de la ficha ── */
+.dp-head {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   flex-wrap: wrap;
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.25rem;
-  background: linear-gradient(135deg, #02224a 0%, #011936 60%, rgba(207, 156, 72, 0.07) 100%);
-  border: 1px solid rgba(207, 156, 72, 0.22);
-  border-left: 4px solid var(--dp-oro);
-  border-radius: 14px;
-  overflow: hidden;
 }
-.dp-hero::before {
-  content: '';
-  position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(207, 156, 72, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-.dp-hero__icon {
-  flex: 0 0 auto;
-  width: 64px;
-  height: 64px;
-  display: grid;
-  place-items: center;
-  font-size: 1.9rem;
-  color: var(--dp-oro);
-  background: rgba(207, 156, 72, 0.12);
-  border: 1px solid rgba(207, 156, 72, 0.35);
-  border-radius: 16px;
-}
-.dp-hero__info { flex: 1 1 280px; min-width: 0; }
-.dp-hero__title {
-  margin: 0.35rem 0 0.6rem;
-  font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+.dp-head__main { flex: 1 1 320px; min-width: 0; }
+.dp-head__actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+.dp-name {
+  margin: 0 0 0.7rem;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
+  color: var(--texto);
   overflow-wrap: anywhere;
 }
-.dp-hero__meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-.dp-hero__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; position: relative; z-index: 1; }
+.dp-badges { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
-.dp-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.28rem 0.7rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--dp-azul);
-  background: color-mix(in srgb, var(--dp-azul) 14%, transparent);
-  border-radius: 6px;
-}
-.dp-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--dp-texto);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--dp-borde);
-  border-radius: 999px;
-}
-.dp-chip i { color: var(--dp-oro); }
-
-/* ── Estado ── */
-.dp-estado {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 999px;
-  border: 1px solid transparent;
-}
-.dp-estado i { font-size: 0.5rem; }
-.dp-estado--activo { color: var(--dp-verde); background: rgba(46, 204, 113, 0.14); border-color: rgba(46, 204, 113, 0.4); }
-.dp-estado--inactivo { color: var(--dp-amarillo); background: rgba(240, 208, 128, 0.14); border-color: rgba(240, 208, 128, 0.4); }
-.dp-estado--sancionado { color: var(--dp-rojo); background: rgba(231, 76, 60, 0.14); border-color: rgba(231, 76, 60, 0.45); }
-
-/* ── Botones ── */
-.dp-btn {
+/* Botón secundario: mismo formato redondeado que .btn-nuevo-prov, con borde */
+.dp-btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.55rem 1.1rem;
-  font-size: 0.88rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
   font-weight: 700;
+  color: var(--azul-claro);
   text-decoration: none;
-  border-radius: 10px;
-  border: 1px solid transparent;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent);
+  border-radius: 50px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.dp-btn:hover { transform: translateY(-1px); }
-.dp-btn--sm { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
-.dp-btn--primary { color: #2A1E05; background: var(--dp-oro); }
-.dp-btn--primary:hover { color: #2A1E05; box-shadow: 0 6px 18px rgba(207, 156, 72, 0.35); }
-.dp-btn--ghost { color: var(--dp-texto); background: transparent; border-color: var(--dp-borde); }
-.dp-btn--ghost:hover { color: var(--dp-oro); border-color: rgba(207, 156, 72, 0.5); background: rgba(207, 156, 72, 0.08); }
+.dp-btn-ghost:hover {
+  color: var(--fondo);
+  background: var(--azul-claro);
+}
 
-/* ── KPIs ── */
-.dp-kpis {
+/* ── Datos (etiqueta / valor) ── */
+.dp-info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 1.1rem 1.5rem;
+  margin: 1.4rem 0 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 14%, transparent);
 }
-.dp-kpi {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.1rem 1.25rem;
-  background: var(--dp-card);
-  border: 1px solid var(--dp-borde);
-  border-left: 4px solid var(--dp-oro);
-  border-radius: 12px;
+.dp-info dt {
+  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-muted);
 }
-.dp-kpi > i { font-size: 1.6rem; color: var(--dp-oro); }
-.dp-kpi--warn { border-left-color: var(--dp-amarillo); }
-.dp-kpi--warn > i { color: var(--dp-amarillo); }
-.dp-kpi--danger { border-left-color: var(--dp-rojo); }
-.dp-kpi--danger > i { color: var(--dp-rojo); }
-.dp-kpi span { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dp-muted); }
-.dp-kpi strong { display: block; margin: 0.1rem 0; font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
-.dp-kpi small { color: var(--dp-muted); }
-
-/* ── Tarjetas ── */
-.dp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
+.dp-info dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--texto);
+  overflow-wrap: anywhere;
 }
-.dp-card {
-  padding: 1.4rem 1.6rem;
-  margin-bottom: 1.25rem;
-  background: var(--dp-card);
-  border: 1px solid var(--dp-borde);
-  border-left: 4px solid var(--dp-oro);
-  border-radius: 14px;
-}
-.dp-grid .dp-card { margin-bottom: 0; }
-.dp-card--note { border-left-color: var(--dp-azul); }
-.dp-card--danger { border-left-color: var(--dp-rojo); background: color-mix(in srgb, var(--dp-rojo) 7%, var(--dp-card)); }
-.dp-card__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.dp-card__title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin: 0 0 1rem;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--dp-texto);
-}
-.dp-card__head .dp-card__title { margin: 0; }
-.dp-card__title i { color: var(--dp-oro); }
-
-/* ── Lista de datos (etiqueta / valor) ── */
-.dp-list { display: grid; gap: 1rem; margin: 0; }
-.dp-list > div { display: grid; gap: 0.2rem; padding-bottom: 0.9rem; border-bottom: 1px dashed var(--dp-borde); }
-.dp-list > div:last-child { padding-bottom: 0; border-bottom: 0; }
-.dp-list dt { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dp-muted); }
-.dp-list dd { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--dp-texto); overflow-wrap: anywhere; }
-.dp-mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; letter-spacing: 0.04em; }
-.dp-link { color: var(--dp-azul); text-decoration: none; }
-.dp-link:hover { color: var(--dp-oro); text-decoration: underline; }
+.dp-link { color: var(--azul-claro); text-decoration: none; }
+.dp-link:hover { color: var(--dorado); text-decoration: underline; }
 .dp-link i { margin-right: 0.3rem; }
-.dp-note { margin: 0; line-height: 1.6; color: var(--dp-texto); overflow-wrap: anywhere; }
 
-/* ── Tabla de compras ── */
-.dp-table-wrap { border: 1px solid var(--dp-borde); border-radius: 10px; overflow: hidden; }
-.dp-table { --bs-table-bg: transparent; --bs-table-color: var(--dp-texto); --bs-table-border-color: var(--dp-borde); margin: 0; }
-.dp-table thead th {
-  padding: 0.8rem 1rem;
-  font-size: 0.72rem;
+/* ── Nota / sanción ── */
+.dp-note {
+  margin-top: 1.3rem;
+  padding: 0.9rem 1.1rem;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  border-left: 4px solid var(--azul-claro);
+  border-radius: 10px;
+}
+.dp-note--sancion {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.35);
+  border-left-color: #e74c3c;
+}
+.dp-note__title {
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--dp-azul);
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid var(--dp-borde);
+  color: var(--texto-muted);
 }
-.dp-table tbody td { padding: 0.85rem 1rem; color: var(--dp-texto); background: transparent; }
-.dp-table tbody tr:hover td { background: rgba(207, 156, 72, 0.07); }
-.dp-money { font-weight: 800; white-space: nowrap; }
-.dp-money--warn { color: var(--dp-amarillo); }
-.dp-muted { color: var(--dp-muted); }
+.dp-note p { margin: 0; color: var(--texto); line-height: 1.55; overflow-wrap: anywhere; }
 
-.dp-pill {
-  display: inline-block;
-  padding: 0.22rem 0.7rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  border-radius: 999px;
-  border: 1px solid transparent;
-}
-.dp-pill--pendiente { color: var(--dp-amarillo); background: rgba(240, 208, 128, 0.14); border-color: rgba(240, 208, 128, 0.4); }
-.dp-pill--confirmada { color: var(--dp-azul); background: color-mix(in srgb, var(--dp-azul) 14%, transparent); border-color: color-mix(in srgb, var(--dp-azul) 40%, transparent); }
-.dp-pill--recibida { color: var(--dp-verde); background: rgba(46, 204, 113, 0.14); border-color: rgba(46, 204, 113, 0.4); }
-.dp-pill--cancelada { color: var(--dp-rojo); background: rgba(231, 76, 60, 0.14); border-color: rgba(231, 76, 60, 0.4); }
-
+/* ── Tabla de compras ── */
+.dp-saldo { font-weight: 800; color: var(--dorado); }
 .dp-icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  color: var(--dp-azul);
+  width: 32px;
+  height: 32px;
+  color: var(--azul-claro);
   text-decoration: none;
-  border: 1px solid var(--dp-borde);
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  border-radius: 50%;
   transition: all 0.15s ease;
 }
-.dp-icon-btn:hover { color: var(--dp-oro); border-color: rgba(207, 156, 72, 0.5); background: rgba(207, 156, 72, 0.1); }
+.dp-icon-btn:hover { color: var(--fondo); background: var(--azul-claro); }
 
-/* ── Vacío ── */
+/* ── Sin compras ── */
 .dp-empty {
   display: grid;
   justify-items: center;
   gap: 0.7rem;
+  margin-top: 1rem;
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--dp-muted);
-  border: 1px dashed var(--dp-borde);
+  color: var(--texto-muted);
+  border: 1px dashed color-mix(in srgb, var(--azul-claro) 25%, transparent);
   border-radius: 12px;
 }
-.dp-empty i { font-size: 2rem; color: var(--dp-oro); }
-.dp-empty strong { color: var(--dp-texto); }
+.dp-empty i { font-size: 2rem; color: var(--dorado); }
+.dp-empty strong { color: var(--texto); }
 
 @media (max-width: 700px) {
-  .dp-hero { padding: 1.25rem; }
-  .dp-hero__actions { width: 100%; }
-  .dp-hero__actions .dp-btn { flex: 1 1 auto; justify-content: center; }
-  .dp-card { padding: 1.1rem; }
+  .dp-head__actions { width: 100%; }
+  .dp-head__actions > * { flex: 1 1 auto; justify-content: center; }
 }

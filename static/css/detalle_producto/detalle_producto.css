@@ -744,3 +744,83 @@
 .gp-toast-success .gp-toast-icon { color: #22c55e; }
 .gp-toast-info    { border-left-color: #38bdf8; }
 .gp-toast-info    .gp-toast-icon { color: #38bdf8; }
+
+/* ==========================================================================
+   MAESTRO-DETALLE v2 — 3 columnas (stats | lista | detalle)
+   ========================================================================== */
+
+.gp-md-wrap {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+}
+
+/* Columna 2: lista de productos (una tarjeta por fila, con scroll propio) */
+.gp-md-wrap .gp-md-list {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+  max-width: none;
+  min-width: 0;
+  max-height: calc(100vh - 230px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.gp-md-wrap .gp-md-row {
+  min-width: 0;
+}
+
+.gp-md-wrap .gp-md-row-meta {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* Mensaje "sin resultados": debajo de la lista, no empuja el detalle */
+.gp-md-wrap #gpNoResultados {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* Columna 3: panel de detalle */
+.gp-md-wrap .gp-md-detail {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  flex: none;
+  min-width: 0;
+  width: auto;
+}
+
+/* ── Detalle cerrado: la lista ocupa todo el ancho en varias columnas ── */
+.gp-md-wrap:has(> .gp-md-detail.d-none) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gp-md-wrap:has(> .gp-md-detail.d-none) .gp-md-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-content: start;
+  max-height: none;
+}
+
+/* ── Pantallas medianas/pequeñas: todo apilado ── */
+@media (max-width: 1280px) {
+  .gp-md-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gp-md-wrap .gp-md-list {
+    max-height: 320px;
+  }
+  .gp-md-wrap #gpNoResultados,
+  .gp-md-wrap .gp-md-detail {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}

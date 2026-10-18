@@ -930,3 +930,18 @@ html, body {
   border-radius: .5rem;
   padding: .5rem .75rem;
 }
+/* ── Fila recién creada/editada (Presentaciones) ── */
+@keyframes filaResaltada {
+  0%, 70% { background-color: color-mix(in srgb, var(--azul-claro) 22%, transparent); }
+  100%    { background-color: transparent; }
+}
+@keyframes barraResaltada {
+  0%, 70% { box-shadow: inset 4px 0 0 var(--azul-claro); }
+  100%    { box-shadow: inset 4px 0 0 transparent; }
+}
+.prod-table tr.fila-resaltada td {
+  animation: filaResaltada 5s ease-out forwards;
+}
+.prod-table tr.fila-resaltada td:first-child {
+  animation: filaResaltada 5s ease-out forwards, barraResaltada 5s ease-out forwards;
+}
