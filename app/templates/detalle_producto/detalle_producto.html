@@ -252,7 +252,7 @@
           <div class="row g-3">
             <div class="col-md-12">
               <label class="form-label small fw-semibold gp-label-muted-sm">Nombre</label>
-              <input type="text" name="nombre" class="form-control prod-input" value="{{ p.nombre }}" required>
+              <input type="text" name="nombre" class="form-control prod-input" value="{{ p.nombre }}" required data-validar-nombre>
             </div>
             <div class="col-12">
               <label class="form-label small fw-semibold gp-label-muted-sm">Categoría</label>
@@ -478,6 +478,7 @@
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script>
+<script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto_masterdetail.js' %}"></script>
 {% endblock %}
