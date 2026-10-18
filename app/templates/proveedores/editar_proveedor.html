@@ -82,7 +82,7 @@
             </div>
             <div class="col-12 col-md-6">
               <label for="id_telefono" class="form-label prod-label">Número de Teléfono</label>
-              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" value="{{ proveedor.telefono }}" pattern="\d{7,15}" placeholder="Ej: 3001234567">
+              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" value="{{ proveedor.telefono }}" pattern="[0-9]{7,15}" inputmode="numeric" maxlength="15" placeholder="Ej: 3001234567">
             </div>
             <div class="col-12 col-md-6">
               <label for="id_tipo_proveedor" class="form-label prod-label">Tipo de Proveedor</label>

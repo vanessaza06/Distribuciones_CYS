@@ -3159,4 +3159,21 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-badge-nuevo-estado {
   font-size: 0.95rem !important;
 }
-
+
+
+/* ── Resultados del buscador de producto (antes estilos en línea en el JS) ── */
+.cmp-dropdown-menu .cmp-stock-badge { font-weight: 700; }
+.cmp-dropdown-menu .cmp-stock-badge--ok {
+  background: rgba(46, 204, 113, 0.2) !important;
+  color: #2ecc71 !important;
+  border: 1px solid rgba(46, 204, 113, 0.4) !important;
+}
+.cmp-dropdown-menu .cmp-stock-badge--cero {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #adb5bd !important;
+  border: 1px solid transparent !important;
+}
+.cmp-dropdown-menu .cmp-sug-mas {
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 0.8rem;
+}

@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261016c">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
 
@@ -542,13 +542,13 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label for="formCompraCantidad" class="dev-form-label fw-bold">Cantidad (Unidades) <span class="text-danger">*</span></label>
-              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg cmp-input" min="1" value="{{ form.cantidad.value|default:'1' }}" required title="Cuántas unidades estás comprando">
+              <input type="number" id="formCompraCantidad" name="cantidad" class="form-control form-control-lg cmp-input" inputmode="numeric" pattern="[0-9]*" step="1" min="1" value="{{ form.cantidad.value|default:'1' }}" required title="Cuántas unidades estás comprando">
             </div>
             <div class="col-md-6">
               <label for="formCompraPrecio" class="dev-form-label fw-bold">Precio Unitario ($) <span class="text-danger">*</span></label>
               <div class="input-group input-group-lg">
                 <span class="input-group-text cmp-input-group-prefix">$</span>
-                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg cmp-input" step="any" min="0.01" placeholder="Ej: 25000" value="{{ form.precio_unitario.value|default:'' }}" required title="Precio de compra por cada unidad">
+                <input type="number" id="formCompraPrecio" name="precio_unitario" class="form-control form-control-lg cmp-input" inputmode="numeric" pattern="[0-9]*" step="1" min="1" placeholder="Ej: 25000" value="{{ form.precio_unitario.value|default:'' }}" required title="Precio de compra por cada unidad">
               </div>
             </div>
           </div>
@@ -594,7 +594,7 @@
                     </button>
                   </div>
                 </div>
-                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" step="any" min="0" placeholder="0 para crédito total" value="{{ form.monto_pagado.value|default:'0' }}" autocomplete="off">
+                <input type="number" id="formCompraPago" name="monto_pagado" class="form-control cmp-input" inputmode="numeric" pattern="[0-9]*" step="1" min="0" placeholder="0 para crédito total" value="{{ form.monto_pagado.value|default:'0' }}" autocomplete="off">
                 <div id="formCompraSaldoFeedback" class="small mt-1 text-muted">
                   Saldo pendiente: <span id="formCompraSaldoPendienteTexto" class="text-warning fw-bold">$0</span>
                 </div>
@@ -843,7 +843,7 @@
                         </div>
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">$</span>
-                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" min="0.01" step="any" placeholder="Ingresa cuánto vas a pagar" required title="Valor del abono o pago que vas a registrar">
+                            <input type="number" id="montoPagado" name="monto_pagado" class="form-control" inputmode="numeric" pattern="[0-9]*" min="1" step="1" placeholder="Ingresa cuánto vas a pagar" required title="Valor del abono o pago que vas a registrar">
                         </div>
                         <small id="montoPagadoAyuda" class="text-muted">Ingresa el valor del abono o pago que vas a registrar.</small>
                         <div id="montoPagadoError" class="cmp-inline-error d-none" role="alert"><i class="bi bi-exclamation-triangle-fill me-1"></i><span></span></div>
@@ -907,6 +907,6 @@
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/compras.js' %}"></script>
+<script src="{% static 'js/proveedores/compras.js' %}?v=20261016b"></script>
 {% endblock %}
 

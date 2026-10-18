@@ -134,7 +134,7 @@
             <!-- 4. Cantidad -->
             <div class="col-md-4">
               <label class="dev-label" for="id_devprov_cantidad">4. Cantidad a devolver <span class="text-danger">*</span></label>
-              <input type="number" name="cantidad" id="id_devprov_cantidad" class="form-control dev-input-sm w-100" min="1" value="1" disabled required>
+              <input type="number" name="cantidad" id="id_devprov_cantidad" class="form-control dev-input-sm w-100" inputmode="numeric" pattern="[0-9]*" step="1" min="1" value="1" disabled required>
               <small class="dev-hint" id="devprovStockHint">Selecciona un producto de la compra.</small>
             </div>
 
@@ -357,7 +357,7 @@
             {% if request.session.dev_tipo_reembolso == 'cambio' %}
               <div class="dev-form__intro"><i class="bi bi-box-arrow-in-right"></i><div><h3>Producto de cambio</h3><p>Selecciona el producto que recibirá el cliente.</p></div></div>
               <label class="dev-label" for="producto_cambio">Producto de reemplazo</label><select id="producto_cambio" name="producto_cambio" class="form-select dev-select dev-searchable" data-placeholder="Busca un producto..." required><option value="">Selecciona un producto</option>{% for prod in productos %}<option value="{{ prod.pk }}">{{ prod.nombre }}{% if prod.precio_base %} — ${{ prod.precio_base|floatformat:0 }}{% endif %}</option>{% endfor %}</select>
-              <label class="dev-label mt-3" for="cantidad_cambio">Cantidad</label><input id="cantidad_cambio" name="cantidad_cambio" class="form-control dev-input-sm" type="number" min="1" value="1" required>
+              <label class="dev-label mt-3" for="cantidad_cambio">Cantidad</label><input id="cantidad_cambio" name="cantidad_cambio" class="form-control dev-input-sm" type="number" inputmode="numeric" pattern="[0-9]*" step="1" min="1" value="1" required>
             {% else %}
               <div class="dev-form__intro"><i class="bi bi-wallet2"></i><div><h3>Medio del reembolso</h3><p>Indica cómo se devolverá el dinero al cliente.</p></div></div>
               <div class="dev-choice-grid dev-choice-grid--payment">{% for codigo, nombre in metodos_pago %}<label class="dev-choice"><input type="radio" name="metodo_pago_devolucion" value="{{ codigo }}" required><span><i class="bi bi-wallet2"></i><strong>{{ nombre }}</strong></span></label>{% endfor %}</div>

@@ -266,7 +266,7 @@
             <!-- NIT -->
             <div class="col-12 col-md-6">
               <label for="id_nit" class="form-label prod-label">NIT <span class="text-danger">*</span></label>
-              <input type="text" name="nit" id="id_nit" class="form-control prod-input" placeholder="Ej: 123456789-1" required>
+              <input type="text" name="nit" id="id_nit" class="form-control prod-input" placeholder="Ej: 9001234567" inputmode="numeric" pattern="[0-9]{5,15}" maxlength="15" required>
               <div class="invalid-feedback" id="error-nit"></div>
             </div>
 
@@ -280,7 +280,7 @@
             <!-- Teléfono -->
             <div class="col-12 col-md-6">
               <label for="id_telefono" class="form-label prod-label">Teléfono <span class="text-danger">*</span></label>
-              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" placeholder="Ej: 3001234567" pattern="\d{7,15}" required>
+              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" placeholder="Ej: 3001234567" pattern="[0-9]{7,15}" inputmode="numeric" maxlength="15" required>
               <div class="invalid-feedback" id="error-telefono"></div>
             </div>
           </div>
