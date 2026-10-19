@@ -47,8 +47,15 @@
           <i class="bi bi-currency-dollar fs-5"></i>
         </div>
         <div>
-          <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Ventas Hoy</div>
-          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_dia|floatformat:0|intcomma }}</div>
+          <div class="d-flex align-items-center gap-1.5">
+            <span style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Cobrado Hoy</span>
+            {% if total_pendiente_dia > 0 %}
+            <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-size:0.6rem; padding:1px 5px; font-weight:700;">
+              -${{ total_pendiente_dia|floatformat:0|intcomma }} pend.
+            </span>
+            {% endif %}
+          </div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_cobrado_dia|floatformat:0|intcomma }}</div>
         </div>
       </div>
     </div>
@@ -118,7 +125,10 @@
           <div class="cys-search-group mb-4">
             <i class="bi bi-search"></i>
             <input type="text" id="buscadorProducto" class="form-control cys-search-input"
-                   placeholder="Buscar producto por nombre...">
+                   placeholder="Buscar producto por nombre..." autocomplete="off">
+            <button type="button" id="btnLimpiarBusqueda" class="cys-search-clear-btn" style="display:none;" title="Limpiar búsqueda">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
           </div>
 
           <!-- Vista categorías -->
@@ -156,7 +166,7 @@
                 <button class="btn btn-sm cys-btn-back" id="btnVolverCats" type="button">
                   <i class="bi bi-arrow-left me-1"></i>Categorías
                 </button>
-                <span class="cys-breadcrumb-sep">/</span>
+                <i class="bi bi-chevron-right cys-breadcrumb-sep"></i>
                 <span class="cys-breadcrumb-chip">
                   <i class="bi bi-tag-fill me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
                   <span id="catTitulo">Categoría</span>
@@ -174,12 +184,12 @@
                 <button class="btn btn-sm cys-btn-back" id="btnVolverProds" type="button">
                   <i class="bi bi-arrow-left me-1"></i>Productos
                 </button>
-                <span class="cys-breadcrumb-sep">/</span>
+                <i class="bi bi-chevron-right cys-breadcrumb-sep"></i>
                 <span class="cys-breadcrumb-chip" id="presBreadcrumbCat">
                   <i class="bi bi-tag-fill me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
                   <span id="presCatTitulo">Categoría</span>
                 </span>
-                <span class="cys-breadcrumb-sep">/</span>
+                <i class="bi bi-chevron-right cys-breadcrumb-sep"></i>
                 <span class="cys-breadcrumb-chip cys-breadcrumb-chip--active">
                   <i class="bi bi-box-seam me-1"></i>
                   <span id="presTitulo">Producto</span>
@@ -255,12 +265,15 @@
             <div id="seccionDescuento" style="display:none;" class="mb-3">
               <div class="d-flex justify-content-between align-items-center rounded-3 p-2 px-3"
                    style="background:rgba(10,20,38,0.45); border:1px solid rgba(255,255,255,0.06);">
-                <span style="margin:0; font-weight:600; color:#94a3b8; font-size:.75rem; text-transform:uppercase;">
-                  <i class="bi bi-percent me-1" style="color:#38bdf8;"></i> Descuento Aplicado
-                </span>
+                <div class="d-flex flex-column">
+                  <span style="margin:0; font-weight:700; color:#94a3b8; font-size:.75rem; text-transform:uppercase;">
+                    <i class="bi bi-percent me-1" style="color:#38bdf8;"></i> Descuento Aplicado
+                  </span>
+                  <span style="font-size:0.68rem; color:#64748b; font-weight:600;">Tope máximo permitido: 5%</span>
+                </div>
                 <div class="d-flex align-items-center gap-1">
                   <input type="number" id="inputDescuento" name="descuento_porcentaje"
-                         value="0" min="0" max="100" class="form-control text-center"
+                         value="0" min="0" max="5" step="0.5" class="form-control text-center"
                          style="width:75px; background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700; font-size:1.05rem; border-radius:8px;">
                   <span style="color:#94a3b8; font-weight:600;">%</span>
                 </div>
@@ -278,13 +291,20 @@
 
             <!-- Métodos de pago y Calculadora de Vueltos -->
             <div id="seccionPagos" style="display:none;" class="cys-payment-panel mb-3">
-              <div class="mb-2" style="font-weight:700; color:#94a3b8; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em;">
-                <i class="bi bi-wallet2 me-1" style="color:#38bdf8;"></i> Formas de Pago
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="font-weight:700; color:#94a3b8; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em;">
+                  <i class="bi bi-wallet2 me-1" style="color:#38bdf8;"></i> Formas de Pago
+                </span>
+                <button type="button" id="btnPagoExacto" class="btn btn-sm py-1 px-2"
+                        title="Rellenar total en efectivo automáticamente"
+                        style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.28); color:#38bdf8; font-size:0.72rem; font-weight:700; border-radius:6px;">
+                  <i class="bi bi-cash-stack me-1"></i>Pago Exacto
+                </button>
               </div>
               <div class="row g-2 mb-2">
                 <div class="col-6">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Efectivo ($)</label>
-                  <input type="number" name="pago_efectivo" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_efectivo" id="inputPagoEfectivo" value="0" min="0" class="form-control pago-input"
                          style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-6">
@@ -318,6 +338,26 @@
               <div id="indicadorCambio" class="cys-change-indicator cys-change-indicator--pending mt-2" style="display:none;">
                 <span id="labelCambio" style="font-weight:700; font-size:.8rem; text-transform:uppercase;">Faltante</span>
                 <span id="montoCambio" style="font-size:1.25rem; font-weight:800;">$0</span>
+              </div>
+
+              <!-- Motivo Requerido cuando el Cliente Queda Debiendo -->
+              <div id="seccionObservacionPago" class="cys-debt-box mt-3 p-3 rounded-3"
+                   style="display:none; background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.4);">
+                <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-1">
+                  <label for="inputObservacionPago" style="font-size:.72rem; color:#fbbf24; font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin:0;">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Motivo de Pago Pendiente <span class="text-danger">*</span>
+                  </label>
+                  <span class="badge" style="background:rgba(245,158,11,0.25); color:#fbbf24; border:1px solid rgba(245,158,11,0.45); font-size:0.72rem; font-weight:700;">
+                    Queda debiendo: <strong id="textoSaldoPendiente">$0</strong>
+                  </span>
+                </div>
+                <textarea name="observacion_pago" id="inputObservacionPago" class="form-control" rows="2"
+                          placeholder="Indica el motivo por el cual queda saldo pendiente (ej. Cliente fía hasta el viernes, pagará el resto por transferencia, etc.)..."
+                          style="background:rgba(10,20,38,0.75); border:1px solid rgba(245,158,11,0.45); color:#f8fafc; border-radius:8px; font-size:.85rem;"></textarea>
+                <div class="small mt-1.5 d-flex align-items-center gap-1" style="color:#fbbf24; font-size:0.73rem;">
+                  <i class="bi bi-info-circle-fill"></i>
+                  <span>Esta venta se guardará y quedará resaltada en color ámbar en el historial para el arqueo y cierre de caja.</span>
+                </div>
               </div>
             </div>
 
@@ -387,6 +427,28 @@
       </div>
     </div>
 
+    {% if ventas_pendientes_count > 0 %}
+    <div class="px-3 pt-3 pb-1">
+      <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 flex-wrap gap-2"
+           style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); color:#fbbf24;">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill fs-5" style="color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.86rem; font-weight:800; color:#fef3c7;">
+              Atención Arqueo / Cierre: Hay {{ ventas_pendientes_count }} venta{{ ventas_pendientes_count|pluralize }} con saldo pendiente
+            </div>
+            <div style="font-size:0.75rem; color:#fde68a;">
+              Total pendiente por cobrar en el turno: <strong>${{ total_pendiente_dia|floatformat:0 }}</strong> (resaltadas en color ámbar para cambio de turno).
+            </div>
+          </div>
+        </div>
+        <span class="badge" style="background:#f59e0b; color:#0f172a; font-weight:800; font-size:0.75rem; padding:6px 10px; border-radius:6px;">
+          REVISAR EN CIERRE
+        </span>
+      </div>
+    </div>
+    {% endif %}
+
     <div class="table-responsive px-3 pb-3 pt-2">
       <table class="cys-inv-table" id="tablaHistorial">
         <thead>
@@ -405,14 +467,31 @@
           {% for venta in ventas %}
             {% if venta.detalles.all %}
               {% for det in venta.detalles.all %}
-              <tr class="fila-venta"
+              <tr class="fila-venta {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}"
                   data-fecha="{{ venta.fecha|date:'Y-m-d' }}"
                   data-venta-id="{{ venta.pk }}"
+                  data-tiene-deuda="{% if venta.saldo_pendiente > 0 %}1{% else %}0{% endif %}"
                   data-first="{% if forloop.first %}1{% else %}0{% endif %}"
                   data-rowspan="{{ venta.detalles.all|length }}">
                 {% if forloop.first %}
-                <td class="cys-td cys-td--muted" data-label="#" rowspan="{{ venta.detalles.all|length }}">{{ venta.pk }}</td>
-                <td class="cys-td cys-td--bold" data-label="Cliente" rowspan="{{ venta.detalles.all|length }}">{{ venta.cliente.nombre }}</td>
+                <td class="cys-td cys-td--muted" data-label="#" rowspan="{{ venta.detalles.all|length }}">
+                  {{ venta.pk }}
+                </td>
+                <td class="cys-td cys-td--bold" data-label="Cliente" rowspan="{{ venta.detalles.all|length }}">
+                  <div>{{ venta.cliente.nombre }}</div>
+                  {% if venta.saldo_pendiente > 0 %}
+                  <div class="mt-1 d-flex flex-column gap-1">
+                    <span class="cys-debt-pill">
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0 }}
+                    </span>
+                    {% if venta.observacion %}
+                    <span class="cys-debt-obs" title="{{ venta.observacion }}">
+                      <i class="bi bi-chat-left-text me-1"></i>{{ venta.observacion }}
+                    </span>
+                    {% endif %}
+                  </div>
+                  {% endif %}
+                </td>
                 {% endif %}
                 <td class="cys-td" data-label="Producto">
                   <span class="cys-stock-badge cys-stock-badge--ok">
@@ -422,39 +501,100 @@
                 <td class="cys-td text-center" data-label="Cantidad">{{ det.cantidad }}</td>
                 <td class="cys-td text-end" data-label="Precio Uni.">${{ det.precio_unitario|floatformat:0 }}</td>
                 {% if forloop.first %}
-                <td class="cys-qty text-end" data-label="Total" rowspan="{{ venta.detalles.all|length }}" style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
+                <td class="cys-qty text-end" data-label="Total" rowspan="{{ venta.detalles.all|length }}">
+                  <div style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</div>
+                  {% if venta.saldo_pendiente > 0 %}
+                  <div style="font-size:0.72rem; color:#fbbf24; font-weight:700;">
+                    Cobrado: ${{ venta.total_cobrado|floatformat:0 }}
+                  </div>
+                  <span class="badge cys-badge-pendiente mt-1">
+                    PENDIENTE
+                  </span>
+                  {% else %}
+                  <span class="badge cys-badge-pagado mt-1">
+                    PAGADO
+                  </span>
+                  {% endif %}
+                </td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha" rowspan="{{ venta.detalles.all|length }}">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                <td data-label="" rowspan="{{ venta.detalles.all|length }}">
-                  <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
-                        onsubmit="return confirm('¿Eliminar esta venta?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm" title="Eliminar venta"
-                            style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
-                      <i class="bi bi-trash"></i>
+                <td data-label="Acciones" rowspan="{{ venta.detalles.all|length }}">
+                  <div class="d-flex align-items-center justify-content-center gap-1.5">
+                    {% if venta.saldo_pendiente > 0 %}
+                    <button type="button" class="btn btn-sm btn-abrir-cobro"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalCobrarSaldo"
+                            data-venta-id="{{ venta.pk }}"
+                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                            data-total="{{ venta.total_venta|floatformat:0 }}"
+                            data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
+                            data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
+                            data-obs="{{ venta.observacion|default:'' }}"
+                            title="Cobrar saldo pendiente / Cambiar a pagada"
+                            style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
+                      <i class="bi bi-pencil-square"></i>
                     </button>
-                  </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
+                          onsubmit="return confirm('¿Eliminar esta venta?');" class="m-0">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" title="Eliminar venta"
+                              style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
                 </td>
                 {% endif %}
               </tr>
               {% endfor %}
             {% else %}
-              <tr class="fila-venta" data-fecha="{{ venta.fecha|date:'Y-m-d' }}" data-venta-id="{{ venta.pk }}">
+              <tr class="fila-venta {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}" data-fecha="{{ venta.fecha|date:'Y-m-d' }}" data-venta-id="{{ venta.pk }}">
                 <td class="cys-td cys-td--muted" data-label="#">{{ venta.pk }}</td>
-                <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente.nombre }}</td>
+                <td class="cys-td cys-td--bold" data-label="Cliente">
+                  <div>{{ venta.cliente.nombre }}</div>
+                  {% if venta.saldo_pendiente > 0 %}
+                  <div class="mt-1 d-flex flex-column gap-1">
+                    <span class="cys-debt-pill"><i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0 }}</span>
+                    {% if venta.observacion %}<span class="cys-debt-obs" title="{{ venta.observacion }}"><i class="bi bi-chat-left-text me-1"></i>{{ venta.observacion }}</span>{% endif %}
+                  </div>
+                  {% endif %}
+                </td>
                 <td class="cys-td" data-label="Producto">Venta #{{ venta.pk }}</td>
                 <td class="cys-td text-center" data-label="Cantidad">—</td>
                 <td class="cys-td text-end" data-label="Precio Uni.">—</td>
-                <td class="cys-qty text-end" data-label="Total" style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</td>
+                <td class="cys-qty text-end" data-label="Total">
+                  <div style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1rem;">${{ venta.total_venta|floatformat:0 }}</div>
+                  {% if venta.saldo_pendiente > 0 %}
+                  <span class="badge cys-badge-pendiente mt-1">PENDIENTE (${{ venta.saldo_pendiente|floatformat:0 }})</span>
+                  {% endif %}
+                </td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                <td data-label="">
-                  <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
-                        onsubmit="return confirm('¿Eliminar esta venta?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm" title="Eliminar venta"
-                            style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
-                      <i class="bi bi-trash"></i>
+                <td data-label="Acciones">
+                  <div class="d-flex align-items-center justify-content-center gap-1.5">
+                    {% if venta.saldo_pendiente > 0 %}
+                    <button type="button" class="btn btn-sm btn-abrir-cobro"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalCobrarSaldo"
+                            data-venta-id="{{ venta.pk }}"
+                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                            data-total="{{ venta.total_venta|floatformat:0 }}"
+                            data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
+                            data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
+                            data-obs="{{ venta.observacion|default:'' }}"
+                            title="Cobrar saldo pendiente / Cambiar a pagada"
+                            style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
+                      <i class="bi bi-pencil-square"></i>
                     </button>
-                  </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'eliminar_venta' venta.pk %}"
+                          onsubmit="return confirm('¿Eliminar esta venta?');" class="m-0">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" title="Eliminar venta"
+                              style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             {% endif %}
@@ -480,10 +620,123 @@
     </div>
  
   </section>
- 
 </div>
- 
- 
+
+
+<!-- ══ MODAL COBRAR SALDO PENDIENTE / CAMBIAR A PAGADA ══ -->
+<div class="modal fade" id="modalCobrarSaldo" tabindex="-1" aria-labelledby="modalCobrarSaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cys-modal" style="background:#0b223e; border:1px solid rgba(245,158,11,0.45); border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.6);">
+      
+      <div class="cys-modal__header" style="border-bottom:1px solid rgba(245,158,11,0.25); padding:1rem 1.25rem; background:linear-gradient(135deg, rgba(80,50,10,0.9), rgba(15,28,52,0.95)); border-radius:18px 18px 0 0;">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center gap-2.5">
+            <div style="width:40px; height:40px; border-radius:10px; background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-cash-coin fs-5"></i>
+            </div>
+            <div>
+              <div style="font-size:.68rem; color:#fbbf24; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Cobro de Deuda / Fiado</div>
+              <div class="cys-modal__title" id="modalCobrarSaldoLabel" style="font-size:1.15rem; font-weight:800; color:#fff; margin:0;">
+                Cobrar Saldo — Venta #<span id="cobroVentaId"></span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+      </div>
+
+      <form id="formCobrarSaldo" method="POST" action="">
+        {% csrf_token %}
+        <div class="modal-body p-3 p-md-4">
+          
+          <!-- Resumen de la venta -->
+          <div class="p-3 rounded-3 mb-3" style="background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.08);">
+            <div class="d-flex justify-content-between align-items-center mb-1.5">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Cliente</span>
+              <strong style="color:#f1f5f9; font-size:0.92rem;" id="cobroCliente">Consumidor final</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Total Venta</span>
+              <span style="color:#38bdf8; font-weight:700;" id="cobroTotalVenta">$0</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Ya Cobrado</span>
+              <span style="color:#4ade80; font-weight:700;" id="cobroYaCobrado">$0</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top:1px dashed rgba(245,158,11,0.3);">
+              <span style="font-size:0.8rem; color:#fbbf24; text-transform:uppercase; font-weight:800;">Saldo Pendiente Actual</span>
+              <strong style="color:#fbbf24; font-size:1.25rem;" id="cobroSaldoDeuda">$0</strong>
+            </div>
+            <div id="cobroObsBox" class="mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,0.05); display:none;">
+              <span style="font-size:0.72rem; color:#94a3b8; font-weight:600;">Motivo registrado:</span>
+              <div style="font-size:0.78rem; color:#fde68a; font-style:italic;" id="cobroMotivoTexto"></div>
+            </div>
+          </div>
+
+          <!-- Monto a pagar -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="inputMontoCobro" class="form-label text-white small fw-bold mb-0">
+                Monto a Cobrar ($) <span class="text-danger">*</span>
+              </label>
+              <button type="button" id="btnPagarTodo" class="btn btn-sm py-0.5 px-2"
+                      style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; font-size:0.7rem; font-weight:700; border-radius:5px;">
+                Pagar Totalidad
+              </button>
+            </div>
+            <input type="number" name="monto_pago" id="inputMontoCobro" min="1" step="1" required
+                   class="form-control text-white fw-bold"
+                   style="background:rgba(10,20,38,0.85); border:1px solid rgba(245,158,11,0.5); font-size:1.15rem; color:#fbbf24 !important; border-radius:10px;">
+          </div>
+
+          <!-- Método de pago recibido -->
+          <div class="mb-3">
+            <label for="selectMetodoCobro" class="form-label text-white small fw-bold mb-1">
+              Forma de Pago Recibida <span class="text-danger">*</span>
+            </label>
+            <select name="metodo_pago" id="selectMetodoCobro" class="form-select text-white" required
+                    style="background:rgba(10,20,38,0.85); border:1px solid rgba(77,168,218,0.3); border-radius:10px; font-size:0.9rem;">
+              <option value="efectivo" selected>Efectivo (Suma al dinero físico de caja)</option>
+              <option value="transferencia">Transferencia Bancaria</option>
+              <option value="nequi">Nequi</option>
+              <option value="daviplata">Daviplata</option>
+              <option value="tarjeta">Tarjeta Débito/Crédito</option>
+            </select>
+            <div class="small mt-1 text-muted" style="font-size:0.73rem;">
+              <i class="bi bi-info-circle me-1" style="color:#38bdf8;"></i>
+              Si seleccionas <strong>Efectivo</strong>, el monto se sumará al efectivo físico del turno activo para el arqueo y cierre.
+            </div>
+          </div>
+
+          <!-- Nota adicional -->
+          <div class="mb-3">
+            <label for="inputNotaCobro" class="form-label text-white small fw-bold mb-1">
+              Nota u Observación (Opcional)
+            </label>
+            <input type="text" name="observacion_cobro" id="inputNotaCobro" class="form-control text-white"
+                   placeholder="Ej: Cancelado en punto de venta por Don Pedro..."
+                   style="background:rgba(10,20,38,0.85); border:1px solid rgba(255,255,255,0.1); border-radius:10px; font-size:0.85rem;">
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal"
+                  style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.45rem 1.1rem;">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-sm fw-bold cys-btn-checkout" id="btnConfirmarCobro"
+                  style="padding:.45rem 1.25rem;">
+            <i class="bi bi-check-circle-fill me-1"></i> Registrar Pago y Marcar como Pagada
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
 <!-- ══ MODAL APERTURA DE CAJA ══ -->
 <div class="modal fade" id="modalConteo" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -506,9 +759,15 @@
       </div>
 
       <div class="modal-body p-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+        <!-- Alerta visual in-modal para errores o advertencia de números negativos -->
+        <div id="conteoAvisoError" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2 border-0 shadow-sm" style="background: rgba(235, 77, 75, 0.2); border: 1px solid rgba(235, 77, 75, 0.5) !important; color: #ff7675;">
+          <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+          <span id="conteoAvisoErrorText">No se permiten números negativos ni datos erróneos en el conteo.</span>
+        </div>
+
         <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">
           <i class="bi bi-info-circle me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
-          Ingresa la cantidad de billetes y monedas con los que inicias la caja registradora.
+          Ingresa la cantidad física de billetes y monedas con los que inicias la caja registradora.
         </p>
 
         <!-- Seccion Billetes -->
@@ -519,17 +778,19 @@
         <div class="row g-2 mb-4">
           {% for valor in billetes_denom %}
           <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--billete">
-              <div class="cys-denom-header">
-                <span class="cys-denom-badge cys-denom-badge--billete" title="Billete"><i class="bi bi-cash-stack"></i></span>
-                <span class="cys-denom-val">${{ valor|floatformat:0 }}</span>
+            <div class="cys-denom-card cys-denom-card--billete p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.25);">
+              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
+                <span class="cys-denom-badge text-success small" title="Billete"><i class="bi bi-cash-stack"></i></span>
+                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
               </div>
-              <div class="cys-denom-stepper">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              <div class="mb-1">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control denom-ct cys-clean-denom-input"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="validarTeclaDenominacion(event)"
+                       oninput="sanitizarInputDenominacion(this)">
               </div>
-              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
             </div>
           </div>
           {% endfor %}
@@ -543,17 +804,19 @@
         <div class="row g-2 mb-4">
           {% for valor in monedas_denom %}
           <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--moneda">
-              <div class="cys-denom-header">
-                <span class="cys-denom-badge cys-denom-badge--moneda" title="Moneda"><i class="bi bi-coin"></i></span>
-                <span class="cys-denom-val">${{ valor }}</span>
+            <div class="cys-denom-card cys-denom-card--moneda p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.25);">
+              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
+                <span class="cys-denom-badge text-warning small" title="Moneda"><i class="bi bi-coin"></i></span>
+                <span class="cys-denom-val text-white fw-bold small">${{ valor }}</span>
               </div>
-              <div class="cys-denom-stepper">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ct cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              <div class="mb-1">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control denom-ct cys-clean-denom-input"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="validarTeclaDenominacion(event)"
+                       oninput="sanitizarInputDenominacion(this)">
               </div>
-              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
             </div>
           </div>
           {% endfor %}
@@ -614,6 +877,12 @@
       </div>
 
       <div class="modal-body p-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+        <!-- Alerta visual in-modal para errores o advertencia de números negativos en cierre -->
+        <div id="cierreAvisoError" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2 border-0 shadow-sm" style="background: rgba(235, 77, 75, 0.2); border: 1px solid rgba(235, 77, 75, 0.5) !important; color: #ff7675;">
+          <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+          <span id="cierreAvisoErrorText">No se permiten números negativos ni datos erróneos en el arqueo o cierre de caja.</span>
+        </div>
+
         <p style="font-size:.85rem; color:var(--texto-muted); margin-bottom:1.25rem;">
           <i class="bi bi-info-circle me-1" style="color:var(--azul-claro,#4DA8DA);"></i>
           Cuenta todo el dinero físico disponible en la caja e ingresa el monto a reservar para el siguiente turno.
@@ -627,17 +896,19 @@
         <div class="row g-2 mb-4">
           {% for valor in billetes_denom %}
           <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--billete">
-              <div class="cys-denom-header">
-                <span class="cys-denom-badge cys-denom-badge--billete" title="Billete"><i class="bi bi-cash-stack"></i></span>
-                <span class="cys-denom-val">${{ valor|floatformat:0 }}</span>
+            <div class="cys-denom-card cys-denom-card--billete p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.25);">
+              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
+                <span class="cys-denom-badge text-success small" title="Billete"><i class="bi bi-cash-stack"></i></span>
+                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
               </div>
-              <div class="cys-denom-stepper">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              <div class="mb-1">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control denom-ci cys-clean-denom-input"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="validarTeclaDenominacion(event)"
+                       oninput="sanitizarInputDenominacion(this)">
               </div>
-              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
             </div>
           </div>
           {% endfor %}
@@ -651,17 +922,19 @@
         <div class="row g-2 mb-4">
           {% for valor in monedas_denom %}
           <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--moneda">
-              <div class="cys-denom-header">
-                <span class="cys-denom-badge cys-denom-badge--moneda" title="Moneda"><i class="bi bi-coin"></i></span>
-                <span class="cys-denom-val">${{ valor }}</span>
+            <div class="cys-denom-card cys-denom-card--moneda p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(77,168,218,0.25);">
+              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
+                <span class="cys-denom-badge text-warning small" title="Moneda"><i class="bi bi-coin"></i></span>
+                <span class="cys-denom-val text-white fw-bold small">${{ valor }}</span>
               </div>
-              <div class="cys-denom-stepper">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, -1)">−</button>
-                <input type="number" min="0" value="0" class="form-control denom-ci cys-denom-input" data-valor="{{ valor|stringformat:'d' }}">
-                <button type="button" class="cys-denom-btn" onclick="stepDenom(this, 1)">+</button>
+              <div class="mb-1">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control denom-ci cys-clean-denom-input"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="validarTeclaDenominacion(event)"
+                       oninput="sanitizarInputDenominacion(this)">
               </div>
-              <div class="cys-denom-subtotal">Subtotal: <span>$0</span></div>
+              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
             </div>
           </div>
           {% endfor %}
@@ -691,6 +964,16 @@
             <span style="color:var(--texto-muted);">Ventas brutas del día</span>
             <span style="font-weight:700; color:#2ed573;">${{ total_dia|floatformat:0 }}</span>
           </div>
+          {% if total_pendiente_dia > 0 %}
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(245,158,11,0.25);">
+            <span style="color:#fbbf24; font-weight:700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Pagos pendientes (deudas)</span>
+            <span style="font-weight:800; color:#fbbf24;">-${{ total_pendiente_dia|floatformat:0 }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
+            <span style="color:var(--texto-muted); font-weight:600;">Total efectivamente cobrado</span>
+            <span style="font-weight:800; color:#38bdf8;">${{ total_cobrado_dia|floatformat:0 }}</span>
+          </div>
+          {% endif %}
           <div class="d-flex justify-content-between py-1.5" style="font-size:.85rem; border-bottom:1px solid rgba(77,168,218,0.15);">
             <span style="color:var(--texto-muted);">Total física contado</span>
             <span style="font-weight:800; color:var(--azul-claro,#4DA8DA); font-size:1.1rem;" id="totalCierre">$0</span>
@@ -754,7 +1037,7 @@ function mostrar(vista) {
 // ══ CONSTRUCTOR DE TARJETA DE PRODUCTO ══
 function crearTarjetaProducto(p) {
   const div = document.createElement('div');
-  div.className = 'col-12 col-sm-6 col-md-6 col-xl-4';
+  div.className = 'col-12 col-sm-6 col-md-6 col-xl-6';
 
   const stockVal = parseInt(p.dataset.stock, 10) || 0;
   const precioVal = parseFloat(p.dataset.precio) || 0;
@@ -762,11 +1045,11 @@ function crearTarjetaProducto(p) {
 
   let stockBadgeHtml = '';
   if (stockVal <= 0) {
-    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--empty"><i class="bi bi-x-circle me-1"></i>Sin stock</span>`;
+    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--empty"><i class="bi bi-x-circle"></i>Sin stock</span>`;
   } else if (stockVal <= 5) {
-    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--low"><i class="bi bi-exclamation-triangle-fill me-1"></i>Stock bajo: ${stockVal}</span>`;
+    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--low"><i class="bi bi-exclamation-triangle-fill"></i>Stock: ${stockVal}</span>`;
   } else {
-    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--ok"><i class="bi bi-check-circle-fill me-1"></i>${stockVal} en stock</span>`;
+    stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--ok"><i class="bi bi-check-circle-fill"></i>${stockVal.toLocaleString('es-CO')} en stock</span>`;
   }
 
   const precioStr = precioVal > 0 
@@ -780,17 +1063,17 @@ function crearTarjetaProducto(p) {
          data-prod-precio="${p.dataset.precio}"
          data-prod-stock="${p.dataset.stock}"
          data-prod-pres-count="${presCount}">
-      <div class="d-flex justify-content-between align-items-center w-100 mb-2">
+      <div class="d-flex justify-content-between align-items-center w-100 gap-2 mb-2">
         <div class="cys-prod-icon-circle">
           <i class="bi bi-box-seam"></i>
         </div>
         ${stockBadgeHtml}
       </div>
-      <div class="text-start w-100 mb-2">
+      <div class="text-start w-100 mb-2 flex-grow-1">
         <div class="cys-prod-name" title="${p.dataset.nombre}">${p.dataset.nombre}</div>
         <div class="cys-prod-sub">${presCount > 0 ? `${presCount} presentación${presCount > 1 ? 'es' : ''}` : 'Presentación única'}</div>
       </div>
-      <div class="d-flex justify-content-between align-items-center w-100 pt-2" style="border-top:1px solid rgba(77,168,218,0.15);">
+      <div class="cys-prod-card-footer d-flex justify-content-between align-items-center w-100">
         <div>
           <div class="cys-prod-price-label">Precio base</div>
           <div class="cys-prod-price">${precioStr}</div>
@@ -860,6 +1143,8 @@ document.getElementById('btnVolverCats').addEventListener('click', () => {
   mostrar(vistaCats);
   const busq = document.getElementById('buscadorProducto');
   if (busq) busq.value = '';
+  const btnL = document.getElementById('btnLimpiarBusqueda');
+  if (btnL) btnL.style.display = 'none';
 });
 document.getElementById('btnVolverProds').addEventListener('click', () => mostrar(vistaProds));
 
@@ -1083,9 +1368,19 @@ function renderCarrito() {
       <input type="hidden" name="precio[]"          value="${item.precio}">`;
   });
 
-  const descPct    = parseFloat(document.getElementById('inputDescuento').value) || 0;
-  const totalFinal = subtotal - (subtotal * descPct / 100);
-  document.getElementById('totalMonto').textContent = '$' + totalFinal.toLocaleString('es-CO');
+  const descInp    = document.getElementById('inputDescuento');
+  let descPct      = descInp ? (parseFloat(descInp.value) || 0) : 0;
+  if (descPct > 5) {
+    mostrarToast('El descuento máximo permitido es del 5%.', 'warning');
+    descPct = 5;
+    if (descInp) descInp.value = 5;
+  } else if (descPct < 0) {
+    descPct = 0;
+    if (descInp) descInp.value = 0;
+  }
+
+  const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
+  document.getElementById('totalMonto').textContent = '$' + Math.round(totalFinal).toLocaleString('es-CO');
   actualizarPagado();
 }
 
@@ -1101,7 +1396,39 @@ function cambiarCantidad(idx, delta) {
  
   const inpDesc = document.getElementById('inputDescuento');
   if (inpDesc) {
-    inpDesc.addEventListener('input', renderCarrito);
+    inpDesc.addEventListener('input', function() {
+      let v = parseFloat(this.value) || 0;
+      if (v > 5) {
+        mostrarToast('El descuento no puede superar el 5%.', 'warning');
+        this.value = 5;
+      } else if (v < 0) {
+        this.value = 0;
+      }
+      renderCarrito();
+    });
+  }
+
+  // ══ BOTÓN PAGO EXACTO EN EFECTIVO ══
+  const btnExacto = document.getElementById('btnPagoExacto');
+  if (btnExacto) {
+    btnExacto.addEventListener('click', function() {
+      let subtotal = 0;
+      carrito.forEach(item => subtotal += item.precio * item.cantidad);
+      const descInp = document.getElementById('inputDescuento');
+      let descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+      if (descPct > 5) descPct = 5;
+      const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
+
+      const inpEfec = document.getElementById('inputPagoEfectivo');
+      if (inpEfec) {
+        inpEfec.value = Math.round(totalFinal);
+        document.querySelectorAll('.pago-input').forEach(i => {
+          if (i !== inpEfec) i.value = 0;
+        });
+        actualizarPagado();
+        mostrarToast('Pago exacto en efectivo establecido: $' + Math.round(totalFinal).toLocaleString('es-CO'), 'success');
+      }
+    });
   }
 
   // ══ PAGOS Y CALCULADORA DE CAMBIO/VUELTOS ══
@@ -1109,37 +1436,91 @@ function cambiarCantidad(idx, delta) {
     let pagado = 0;
     document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
     const totalPagEl = document.getElementById('totalPagado');
-    if (totalPagEl) totalPagEl.textContent = '$' + pagado.toLocaleString('es-CO');
+    if (totalPagEl) totalPagEl.textContent = '$' + Math.round(pagado).toLocaleString('es-CO');
 
     const descInp = document.getElementById('inputDescuento');
-    const descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+    let descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+    if (descPct > 5) { descPct = 5; if (descInp) descInp.value = 5; }
+    if (descPct < 0) { descPct = 0; if (descInp) descInp.value = 0; }
+
     let subtotal = 0;
     carrito.forEach(item => subtotal += item.precio * item.cantidad);
-    const totalFinal = subtotal - (subtotal * descPct / 100);
+    const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
 
     const indCambio = document.getElementById('indicadorCambio');
     const lblCambio = document.getElementById('labelCambio');
     const mtoCambio = document.getElementById('montoCambio');
+    const secObs = document.getElementById('seccionObservacionPago');
+    const txtDeuda = document.getElementById('textoSaldoPendiente');
 
-    if (indCambio && lblCambio && mtoCambio) {
-      if (carrito.length > 0 && pagado > 0) {
-        indCambio.style.display = 'flex';
-        const diff = pagado - totalFinal;
-        if (diff >= 0) {
+    if (carrito.length > 0) {
+      const diff = pagado - totalFinal;
+      if (pagado > 0 && diff >= 0) {
+        if (indCambio) {
+          indCambio.style.display = 'flex';
           indCambio.className = 'cys-change-indicator cys-change-indicator--ok mt-2';
           lblCambio.textContent = 'Cambio / Vueltos';
-          mtoCambio.textContent = '$' + diff.toLocaleString('es-CO');
-        } else {
+          mtoCambio.textContent = '$' + Math.round(diff).toLocaleString('es-CO');
+        }
+        if (secObs) secObs.style.display = 'none';
+      } else if (pagado > 0 && diff < 0) {
+        const faltante = Math.abs(diff);
+        if (indCambio) {
+          indCambio.style.display = 'flex';
           indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
-          lblCambio.textContent = 'Pendiente por cobrar';
-          mtoCambio.textContent = '$' + Math.abs(diff).toLocaleString('es-CO');
+          lblCambio.textContent = 'Pendiente por cobrar (Deuda)';
+          mtoCambio.textContent = '$' + Math.round(faltante).toLocaleString('es-CO');
+        }
+        if (secObs) {
+          secObs.style.display = 'block';
+          if (txtDeuda) txtDeuda.textContent = '$' + Math.round(faltante).toLocaleString('es-CO');
         }
       } else {
-        indCambio.style.display = 'none';
+        if (indCambio) indCambio.style.display = 'none';
+        if (secObs) secObs.style.display = 'none';
       }
+    } else {
+      if (indCambio) indCambio.style.display = 'none';
+      if (secObs) secObs.style.display = 'none';
     }
   }
   document.querySelectorAll('.pago-input').forEach(i => i.addEventListener('input', actualizarPagado));
+
+  // ══ VALIDACIÓN FORMULARIO DE VENTA ══
+  const formVenta = document.getElementById('formVenta');
+  if (formVenta) {
+    formVenta.addEventListener('submit', function(e) {
+      let subtotal = 0;
+      carrito.forEach(item => subtotal += item.precio * item.cantidad);
+      const descInp = document.getElementById('inputDescuento');
+      let descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+      if (descPct > 5) {
+        e.preventDefault();
+        mostrarToast('El descuento no puede superar el 5%.', 'warning');
+        descInp.value = 5;
+        descInp.focus();
+        return false;
+      }
+
+      let pagado = 0;
+      document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
+      const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
+
+      // Si pagó menos y queda debiendo, requerir motivo
+      if (pagado > 0 && pagado < totalFinal) {
+        const obsInp = document.getElementById('inputObservacionPago');
+        if (!obsInp || obsInp.value.trim() === '') {
+          e.preventDefault();
+          mostrarToast('Debes ingresar el motivo por el cual queda un saldo pendiente.', 'warning');
+          if (obsInp) {
+            obsInp.focus();
+            obsInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return false;
+        }
+      }
+    });
+  }
 
   // ══ CANCELAR ══
   const btnCanc = document.getElementById('btnCancelarVenta');
@@ -1150,15 +1531,31 @@ function cambiarCantidad(idx, delta) {
       const descInp = document.getElementById('inputDescuento');
       if (descInp) descInp.value = 0;
       document.querySelectorAll('.pago-input').forEach(i => i.value = 0);
+      const secObs = document.getElementById('seccionObservacionPago');
+      if (secObs) secObs.style.display = 'none';
+      const obsInp = document.getElementById('inputObservacionPago');
+      if (obsInp) obsInp.value = '';
       renderCarrito();
     });
   }
 
   // ══ BÚSQUEDA DE PRODUCTOS ══
   const busqProd = document.getElementById('buscadorProducto');
+  const btnLimpiar = document.getElementById('btnLimpiarBusqueda');
+
+  if (btnLimpiar && busqProd) {
+    btnLimpiar.addEventListener('click', function() {
+      busqProd.value = '';
+      btnLimpiar.style.display = 'none';
+      mostrar(vistaCats);
+      busqProd.focus();
+    });
+  }
+
   if (busqProd) {
     busqProd.addEventListener('input', function() {
       const q = this.value.toLowerCase().trim();
+      if (btnLimpiar) btnLimpiar.style.display = q ? 'flex' : 'none';
       if (!q) { 
         mostrar(vistaCats); 
         return; 
@@ -1228,15 +1625,64 @@ function cambiarCantidad(idx, delta) {
     });
   }
 
-  // ══ FILTRO DE FECHAS Y BÚSQUEDA EN HISTORIAL ══
-  function aplicarFiltroHistorial() {
+  // ══ FILTRO DE FECHAS Y BÚSQUEDA EN HISTORIAL (SIN CONTRADICCIONES) ══
+  function validarYEnlazarFechas(origen) {
+    const fDesde = document.getElementById('filtroDesde');
+    const fHasta = document.getElementById('filtroHasta');
+    if (!fDesde || !fHasta) return;
+
+    let valDesde = fDesde.value;
+    let valHasta = fHasta.value;
+
+    if (valDesde && valHasta && valDesde > valHasta) {
+      if (origen === 'desde') {
+        fHasta.value = valDesde;
+        valHasta = valDesde;
+        mostrarToast('La fecha "Hasta" se ajustó para no contradecir la fecha "Desde".', 'warning');
+      } else if (origen === 'hasta') {
+        fDesde.value = valHasta;
+        valDesde = valHasta;
+        mostrarToast('La fecha "Desde" se ajustó para no contradecir la fecha "Hasta".', 'warning');
+      } else {
+        fHasta.value = valDesde;
+        valHasta = valDesde;
+      }
+    }
+
+    if (valDesde) {
+      fHasta.min = valDesde;
+    } else {
+      fHasta.removeAttribute('min');
+    }
+
+    if (valHasta) {
+      fDesde.max = valHasta;
+    } else {
+      fDesde.removeAttribute('max');
+    }
+  }
+
+  function aplicarFiltroHistorial(origen) {
+    if (typeof origen === 'string') {
+      validarYEnlazarFechas(origen);
+    } else {
+      validarYEnlazarFechas();
+    }
+
     const fDesde = document.getElementById('filtroDesde');
     const fHasta = document.getElementById('filtroHasta');
     const fBusc  = document.getElementById('buscadorHistorial');
 
-    const desde = fDesde ? fDesde.value : '';
-    const hasta = fHasta ? fHasta.value : '';
-    const q     = fBusc ? fBusc.value.toLowerCase().trim() : '';
+    let desde = fDesde ? fDesde.value : '';
+    let hasta = fHasta ? fHasta.value : '';
+    const q   = fBusc ? fBusc.value.toLowerCase().trim() : '';
+
+    // Doble verificación: si de alguna manera desde > hasta, asegurar que hasta = desde
+    if (desde && hasta && desde > hasta) {
+      hasta = desde;
+      if (fHasta) fHasta.value = desde;
+    }
+
     const filas = document.querySelectorAll('.fila-venta');
     let visibles = 0;
 
@@ -1281,13 +1727,19 @@ function cambiarCantidad(idx, delta) {
   }
 
   const fDesde = document.getElementById('filtroDesde');
-  if (fDesde) fDesde.addEventListener('change', aplicarFiltroHistorial);
+  if (fDesde) {
+    fDesde.addEventListener('change', () => aplicarFiltroHistorial('desde'));
+    fDesde.addEventListener('input', () => aplicarFiltroHistorial('desde'));
+  }
 
   const fHasta = document.getElementById('filtroHasta');
-  if (fHasta) fHasta.addEventListener('change', aplicarFiltroHistorial);
+  if (fHasta) {
+    fHasta.addEventListener('change', () => aplicarFiltroHistorial('hasta'));
+    fHasta.addEventListener('input', () => aplicarFiltroHistorial('hasta'));
+  }
 
   const fBusc = document.getElementById('buscadorHistorial');
-  if (fBusc) fBusc.addEventListener('input', aplicarFiltroHistorial);
+  if (fBusc) fBusc.addEventListener('input', () => aplicarFiltroHistorial('busqueda'));
 
   const btnLimp = document.getElementById('btnLimpiarFiltro');
   if (btnLimp) {
@@ -1295,22 +1747,118 @@ function cambiarCantidad(idx, delta) {
       const f1 = document.getElementById('filtroDesde');
       const f2 = document.getElementById('filtroHasta');
       const f3 = document.getElementById('buscadorHistorial');
-      if (f1) f1.value = '';
-      if (f2) f2.value = '';
+      if (f1) { f1.value = ''; f1.removeAttribute('max'); }
+      if (f2) { f2.value = ''; f2.removeAttribute('min'); }
       if (f3) f3.value = '';
       aplicarFiltroHistorial();
+      mostrarToast('Filtros de fecha y búsqueda limpiados.', 'success');
     });
   }
- 
-// ══ STEPPER HELPER PARA DENOMINACIONES ══
+
+  // Inicializar restricciones al cargar
+  validarYEnlazarFechas();
+
+  // ══ MODAL DE COBRO DE SALDO PENDIENTE (CAMBIAR A PAGADA) ══
+  document.querySelectorAll('.btn-abrir-cobro').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const vid = this.dataset.ventaId;
+      const cliente = this.dataset.cliente || 'Consumidor final';
+      const total = parseFloat(this.dataset.total) || 0;
+      const cobrado = parseFloat(this.dataset.cobrado) || 0;
+      const deuda = parseFloat(this.dataset.deuda) || 0;
+      const obs = this.dataset.obs || '';
+
+      const vidEl = document.getElementById('cobroVentaId');
+      if (vidEl) vidEl.textContent = vid;
+      const cliEl = document.getElementById('cobroCliente');
+      if (cliEl) cliEl.textContent = cliente;
+      const totEl = document.getElementById('cobroTotalVenta');
+      if (totEl) totEl.textContent = '$' + Math.round(total).toLocaleString('es-CO');
+      const cobEl = document.getElementById('cobroYaCobrado');
+      if (cobEl) cobEl.textContent = '$' + Math.round(cobrado).toLocaleString('es-CO');
+      const deuEl = document.getElementById('cobroSaldoDeuda');
+      if (deuEl) deuEl.textContent = '$' + Math.round(deuda).toLocaleString('es-CO');
+
+      const inpMonto = document.getElementById('inputMontoCobro');
+      if (inpMonto) {
+        inpMonto.value = Math.round(deuda);
+        inpMonto.max = Math.round(deuda);
+      }
+
+      const obsBox = document.getElementById('cobroObsBox');
+      const obsTxt = document.getElementById('cobroMotivoTexto');
+      if (obs && obsBox && obsTxt) {
+        obsTxt.textContent = obs;
+        obsBox.style.display = 'block';
+      } else if (obsBox) {
+        obsBox.style.display = 'none';
+      }
+
+      const form = document.getElementById('formCobrarSaldo');
+      if (form) form.action = `/ventas/cobrar-saldo/${vid}/`;
+    });
+  });
+
+  const btnPagarTodo = document.getElementById('btnPagarTodo');
+  if (btnPagarTodo) {
+    btnPagarTodo.addEventListener('click', function() {
+      const inp = document.getElementById('inputMontoCobro');
+      if (inp && inp.max) inp.value = inp.max;
+    });
+  }
+function mostrarAvisoModal(tipo, msg) {
+  const box = document.getElementById(tipo === 'cierre' ? 'cierreAvisoError' : 'conteoAvisoError');
+  const txt = document.getElementById(tipo === 'cierre' ? 'cierreAvisoErrorText' : 'conteoAvisoErrorText');
+  if (box && txt) {
+    txt.textContent = msg;
+    box.classList.remove('d-none');
+    box.classList.add('d-flex');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function ocultarAvisoModal(tipo) {
+  const box = document.getElementById(tipo === 'cierre' ? 'cierreAvisoError' : 'conteoAvisoError');
+  if (box) {
+    box.classList.add('d-none');
+    box.classList.remove('d-flex');
+  }
+}
+
+function validarTeclaDenominacion(e) {
+  if (['-', '+', 'e', 'E', '.', ',', 'Subtract'].includes(e.key) || e.keyCode === 189 || e.keyCode === 109) {
+    e.preventDefault();
+    const modalTipo = e.target.closest('#modalCierre') ? 'cierre' : 'conteo';
+    mostrarAvisoModal(modalTipo, 'No se permiten números negativos ni caracteres especiales en el conteo.');
+    e.target.classList.add('border-danger');
+    setTimeout(() => { e.target.classList.remove('border-danger'); }, 2500);
+  }
+}
+
+function sanitizarInputDenominacion(input) {
+  let val = String(input.value || '');
+  const modalTipo = input.closest('#modalCierre') ? 'cierre' : 'conteo';
+  if (val.includes('-')) {
+    mostrarAvisoModal(modalTipo, 'No se permiten valores negativos en el arqueo o cierre de caja.');
+    input.classList.add('border-danger');
+    setTimeout(() => { input.classList.remove('border-danger'); }, 2500);
+  }
+  let clean = val.replace(/[^0-9]/g, '');
+  input.value = clean; // Se mantiene en blanco si se borra, no pone '0'
+
+  if (input.classList.contains('denom-ct')) {
+    recalcApertura();
+  } else if (input.classList.contains('denom-ci')) {
+    recalcCierre();
+  }
+}
+
 function stepDenom(btn, delta) {
-  const container = btn.closest('.cys-denom-stepper');
-  if (!container) return;
-  const input = container.querySelector('input');
+  const input = btn.closest('.cys-denom-card')?.querySelector('input');
   if (input) {
     let val = parseInt(input.value, 10) || 0;
     val = Math.max(0, val + delta);
-    input.value = val;
+    input.value = val > 0 ? val : '';
     recalcApertura();
     recalcCierre();
   }
@@ -1342,7 +1890,7 @@ function recalcApertura(e) {
     if (e && e.target === manualInput) {
       manualInput.dataset.userEdited = 'true';
     } else if (!manualInput.dataset.userEdited || total > 0) {
-      manualInput.value = total || '';
+      manualInput.value = total > 0 ? total : '';
     }
   }
 
@@ -1409,16 +1957,41 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnConfirmarConteo = document.getElementById('btnConfirmarConteo');
   if (btnConfirmarConteo) {
     btnConfirmarConteo.addEventListener('click', function() {
+      ocultarAvisoModal('conteo');
+
       const denoms = {};
       let montoCalculado = 0;
+      let hasError = false;
+      let errorMsg = '';
+
       document.querySelectorAll('.denom-ct').forEach(d => {
-        const cant = parseInt(d.value, 10) || 0;
+        const valStr = String(d.value || '').trim();
+        const cant = parseInt(valStr, 10) || 0;
         const val  = parseInt(d.dataset.valor, 10) || 0;
-        if (cant > 0) denoms[d.dataset.valor] = cant;
-        montoCalculado += cant * val;
+
+        if (valStr.includes('-') || isNaN(cant) || cant < 0 || /[^0-9]/.test(valStr)) {
+          hasError = true;
+          d.classList.add('border-danger');
+          errorMsg = 'No se permiten números negativos ni datos erróneos en el conteo.';
+        } else {
+          d.classList.remove('border-danger');
+          if (cant > 0) denoms[d.dataset.valor] = cant;
+          montoCalculado += cant * val;
+        }
       });
 
-      const manualVal = parseFloat(document.getElementById('inputMontoBaseManual')?.value || 0);
+      const manualValRaw = document.getElementById('inputMontoBaseManual')?.value || '';
+      if (manualValRaw.includes('-') || /[^0-9.]/.test(manualValRaw)) {
+        hasError = true;
+        errorMsg = 'El monto base manual no puede ser negativo ni erróneo.';
+      }
+
+      if (hasError) {
+        mostrarAvisoModal('conteo', errorMsg);
+        return;
+      }
+
+      const manualVal = parseFloat(manualValRaw || 0);
       const montoFinal = (manualVal > 0) ? manualVal : montoCalculado;
 
       const obsEl = document.getElementById('ctObservacion');
@@ -1450,21 +2023,28 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           btnConfirmarConteo.disabled = false;
           btnConfirmarConteo.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno';
-          alert(data.error || 'Error al registrar apertura.');
+          mostrarAvisoModal('conteo', data.error || 'No se pudo registrar la apertura de caja.');
         }
       })
       .catch(err => {
         console.error('Error al guardar apertura:', err);
         btnConfirmarConteo.disabled = false;
         btnConfirmarConteo.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Confirmar Conteo e Iniciar Turno';
-        alert('Error al procesar la apertura de caja: ' + err.message);
+        mostrarAvisoModal('conteo', 'Error al procesar la apertura de caja: ' + err.message);
       });
     });
   }
 
   const baseInput = document.getElementById('baseSiguiente');
   if (baseInput) {
+    baseInput.addEventListener('keydown', function(e) {
+      if (['-', '+', 'e', 'E', '.', ','].includes(e.key)) {
+        e.preventDefault();
+        mostrarAvisoModal('cierre', 'No se permiten valores negativos en la base reservada.');
+      }
+    });
     baseInput.addEventListener('input', function() {
+      this.value = String(this.value || '').replace(/[^0-9]/g, '');
       const totalStr = document.getElementById('totalCierre') ? document.getElementById('totalCierre').textContent : '0';
       const total = parseInt(totalStr.replace(/\D/g,''), 10) || 0;
       const base  = parseInt(this.value, 10) || 0;
@@ -1478,15 +2058,49 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnConfirmarCierre = document.getElementById('btnConfirmarCierre');
   if (btnConfirmarCierre) {
     btnConfirmarCierre.addEventListener('click', function() {
+      ocultarAvisoModal('cierre');
+
       const denoms = {};
       let monto = 0;
+      let hasError = false;
+      let errorMsg = '';
+
       document.querySelectorAll('.denom-ci').forEach(d => {
-        const cant = parseInt(d.value, 10) || 0;
+        const valStr = String(d.value || '').trim();
+        const cant = parseInt(valStr, 10) || 0;
         const val  = parseInt(d.dataset.valor, 10) || 0;
-        if (cant > 0) denoms[d.dataset.valor] = cant;
-        monto += cant * val;
+
+        if (valStr.includes('-') || isNaN(cant) || cant < 0 || /[^0-9]/.test(valStr)) {
+          hasError = true;
+          d.classList.add('border-danger');
+          errorMsg = 'No se permiten números negativos ni datos erróneos en el arqueo o cierre.';
+        } else {
+          d.classList.remove('border-danger');
+          if (cant > 0) denoms[d.dataset.valor] = cant;
+          monto += cant * val;
+        }
       });
-      const base = parseInt(document.getElementById('baseSiguiente') ? document.getElementById('baseSiguiente').value : 0, 10) || 0;
+
+      const baseEl = document.getElementById('baseSiguiente');
+      const baseValStr = baseEl ? String(baseEl.value || '').trim() : '';
+      if (baseValStr.includes('-') || /[^0-9]/.test(baseValStr)) {
+        hasError = true;
+        if (baseEl) baseEl.classList.add('border-danger');
+        errorMsg = 'El monto base reservado no puede ser negativo ni erróneo.';
+      } else if (baseEl) {
+        baseEl.classList.remove('border-danger');
+      }
+
+      if (hasError) {
+        mostrarAvisoModal('cierre', errorMsg);
+        return;
+      }
+
+      const base = parseInt(baseValStr || 0, 10) || 0;
+
+      btnConfirmarCierre.disabled = true;
+      btnConfirmarCierre.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Cerrando caja...';
+
       fetch("{% url 'cierre_caja' %}", {
         method: 'POST',
         headers: {
@@ -1505,24 +2119,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       })
       .then(data => {
-        if (data.ok) location.reload();
-        else alert(data.error || 'Error al cerrar caja.');
+        if (data.ok) {
+          location.reload();
+        } else {
+          btnConfirmarCierre.disabled = false;
+          btnConfirmarCierre.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Confirmar y Cerrar Caja';
+          mostrarAvisoModal('cierre', data.error || 'Error al cerrar caja.');
+        }
       })
       .catch(err => {
         console.error('Error al guardar cierre:', err);
-        alert('Error al procesar el cierre de caja: ' + err.message);
+        btnConfirmarCierre.disabled = false;
+        btnConfirmarCierre.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Confirmar y Cerrar Caja';
+        mostrarAvisoModal('cierre', 'Error al procesar el cierre de caja: ' + err.message);
       });
     });
   }
 
   const modalConteo = document.getElementById('modalConteo');
   if (modalConteo) {
-    modalConteo.addEventListener('shown.bs.modal', recalcApertura);
+    modalConteo.addEventListener('shown.bs.modal', function() {
+      ocultarAvisoModal('conteo');
+      document.querySelectorAll('.denom-ct').forEach(i => {
+        i.value = '';
+        i.classList.remove('border-danger');
+      });
+      const manualInput = document.getElementById('inputMontoBaseManual');
+      if (manualInput) {
+        manualInput.value = '';
+        delete manualInput.dataset.userEdited;
+      }
+      recalcApertura();
+    });
   }
 
   const modalCierre = document.getElementById('modalCierre');
   if (modalCierre) {
-    modalCierre.addEventListener('shown.bs.modal', recalcCierre);
+    modalCierre.addEventListener('shown.bs.modal', function() {
+      ocultarAvisoModal('cierre');
+      document.querySelectorAll('.denom-ci').forEach(i => {
+        i.value = '';
+        i.classList.remove('border-danger');
+      });
+      const baseInput = document.getElementById('baseSiguiente');
+      if (baseInput) {
+        baseInput.value = '';
+        baseInput.classList.remove('border-danger');
+      }
+      recalcCierre();
+    });
   }
 
   // ── FORZAR APERTURA DE MODALES CON CLICK DIRECTO (EN CUALQUIER NAVEGADOR) ──

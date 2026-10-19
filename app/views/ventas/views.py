@@ -1,4 +1,5 @@
 import json
+import math
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from datetime import datetime, timedelta
@@ -19,8 +20,8 @@ from app.models import (
     Producto, Categoria, PresentacionProducto, Lote
 )
 
-BILLETES_DENOM = [100000, 50000, 20000, 10000, 5000, 2000, 1000]
-MONEDAS_DENOM  = [500, 200, 100, 50]
+BILLETES_DENOM = [100000, 50000, 20000, 10000, 5000, 2000]
+MONEDAS_DENOM  = [1000, 500, 200, 100, 50]
 
 
 # ════════════════════════════════════════
@@ -83,11 +84,17 @@ def ventas_lista(request):
         ventas_turno = Venta.objects.filter(fecha__range=(start_of_day, end_of_day))
 
     total_dia = int(sum(v.total_venta for v in ventas_turno))
+    total_pendiente_dia = int(sum(v.saldo_pendiente or 0 for v in ventas_turno))
+    total_cobrado_dia = max(0, total_dia - total_pendiente_dia)
+    ventas_pendientes_count = sum(1 for v in ventas_turno if (v.saldo_pendiente or 0) > 0)
 
     return render(request, 'ventas/ventas.html', {
         'ventas': ventas,
         'categorias': categorias,
         'total_dia': total_dia,
+        'total_pendiente_dia': total_pendiente_dia,
+        'total_cobrado_dia': total_cobrado_dia,
+        'ventas_pendientes_count': ventas_pendientes_count,
         'hoy': hoy,
         'caja_abierta': caja_abierta,
         'ultimo_cierre': ultimo_cierre,
@@ -135,11 +142,18 @@ def nueva_venta(request):
             return Decimal('0')
 
     descuento_pct = to_decimal('descuento_porcentaje')
+    if descuento_pct < Decimal('0'):
+        descuento_pct = Decimal('0')
+    elif descuento_pct > Decimal('5'):
+        messages.error(request, "El descuento no puede superar el 5% permitido.")
+        return redirect('ventas')
+
     pago_efectivo = to_decimal('pago_efectivo')
     pago_tarjeta = to_decimal('pago_tarjeta')
     pago_transferencia = to_decimal('pago_transferencia')
     pago_nequi = to_decimal('pago_nequi')
     pago_daviplata = to_decimal('pago_daviplata')
+    observacion_pago = (request.POST.get('observacion_pago') or '').strip()
     cliente_nombre = (request.POST.get('cliente_nombre') or '').strip() or 'Consumidor final'
 
     if not producto_ids:
@@ -196,13 +210,35 @@ def nueva_venta(request):
     monto_descuento = (subtotal_venta * descuento_pct) / Decimal('100')
     total_final = max(Decimal('0'), subtotal_venta - monto_descuento)
     total_pagado = pago_efectivo + pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
+    saldo_pendiente = Decimal('0')
 
-    if total_pagado == Decimal('0'):
+    if total_pagado == Decimal('0') and not observacion_pago:
+        # Pago rápido completo en efectivo por omisión
         pago_efectivo = total_final
+        total_pagado = total_final
         metodo_pago = 'efectivo'
     elif total_pagado < total_final:
-        messages.error(request, f"El total pagado (${total_pagado:,.0f}) no cubre el total (${total_final:,.0f}).".replace(',', '.'))
-        return redirect('ventas')
+        # Pago parcial / fiado con saldo pendiente
+        saldo_pendiente = total_final - total_pagado
+        if not observacion_pago:
+            messages.error(
+                request,
+                f"El pago ingresado (${total_pagado:,.0f}) es menor al total (${total_final:,.0f}). Debe ingresar el motivo por el cual queda un saldo pendiente de ${saldo_pendiente:,.0f}.".replace(',', '.')
+            )
+            return redirect('ventas')
+
+        if pago_efectivo > 0:
+            metodo_pago = 'efectivo'
+        elif pago_tarjeta > 0:
+            metodo_pago = 'tarjeta'
+        elif pago_transferencia > 0:
+            metodo_pago = 'transferencia'
+        elif pago_nequi > 0:
+            metodo_pago = 'nequi'
+        elif pago_daviplata > 0:
+            metodo_pago = 'daviplata'
+        else:
+            metodo_pago = 'pendiente'
     else:
         metodo_pago = 'efectivo'
         if pago_tarjeta > 0:
@@ -227,6 +263,8 @@ def nueva_venta(request):
             pago_transferencia=pago_transferencia,
             pago_nequi=pago_nequi,
             pago_daviplata=pago_daviplata,
+            saldo_pendiente=saldo_pendiente,
+            observacion=observacion_pago,
             caja=caja_actual,
         )
 
@@ -267,16 +305,21 @@ def nueva_venta(request):
                 total_val=subtotal_item,
             )
 
-        # Actualizar totales en caja
-        if metodo_pago == 'efectivo' or pago_efectivo > 0:
-            monto_efec = pago_efectivo if pago_efectivo > 0 else total_final
-            caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + monto_efec
+        # Actualizar totales en caja únicamente con lo efectivamente recaudado
+        if pago_efectivo > 0:
+            caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + pago_efectivo
         if pago_tarjeta > 0 or pago_transferencia > 0 or pago_nequi > 0 or pago_daviplata > 0:
             monto_trans = (pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata)
             caja_actual.total_transferencias = (caja_actual.total_transferencias or Decimal('0')) + monto_trans
         caja_actual.save(update_fields=['total_efectivo', 'total_transferencias'])
 
-    messages.success(request, f"Venta #{venta.pk} registrada con éxito — Total: ${total_final:,.0f}".replace(',', '.'))
+    if saldo_pendiente > 0:
+        messages.warning(
+            request,
+            f"Venta #{venta.pk} guardada con saldo pendiente de ${saldo_pendiente:,.0f} (Cobrado: ${total_pagado:,.0f}). Motivo registrado: {observacion_pago}".replace(',', '.')
+        )
+    else:
+        messages.success(request, f"Venta #{venta.pk} registrada con éxito — Total: ${total_final:,.0f}".replace(',', '.'))
     return redirect('ventas')
 
 
@@ -293,6 +336,102 @@ def eliminar_venta(request, pk):
             venta.delete()
             messages.success(request, "Venta eliminada y stock restituido a bodega.")
     return redirect('ventas')
+
+
+@session_required
+@require_POST
+def cobrar_saldo_pendiente(request, pk):
+    venta = get_object_or_404(Venta, pk=pk)
+    redirect_url = request.META.get('HTTP_REFERER') or 'ventas'
+
+    if (venta.saldo_pendiente or Decimal('0')) <= Decimal('0'):
+        messages.info(request, f"La venta #{venta.pk} ya no tiene saldo pendiente por cobrar.")
+        return redirect(redirect_url)
+
+    raw_monto = str(request.POST.get('monto_pago', '0') or '0').strip().replace('$', '').replace('.', '').replace(',', '').strip()
+    try:
+        monto_pago = Decimal(raw_monto or '0')
+    except (InvalidOperation, TypeError, ValueError):
+        messages.error(request, "Monto de cobro inválido.")
+        return redirect(redirect_url)
+
+    if monto_pago <= Decimal('0'):
+        messages.error(request, "El monto a cobrar debe ser mayor a cero.")
+        return redirect(redirect_url)
+
+    if monto_pago > (venta.saldo_pendiente or Decimal('0')):
+        messages.error(
+            request,
+            f"El monto ingresado (${monto_pago:,.0f}) supera el saldo pendiente de la venta (${venta.saldo_pendiente:,.0f}).".replace(',', '.')
+        )
+        return redirect(redirect_url)
+
+    metodo_pago = (request.POST.get('metodo_pago') or 'efectivo').strip().lower()
+    if metodo_pago not in ['efectivo', 'transferencia', 'nequi', 'daviplata', 'tarjeta']:
+        metodo_pago = 'efectivo'
+
+    nota = (request.POST.get('observacion_cobro') or '').strip()
+
+    with transaction.atomic():
+        # Descontar del saldo pendiente
+        venta.saldo_pendiente = max(Decimal('0'), (venta.saldo_pendiente or Decimal('0')) - monto_pago)
+
+        # Sumar al método de pago respectivo en la venta
+        if metodo_pago == 'efectivo':
+            venta.pago_efectivo = (venta.pago_efectivo or Decimal('0')) + monto_pago
+        elif metodo_pago == 'transferencia':
+            venta.pago_transferencia = (venta.pago_transferencia or Decimal('0')) + monto_pago
+        elif metodo_pago == 'nequi':
+            venta.pago_nequi = (venta.pago_nequi or Decimal('0')) + monto_pago
+        elif metodo_pago == 'daviplata':
+            venta.pago_daviplata = (venta.pago_daviplata or Decimal('0')) + monto_pago
+        elif metodo_pago == 'tarjeta':
+            venta.pago_tarjeta = (venta.pago_tarjeta or Decimal('0')) + monto_pago
+
+        # Si ya pagó todo y el método registrado era "pendiente", actualizar al método recibido
+        if venta.saldo_pendiente == Decimal('0') and venta.metodo_pago == 'pendiente':
+            venta.metodo_pago = metodo_pago
+
+        # Registrar historial en la observación
+        hora_str = timezone.localtime(timezone.now()).strftime('%d/%m/%Y %I:%M %p')
+        detalle_cobro = f"[COBRO {hora_str}: ${monto_pago:,.0f} en {metodo_pago.upper()}"
+        if nota:
+            detalle_cobro += f" — {nota}"
+        detalle_cobro += "]"
+        if venta.saldo_pendiente == Decimal('0'):
+            detalle_cobro += " [PAGADA TOTALMENTE]"
+
+        if venta.observacion:
+            venta.observacion = f"{venta.observacion} | {detalle_cobro}"
+        else:
+            venta.observacion = detalle_cobro
+
+        # Actualizar la caja registradora activa para que el dinero entre al turno actual sin descuadre
+        caja_actual = obtener_caja_abierta() or venta.caja
+        if caja_actual:
+            if venta.caja != caja_actual:
+                venta.caja = caja_actual
+            if metodo_pago == 'efectivo':
+                caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + monto_pago
+                caja_actual.save(update_fields=['total_efectivo'])
+            else:
+                caja_actual.total_transferencias = (caja_actual.total_transferencias or Decimal('0')) + monto_pago
+                caja_actual.save(update_fields=['total_transferencias'])
+
+        venta.save()
+
+    if venta.saldo_pendiente == Decimal('0'):
+        messages.success(
+            request,
+            f"Venta #{venta.pk} cambiada a PAGADA exitosamente. Se ingresaron ${monto_pago:,.0f} ({metodo_pago.capitalize()}) a la caja del turno activo para el cuadre final.".replace(',', '.')
+        )
+    else:
+        messages.success(
+            request,
+            f"Abono de ${monto_pago:,.0f} registrado para la Venta #{venta.pk}. Saldo pendiente restante: ${venta.saldo_pendiente:,.0f}.".replace(',', '.')
+        )
+
+    return redirect(redirect_url)
 
 
 def producto_stock_json(request, pk):
@@ -343,6 +482,8 @@ def ventas_dia(request):
             pass
 
     if fecha_inicio_str or fecha_fin_str:
+        if fecha_inicio > fecha_fin:
+            fecha_fin = fecha_inicio
         start_dt = timezone.make_aware(datetime.combine(fecha_inicio, datetime.min.time()))
         end_dt = timezone.make_aware(datetime.combine(fecha_fin, datetime.max.time()))
         ventas_qs = Venta.objects.filter(fecha__range=(start_dt, end_dt)).order_by('-fecha')
@@ -359,27 +500,32 @@ def ventas_dia(request):
 
     ventas_list = list(ventas_qs.select_related('vendedor').prefetch_related('detalles__producto', 'detalles__presentacion'))
     total_dia = float(sum(v.total_venta for v in ventas_list))
+    total_pendiente_dia = float(sum(v.saldo_pendiente or 0 for v in ventas_list))
+    total_cobrado_dia = max(0.0, total_dia - total_pendiente_dia)
+    ventas_pendientes_count = sum(1 for v in ventas_list if (v.saldo_pendiente or 0) > 0)
     total_productos = sum(det.cantidad for v in ventas_list for det in v.detalles.all())
 
-    # Rendimiento por Franjas Horarias (Madrugada 12am-6am, Mañana 6am-12pm, Tarde 12pm-6pm, Noche 6pm-12am)
+    # Rendimiento por Franjas Horarias (Mañana 8:00 AM - 12:00 PM, Tarde 12:00 PM - 4:30 PM, Noche 4:30 PM - 6:30 PM)
     total_acumulado_franjas = max(total_dia, 1.0)
     franjas_config = [
-        ('madrugada', 'Madrugada', '12am - 6am', 'bi-moon-stars-fill', '#a55eea', 'rgba(165,94,234,0.15)', 0, 6),
-        ('manana', 'Mañana', '6am - 12pm', 'bi-sun-fill', '#ffab00', 'rgba(255,171,0,0.15)', 6, 12),
-        ('tarde', 'Tarde', '12pm - 6pm', 'bi-brightness-high-fill', '#4DA8DA', 'rgba(77,168,218,0.15)', 12, 18),
-        ('noche', 'Noche', '6pm - 12am', 'bi-cloud-moon-fill', '#2ed573', 'rgba(46,213,115,0.15)', 18, 24),
+        ('manana', 'Mañana', '8:00 AM - 12:00 PM', 'bi-sun-fill', '#ffab00', 'rgba(255,171,0,0.15)', 0, 720),
+        ('tarde', 'Tarde', '12:00 PM - 4:30 PM', 'bi-brightness-high-fill', '#4DA8DA', 'rgba(77,168,218,0.15)', 720, 990),
+        ('noche', 'Noche', '4:30 PM - 6:30 PM', 'bi-cloud-moon-fill', '#2ed573', 'rgba(46,213,115,0.15)', 990, 1440),
     ]
 
     franjas_horarias_resumen = []
     max_monto_franja = -1.0
     hora_pico_nombre = 'Sin ventas'
 
-    for key, label, sublabel, icon, color, bg, h_ini, h_fin in franjas_config:
+    for key, label, sublabel, icon, color, bg, m_ini, m_fin in franjas_config:
         ventas_franja = [
             v for v in ventas_list 
-            if v.fecha and h_ini <= timezone.localtime(v.fecha).hour < h_fin
+            if v.fecha and m_ini <= (timezone.localtime(v.fecha).hour * 60 + timezone.localtime(v.fecha).minute) < m_fin
         ]
-        monto_f = sum(float(v.total_venta or 0) for v in ventas_list if v.fecha and h_ini <= timezone.localtime(v.fecha).hour < h_fin)
+        monto_f = sum(
+            float(v.total_venta or 0) for v in ventas_list 
+            if v.fecha and m_ini <= (timezone.localtime(v.fecha).hour * 60 + timezone.localtime(v.fecha).minute) < m_fin
+        )
         cant_f = len(ventas_franja)
         pct_f = round((monto_f / total_acumulado_franjas * 100), 1) if total_dia > 0 else 0.0
 
@@ -469,6 +615,9 @@ def ventas_dia(request):
     return render(request, 'ventas/ventas_dia.html', {
         'ventas': ventas_list,
         'total_dia': total_dia,
+        'total_pendiente_dia': total_pendiente_dia,
+        'total_cobrado_dia': total_cobrado_dia,
+        'ventas_pendientes_count': ventas_pendientes_count,
         'total_productos': total_productos,
         'hoy': hoy,
         'fecha_inicio': fecha_inicio_str,
@@ -595,6 +744,22 @@ def caja(request):
             ventas_turno.select_related('vendedor').prefetch_related('detalles__producto', 'detalles__presentacion').order_by('-fecha')[:100]
         )
 
+        total_pendiente_turno = Decimal(str(sum(v.saldo_pendiente or 0 for v in ventas_turno_list)))
+        total_cobrado_turno = max(Decimal('0'), total_ventas_turno - total_pendiente_turno)
+        ventas_pendientes_turno_count = sum(1 for v in ventas_turno_list if (v.saldo_pendiente or 0) > 0)
+
+        # Base dejada para el siguiente turno
+        base_siguiente = Decimal('0')
+        if isinstance(item.denominaciones, dict) and item.denominaciones.get('monto_base_siguiente') is not None:
+            try:
+                base_siguiente = Decimal(str(item.denominaciones.get('monto_base_siguiente')))
+            except Exception:
+                base_siguiente = Decimal('0')
+        elif es_cerrado and item.total_efectivo is not None and item.total_retirado is not None:
+            base_siguiente = max(Decimal('0'), (item.total_efectivo or Decimal('0')) - (item.total_retirado or Decimal('0')))
+        elif i < len(cajas_asc) - 1:
+            base_siguiente = cajas_asc[i+1].monto_base or Decimal('0')
+
         turno_dict = {
             'id': item.codigo_caja,
             'caja_obj': item,
@@ -602,6 +767,9 @@ def caja(request):
             'fecha_fin': fin_turno if es_cerrado or not es_ultimo else None,
             'monto_base': item.monto_base or Decimal('0'),
             'total_ventas': total_ventas_turno,
+            'total_pendiente': total_pendiente_turno,
+            'total_cobrado': total_cobrado_turno,
+            'ventas_pendientes_count': ventas_pendientes_turno_count,
             'monto_total_acumulado': Decimal(str(monto_total_acumulado)),
             'pct_base': pct_base,
             'pct_generado': pct_generado,
@@ -609,6 +777,8 @@ def caja(request):
             'total_efectivo_arqueo': item.total_efectivo or Decimal('0'),
             'total_transferencias_arqueo': item.total_transferencias or Decimal('0'),
             'total_retirado': item.total_retirado or Decimal('0'),
+            'base_siguiente': base_siguiente,
+            'total_contado_cierre': item.total_efectivo or Decimal('0'),
             'pago_efectivo': pago_efectivo,
             'pago_tarjeta': pago_tarjeta,
             'pago_transferencia': pago_transferencia,
@@ -624,7 +794,8 @@ def caja(request):
             'denominaciones': item.denominaciones or {},
             'observacion': (item.observacion or '').replace('[CERRADO]', '').strip(),
             'operador': operador_nombre,
-            'estado': estado_label
+            'estado': estado_label,
+            'es_cerrado': es_cerrado,
         }
 
         turnos.append(turno_dict)
@@ -636,6 +807,9 @@ def caja(request):
             'fecha_fin': fin_turno.strftime('%d/%m/%Y %I:%M %p') if (es_cerrado or not es_ultimo) and fin_turno else ('En Curso' if es_ultimo and not es_cerrado else ''),
             'monto_base': float(item.monto_base or 0),
             'total_ventas': float(total_ventas_turno),
+            'total_pendiente': float(total_pendiente_turno),
+            'total_cobrado': float(total_cobrado_turno),
+            'ventas_pendientes_count': ventas_pendientes_turno_count,
             'monto_total_acumulado': float(monto_total_acumulado),
             'pct_base': pct_base,
             'pct_generado': pct_generado,
@@ -643,6 +817,8 @@ def caja(request):
             'total_efectivo_arqueo': float(item.total_efectivo or 0),
             'total_transferencias_arqueo': float(item.total_transferencias or 0),
             'total_retirado': float(item.total_retirado or 0),
+            'base_siguiente': float(base_siguiente),
+            'total_contado_cierre': float(item.total_efectivo or 0),
             'pago_efectivo': float(pago_efectivo),
             'pago_tarjeta': float(pago_tarjeta),
             'pago_transferencia': float(pago_transferencia),
@@ -714,16 +890,40 @@ def apertura_caja(request):
     except Exception as e:
         return JsonResponse({'ok': False, 'error': f'JSON inválido: {str(e)}'}, status=400)
 
+    # 1. Validar formato y valores de las denominaciones contadas
+    denoms = data.get('denominaciones', {}) or {}
+    if not isinstance(denoms, dict):
+        return JsonResponse({'ok': False, 'error': 'El formato de denominaciones es erróneo.'}, status=400)
+
+    for k, v in denoms.items():
+        if k == 'operador':
+            continue
+        try:
+            val_int = int(v)
+            if val_int < 0:
+                return JsonResponse({'ok': False, 'error': f'No se permiten cantidades negativas en el conteo (denominación ${k}).'}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({'ok': False, 'error': f'Se ingresó un dato erróneo en la denominación ${k}. Debe ser un número entero.'}, status=400)
+
+    # 2. Validar monto base
+    monto_base_raw = data.get('monto_base', None)
+    if monto_base_raw is None:
+        monto_base_raw = data.get('monto_contado', None)
+
+    if monto_base_raw is None:
+        return JsonResponse({'ok': False, 'error': 'No se proporcionó el monto base de apertura.'}, status=400)
+
     try:
-        monto_base = float(data.get('monto_base', 0) or data.get('monto_contado', 0) or 0)
+        monto_base = float(monto_base_raw)
+        if math.isnan(monto_base) or math.isinf(monto_base):
+            return JsonResponse({'ok': False, 'error': 'El monto base contiene un valor numérico erróneo.'}, status=400)
         if monto_base < 0:
-            monto_base = 0.0
+            return JsonResponse({'ok': False, 'error': 'No se permite abrir la caja con un monto base negativo. Corrija los valores ingresados.'}, status=400)
     except (TypeError, ValueError):
-        monto_base = 0.0
+        return JsonResponse({'ok': False, 'error': 'El monto base contiene datos erróneos no numéricos.'}, status=400)
 
     vendedor = obtener_usuario_actual(request)
     observacion_clean = (data.get('observacion', '') or '').replace('[CERRADO]', '').strip()
-    denoms = data.get('denominaciones', {}) or {}
     if vendedor:
         denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
 
@@ -768,12 +968,29 @@ def cierre_caja(request):
     if not caja_reg:
         return JsonResponse({'ok': False, 'error': 'No hay registro de caja disponible para cerrar.'}, status=400)
 
+    # Validar denominaciones de cierre si vienen
+    denoms = data.get('denominaciones', {}) or {}
+    if isinstance(denoms, dict):
+        for k, v in denoms.items():
+            if k == 'operador':
+                continue
+            try:
+                val_int = int(v)
+                if val_int < 0:
+                    return JsonResponse({'ok': False, 'error': f'No se permiten cantidades negativas en el conteo de cierre (${k}).'}, status=400)
+            except (ValueError, TypeError):
+                return JsonResponse({'ok': False, 'error': f'Se ingresó un dato erróneo en la denominación ${k}.'}, status=400)
+
     try:
         total_contado = float(data.get('total_contado', 0))
         total_retirado = float(data.get('total_retirado', 0))
+        base_sig = float(data.get('monto_base_siguiente', 0))
+        if math.isnan(total_contado) or math.isnan(total_retirado) or math.isnan(base_sig):
+            return JsonResponse({'ok': False, 'error': 'Los valores numéricos de cierre contienen datos erróneos.'}, status=400)
+        if total_contado < 0 or total_retirado < 0 or base_sig < 0:
+            return JsonResponse({'ok': False, 'error': 'No se permiten valores negativos en el arqueo o cierre de caja.'}, status=400)
     except (TypeError, ValueError):
-        total_contado = 0.0
-        total_retirado = 0.0
+        return JsonResponse({'ok': False, 'error': 'Los montos de cierre contienen datos erróneos.'}, status=400)
 
     try:
         caja_reg.total_efectivo = Decimal(str(total_contado))
@@ -782,8 +999,11 @@ def cierre_caja(request):
         if '[CERRADO]' not in obs:
             caja_reg.observacion = (obs + ' [CERRADO]').strip()
 
-        if 'denominaciones' in data:
-            caja_reg.denominaciones = data['denominaciones']
+        denoms = data.get('denominaciones', {}) or {}
+        denoms['monto_base_siguiente'] = base_sig
+        denoms['total_retirado'] = total_retirado
+        denoms['total_contado'] = total_contado
+        caja_reg.denominaciones = denoms
         caja_reg.save()
 
         return JsonResponse({'ok': True})
@@ -925,6 +1145,8 @@ def exportar_ventas_excel(request):
         try:
             f_ini = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
             f_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+            if f_ini > f_fin:
+                f_fin = f_ini
             ventas_qs = ventas_qs.filter(fecha__date__range=[f_ini, f_fin])
         except ValueError:
             pass
@@ -1052,6 +1274,8 @@ def exportar_ventas_pdf(request):
         try:
             f_ini = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
             f_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+            if f_ini > f_fin:
+                f_fin = f_ini
             ventas_qs = ventas_qs.filter(fecha__date__range=[f_ini, f_fin])
         except ValueError:
             pass
