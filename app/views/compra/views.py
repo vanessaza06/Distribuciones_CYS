@@ -16,6 +16,7 @@ from django.views.decorators.http import require_POST
 
 from app.forms import NuevaCompraForm
 from app.models import Compra, DetalleCompra, Proveedor, Usuario as AppUsuario
+from app.validators import decimal_estricto, limpiar_texto, validar_referencia
 
 logger = logging.getLogger(__name__)
 
@@ -273,13 +274,20 @@ def registrar_pago_compra(request, id=None):
         return redirect(destino)
 
     try:
-        raw_monto = str(request.POST.get('monto_pagado', '0')).strip().replace(',', '.')
-        monto = Decimal(raw_monto)
-        if not monto.is_finite() or monto <= CERO:
-            messages.error(request, '⚠️ El monto a abonar debe ser un valor numérico mayor a cero.')
-            return redirect(destino)
-    except (InvalidOperation, ValueError):
-        messages.error(request, '⚠️ Ingresa un monto numérico válido para el pago.')
+        monto = decimal_estricto(request.POST.get('monto_pagado'), minimo=Decimal('0.01'))
+    except ValueError as e:
+        messages.error(request, f'⚠️ Monto del abono: {e}')
+        return redirect(destino)
+
+    referencia = limpiar_texto(request.POST.get('numero_factura'))
+    error_ref = validar_referencia(referencia)
+    if error_ref:
+        messages.error(request, f'⚠️ {error_ref}')
+        return redirect(destino)
+
+    metodo = request.POST.get('metodo_pago') or 'efectivo'
+    if metodo not in Compra.METODOS_PAGO:
+        messages.error(request, '⚠️ Selecciona un método de pago válido.')
         return redirect(destino)
 
     if monto > compra.saldo:
@@ -293,8 +301,8 @@ def registrar_pago_compra(request, id=None):
     try:
         compra.registrar_pago(
             monto,
-            metodo=request.POST.get('metodo_pago') or 'efectivo',
-            referencia=request.POST.get('numero_factura', ''),
+            metodo=metodo,
+            referencia=referencia,
             fecha=fecha_pago,
         )
     except ValidationError as e:
