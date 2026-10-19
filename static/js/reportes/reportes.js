@@ -25,6 +25,32 @@ $(document).ready(function() {
         table.search(this.value).draw();
     });
 
+    function enlazarFechasReportes(origen) {
+        const $fi = $('#filtro-fecha-inicio');
+        const $ff = $('#filtro-fecha-fin');
+        let vi = $fi.val();
+        let vf = $ff.val();
+
+        if (vi && vf && vi > vf) {
+            if (origen === 'ini') {
+                $ff.val(vi);
+                vf = vi;
+            } else if (origen === 'fin') {
+                $fi.val(vf);
+                vi = vf;
+            } else {
+                $ff.val(vi);
+                vf = vi;
+            }
+        }
+
+        if (vi) $ff.attr('min', vi);
+        else $ff.removeAttr('min');
+
+        if (vf) $fi.attr('max', vf);
+        else $fi.removeAttr('max');
+    }
+
     function syncExportLinks() {
         const fi = $('#filtro-fecha-inicio').val() || '';
         const ff = $('#filtro-fecha-fin').val()    || '';
@@ -34,17 +60,38 @@ $(document).ready(function() {
         $('#btn-export-print').attr('href', `?export=pdf&tipo=ventas&print=true${p}`);
     }
 
-    $('#filtro-fecha-inicio, #filtro-fecha-fin').on('change', function() {
+    $('#filtro-fecha-inicio').on('change input', function() {
+        enlazarFechasReportes('ini');
         syncExportLinks();
-        aplicarFiltro();
+        aplicarFiltro('ini');
     });
 
+    $('#filtro-fecha-fin').on('change input', function() {
+        enlazarFechasReportes('fin');
+        syncExportLinks();
+        aplicarFiltro('fin');
+    });
+
+    enlazarFechasReportes();
     syncExportLinks();
 });
 
-function aplicarFiltro() {
-    const fi = document.getElementById('filtro-fecha-inicio').value;
-    const ff = document.getElementById('filtro-fecha-fin').value;
+function aplicarFiltro(origen) {
+    const elFi = document.getElementById('filtro-fecha-inicio');
+    const elFf = document.getElementById('filtro-fecha-fin');
+    let fi = elFi ? elFi.value : '';
+    let ff = elFf ? elFf.value : '';
+
+    if (fi && ff && fi > ff) {
+        if (origen === 'fin') {
+            fi = ff;
+            if (elFi) elFi.value = ff;
+        } else {
+            ff = fi;
+            if (elFf) elFf.value = fi;
+        }
+    }
+
     let url  = window.location.pathname + '?';
     if (fi) url += 'fecha_inicio=' + fi + '&';
     if (ff) url += 'fecha_fin='    + ff;

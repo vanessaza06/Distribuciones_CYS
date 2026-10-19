@@ -958,6 +958,12 @@ class Venta(models.Model):
     pago_transferencia = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     pago_nequi = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     pago_daviplata = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    saldo_pendiente = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0, db_column="saldo_pendiente"
+    )
+    observacion = models.TextField(
+        blank=True, null=True, db_column="observacion"
+    )
     caja = models.ForeignKey(
         Caja,
         on_delete=models.PROTECT,
@@ -966,6 +972,14 @@ class Venta(models.Model):
         blank=True,
         related_name="ventas",
     )
+
+    @property
+    def tiene_saldo_pendiente(self):
+        return (self.saldo_pendiente or Decimal('0')) > Decimal('0')
+
+    @property
+    def total_cobrado(self):
+        return max(Decimal('0'), (self.total_venta or Decimal('0')) - (self.saldo_pendiente or Decimal('0')))
 
     class Meta:
         db_table = "venta"

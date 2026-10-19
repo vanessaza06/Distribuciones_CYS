@@ -2,139 +2,499 @@
 {% load static %}
 {% load humanize %}
 
-{% block title %}Métodos de Pago — CYS Ltda{% endblock %}
-{% block page_title %}Gestión de Métodos de Pago{% endblock %}
+{% block title %}Métodos de Pago — Ventas y Caja — CYS Ltda{% endblock %}
+{% block page_title %}Control de Métodos de Pago{% endblock %}
+{% block nav_metodos_pago %}active{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+<style>
+  .mp-tab-btn {
+    padding: 0.55rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid rgba(77, 168, 218, 0.25);
+    background: rgba(10, 25, 48, 0.6);
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .mp-tab-btn:hover {
+    background: rgba(15, 38, 70, 0.85);
+    color: #fff;
+    border-color: rgba(77, 168, 218, 0.45);
+  }
+  .mp-tab-btn.active {
+    background: linear-gradient(135deg, rgba(77, 168, 218, 0.25), rgba(0, 114, 255, 0.25));
+    border-color: var(--azul-claro, #4DA8DA);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(77, 168, 218, 0.2);
+  }
+  .mp-badge-pill {
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
 
-  <!-- Header Banner Unificado con estilo Productos -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <!-- ── ENCABEZADO PRINCIPAL Y NAVEGACIÓN DE PESTAÑAS ── -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
     <div>
       <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-        <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.3px;">Gestión de Métodos de Pago</h3>
-        <span class="badge" style="background: color-mix(in srgb, var(--azul-claro) 15%, transparent); color: var(--azul-claro); border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
-          <i class="bi bi-wallet2 me-1"></i> Control Centralizado
+        <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.3px;">Métodos de Pago y Recaudos</h3>
+        <span class="badge" style="background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.3); border-radius: 20px; font-weight: 600; padding: 0.3rem 0.8rem;">
+          <i class="bi bi-wallet2 me-1"></i> Ventas & Caja
         </span>
       </div>
-      <p class="text-muted small mb-0">
-        Registro de transacciones, abonos, efectivo y comprobantes integrados del sistema.
+      <p class="text-white-50 small mb-0">
+        Control de efectivo físico en caja, canales digitales (Nequi, Daviplata, Tarjeta) y saldos pendientes por turno.
       </p>
     </div>
-    <div>
-      <button type="button" class="btn prod-btn-primary px-4 py-2 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNuevoPago" title="Registrar Pago">
-        <i class="bi bi-plus-lg"></i> Registrar Nuevo Pago
+
+    <!-- Acciones Rápidas -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-secondary" title="Ir a Caja">
+        <i class="bi bi-cash-stack me-1"></i> Ir a Caja
+      </a>
+      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Ir a POS">
+        <i class="bi bi-cart-check me-1"></i> Ir a POS
+      </a>
+      {% if tab == 'compras' %}
+      <button type="button" class="btn btn-sm prod-btn-primary px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoPago">
+        <i class="bi bi-plus-lg me-1"></i> Registrar Pago de Compra
       </button>
+      {% endif %}
     </div>
+  </div>
+
+  <!-- Switcher de Pestañas: Ventas vs Compras -->
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}">
+      <i class="bi bi-cart-check"></i> Pagos de Ventas y Caja
+      <span class="badge bg-secondary bg-opacity-25 ms-1" style="font-size:0.7rem;">{{ ventas_count }}</span>
+    </a>
+    <a href="?tab=compras" class="mp-tab-btn {% if tab == 'compras' %}active{% endif %}">
+      <i class="bi bi-truck"></i> Pagos a Proveedores (Compras)
+      <span class="badge bg-secondary bg-opacity-25 ms-1" style="font-size:0.7rem;">{{ total_registros_compras }}</span>
+    </a>
   </div>
 
   <!-- Messages Alert -->
   {% if messages %}
     {% for message in messages %}
-      <div class="alert alert-dismissible fade show mb-4 {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
+      <div class="alert alert-dismissible fade show mb-3 {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     {% endfor %}
   {% endif %}
 
-  <!-- KPI Cards Compactas estilo Productos -->
-  <div class="row g-3 mb-4 align-items-stretch">
+
+  {% if tab != 'compras' %}
+  <!-- ═══════════════════════════════════════════════════════════════════════════════
+       VISTA 1: MÉTODOS DE PAGO DE VENTAS Y CAJA (INGRESOS PRINCIPALES)
+  ═══════════════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Tarjetas KPI de Ventas y Recaudos -->
+  <div class="row g-2 mb-3 align-items-stretch">
+    <!-- Total Ventas Recaudado -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); flex-shrink: 0;">
-          <i class="bi bi-currency-dollar fs-4"></i>
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width: 42px; height: 42px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+          <i class="bi bi-graph-up-arrow fs-5"></i>
         </div>
         <div style="min-width: 0; flex: 1;">
-          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total Registrado</div>
-          <div class="fw-bold text-white fs-4">${{ total_recaudado|floatformat:0|intcomma }}</div>
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Total Ventas</div>
+          <div class="fw-bold text-white fs-5">${{ total_ventas_monto|floatformat:0|intcomma }}</div>
+          <div class="text-white-50" style="font-size: 0.72rem;">{{ ventas_count }} ventas filtradas</div>
         </div>
       </div>
     </div>
 
+    <!-- Efectivo Recaudado (Caja Física) -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); flex-shrink: 0;">
-          <i class="bi bi-cash-stack fs-4"></i>
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width: 42px; height: 42px; background: rgba(46, 213, 115, 0.15); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3);">
+          <i class="bi bi-cash-stack fs-5"></i>
         </div>
         <div style="min-width: 0; flex: 1;">
-          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total en Efectivo</div>
-          <div class="fw-bold fs-4" style="color: #4ade80;">${{ total_efectivo|floatformat:0|intcomma }}</div>
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Efectivo en Caja</div>
+          <div class="fw-bold fs-5" style="color: #2ed573;">${{ total_efectivo_ventas|floatformat:0|intcomma }}</div>
+          <div class="text-white-50" style="font-size: 0.72rem;">Ingresó al cajón físico</div>
         </div>
       </div>
     </div>
 
+    <!-- Canales Digitales y Bancos -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); flex-shrink: 0;">
-          <i class="bi bi-credit-card-2-front fs-4"></i>
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width: 42px; height: 42px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
+          <i class="bi bi-credit-card-2-front fs-5"></i>
         </div>
         <div style="min-width: 0; flex: 1;">
-          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Transacciones / Banco</div>
-          <div class="fw-bold fs-4" style="color: #c084fc;">${{ total_transaccion|floatformat:0|intcomma }}</div>
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Canales Digitales</div>
+          <div class="fw-bold fs-5" style="color: #c084fc;">${{ total_digital_ventas|floatformat:0|intcomma }}</div>
+          <div class="text-white-50" style="font-size: 0.72rem;">Nequi, Davi, Tarjeta, Transf.</div>
         </div>
       </div>
     </div>
 
+    <!-- Saldos Pendientes (Crédito / Fiados) -->
     <div class="col-12 col-sm-6 col-lg-3">
-      <div class="prod-card h-100 p-3 d-flex align-items-center gap-3">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); flex-shrink: 0;">
-          <i class="bi bi-receipt-cutoff fs-4"></i>
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width: 42px; height: 42px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+          <i class="bi bi-exclamation-circle-fill fs-5"></i>
         </div>
         <div style="min-width: 0; flex: 1;">
-          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px; min-height: 2.2em; display: flex; align-items: center;">Total Registros</div>
-          <div class="fw-bold fs-4" style="color: #fbbf24;">{{ total_registros }}</div>
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Pendiente por Cobrar</div>
+          <div class="fw-bold fs-5" style="color: #fbbf24;">${{ total_pendiente_ventas|floatformat:0|intcomma }}</div>
+          <div class="text-white-50" style="font-size: 0.72rem;">{{ cant_pendiente }} venta{% if cant_pendiente != 1 %}s{% endif %} a crédito</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Card Principal y Tabla con diseño idéntico a Productos -->
+  <!-- Resumen Rápido por Métodos (Pill Badges) -->
+  <div class="p-2.5 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2"
+       style="background:rgba(8,24,46,0.65); border:1px solid rgba(77,168,218,0.2);">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <span class="text-white-50 small fw-bold text-uppercase" style="font-size:.68rem;">Desglose:</span>
+      
+      <span class="mp-badge-pill" style="background:rgba(46,213,115,0.15); color:#2ed573; border:1px solid rgba(46,213,115,0.3);">
+        <i class="bi bi-cash"></i> Efectivo: <strong>${{ total_efectivo_ventas|floatformat:0 }}</strong> <span class="opacity-75">({{ cant_efectivo }})</span>
+      </span>
+
+      <span class="mp-badge-pill" style="background:rgba(232,67,147,0.15); color:#e84393; border:1px solid rgba(232,67,147,0.3);">
+        <i class="bi bi-phone"></i> Nequi: <strong>${{ total_nequi_ventas|floatformat:0 }}</strong> <span class="opacity-75">({{ cant_nequi }})</span>
+      </span>
+
+      <span class="mp-badge-pill" style="background:rgba(255,118,117,0.15); color:#ff7675; border:1px solid rgba(255,118,117,0.3);">
+        <i class="bi bi-phone-fill"></i> Daviplata: <strong>${{ total_daviplata_ventas|floatformat:0 }}</strong> <span class="opacity-75">({{ cant_daviplata }})</span>
+      </span>
+
+      <span class="mp-badge-pill" style="background:rgba(116,185,255,0.15); color:#74b9ff; border:1px solid rgba(116,185,255,0.3);">
+        <i class="bi bi-credit-card"></i> Tarjeta: <strong>${{ total_tarjeta_ventas|floatformat:0 }}</strong> <span class="opacity-75">({{ cant_tarjeta }})</span>
+      </span>
+
+      <span class="mp-badge-pill" style="background:rgba(165,94,234,0.15); color:#a55eea; border:1px solid rgba(165,94,234,0.3);">
+        <i class="bi bi-bank"></i> Transf: <strong>${{ total_transferencia_ventas|floatformat:0 }}</strong> <span class="opacity-75">({{ cant_transferencia }})</span>
+      </span>
+
+      {% if total_pendiente_ventas > 0 %}
+      <span class="mp-badge-pill" style="background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);">
+        <i class="bi bi-exclamation-triangle-fill"></i> Pendiente: <strong>${{ total_pendiente_ventas|floatformat:0 }}</strong>
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="text-white-50 small" style="font-size:0.72rem;">
+      <i class="bi bi-info-circle me-1"></i>Organizado por Turno de Caja y Ventas
+    </div>
+  </div>
+
+  <!-- Card Principal y Tabla de Ventas -->
   <div class="prod-card mb-4">
     <div class="prod-card-header p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div class="fw-bold text-white fs-6 d-flex align-items-center gap-2">
-        <i class="bi bi-clock-history" style="color: var(--azul-claro);"></i> Historial y Registro de Transacciones de Pago
+        <i class="bi bi-receipt-cutoff" style="color: var(--azul-claro);"></i> Registro Detallado de Pagos por Venta y Caja
       </div>
-      <span class="badge" style="background: color-mix(in srgb, var(--azul-claro) 15%, transparent); color: var(--azul-claro); border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
-        Total {{ total_registros }} Registros
+      <span class="badge" style="background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.3); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
+        Total {{ ventas_count }} Venta{% if ventas_count != 1 %}s{% endif %}
       </span>
     </div>
 
-    <!-- Toolbar de Filtros Integrada -->
-    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <span class="small text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-          Rango de fechas:
-        </span>
-        
-        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}" class="form-control form-control-sm prod-input" style="width: auto;">
-        
-        <span class="small fw-bold px-1 text-muted">a</span>
-        
-        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;">
+    <!-- Barra de Filtros Integrada -->
+    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border-bottom" style="border-color: rgba(77,168,218,0.15) !important;">
+      <input type="hidden" name="tab" value="ventas">
 
-        <select name="tipo" class="form-select form-select-sm prod-input" style="width: auto;">
-          <option value="">— Todos los tipos —</option>
-          <option value="efectivo" {% if tipo == 'efectivo' %}selected{% endif %}>Efectivo</option>
-          <option value="transaccion" {% if tipo == 'transaccion' %}selected{% endif %}>Transacción / Banco</option>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem; letter-spacing: 0.5px;">Filtros:</span>
+        
+        <!-- Rango de Fechas -->
+        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}" class="form-control form-control-sm prod-input" style="width: auto;" title="Fecha inicio">
+        <span class="small fw-bold text-white-50">a</span>
+        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;" title="Fecha fin">
+
+        <!-- Turno de Caja -->
+        <select name="caja_id" class="form-select form-select-sm prod-input" style="width: auto;">
+          <option value="">— Todos los Turnos de Caja —</option>
+          {% for c in cajas_disponibles %}
+            <option value="{{ c.id }}" {% if selected_caja == c.id|stringformat:"s" %}selected{% endif %}>
+              {{ c.label }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <!-- Método de Pago -->
+        <select name="metodo" class="form-select form-select-sm prod-input" style="width: auto;">
+          <option value="">— Todos los Métodos —</option>
+          <option value="efectivo" {% if selected_metodo == 'efectivo' %}selected{% endif %}>💵 Efectivo</option>
+          <option value="nequi" {% if selected_metodo == 'nequi' %}selected{% endif %}>🟣 Nequi</option>
+          <option value="daviplata" {% if selected_metodo == 'daviplata' %}selected{% endif %}>🔴 Daviplata</option>
+          <option value="tarjeta" {% if selected_metodo == 'tarjeta' %}selected{% endif %}>💳 Tarjeta</option>
+          <option value="transferencia" {% if selected_metodo == 'transferencia' %}selected{% endif %}>🏦 Transferencia</option>
+          <option value="pendiente" {% if selected_metodo == 'pendiente' %}selected{% endif %}>⚠️ Con Saldo Pendiente</option>
         </select>
         
-        <button type="submit" class="btn btn-sm prod-btn-primary px-3" data-bs-toggle="tooltip" data-bs-title="Filtrar Fechas">
+        <button type="submit" class="btn btn-sm prod-btn-primary px-3" title="Aplicar Filtros">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
-        <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm prod-btn-outline px-3" data-bs-toggle="tooltip" data-bs-title="Limpiar Filtros">
+        <a href="?tab=ventas" class="btn btn-sm prod-btn-outline px-3" title="Limpiar Filtros">
           <i class="bi bi-x-circle me-1"></i> Limpiar
         </a>
       </div>
 
       <!-- Buscador en tiempo real -->
+      <div class="d-flex align-items-center gap-2">
+        <div class="input-group input-group-sm" style="min-width: 220px;">
+          <span class="input-group-text prod-input" style="border-right: none; background: transparent;"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" id="buscadorTablaMetodosPago" class="form-control prod-input"
+                 value="{{ q }}" placeholder="Buscar cliente, venta #..." style="border-left: none;">
+        </div>
+      </div>
+    </form>
+
+    <!-- Tabla de Ventas -->
+    <div class="table-responsive p-0">
+      <table class="table mb-0 align-middle" style="color: var(--texto); font-family: 'Plus Jakarta Sans', sans-serif;">
+        <thead style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(77,168,218,0.15);">
+          <tr>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">VENTA</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">FECHA</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase;">CLIENTE & PRODUCTOS</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">TURNO CAJA</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">MÉTODO</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase;">DESGLOSE COBRADO</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">ESTADO</th>
+            <th style="padding: 0.7rem 0.9rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: right;">TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in ventas %}
+            <tr class="fila-metodo-pago {% if item.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              
+              <!-- # Venta -->
+              <td style="text-align: center; padding: 0.65rem 0.9rem;">
+                <span class="fw-bold text-info">#{{ item.venta.codigo_venta }}</span>
+              </td>
+
+              <!-- Fecha -->
+              <td style="text-align: center; padding: 0.65rem 0.9rem; color: var(--texto-muted); font-size: 0.8rem; white-space:nowrap;">
+                <div><i class="bi bi-calendar3 me-1"></i>{{ item.venta.fecha|date:"d/m/Y" }}</div>
+                <div style="font-size:0.72rem;" class="opacity-75">{{ item.venta.fecha|date:"h:i A" }}</div>
+              </td>
+
+              <!-- Cliente & Productos -->
+              <td style="padding: 0.65rem 0.9rem;">
+                <div class="fw-bold text-white">{{ item.venta.cliente_nombre|default:"Consumidor final" }}</div>
+                <div class="text-white-50 text-truncate" style="font-size:0.71rem; max-width:280px;" title="{% for d in item.venta.detalles.all %}{{ d.producto.nombre|default:d.presentacion.nombre }} x{{ d.cantidad }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                  {% for d in item.venta.detalles.all %}
+                    <span>{{ d.producto.nombre|default:d.presentacion.nombre }} <strong class="text-info">x{{ d.cantidad }}</strong></span>{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                    <span>Venta #{{ item.venta.codigo_venta }}</span>
+                  {% endfor %}
+                </div>
+              </td>
+
+              <!-- Turno Caja -->
+              <td style="text-align: center; padding: 0.65rem 0.9rem;">
+                {% if item.caja_info %}
+                  <a href="{% url 'caja' %}#collapseTurno{{ item.caja_info.id }}"
+                     class="badge py-1 px-2 text-decoration-none"
+                     style="background:rgba(77,168,218,0.15); color:#4DA8DA; border:1px solid rgba(77,168,218,0.3); font-size:0.73rem;"
+                     title="Ver turno en Caja">
+                    <i class="bi bi-safe me-1"></i>{{ item.caja_info.label }}
+                  </a>
+                {% else %}
+                  <span class="badge bg-secondary bg-opacity-25 text-white-50 py-1 px-1.5" style="font-size:0.7rem;">Sin turno</span>
+                {% endif %}
+              </td>
+
+              <!-- Método Principal -->
+              <td style="text-align: center; padding: 0.65rem 0.9rem;">
+                <span class="badge bg-secondary bg-opacity-25 text-white py-1 px-2" style="font-size:.72rem;">
+                  {{ item.venta.metodo_pago|capfirst }}
+                </span>
+              </td>
+
+              <!-- Desglose Cobrado -->
+              <td style="padding: 0.65rem 0.9rem;">
+                <div class="d-flex flex-wrap align-items-center gap-1.5">
+                  {% for badge in item.desglose_badges %}
+                    <span class="mp-badge-pill" style="background:{{ badge.bg }}; color:{{ badge.color }}; border:1px solid {{ badge.color }}40; font-size:0.7rem; padding:0.2rem 0.5rem;">
+                      <i class="bi {{ badge.icon }}"></i> {{ badge.tipo }}: <strong>${{ badge.monto|floatformat:0 }}</strong>
+                    </span>
+                  {% empty %}
+                    <span class="text-white-50 small" style="font-size:0.72rem;">Cobrado: ${{ item.total_cobrado|floatformat:0 }}</span>
+                  {% endfor %}
+                </div>
+              </td>
+
+              <!-- Estado / Saldo Pendiente -->
+              <td style="text-align: center; padding: 0.65rem 0.9rem;">
+                {% if item.saldo_pendiente > 0 %}
+                  <div class="d-flex flex-column align-items-center gap-1">
+                    <span class="badge cys-badge-pendiente py-1 px-2" style="font-size:.7rem;">
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe ${{ item.saldo_pendiente|floatformat:0 }}
+                    </span>
+                    {% if item.observacion %}
+                      <span class="text-warning text-truncate" style="font-size:0.68rem; max-width:140px;" title="{{ item.observacion }}">
+                        {{ item.observacion }}
+                      </span>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-1 px-2" style="font-size:.7rem;">
+                    <i class="bi bi-check-circle me-1"></i>PAGADO
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Total Venta -->
+              <td style="text-align: right; padding: 0.65rem 0.9rem; font-weight: 700; color: #2ed573; font-size: 0.95rem; white-space:nowrap;">
+                <div>${{ item.monto_total|floatformat:0|intcomma }}</div>
+                {% if item.saldo_pendiente > 0 %}
+                  <div style="font-size:0.7rem; color:#fbbf24; font-weight:600;">
+                    Cobrado: ${{ item.total_cobrado|floatformat:0 }}
+                  </div>
+                {% endif %}
+              </td>
+
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5 text-white-50">
+                <i class="bi bi-wallet2 display-5 d-block mb-2 opacity-50"></i>
+                No se encontraron ventas para los filtros seleccionados.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totalizador de Ventas en el Pie -->
+    <div class="d-flex justify-content-between align-items-center p-3 border-top flex-wrap gap-2" style="border-color: rgba(77,168,218,0.15) !important;">
+      <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
+        Total Recaudado en Ventas ({{ ventas_count }} registros)
+      </span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white-50 small">Efectivo: <strong class="text-success">${{ total_efectivo_ventas|floatformat:0 }}</strong></span>
+        <span class="text-white-50 small">Digital: <strong style="color:#c084fc;">${{ total_digital_ventas|floatformat:0 }}</strong></span>
+        <span style="font-size: 1.35rem; font-weight: 800; color: #2ed573;">
+          ${{ total_ventas_monto|floatformat:0|intcomma }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+
+  {% else %}
+  <!-- ═══════════════════════════════════════════════════════════════════════════════
+       VISTA 2: PAGOS A PROVEEDORES (COMPRAS)
+  ═══════════════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- KPI Cards Compactas de Compras -->
+  <div class="row g-2 mb-3 align-items-stretch">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+          <i class="bi bi-currency-dollar fs-5"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Total Compras</div>
+          <div class="fw-bold text-white fs-5">${{ total_recaudado_compras|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3);">
+          <i class="bi bi-cash-stack fs-5"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Efectivo Proveedores</div>
+          <div class="fw-bold fs-5" style="color: #4ade80;">${{ total_efectivo_compras|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
+          <i class="bi bi-bank fs-5"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Transacción / Banco</div>
+          <div class="fw-bold fs-5" style="color: #c084fc;">${{ total_transaccion_compras|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="prod-card h-100 p-2.5 d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
+          <i class="bi bi-receipt-cutoff fs-5"></i>
+        </div>
+        <div style="min-width: 0; flex: 1;">
+          <div class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">Registros de Pago</div>
+          <div class="fw-bold fs-5" style="color: #fbbf24;">{{ total_registros_compras }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Principal y Tabla de Compras -->
+  <div class="prod-card mb-4">
+    <div class="prod-card-header p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="fw-bold text-white fs-6 d-flex align-items-center gap-2">
+        <i class="bi bi-truck" style="color: var(--azul-claro);"></i> Historial de Pagos a Proveedores / Compras
+      </div>
+      <span class="badge" style="background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.3); border-radius: 20px; font-weight: 600; padding: 0.35rem 0.85rem;">
+        Total {{ total_registros_compras }} Registros
+      </span>
+    </div>
+
+    <!-- Toolbar de Filtros Integrada -->
+    <form method="GET" class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: rgba(77,168,218,0.15) !important;">
+      <input type="hidden" name="tab" value="compras">
+
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem; letter-spacing: 0.5px;">Rango de fechas:</span>
+        <input type="date" name="fecha_inicio" id="filtroFechaIniMP" value="{{ fecha_inicio }}" class="form-control form-control-sm prod-input" style="width: auto;">
+        <span class="small fw-bold px-1 text-white-50">a</span>
+        <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;">
+
+        <button type="submit" class="btn btn-sm prod-btn-primary px-3" title="Filtrar">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+
+        <a href="?tab=compras" class="btn btn-sm prod-btn-outline px-3" title="Limpiar Filtros">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
+        </a>
+      </div>
+
+      <!-- Buscador textual -->
       <div class="d-flex align-items-center gap-2">
         <div class="input-group input-group-sm" style="min-width: 240px;">
           <span class="input-group-text prod-input" style="border-right: none; background: transparent;"><i class="bi bi-search text-muted"></i></span>
@@ -146,22 +506,21 @@
 
     <div class="table-responsive p-0">
       <table class="table mb-0 align-middle" style="color: var(--texto); font-family: 'Plus Jakarta Sans', sans-serif;">
-        <thead style="background: color-mix(in srgb, var(--texto) 3%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);">
+        <thead style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(77,168,218,0.15);">
           <tr>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">CÓDIGO</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">FECHA</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">VALOR TOTAL</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">EFECTIVO</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">TRANSACCIÓN</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">REFERENCIA</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">VÍNCULO / ORIGEN</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">OBSERVACIÓN</th>
-            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">ACCIONES</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">CÓDIGO</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">FECHA</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: right;">VALOR</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">EFECTIVO</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">TRANSACCIÓN</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase;">REFERENCIA</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase;">COMPRA</th>
+            <th style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.74rem; text-transform: uppercase; text-align: center;">ACCIONES</th>
           </tr>
         </thead>
         <tbody>
-          {% for p in pagos %}
-            <tr class="fila-metodo-pago" style="border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);">
+          {% for p in pagos_compras %}
+            <tr class="fila-metodo-pago" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="text-align: center; padding: 0.75rem 1rem;"><span class="fw-bold text-white">#{{ p.codigo_metodo }}</span></td>
               <td style="text-align: center; padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.85rem;"><i class="bi bi-clock me-1"></i>{{ p.fecha|date:"d/m/Y H:i" }}</td>
               <td style="text-align: right; padding: 0.75rem 1rem; font-weight: 700; color: #4ade80; font-size: 0.95rem;">${{ p.valor|floatformat:0 }}</td>
@@ -179,77 +538,39 @@
                   <span style="color: var(--texto-muted);">—</span>
                 {% endif %}
               </td>
-              <td style="padding: 0.75rem 1rem;">
-                <span style="color: #ffffff; font-weight: 600; font-size: 0.88rem;">{{ p.referencia|default:"Sin referencia" }}</span>
-              </td>
-              <td style="padding: 0.75rem 1rem;">
+              <td style="padding: 0.75rem 1rem; color: var(--texto); font-size: 0.85rem;">{{ p.referencia|default:"—" }}</td>
+              <td style="padding: 0.75rem 1rem; font-size: 0.85rem;">
                 {% if p.compra %}
-                  <span class="mp-badge mp-badge-compra">
-                    <i class="bi bi-cart3 me-1"></i>Compra #{{ p.compra.codigo_compra }}
-                    {% if p.compra.proveedor %}({{ p.compra.proveedor.nombre_proveedor }}){% endif %}
+                  <span class="badge" style="background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.3);">
+                    Compra #{{ p.compra.codigo_compra }}
                   </span>
                 {% else %}
-                  <span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-30 rounded-pill px-3 py-1 font-weight-normal" style="font-size: 0.75rem;">General / N/A</span>
+                  <span class="badge bg-secondary bg-opacity-25 text-white-50">General</span>
                 {% endif %}
               </td>
-              <td style="padding: 0.75rem 1rem; color: var(--texto-muted); font-size: 0.85rem; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ p.observacion|default:"—" }}
-              </td>
               <td style="text-align: center; padding: 0.75rem 1rem;">
-                <div class="d-flex align-items-center justify-content-center gap-1">
-                  <button type="button" class="btn btn-sm prod-btn-outline p-1" data-bs-toggle="modal" data-bs-target="#modalEditarPago_{{ p.pk }}"
-                          style="width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;"
-                          title="Editar Pago">
-                    <i class="bi bi-pencil-square fs-6"></i>
-                  </button>
-                  <form method="POST" action="{% url 'eliminar_metodo_pago' p.pk %}" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro de pago #{{ p.codigo_metodo }}?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Eliminar Pago"
-                            style="width: 32px; height: 32px; border-radius: 8px; background: rgba(235,77,75,.15); color: #ff7675; border: 1px solid rgba(235,77,75,.35); display: inline-flex; align-items: center; justify-content: center;">
-                      <i class="bi bi-trash3-fill fs-6"></i>
-                    </button>
-                  </form>
-                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1.5" data-bs-toggle="modal" data-bs-target="#modalEliminarPago{{ p.codigo_metodo }}" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
 
-                <!-- Modal Editar Pago #{{ p.pk }} -->
-                <div class="modal fade" id="modalEditarPago_{{ p.pk }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
+                <!-- Modal Eliminar -->
+                <div class="modal fade" id="modalEliminarPago{{ p.codigo_metodo }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
                     <div class="modal-content prod-modal">
-                      <div class="modal-header prod-modal-header p-3 px-4">
-                        <h6 class="modal-title fw-bold text-white mb-0"><i class="bi bi-pencil-square text-info me-2"></i>Editar Pago #{{ p.codigo_metodo }}</h6>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      <div class="modal-header prod-modal-header p-3">
+                        <h6 class="modal-title fw-bold text-white mb-0">Confirmar Eliminación</h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                       </div>
-                      <form method="POST" action="{% url 'editar_metodo_pago' p.pk %}">
-                        {% csrf_token %}
-                        <div class="modal-body text-start p-4">
-                          <div class="mb-3">
-                            <label class="form-label prod-label text-uppercase">Valor del Pago ($)</label>
-                            <input type="number" step="0.01" min="1" name="valor" class="form-control prod-input" value="{{ p.valor|stringformat:'.2f' }}" required>
-                          </div>
-
-                          <div class="mb-3">
-                            <label class="form-label prod-label text-uppercase">Tipo de Método de Pago</label>
-                            <select name="tipo_pago" class="form-select prod-input" required>
-                              <option value="efectivo" {% if p.efectivo > 0 %}selected{% endif %}>Efectivo</option>
-                              <option value="transaccion" {% if p.transaccion > 0 %}selected{% endif %}>Transacción / Transferencia Banco</option>
-                            </select>
-                          </div>
-
-                          <div class="mb-3">
-                            <label class="form-label prod-label text-uppercase">Referencia / Comprobante</label>
-                            <input type="text" name="referencia" class="form-control prod-input" value="{{ p.referencia|default:'' }}">
-                          </div>
-
-                          <div class="mb-3">
-                            <label class="form-label prod-label text-uppercase">Observación</label>
-                            <textarea name="observacion" class="form-control prod-input" rows="2">{{ p.observacion|default:'' }}</textarea>
-                          </div>
-                        </div>
-                        <div class="modal-footer prod-modal-footer p-3 px-4 d-flex justify-content-end gap-2">
-                          <button type="button" class="btn btn-sm prod-btn-outline px-3" data-bs-dismiss="modal">Cancelar</button>
-                          <button type="submit" class="btn btn-sm prod-btn-primary px-3"><i class="bi bi-check-lg me-1"></i>Actualizar Pago</button>
-                        </div>
-                      </form>
+                      <div class="modal-body p-3 text-start small">
+                        ¿Eliminar el registro de pago <strong>#{{ p.codigo_metodo }}</strong> por <strong>${{ p.valor|floatformat:0 }}</strong>?
+                      </div>
+                      <div class="modal-footer prod-modal-footer p-2.5 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm prod-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+                        <form method="POST" action="{% url 'eliminar_metodo_pago' p.codigo_metodo %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-danger px-3">Eliminar</button>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -257,9 +578,9 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="text-center py-5" style="color: var(--texto-muted);">
-                <i class="bi bi-wallet2 display-4 d-block mb-2 opacity-50"></i>
-                No se encontraron registros de métodos de pago.
+              <td colspan="8" class="text-center py-5 text-white-50">
+                <i class="bi bi-truck display-5 d-block mb-2 opacity-50"></i>
+                No se encontraron pagos a proveedores.
               </td>
             </tr>
           {% endfor %}
@@ -267,24 +588,25 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;">
+    <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: rgba(77,168,218,0.15) !important;">
       <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
-        Total Registrado ({{ total_registros }} registros)
+        Total Registrado ({{ total_registros_compras }} registros)
       </span>
       <span style="font-size: 1.35rem; font-weight: 700; color: #4ade80;">
-        ${{ total_recaudado|floatformat:0 }}
+        ${{ total_recaudado_compras|floatformat:0 }}
       </span>
     </div>
   </div>
+  {% endif %}
 
 </div>
 
-<!-- Modal Registrar Pago -->
+<!-- Modal Registrar Pago de Compra -->
 <div class="modal fade" id="modalNuevoPago" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content prod-modal">
       <div class="modal-header prod-modal-header p-3 px-4">
-        <h6 class="modal-title fw-bold text-white mb-0"><i class="bi bi-wallet2 text-info me-2"></i>Registrar Pago en Método de Pago</h6>
+        <h6 class="modal-title fw-bold text-white mb-0"><i class="bi bi-wallet2 text-info me-2"></i>Registrar Pago de Compra</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="POST" action="{% url 'crear_metodo_pago' %}">
@@ -346,6 +668,45 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  const fIniMP = document.getElementById('filtroFechaIniMP');
+  const fFinMP = document.getElementById('filtroFechaFinMP');
+  function enlazarFechasMP(origen) {
+    if (!fIniMP || !fFinMP) return;
+    let vi = fIniMP.value;
+    let vf = fFinMP.value;
+    if (vi && vf && vi > vf) {
+      if (origen === 'ini') {
+        fFinMP.value = vi;
+      } else {
+        fIniMP.value = vf;
+      }
+    }
+    if (fIniMP.value) fFinMP.min = fIniMP.value;
+    else fFinMP.removeAttribute('min');
+    if (fFinMP.value) fIniMP.max = fFinMP.value;
+    else fIniMP.removeAttribute('max');
+  }
+
+  if (fIniMP) {
+    fIniMP.addEventListener('change', () => enlazarFechasMP('ini'));
+    fIniMP.addEventListener('input', () => enlazarFechasMP('ini'));
+  }
+  if (fFinMP) {
+    fFinMP.addEventListener('change', () => enlazarFechasMP('fin'));
+    fFinMP.addEventListener('input', () => enlazarFechasMP('fin'));
+  }
+
+  const formMP = fIniMP ? fIniMP.closest('form') : null;
+  if (formMP) {
+    formMP.addEventListener('submit', function() {
+      if (fIniMP && fFinMP && fIniMP.value && fFinMP.value && fIniMP.value > fFinMP.value) {
+        fFinMP.value = fIniMP.value;
+      }
+    });
+  }
+
+  enlazarFechasMP();
 
   if (window.setupStrictCYSTooltips) {
     window.setupStrictCYSTooltips();

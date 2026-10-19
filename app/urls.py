@@ -39,6 +39,7 @@ urlpatterns = [
     path("ventas/punto-venta/", ventas_views.ventas, name="punto_venta"),
     path("ventas/nueva/", ventas_views.nueva_venta, name="nueva_venta"),
     path("ventas/eliminar/<int:pk>/", ventas_views.eliminar_venta, name="eliminar_venta"),
+    path("ventas/cobrar-saldo/<int:pk>/", ventas_views.cobrar_saldo_pendiente, name="cobrar_saldo_pendiente"),
     path("ventas/producto-stock/<int:pk>/", ventas_views.producto_stock_json, name="producto_stock_json"),
     path("ventas/producto/<int:pk>/stock/", ventas_views.producto_stock_json, name="producto_stock_json_alt"),
 
@@ -58,6 +59,7 @@ urlpatterns = [
     path("ventas/exportar/pdf/", ventas_views.exportar_ventas_pdf, name="exportar_ventas_pdf"),
 
     # CAJA
+    path("caja/", ventas_views.caja, name="caja_direct"),
     path("ventas/caja/", ventas_views.caja, name="caja"),
     path("ventas/caja/apertura/", ventas_views.apertura_caja, name="apertura_caja"),
     path("ventas/caja/cierre/", ventas_views.cierre_caja, name="cierre_caja"),
