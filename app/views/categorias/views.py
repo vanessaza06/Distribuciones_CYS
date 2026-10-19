@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import datetime
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,6 +18,42 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import Categoria
+
+
+# ============================================================
+# VALIDACIÓN
+# Nombre: solo letras (con tildes/ñ) y espacios.
+# Código: letras y números, con al menos un número; sin espacios ni símbolos.
+# ============================================================
+PATRON_NOMBRE = re.compile(r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+$')
+PATRON_CODIGO = re.compile(r'^[A-Z0-9]+$')
+TIENE_NUMERO = re.compile(r'[0-9]')
+
+MSG_NOMBRE_INVALIDO = (
+    '⚠️ El nombre solo puede tener letras y espacios, '
+    'sin números ni caracteres especiales.'
+)
+MSG_CODIGO_INVALIDO = (
+    '⚠️ El código solo puede tener letras y números, '
+    'sin espacios ni símbolos.'
+)
+MSG_CODIGO_SIN_NUMERO = '⚠️ El código debe llevar al menos un número.'
+
+
+def _limpiar_nombre(valor):
+    return " ".join((valor or "").split())
+
+
+def _nombre_valido(nombre):
+    return bool(PATRON_NOMBRE.match(nombre))
+
+
+def _codigo_valido(codigo):
+    return bool(PATRON_CODIGO.match(codigo))
+
+
+def _codigo_tiene_numero(codigo):
+    return bool(TIENE_NUMERO.search(codigo))
 
 
 @login_required
@@ -38,12 +75,24 @@ def categorias_lista(request):
 @login_required
 def categoria_crear(request):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        codigo = request.POST.get('codigo', '').strip().upper()
-        descripcion = request.POST.get('descripcion', '').strip()
+        nombre = _limpiar_nombre(request.POST.get('nombre'))
+        codigo = (request.POST.get('codigo') or '').strip().upper()
+        descripcion = (request.POST.get('descripcion') or '').strip()
 
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
+            return redirect('categorias_lista')
+
+        if not _nombre_valido(nombre):
+            messages.error(request, MSG_NOMBRE_INVALIDO)
+            return redirect('categorias_lista')
+
+        if not _codigo_valido(codigo):
+            messages.error(request, MSG_CODIGO_INVALIDO)
+            return redirect('categorias_lista')
+
+        if not _codigo_tiene_numero(codigo):
+            messages.error(request, MSG_CODIGO_SIN_NUMERO)
             return redirect('categorias_lista')
 
         if Categoria.objects.filter(codigo__iexact=codigo).exists():
@@ -65,12 +114,24 @@ def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
 
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        codigo = request.POST.get('codigo', '').strip().upper()
-        descripcion = request.POST.get('descripcion', '').strip()
+        nombre = _limpiar_nombre(request.POST.get('nombre'))
+        codigo = (request.POST.get('codigo') or '').strip().upper()
+        descripcion = (request.POST.get('descripcion') or '').strip()
 
         if not nombre or not codigo:
             messages.error(request, '⚠️ Nombre y código son obligatorios.')
+            return redirect('categorias_lista')
+
+        if not _nombre_valido(nombre):
+            messages.error(request, MSG_NOMBRE_INVALIDO)
+            return redirect('categorias_lista')
+
+        if not _codigo_valido(codigo):
+            messages.error(request, MSG_CODIGO_INVALIDO)
+            return redirect('categorias_lista')
+
+        if not _codigo_tiene_numero(codigo):
+            messages.error(request, MSG_CODIGO_SIN_NUMERO)
             return redirect('categorias_lista')
 
         if Categoria.objects.filter(codigo__iexact=codigo).exclude(pk=pk).exists():

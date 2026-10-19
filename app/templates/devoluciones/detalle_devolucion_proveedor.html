@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ dev.numero }} | Devolución a proveedor{% endblock %}
+{% block page_title %}Devolución a Proveedor{% endblock %}
+{% block nav_devoluciones %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261016i">
+<link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dev-page container-fluid p-0">
+
+  {% if messages %}
+  <div class="dev-messages" aria-live="polite">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <section class="dev-card dev-process">
+    <div class="dev-card__head">
+      <div>
+        <span class="dev-section-label">Devolución a proveedor</span>
+        <h2>{{ dev.numero }}</h2>
+      </div>
+      {% if dev.estado == 'pendiente' %}
+        <span class="badge-estado badge-pendiente"><i class="bi bi-clock-history"></i> Pendiente</span>
+      {% elif dev.estado == 'aprobada' %}
+        <span class="badge-estado badge-aprobada"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
+      {% elif dev.estado == 'aplicada' %}
+        <span class="badge-estado badge-aplicada"><i class="bi bi-check-all"></i> Aplicada</span>
+      {% else %}
+        <span class="badge-estado badge-rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
+      {% endif %}
+    </div>
+
+    {% if confirmar %}
+    <!-- CONFIRMACIÓN (se valida en el servidor) -->
+    <div class="dpv-confirm dpv-confirm--{{ confirmar.tono }}">
+      <h3><i class="bi {{ confirmar.icono }} me-1"></i> ¿{{ confirmar.etiqueta }} la devolución {{ dev.numero }}?</h3>
+      <p>{{ confirmar.texto }}</p>
+      <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dev.numero_proveedor %}" class="d-flex gap-2 flex-wrap">
+        {% csrf_token %}
+        <input type="hidden" name="nuevo_estado" value="{{ confirmar.estado }}">
+        <button type="submit" class="dev-act dev-act--{{ confirmar.tono }}">
+          <i class="bi {{ confirmar.icono }}"></i> Sí, {{ confirmar.etiqueta|lower }}
+        </button>
+        <a href="{% url 'detalle_devolucion_proveedor' dev.numero_proveedor %}" class="dev-btn dev-btn--ghost">Cancelar</a>
+      </form>
+    </div>
+    {% endif %}
+
+    <div class="dpv-grid">
+      <div class="dpv-box"><span>Proveedor</span><strong>{{ dev.proveedor.nombre_empresa }}</strong><small>NIT {{ dev.proveedor.pk }}</small></div>
+      <div class="dpv-box"><span>Fecha</span><strong>{{ dev.fecha|date:"d/m/Y H:i" }}</strong></div>
+      <div class="dpv-box">
+        <span>Compra de origen</span>
+        {% if compra %}
+          <strong>Compra #{{ compra.pk }}</strong>
+          <small>{{ compra.fecha|date:"d/m/Y" }} · {{ compra.get_estado_display }} · ${{ compra.valor|floatformat:0 }}</small>
+        {% else %}
+          <strong>—</strong>
+        {% endif %}
+      </div>
+      <div class="dpv-box"><span>Motivo</span><strong>{{ dev.get_motivo_display }}</strong></div>
+      <div class="dpv-box"><span>Solución requerida</span><strong>{{ dev.get_tipo_resolucion_display }}</strong></div>
+      <div class="dpv-box"><span>Total reclamado</span><strong class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</strong></div>
+    </div>
+
+    <div class="table-responsive dev-table-wrap">
+      <table class="table dev-table align-middle mb-0">
+        <thead>
+          <tr><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio unitario</th><th class="text-end">Subtotal</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>{{ dev.producto_nombre|default:"—" }}</strong></td>
+            <td class="text-center">{{ dev.cantidad_devuelta }}</td>
+            <td class="text-end dev-money">${{ dev.precio_unitario_devuelto|floatformat:0 }}</td>
+            <td class="text-end dev-money">${{ dev.total_devuelto|floatformat:0 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {% if dev.texto_observaciones %}
+    <div class="dpv-box mt-3"><span>Observaciones</span><strong>{{ dev.texto_observaciones }}</strong></div>
+    {% endif %}
+
+    {% if extra.unidades_descontadas is not None %}
+    <div class="dpv-box mt-3">
+      <span>Inventario</span>
+      <strong>{{ extra.unidades_descontadas }} de {{ extra.cantidad }} unidades descontadas</strong>
+      {% if extra.unidades_descontadas < extra.cantidad %}<small>El resto no estaba registrado en inventario.</small>{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="dpv-actions">
+      {% for a in acciones %}
+        <a href="?accion={{ a.estado }}" class="dev-act dev-act--{{ a.tono }}"><i class="bi {{ a.icono }}"></i> {{ a.etiqueta }}</a>
+      {% endfor %}
+      <a href="{% url 'lista_devoluciones' %}?tab=proveedor" class="dev-btn dev-btn--ghost"><i class="bi bi-arrow-left"></i> Volver a devoluciones</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

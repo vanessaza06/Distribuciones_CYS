@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django import forms
 from django.utils import timezone
+from app.validators import validar_nombre_producto, validar_nombre_presentacion, validar_numero_lote
 from app.models import (
     Proveedor, Compra, Producto, Lote, Categoria, PresentacionProducto,
     AgendaInventario,
@@ -98,14 +99,17 @@ class NuevaCompraForm(forms.Form):
     )
     cantidad = forms.IntegerField(
         min_value=1,
+        max_value=1_000_000,
         initial=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Ej: 10', 'required': True, 'id': 'formCompraCantidad'}),
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Ej: 10', 'required': True, 'id': 'formCompraCantidad', 'inputmode': 'numeric', 'pattern': '[0-9]*', 'step': '1'}),
         label="Cantidad"
     )
     precio_unitario = forms.DecimalField(
         min_value=Decimal('0.01'),
+        max_value=Decimal('999999999.99'),
+        max_digits=12,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '0.01', 'placeholder': 'Ej: 25000', 'required': True, 'id': 'formCompraPrecio'}),
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '1', 'inputmode': 'numeric', 'pattern': '[0-9]*', 'placeholder': 'Ej: 25000', 'required': True, 'id': 'formCompraPrecio'}),
         label="Precio Unitario ($)"
     )
     estado = forms.ChoiceField(
@@ -127,10 +131,12 @@ class NuevaCompraForm(forms.Form):
     )
     monto_pagado = forms.DecimalField(
         min_value=Decimal('0.00'),
+        max_value=Decimal('9999999999.99'),
+        max_digits=12,
         decimal_places=2,
         required=False,
-        initial=Decimal('0.00'),
-        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '0.01', 'placeholder': '0 para crédito total', 'id': 'formCompraPago'}),
+        initial=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-lg', 'step': '1', 'inputmode': 'numeric', 'pattern': '[0-9]*', 'placeholder': '0 para crédito total', 'id': 'formCompraPago'}),
         label="Abono Inicial ($)"
     )
     metodo_pago = forms.ChoiceField(
@@ -161,6 +167,31 @@ class NuevaCompraForm(forms.Form):
         if 'lote' in self.fields:
             self.fields['lote'].queryset = Lote.objects.all().order_by('numero_lote')
 
+    def _solo_digitos(self, campo, obligatorio):
+        from app.validators import solo_digitos, MSG_SOLO_DIGITOS
+        if not solo_digitos(self.data.get(campo), vacio_ok=not obligatorio):
+            raise forms.ValidationError(MSG_SOLO_DIGITOS)
+
+    def clean_cantidad(self):
+        self._solo_digitos('cantidad', True)
+        return self.cleaned_data['cantidad']
+
+    def clean_precio_unitario(self):
+        self._solo_digitos('precio_unitario', True)
+        return self.cleaned_data['precio_unitario']
+
+    def clean_monto_pagado(self):
+        self._solo_digitos('monto_pagado', False)
+        return self.cleaned_data.get('monto_pagado')
+
+    def clean_numero_factura(self):
+        from app.validators import limpiar_texto, validar_referencia
+        valor = limpiar_texto(self.cleaned_data.get('numero_factura'))
+        error = validar_referencia(valor)
+        if error:
+            raise forms.ValidationError(error)
+        return valor
+
     def clean(self):
         cleaned_data = super().clean()
         cantidad = cleaned_data.get('cantidad') or 0
@@ -175,6 +206,8 @@ class NuevaCompraForm(forms.Form):
             self.add_error('monto_pagado', 'El abono inicial no puede ser negativo.')
 
         total = Decimal(cantidad) * Decimal(precio)
+        if total > Decimal('9999999999.99'):
+            self.add_error('precio_unitario', 'El total de la compra no puede superar $9.999.999.999.')
         if total > Decimal('0.00') and monto_pagado > total:
             self.add_error(
                 'monto_pagado',
@@ -191,6 +224,7 @@ class NuevaCompraForm(forms.Form):
 
 class ProductoRegistroForm(forms.ModelForm):
     class Meta:
+        
         model  = Producto
         fields = ['nombre', 'descripcion', 'categoria']
         widgets = {
@@ -206,7 +240,8 @@ class ProductoRegistroForm(forms.ModelForm):
                 'class': 'np-input',
             }),
         }
-
+    def clean_nombre(self):
+        return validar_nombre_producto(self.cleaned_data.get('nombre'))
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -226,6 +261,8 @@ class ProductoForm(forms.ModelForm):
                 'class': 'gp-input',
             }),
         }
+    def clean_nombre(self):
+        return validar_nombre_producto(self.cleaned_data.get('nombre'))
 #-----PRESENTACION-----#
 
 class PresentacionForm(forms.ModelForm):
@@ -238,6 +275,10 @@ class PresentacionForm(forms.ModelForm):
             'precio_venta':  forms.NumberInput(attrs={'class': 'gp-input', 'min': '0.01', 'step': '0.01'}),
             'observaciones': forms.Textarea(attrs={'class': 'gp-input', 'rows': 2}),
         }
+        
+    def clean_nombre(self):
+        return validar_nombre_presentacion(self.cleaned_data.get('nombre'))
+    
     def clean_cantidad(self):
         cantidad = self.cleaned_data.get('cantidad')
         if cantidad is None or cantidad < 1:
@@ -276,6 +317,22 @@ class LoteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['bodega'].required = False
+    
+    def clean_numero_lote(self):
+        valor = (self.cleaned_data.get('numero_lote') or '').strip()
+
+        # Al editar, si el número no cambió no se revalida (no bloquea lotes viejos)
+        if self.instance.pk and valor == self.instance.numero_lote:
+            return valor
+
+        codigo = validar_numero_lote(valor)
+
+        repetido = Lote.objects.filter(numero_lote__iexact=codigo)
+        if self.instance.pk:
+            repetido = repetido.exclude(pk=self.instance.pk)
+        if repetido.exists():
+            raise forms.ValidationError(f'Ya existe un lote con el número "{codigo}".')
+        return codigo
         
     def clean_cantidad_inicial(self):
         cantidad = self.cleaned_data.get('cantidad_inicial')

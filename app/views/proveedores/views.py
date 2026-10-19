@@ -1,19 +1,103 @@
 import json
 import logging
+import re
+import unicodedata
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValError
+from django.http import JsonResponse, Http404
+from django.db import IntegrityError
 from django.db.models import Sum, Count, Q
 
 from app.models import Proveedor, Compra
+from app.validators import limpiar_texto as _limpiar, validar_texto_libre
 
 logger = logging.getLogger(__name__)
+
+
+# ── VALIDACIÓN EN EL SERVIDOR (lista blanca de caracteres) ───────────────────
+# Todo dato que llega del formulario se valida aquí, nunca se confía en el navegador.
+NIT_RE = re.compile(r'[0-9]{5,15}')
+TELEFONO_RE = re.compile(r'[0-9]{7,15}')
+# Nombre: letras (con tildes/ñ), números, espacios y . , & ' ( ) - /
+NOMBRE_RE = re.compile(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,&'()\-/]*")
+
+
+def validar_datos_proveedor(post, *, editando=False, nit_actual=None):
+    """Devuelve (datos_limpios, errores). `errores` es un dict {campo: mensaje}."""
+    errores = {}
+    datos = {}
+
+    # NIT
+    if editando:
+        datos['nit'] = nit_actual
+    else:
+        nit = _limpiar(post.get('nit') or post.get('nit_proveedores'))
+        if not nit:
+            errores['nit'] = 'El NIT o documento es obligatorio.'
+        elif not NIT_RE.fullmatch(nit):
+            errores['nit'] = 'El NIT solo admite números (5 a 15 dígitos), sin puntos, comas ni guiones. Ej: 9001234567.'
+        elif Proveedor.objects.filter(pk=nit).exists():
+            errores['nit'] = 'Ya existe un proveedor registrado con ese NIT.'
+        datos['nit'] = nit
+
+    # Nombre
+    nombre = _limpiar(post.get('nombre_empresa'))
+    if not nombre:
+        errores['nombre_empresa'] = 'El nombre de la empresa es obligatorio.'
+    elif len(nombre) < 2 or len(nombre) > 200:
+        errores['nombre_empresa'] = 'El nombre debe tener entre 2 y 200 caracteres.'
+    elif not any(ch.isalpha() for ch in nombre):
+        errores['nombre_empresa'] = 'El nombre debe incluir al menos una letra.'
+    elif not NOMBRE_RE.fullmatch(nombre):
+        errores['nombre_empresa'] = "El nombre solo admite letras, números, espacios y . , & ' ( ) - /"
+    datos['nombre_empresa'] = nombre
+
+    # Correo
+    correo = _limpiar(post.get('email') or post.get('correo')).lower()
+    if not correo:
+        errores['email'] = 'El correo electrónico es obligatorio.'
+    else:
+        try:
+            if len(correo) > 254 or ' ' in correo:
+                raise DjangoValError('largo')
+            validate_email(correo)
+        except DjangoValError:
+            errores['email'] = 'Ingresa un correo electrónico válido.'
+    datos['correo'] = correo
+
+    # Teléfono (opcional)
+    telefono = _limpiar(post.get('telefono'))
+    if telefono and not TELEFONO_RE.fullmatch(telefono):
+        errores['telefono'] = 'El teléfono solo admite entre 7 y 15 dígitos, sin puntos, comas, guiones ni espacios.'
+    datos['telefono'] = telefono
+
+    # Tipo: solo valores del catálogo
+    tipo = _limpiar(post.get('tipo_proveedor')) or 'distribuidor'
+    if tipo not in dict(Proveedor.TIPO_CHOICES):
+        errores['tipo_proveedor'] = 'Selecciona un tipo de proveedor válido.'
+    datos['tipo_proveedor'] = tipo
+
+    # Observación (opcional)
+    obs = _limpiar(post.get('observacion'))
+    obs_error = validar_texto_libre(obs)
+    if obs_error:
+        errores['observacion'] = obs_error
+    datos['observacion'] = obs
+
+    return datos, errores
+
+
+def _json_seguro(valor):
+    """json.dumps seguro para incrustar dentro de <script> (evita cerrar la etiqueta)."""
+    return (json.dumps(valor)
+            .replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026'))
 
 
 # ── LISTA PRINCIPAL DE PROVEEDORES ─────────────────────────────────────────────
@@ -22,9 +106,13 @@ def lista_proveedores(request):
     proveedores = Proveedor.objects.all().order_by('-fecha_registro')
 
     # Filtros de búsqueda
-    q = request.GET.get('q', '').strip()
+    q = request.GET.get('q', '').strip()[:100]
     estado = request.GET.get('estado', '').strip()
     tipo = request.GET.get('tipo', '').strip()
+    if estado not in dict(Proveedor.ESTADO_CHOICES):
+        estado = ''
+    if tipo not in dict(Proveedor.TIPO_CHOICES):
+        tipo = ''
 
     if q:
         proveedores = proveedores.filter(
@@ -86,9 +174,9 @@ def lista_proveedores(request):
         'proveedores_sancionados': proveedores_sancionados,
         'porcentaje_activos': porcentaje_activos,
         'max_compras': max_compras,
-        'gastos_labels_json': json.dumps(gastos_labels),
-        'gastos_data_json': json.dumps(gastos_data),
-        'gastos_porcentajes_json': json.dumps(gastos_porcentajes),
+        'gastos_labels_json': _json_seguro(gastos_labels),
+        'gastos_data_json': _json_seguro(gastos_data),
+        'gastos_porcentajes_json': _json_seguro(gastos_porcentajes),
         'breadcrumb_items': [{'nombre': 'Proveedores', 'url': None}],
     }
     return render(request, 'proveedores/proveedores.html', context)
@@ -97,61 +185,40 @@ def lista_proveedores(request):
 # ── CRUD TRADICIONAL ──────────────────────────────────────────────────────────
 @login_required
 def crear_proveedor(request):
-    if request.method == 'POST':
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-        nit = (request.POST.get('nit') or request.POST.get('nit_proveedores') or '').strip()
-        nombre = (request.POST.get('nombre_empresa') or '').strip()
-        correo = (request.POST.get('email') or request.POST.get('correo') or '').strip()
-        telefono = (request.POST.get('telefono') or '').strip()
-        tipo = request.POST.get('tipo_proveedor', 'distribuidor')
-
-        errors = {}
-        if not nit:
-            errors['nit'] = 'El NIT o documento es obligatorio.'
-        elif Proveedor.objects.filter(pk=nit).exists():
-            errors['nit'] = f'El proveedor con NIT {nit} ya se encuentra registrado.'
-
-        if not nombre:
-            errors['nombre_empresa'] = 'El nombre de la empresa es obligatorio.'
-
-        if not correo:
-            errors['email'] = 'El correo electrónico es obligatorio.'
-        else:
-            from django.core.validators import validate_email
-            from django.core.exceptions import ValidationError as DjangoValError
-            try:
-                validate_email(correo)
-            except DjangoValError:
-                errors['email'] = 'Ingresa un correo electrónico válido.'
-
-        if telefono:
-            import re
-            if not re.match(r'^\d{7,15}$', telefono):
-                errors['telefono'] = 'El teléfono debe contener entre 7 y 15 dígitos numéricos.'
-
-        if errors:
-            if is_ajax:
-                return JsonResponse({'success': False, 'errors': errors}, status=400)
-            for msg in errors.values():
-                messages.error(request, f'⚠️ {msg}')
-            return redirect('lista_proveedores')
-
-        proveedor = Proveedor.objects.create(
-            nit_proveedores=nit,
-            nombre_empresa=nombre,
-            correo=correo,
-            telefono=telefono,
-            tipo_proveedor=tipo,
-            estado='activo',
-        )
-
-        if is_ajax:
-            return JsonResponse({'success': True, 'message': f'Proveedor {proveedor.nombre_empresa} registrado correctamente.'})
-        
-        messages.success(request, f'✅ Proveedor {proveedor.nombre_empresa} registrado correctamente.')
+    if request.method != 'POST':
         return redirect('lista_proveedores')
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    datos, errors = validar_datos_proveedor(request.POST)
+
+    if errors:
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+        for msg in errors.values():
+            messages.error(request, f'⚠️ {msg}')
+        return redirect('lista_proveedores')
+
+    try:
+        proveedor = Proveedor.objects.create(
+            nit_proveedores=datos['nit'],
+            nombre_empresa=datos['nombre_empresa'],
+            correo=datos['correo'],
+            telefono=datos['telefono'],
+            tipo_proveedor=datos['tipo_proveedor'],
+            observacion=datos['observacion'] or None,
+            estado='activo',
+        )
+    except IntegrityError:
+        errors = {'nit': 'Ya existe un proveedor registrado con ese NIT.'}
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+        messages.error(request, f'⚠️ {errors["nit"]}')
+        return redirect('lista_proveedores')
+
+    mensaje = f'Proveedor {proveedor.nombre_empresa} registrado correctamente.'
+    if is_ajax:
+        return JsonResponse({'success': True, 'message': mensaje})
+    messages.success(request, f'✅ {mensaje}')
     return redirect('lista_proveedores')
 
 
@@ -160,39 +227,17 @@ def editar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
 
     if request.method == 'POST':
-        nombre = (request.POST.get('nombre_empresa') or '').strip()
-        correo = (request.POST.get('email') or request.POST.get('correo') or '').strip()
-        telefono = (request.POST.get('telefono') or '').strip()
-        tipo = request.POST.get('tipo_proveedor', proveedor.tipo_proveedor)
-        observacion = (request.POST.get('observacion') or '').strip()
-
-        errors = []
-        if not nombre:
-            errors.append('El nombre de la empresa es obligatorio.')
-        if not correo:
-            errors.append('El correo electrónico es obligatorio.')
-        else:
-            from django.core.validators import validate_email
-            from django.core.exceptions import ValidationError as DjangoValError
-            try:
-                validate_email(correo)
-            except DjangoValError:
-                errors.append('Ingresa un correo electrónico válido.')
-
-        if telefono:
-            import re
-            if not re.match(r'^\d{7,15}$', telefono):
-                errors.append('El teléfono debe tener entre 7 y 15 dígitos numéricos.')
+        datos, errors = validar_datos_proveedor(request.POST, editando=True, nit_actual=proveedor.pk)
 
         if errors:
-            for err in errors:
+            for err in errors.values():
                 messages.error(request, f'⚠️ {err}')
         else:
-            proveedor.nombre_empresa = nombre
-            proveedor.correo = correo
-            proveedor.telefono = telefono
-            proveedor.tipo_proveedor = tipo
-            proveedor.observacion = observacion
+            proveedor.nombre_empresa = datos['nombre_empresa']
+            proveedor.correo = datos['correo']
+            proveedor.telefono = datos['telefono']
+            proveedor.tipo_proveedor = datos['tipo_proveedor']
+            proveedor.observacion = datos['observacion']
             proveedor.save()
 
             messages.success(request, f'✅ Proveedor {proveedor.nombre_empresa} actualizado con éxito.')
@@ -216,18 +261,35 @@ def editar_proveedor(request, id):
 
 @login_required
 def detalle_proveedor(request, id):
+    from app.models import DevolucionProveedores
+
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.id = proveedor.pk
     proveedor.nit = proveedor.nit_proveedores
     proveedor.email = proveedor.correo
 
-    compras = Compra.objects.filter(proveedor=proveedor).order_by('-fecha')
-    total_compras = compras.aggregate(s=Sum('valor'))['s'] or Decimal('0.00')
+    todas = Compra.objects.filter(proveedor=proveedor)
+    vigentes = todas.exclude(estado='cancelada')
+    resumen = vigentes.aggregate(total=Sum('valor'), saldo=Sum('saldo'))
+    total_compras = resumen['total'] or Decimal('0.00')
+    saldo_pendiente = resumen['saldo'] or Decimal('0.00')
+    ultima_compra = todas.order_by('-fecha').first()
+
+    recientes = (todas.prefetch_related('detalles__producto')
+                 .order_by('-fecha', '-codigo_compra')[:8])
+
+    devs = [d for d in DevolucionProveedores.objects.filter(proveedor=proveedor).exclude(estado='rechazada')]
+    total_devuelto = sum((d.total_devuelto for d in devs), Decimal('0.00'))
 
     context = {
         'proveedor': proveedor,
-        'compras': compras,
+        'compras': recientes,
+        'compras_count': vigentes.count(),
         'total_compras': total_compras,
+        'saldo_pendiente': saldo_pendiente,
+        'ultima_compra': ultima_compra,
+        'devoluciones_count': len(devs),
+        'total_devuelto': total_devuelto,
         'breadcrumb_items': [
             {'nombre': 'Proveedores', 'url': reverse('lista_proveedores')},
             {'nombre': proveedor.nombre_empresa, 'url': None},
@@ -237,16 +299,25 @@ def detalle_proveedor(request, id):
 
 
 @login_required
+@require_POST
 def eliminar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
-    if request.method == 'POST':
-        nombre = proveedor.nombre_empresa
-        proveedor.delete()
-        messages.success(request, f'Proveedor {nombre} eliminado correctamente.')
+    # Borrar un proveedor arrastra sus compras (CASCADE): se bloquea si tiene historial
+    if Compra.objects.filter(proveedor=proveedor).exists() or proveedor.devolucionproveedores_set.exists():
+        messages.error(
+            request,
+            f'⚠️ {proveedor.nombre_empresa} tiene compras o devoluciones registradas y no se puede eliminar. '
+            'Puedes desactivarlo.'
+        )
+        return redirect('lista_proveedores')
+    nombre = proveedor.nombre_empresa
+    proveedor.delete()
+    messages.success(request, f'Proveedor {nombre} eliminado correctamente.')
     return redirect('lista_proveedores')
 
 
 @login_required
+@require_POST
 def activar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.estado = 'activo'
@@ -256,6 +327,7 @@ def activar_proveedor(request, id):
 
 
 @login_required
+@require_POST
 def desactivar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
     proveedor.estado = 'inactivo'
@@ -265,17 +337,19 @@ def desactivar_proveedor(request, id):
 
 
 @login_required
+@require_POST
 def sancionar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, pk=id)
-    if request.method == 'POST':
-        observacion = request.POST.get('observacion', '').strip()
-        if observacion:
-            proveedor.estado = 'sancionado'
-            proveedor.observacion = observacion
-            proveedor.save(update_fields=['estado', 'observacion'])
-            messages.success(request, f'Proveedor {proveedor.nombre_empresa} sancionado.')
-        else:
-            messages.error(request, 'Debe indicar el motivo de la sanción.')
+    observacion = _limpiar(request.POST.get('observacion'))
+    if not observacion:
+        messages.error(request, 'Debe indicar el motivo de la sanción.')
+    elif validar_texto_libre(observacion):
+        messages.error(request, f'⚠️ Motivo de sanción: {validar_texto_libre(observacion)}')
+    else:
+        proveedor.estado = 'sancionado'
+        proveedor.observacion = observacion
+        proveedor.save(update_fields=['estado', 'observacion'])
+        messages.success(request, f'Proveedor {proveedor.nombre_empresa} sancionado.')
     return redirect('lista_proveedores')
 
 
@@ -305,12 +379,14 @@ def detalle_proveedor_modal(request, id):
             }
         }
         return JsonResponse(data)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Http404:
+        return JsonResponse({'success': False, 'error': 'Proveedor no encontrado.'}, status=404)
+    except Exception:
+        logger.exception('Error en detalle_proveedor_modal')
+        return JsonResponse({'success': False, 'error': 'No se pudo cargar el proveedor.'}, status=400)
 
 
 @login_required
-@csrf_exempt
 def desactivar_proveedor_modal(request, id):
     if request.method == 'POST':
         proveedor = get_object_or_404(Proveedor, pk=id)
@@ -321,7 +397,6 @@ def desactivar_proveedor_modal(request, id):
 
 
 @login_required
-@csrf_exempt
 def reactivar_proveedor_modal(request, id):
     if request.method == 'POST':
         proveedor = get_object_or_404(Proveedor, pk=id)
@@ -332,13 +407,15 @@ def reactivar_proveedor_modal(request, id):
 
 
 @login_required
-@csrf_exempt
 def sancionar_proveedor_modal(request, id):
     if request.method == 'POST':
         proveedor = get_object_or_404(Proveedor, pk=id)
-        observacion = request.POST.get('observacion', '').strip()
+        observacion = _limpiar(request.POST.get('observacion'))
         if not observacion:
             return JsonResponse({'success': False, 'error': 'Debe indicar el motivo de la sanción.'}, status=400)
+        error_texto = validar_texto_libre(observacion)
+        if error_texto:
+            return JsonResponse({'success': False, 'error': f'Motivo de sanción: {error_texto}'}, status=400)
         proveedor.estado = 'sancionado'
         proveedor.observacion = observacion
         proveedor.save(update_fields=['estado', 'observacion'])
@@ -347,7 +424,6 @@ def sancionar_proveedor_modal(request, id):
 
 
 @login_required
-@csrf_exempt
 def levantar_sancion_proveedor(request, id):
     if request.method == 'POST':
         proveedor = get_object_or_404(Proveedor, pk=id)

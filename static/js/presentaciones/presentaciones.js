@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
   moverModalesAlBody();
   inicializarBusquedaPresentaciones();
   inicializarModalCrearPresentacion();
+    resaltarFilaNueva();
 
   document.addEventListener('click', function (e) {
     // Cierra cualquier dropdown abierto si se hace clic fuera
@@ -120,4 +121,18 @@ function toggleDropdownPres(btn) {
     menu.style.right = (window.innerWidth - rect.right) + 'px';
     menu.classList.add('open');
   }
+}
+/**
+ * Si la URL trae ?resaltar=<pk>, lleva la vista a esa fila y limpia el
+ * parámetro para que al recargar la página no se vuelva a marcar.
+ */
+function resaltarFilaNueva() {
+  const fila = document.querySelector('#tablaPresentaciones tr.fila-resaltada');
+  if (!fila) return;
+
+  fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete('resaltar');
+  window.history.replaceState({}, '', url.pathname + url.search + url.hash);
 }
