@@ -135,3 +135,47 @@
 .bot-chat {
   max-height: calc(100dvh - 176px);
 }
+/* ── Tapa de la cerveza ── */
+.bot-tapa-fx { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+
+.bot-espuma {
+  position: absolute; border-radius: 50%; border: 1.5px solid #4a2a05;
+  background: radial-gradient(circle at 35% 30%, #fffdf3 0%, #fff1cc 55%, #f2d58f 100%);
+  transform-origin: 50% 100%;
+  animation: bot-espuma-sube .55s cubic-bezier(.3, 1.6, .5, 1) both;
+}
+@keyframes bot-espuma-sube {
+  from { transform: translateY(35%) scale(0); }
+  to   { transform: translateY(0) scale(1); }
+}
+
+.bot-gota {
+  position: absolute; display: block; border-radius: 50%;
+  background: rgba(255, 226, 140, .95); border: 1px solid rgba(255, 255, 255, .7);
+}
+
+.bot-tapa { position: absolute; object-fit: contain; pointer-events: none; z-index: 6; }
+
+@media (prefers-reduced-motion: reduce) { .bot-espuma { animation: none; } }
+/* Suaviza el desplazamiento cuando el aside cambia de tamaño */
+.bot-wrap.bot-anim { transition: right .3s ease; }
+/* ── Flecha para ocultar / mostrar a Botellín ── */
+.bot-flecha {
+  position: absolute; right: -24px; bottom: 56px; width: 24px; height: 46px;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  border: 1px solid rgba(77, 163, 255, .35); border-right: 0; border-radius: 12px 0 0 12px;
+  background: #0b2547; color: #4da3ff; font-size: .8rem; cursor: pointer;
+  box-shadow: -2px 2px 10px rgba(0, 0, 0, .3); z-index: 7;
+  transition: background .2s ease, width .2s ease;
+}
+.bot-flecha:hover { background: #14406f; width: 28px; }
+.bot-flecha i { transition: transform .3s ease; }
+.bot-wrap.bot-oculto .bot-flecha i { transform: rotate(180deg); }
+
+/* Estado oculto: la mascota se desliza hacia el aside y desaparece */
+.bot-wrap.bot-oculto .bot-mascota {
+  translate: calc(100% + 40px) 0; opacity: 0; visibility: hidden; pointer-events: none;
+  transition: translate .35s ease, opacity .3s ease, visibility 0s .35s;
+}
+.bot-wrap.bot-oculto .bot-chat,
+.bot-wrap.bot-oculto .bot-burbuja { display: none !important; }
