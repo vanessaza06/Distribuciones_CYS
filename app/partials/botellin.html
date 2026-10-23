@@ -31,7 +31,14 @@
 
   <!-- La mascota ES el botón -->
   <button type="button" class="bot-mascota" id="bot-mascota" aria-label="Abrir chat con Botellín" aria-expanded="false">
+    
     <img class="bot-img bot-img-saludo" src="{% static 'img/botellin/botellin_saludo.png' %}" alt="Botellín saludando" draggable="false">
     <img class="bot-img bot-img-reposo" src="{% static 'img/botellin/botellin_reposo.png' %}" alt="" draggable="false">
   </button>
+  <!-- NUEVO: flecha para ocultar / mostrar a Botellín -->
+  <button type="button" class="bot-flecha" id="bot-flecha" aria-expanded="true"
+          aria-label="Ocultar a Botellín" title="Ocultar / mostrar a Botellín">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+
 </div>
