@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+from io import BytesIO
 import json
 
 from django.contrib import messages
@@ -6,9 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db.models import Sum
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escape
 
 from app.models import Producto, Lote, Bodega, PresentacionProducto
 from app.forms import LoteForm
@@ -214,3 +217,216 @@ def lote_ajustar_stock(request, numero_lote):
 
     messages.success(request, 'Stock ajustado.')
     return redirect('gestion_stock')
+
+
+# ─────────────────────────── EXPORTAR LOTES ───────────────────────────
+
+ENCABEZADOS_EXPORT = [
+    'Nº Lote', 'Producto', 'Presentación', 'Bodega', 'Fecha ingreso',
+    'Cant. inicial', 'Stock actual', 'Costo unitario', 'Costo total', 'Estado',
+]
+
+
+def _estado_lote(lote):
+    if lote.stock_actual > 0 and lote.esta_vencido:
+        return 'Vencido'
+    if lote.stock_actual > 0 and lote.proximo_a_vencer:
+        return 'Por vencer'
+    if lote.stock_actual <= 0:
+        return 'Agotado'
+    return 'Vigente'
+
+
+def _fecha_lote(lote):
+    valor = getattr(lote, CAMPO_FECHA_LOTE, None)
+    if not valor:
+        return ''
+    if hasattr(valor, 'astimezone'):          # DateTimeField
+        valor = timezone.localtime(valor)
+    return valor.strftime('%d/%m/%Y')
+
+
+def _filas_lotes():
+    """Devuelve las filas (listas) de todos los lotes para exportar."""
+    lotes = (
+        Lote.objects
+        .select_related('presentacion__producto', 'bodega')
+        .order_by('numero_lote')
+    )
+    filas = []
+    for l in lotes:
+        filas.append([
+            l.numero_lote,
+            l.presentacion.producto.nombre,
+            l.presentacion.nombre,
+            l.bodega.nombre if l.bodega else '',
+            _fecha_lote(l),
+            l.cantidad_inicial,
+            l.stock_actual,
+            l.costo_unitario,
+            l.costo_total,
+            _estado_lote(l),
+        ])
+    return filas
+
+
+def _nombre_archivo(extension):
+    return f'lotes_{timezone.localdate():%Y%m%d}.{extension}'
+
+
+def _exportar_excel():
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Lotes'
+
+    ws.append(ENCABEZADOS_EXPORT)
+    for celda in ws[1]:
+        celda.font = Font(bold=True, color='FFFFFF')
+        celda.fill = PatternFill('solid', fgColor='0D2A4F')
+        celda.alignment = Alignment(horizontal='center', vertical='center')
+
+    for fila in _filas_lotes():
+        fila[7] = float(fila[7] or 0)
+        fila[8] = float(fila[8] or 0)
+        ws.append(fila)
+
+    # Formato moneda y anchos de columna
+    for row in ws.iter_rows(min_row=2, min_col=8, max_col=9):
+        for celda in row:
+            celda.number_format = '"$"#,##0'
+    for i, titulo in enumerate(ENCABEZADOS_EXPORT, start=1):
+        maximo = max(
+            [len(str(titulo))] +
+            [len(str(c.value or '')) for c in ws[get_column_letter(i)][1:]]
+        )
+        ws.column_dimensions[get_column_letter(i)].width = min(maximo + 3, 40)
+    ws.freeze_panes = 'A2'
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{_nombre_archivo("xlsx")}"'
+    return response
+
+
+def _exportar_pdf():
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import cm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=landscape(A4),
+        leftMargin=1 * cm, rightMargin=1 * cm, topMargin=1 * cm, bottomMargin=1 * cm,
+        title='Reporte de Lotes',
+    )
+    estilos = getSampleStyleSheet()
+
+    datos = [ENCABEZADOS_EXPORT]
+    for f in _filas_lotes():
+        f = list(f)
+        f[7] = f'${(f[7] or 0):,.0f}'
+        f[8] = f'${(f[8] or 0):,.0f}'
+        datos.append(f)
+
+    tabla = Table(datos, repeatRows=1)
+    tabla.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0D2A4F')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ALIGN', (5, 1), (8, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#EEF3FA')]),
+    ]))
+
+    elementos = [
+        Paragraph('Reporte de Lotes — CYS Ltda', estilos['Title']),
+        Paragraph(f'Generado el {timezone.localdate():%d/%m/%Y}', estilos['Normal']),
+        Spacer(1, 0.4 * cm),
+        tabla,
+    ]
+    doc.build(elementos)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{_nombre_archivo("pdf")}"'
+    return response
+
+
+def _exportar_imprimir():
+    filas = _filas_lotes()
+
+    encabezados_html = ''.join(f'<th>{escape(e)}</th>' for e in ENCABEZADOS_EXPORT)
+
+    filas_html = ''
+    for f in filas:
+        filas_html += (
+            '<tr>'
+            f'<td>{escape(f[0])}</td>'
+            f'<td>{escape(f[1])}</td>'
+            f'<td>{escape(f[2])}</td>'
+            f'<td>{escape(f[3])}</td>'
+            f'<td>{escape(f[4])}</td>'
+            f'<td class="num">{f[5]}</td>'
+            f'<td class="num">{f[6]}</td>'
+            f'<td class="num">${(f[7] or 0):,.0f}</td>'
+            f'<td class="num">${(f[8] or 0):,.0f}</td>'
+            f'<td>{escape(f[9])}</td>'
+            '</tr>'
+        )
+    if not filas_html:
+        filas_html = '<tr><td colspan="10">No hay lotes registrados.</td></tr>'
+
+    plural = '' if len(filas) == 1 else 's'
+    html = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Lotes — CYS Ltda</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 24px; }}
+    h1 {{ font-size: 20px; margin: 0 0 4px; }}
+    .meta {{ color: #555; margin-bottom: 16px; }}
+    table {{ width: 100%; border-collapse: collapse; }}
+    th {{ background: #0d2a4f; color: #fff; padding: 6px; text-align: left; }}
+    td {{ border-bottom: 1px solid #ccc; padding: 5px 6px; }}
+    tr:nth-child(even) td {{ background: #f3f6fb; }}
+    td.num {{ text-align: right; }}
+    @media print {{
+      body {{ margin: 0; }}
+      th {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+    }}
+  </style>
+</head>
+<body>
+  <h1>Reporte de Lotes — CYS Ltda</h1>
+  <div class="meta">Generado el {timezone.localdate():%d/%m/%Y} · {len(filas)} lote{plural}</div>
+  <table>
+    <thead><tr>{encabezados_html}</tr></thead>
+    <tbody>{filas_html}</tbody>
+  </table>
+  <script>window.onload = function () {{ window.print(); }};</script>
+</body>
+</html>"""
+    return HttpResponse(html)
+
+
+@login_required
+def lote_exportar(request, formato):
+    if formato == 'excel':
+        return _exportar_excel()
+    if formato == 'pdf':
+        return _exportar_pdf()
+    if formato == 'imprimir':
+        return _exportar_imprimir()
+    raise Http404('Formato de exportación no válido.')
