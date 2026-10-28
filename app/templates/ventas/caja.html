@@ -17,7 +17,7 @@
   <div class="cys-caja-header-banner">
     <div>
       <div class="d-flex align-items-center gap-3 mb-1.5 flex-wrap">
-        <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.3px;">Control de Caja y Turnos</h3>
+        <h3 class="fw-bold mb-0" style="letter-spacing: -0.3px;">Control de Caja y Turnos</h3>
         {% if caja_abierta %}
           <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-1.5 rounded-pill fs-6 cys-pulse-badge">
             <i class="bi bi-circle-fill me-1 fs-6"></i> Turno Activo
@@ -28,7 +28,7 @@
           </span>
         {% endif %}
       </div>
-      <p class="text-white-50 small mb-0">Arqueo de efectivo, fondos base y ventas por turno.</p>
+      <p class="text-muted small mb-0">Arqueo de efectivo, fondos base y ventas por turno.</p>
     </div>
 
     <!-- Botones de Acción Estilizados estilo Ventas -->
@@ -72,8 +72,8 @@
           <i class="bi bi-clock-history"></i>
         </div>
         <div style="min-width:0; flex:1;">
-          <div class="small text-white-50 text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Estado</div>
-          <div class="fw-bold text-white fs-6 text-truncate">
+          <div class="small text-muted text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Estado</div>
+          <div class="fw-bold fs-6 text-truncate">
             {% if turno_activo %}Turno #{{ turno_activo.id }}{% else %}Sin Turno Activo{% endif %}
           </div>
         </div>
@@ -87,8 +87,8 @@
           <i class="bi bi-piggy-bank-fill"></i>
         </div>
         <div style="min-width:0; flex:1;">
-          <div class="small text-white-50 text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Base en Caja</div>
-          <div class="fw-bold text-white fs-6">
+          <div class="small text-muted text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Base en Caja</div>
+          <div class="fw-bold fs-6" style="color:var(--azul-claro, #38bdf8);">
             {% if turno_activo %}${{ turno_activo.monto_base|floatformat:0 }}{% elif ultimo_cierre %}${{ ultimo_cierre.monto_base_siguiente|floatformat:0 }}{% else %}$0{% endif %}
           </div>
         </div>
@@ -102,7 +102,7 @@
           <i class="bi bi-graph-up-arrow"></i>
         </div>
         <div style="min-width:0; flex:1;">
-          <div class="small text-white-50 text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Vendido en Turno</div>
+          <div class="small text-muted text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Vendido en Turno</div>
           <div class="fw-bold fs-6" style="color:var(--verde, #2ed573) !important;">
             {% if turno_activo %}${{ turno_activo.total_ventas|floatformat:0 }}{% else %}$0{% endif %}
           </div>
@@ -117,8 +117,8 @@
           <i class="bi bi-wallet2"></i>
         </div>
         <div style="min-width:0; flex:1;">
-          <div class="small text-white-50 text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Histórico Total</div>
-          <div class="fw-bold text-white fs-6">
+          <div class="small text-muted text-uppercase fw-bold" style="font-size:.68rem; letter-spacing:0.5px;">Histórico Total</div>
+          <div class="fw-bold fs-6" style="color:#f59e0b;">
             ${{ ventas_totales_historicas|floatformat:0 }}
           </div>
         </div>
@@ -130,10 +130,10 @@
 
   <!-- ── LISTADO Y DETALLE DE TURNOS (CON ESTADÍSTICAS VISUALES) ── -->
   <div class="mb-4 d-flex align-items-center justify-content-between">
-    <h4 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+    <h4 class="fw-bold mb-0 d-flex align-items-center gap-2">
       <i class="bi bi-journal-bookmark-fill" style="color:var(--azul-claro,#4DA8DA);"></i> Historial de Turnos de Caja
     </h4>
-    <span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-30 px-3 py-1.5 rounded-pill fs-6">
+    <span class="badge bg-secondary bg-opacity-25 border border-secondary border-opacity-30 px-3 py-1.5 rounded-pill fs-6">
       Total {{ total_turnos }} Turno{% if total_turnos != 1 %}s{% endif %}
     </span>
   </div>
@@ -151,7 +151,7 @@
         </div>
         <div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <h5 class="fw-bold text-white mb-0 fs-6">Turno #{{ t.id }}</h5>
+            <h5 class="fw-bold mb-0 fs-6">Turno #{{ t.id }}</h5>
             {% if t.estado == 'ACTIVO' %}
               <span class="badge bg-success text-white px-2.5 py-0.5 rounded-pill small cys-pulse-badge" style="font-size:0.72rem;">ACTIVO EN CURSO</span>
             {% elif t.estado == 'CERRADO' %}
@@ -160,7 +160,7 @@
               <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 px-2 py-0.5 rounded-pill small" style="font-size:0.72rem;">FINALIZADO</span>
             {% endif %}
           </div>
-          <div class="small text-white opacity-85 mt-1 d-flex flex-wrap align-items-center gap-2" style="font-size:0.78rem;">
+          <div class="small opacity-85 mt-1 d-flex flex-wrap align-items-center gap-2" style="font-size:0.78rem;">
             <span><i class="bi bi-calendar-event me-1"></i><strong>Inicio:</strong> {{ t.fecha_inicio|date:"d/m/Y h:i A" }}</span>
             {% if t.fecha_fin %}
               <span class="d-none d-sm-inline opacity-50">|</span>
@@ -171,7 +171,7 @@
           </div>
           {% if t.es_cerrado %}
           <div class="mt-1 d-flex align-items-center gap-2">
-            <span class="text-white-50" style="font-size:0.73rem;">
+            <span class="text-muted" style="font-size:0.73rem;">
               Cierre: Se hizo <strong class="text-success">${{ t.total_ventas|floatformat:0 }}</strong> &bull; Se recogió <strong class="text-warning">${{ t.total_retirado|floatformat:0 }}</strong> &bull; Base sig. <strong style="color:#38bdf8;">${{ t.base_siguiente|floatformat:0 }}</strong>
             </span>
           </div>
@@ -181,8 +181,8 @@
 
       <div class="d-flex align-items-center justify-content-between justify-content-md-end gap-3">
         <div class="text-md-end">
-          <div class="small text-white-50 text-uppercase fw-bold" style="font-size:.65rem;">{% if t.es_cerrado %}Total Ventas{% else %}Total Acumulado{% endif %}</div>
-          <div class="fw-bold {% if t.es_cerrado %}text-success{% else %}text-white{% endif %} fs-5">
+          <div class="small text-muted text-uppercase fw-bold" style="font-size:.65rem;">{% if t.es_cerrado %}Total Ventas{% else %}Total Acumulado{% endif %}</div>
+          <div class="fw-bold {% if t.es_cerrado %}text-success{% endif %} fs-5">
             ${% if t.es_cerrado %}{{ t.total_ventas|floatformat:0 }}{% else %}{{ t.monto_total_acumulado|floatformat:0 }}{% endif %}
           </div>
         </div>
@@ -210,7 +210,7 @@
           <div class="col-6 col-md-3">
             <div class="cys-mini-stat-card">
               <span class="cys-stat-label"><i class="bi bi-cash-coin me-1" style="color:#4DA8DA;"></i> Base Inicial</span>
-              <span class="cys-stat-val text-white">${{ t.monto_base|floatformat:0 }}</span>
+              <span class="cys-stat-val">${{ t.monto_base|floatformat:0 }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
@@ -239,7 +239,7 @@
           <div class="col-12 col-md-4">
             <div class="cys-mini-stat-card">
               <span class="cys-stat-label"><i class="bi bi-cash-coin me-1" style="color:#4DA8DA;"></i> Base Inicial</span>
-              <span class="cys-stat-val text-white">${{ t.monto_base|floatformat:0 }}</span>
+              <span class="cys-stat-val">${{ t.monto_base|floatformat:0 }}</span>
             </div>
           </div>
           <div class="col-12 col-md-4">
@@ -251,31 +251,31 @@
           <div class="col-12 col-md-4">
             <div class="cys-mini-stat-card">
               <span class="cys-stat-label"><i class="bi bi-wallet2 me-1" style="color:#ffab00;"></i> Total en Caja</span>
-              <span class="cys-stat-val text-white">${{ t.monto_total_acumulado|floatformat:0 }}</span>
+              <span class="cys-stat-val">${{ t.monto_total_acumulado|floatformat:0 }}</span>
             </div>
           </div>
         </div>
         {% endif %}
 
         <!-- Métodos de Pago (Línea compacta y limpia) -->
-        <div class="p-2 rounded-2 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2"
-             style="background:rgba(8,24,46,0.5); border:1px solid rgba(77,168,218,0.15);">
+        <div class="cys-turno-subpanel p-2 rounded-2 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2"
+             style="border:1px solid rgba(77,168,218,0.15);">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="text-white-50 small fw-bold text-uppercase" style="font-size:.68rem;">
+            <span class="small fw-bold text-uppercase text-muted" style="font-size:.68rem;">
               <i class="bi bi-credit-card-2-front me-1 text-info"></i> Métodos:
             </span>
-            {% if t.pago_efectivo > 0 %}<span class="badge py-1 px-2 text-white" style="background:rgba(46,213,115,0.15); border:1px solid rgba(46,213,115,0.3); font-size:.73rem;">Efectivo: <strong>${{ t.pago_efectivo|floatformat:0 }}</strong></span>{% endif %}
-            {% if t.pago_nequi > 0 %}<span class="badge py-1 px-2 text-white" style="background:rgba(232,67,147,0.15); border:1px solid rgba(232,67,147,0.3); font-size:.73rem;">Nequi: <strong>${{ t.pago_nequi|floatformat:0 }}</strong></span>{% endif %}
-            {% if t.pago_daviplata > 0 %}<span class="badge py-1 px-2 text-white" style="background:rgba(255,118,117,0.15); border:1px solid rgba(255,118,117,0.3); font-size:.73rem;">Daviplata: <strong>${{ t.pago_daviplata|floatformat:0 }}</strong></span>{% endif %}
-            {% if t.pago_tarjeta > 0 %}<span class="badge py-1 px-2 text-white" style="background:rgba(116,185,255,0.15); border:1px solid rgba(116,185,255,0.3); font-size:.73rem;">Tarjeta: <strong>${{ t.pago_tarjeta|floatformat:0 }}</strong></span>{% endif %}
-            {% if t.pago_transferencia > 0 %}<span class="badge py-1 px-2 text-white" style="background:rgba(165,94,234,0.15); border:1px solid rgba(165,94,234,0.3); font-size:.73rem;">Transf: <strong>${{ t.pago_transferencia|floatformat:0 }}</strong></span>{% endif %}
+            {% if t.pago_efectivo > 0 %}<span class="badge py-1 px-2" style="background:rgba(46,213,115,0.15); color:#16a34a; border:1px solid rgba(46,213,115,0.3); font-size:.73rem;">Efectivo: <strong>${{ t.pago_efectivo|floatformat:0 }}</strong></span>{% endif %}
+            {% if t.pago_nequi > 0 %}<span class="badge py-1 px-2" style="background:rgba(232,67,147,0.15); color:#db2777; border:1px solid rgba(232,67,147,0.3); font-size:.73rem;">Nequi: <strong>${{ t.pago_nequi|floatformat:0 }}</strong></span>{% endif %}
+            {% if t.pago_daviplata > 0 %}<span class="badge py-1 px-2" style="background:rgba(255,118,117,0.15); color:#dc2626; border:1px solid rgba(255,118,117,0.3); font-size:.73rem;">Daviplata: <strong>${{ t.pago_daviplata|floatformat:0 }}</strong></span>{% endif %}
+            {% if t.pago_tarjeta > 0 %}<span class="badge py-1 px-2" style="background:rgba(116,185,255,0.15); color:#0284c7; border:1px solid rgba(116,185,255,0.3); font-size:.73rem;">Tarjeta: <strong>${{ t.pago_tarjeta|floatformat:0 }}</strong></span>{% endif %}
+            {% if t.pago_transferencia > 0 %}<span class="badge py-1 px-2" style="background:rgba(165,94,234,0.15); color:#9333ea; border:1px solid rgba(165,94,234,0.3); font-size:.73rem;">Transf: <strong>${{ t.pago_transferencia|floatformat:0 }}</strong></span>{% endif %}
             {% if t.total_ventas == 0 %}
-              <span class="text-white-50 small" style="font-size:0.73rem;">Sin cobros en este turno</span>
+              <span class="text-muted small" style="font-size:0.73rem;">Sin cobros en este turno</span>
             {% endif %}
           </div>
           <div class="d-flex align-items-center gap-2">
             {% if t.cant_ventas > 0 %}
-            <div class="small text-white-50" style="font-size:.72rem;">
+            <div class="small text-muted" style="font-size:.72rem;">
               {{ t.cant_ventas }} venta{% if t.cant_ventas != 1 %}s{% endif %}
             </div>
             {% endif %}
@@ -293,27 +293,27 @@
           
           <!-- Top Productos (col-lg-5) -->
           <div class="col-12 col-lg-5">
-            <div class="rounded-3 p-2.5 h-100 d-flex flex-column" style="background:rgba(5,22,43,0.85); border:1px solid rgba(77,168,218,0.25);">
+            <div class="cys-turno-subpanel rounded-3 p-2.5 h-100 d-flex flex-column">
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h6 class="fw-bold text-white mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
                   <i class="bi bi-trophy text-warning"></i> Top Productos
                 </h6>
-                <span class="small text-white-50" style="font-size:.7rem;">Top {{ t.productos_top|length }}</span>
+                <span class="small text-muted" style="font-size:.7rem;">Top {{ t.productos_top|length }}</span>
               </div>
 
               {% if t.productos_top %}
                 <div class="d-flex flex-column gap-2 flex-grow-1" style="max-height:260px; overflow-y:auto; padding-right:3px;">
                   {% for prod in t.productos_top %}
-                  <div class="p-2 rounded-2" style="background:rgba(15,59,108,0.35); border:1px solid rgba(77,168,218,0.15);">
+                  <div class="cys-turno-item-row p-2 rounded-2">
                     <div class="d-flex align-items-center justify-content-between mb-1">
                       <div class="d-flex align-items-center gap-1.5 text-truncate" style="max-width:65%;">
                         <div class="cys-rank-badge {% if forloop.counter == 1 %}cys-rank-1{% elif forloop.counter == 2 %}cys-rank-2{% elif forloop.counter == 3 %}cys-rank-3{% else %}cys-rank-other{% endif %}" style="width:20px; height:20px; font-size:.68rem;">
                           {{ forloop.counter }}
                         </div>
-                        <span class="fw-bold text-white text-truncate" style="font-size:.8rem;" title="{{ prod.nombre }}">{{ prod.nombre }}</span>
+                        <span class="fw-bold text-truncate" style="font-size:.8rem;" title="{{ prod.nombre }}">{{ prod.nombre }}</span>
                       </div>
                       <div class="text-end">
-                        <span class="fw-bold text-white" style="font-size:.85rem;">${{ prod.total|floatformat:0 }}</span>
+                        <span class="fw-bold" style="font-size:.85rem;">${{ prod.total|floatformat:0 }}</span>
                         <span class="badge bg-primary bg-opacity-30 text-info py-0 px-1 ms-1" style="font-size:.68rem;">{{ prod.cantidad }}u</span>
                       </div>
                     </div>
@@ -327,7 +327,7 @@
                   {% endfor %}
                 </div>
               {% else %}
-                <div class="text-center py-4 text-white opacity-75 small my-auto">
+                <div class="text-center py-4 opacity-75 small my-auto">
                   <i class="bi bi-cart-x fs-4 d-block mb-1 opacity-50"></i>
                   Sin ventas de productos en este turno.
                 </div>
@@ -337,9 +337,9 @@
 
           <!-- Tabla de Ventas Registradas (col-lg-7) -->
           <div class="col-12 col-lg-7">
-            <div class="rounded-3 p-2.5 h-100 d-flex flex-column" style="background:rgba(5,22,43,0.75); border:1px solid rgba(255,255,255,0.08);">
+            <div class="cys-turno-subpanel rounded-3 p-2.5 h-100 d-flex flex-column">
               <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
-                <h6 class="fw-bold text-white mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
                   <i class="bi bi-receipt text-info"></i> Ventas del Turno ({{ t.ventas|length }})
                 </h6>
               </div>
@@ -362,8 +362,8 @@
                       <td class="fw-bold text-info" style="padding:0.4rem 0.6rem;">#{{ v.codigo_venta }}</td>
                       <td style="padding:0.4rem 0.6rem; white-space:nowrap;">{{ v.fecha|date:"h:i A" }}</td>
                       <td style="padding:0.4rem 0.6rem;" title="{{ v.cliente_nombre|default:'Consumidor final' }}">
-                        <div class="fw-bold text-white">{{ v.cliente_nombre|default:"Consumidor final" }}</div>
-                        <div class="text-white-50" style="font-size:0.71rem; line-height:1.2;">
+                        <div class="fw-bold">{{ v.cliente_nombre|default:"Consumidor final" }}</div>
+                        <div class="text-muted" style="font-size:0.71rem; line-height:1.2;">
                           {% for d in v.detalles.all %}
                             <span>{{ d.producto.nombre|default:d.presentacion.nombre }} <strong class="text-info">x{{ d.cantidad }}</strong></span>{% if not forloop.last %}, {% endif %}
                           {% empty %}
@@ -389,7 +389,7 @@
                           PENDIENTE
                         </span>
                         {% else %}
-                        <span class="badge bg-secondary bg-opacity-25 text-white py-0.5 px-1.5" style="font-size:.7rem;">
+                        <span class="badge bg-secondary bg-opacity-25 text-muted py-0.5 px-1.5" style="font-size:.7rem;">
                           {{ v.metodo_pago|capfirst }}
                         </span>
                         {% endif %}
@@ -419,7 +419,7 @@
         </div>
 
         {% if t.observacion %}
-        <div class="mt-2.5 p-2 rounded-2 small text-white opacity-90 d-flex align-items-center gap-2" style="background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.2); font-size:.78rem;">
+        <div class="cys-turno-subpanel mt-2.5 p-2 rounded-2 small opacity-90 d-flex align-items-center gap-2" style="font-size:.78rem;">
           <i class="bi bi-chat-left-text text-info"></i>
           <span><strong>Observación:</strong> {{ t.observacion }}</span>
         </div>
@@ -433,8 +433,8 @@
     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; background:rgba(77,168,218,0.2); color:#4DA8DA;">
       <i class="bi bi-cash-register fs-2"></i>
     </div>
-    <h5 class="fw-bold text-white mb-2">No hay registro de turnos de caja</h5>
-    <p class="text-white opacity-85 small mb-4">Haz clic en el botón de abajo para iniciar la apertura del primer turno de caja.</p>
+    <h5 class="fw-bold mb-2">No hay registro de turnos de caja</h5>
+    <p class="text-muted small mb-4">Haz clic en el botón de abajo para iniciar la apertura del primer turno de caja.</p>
     <button type="button" class="btn btn-sm fw-bold cys-btn-primary px-4 py-2"
             data-bs-toggle="modal"
             data-bs-target="#modalConteo"

@@ -1,396 +1,70 @@
-/* ─── DETALLE COMPRA — Estilos específicos ─── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   DETALLE COMPRA — CYS Ltda
+   Diseño 100% alineado con el sistema visual de Compras (compras.css)
+   ══════════════════════════════════════════════════════════════════════════════ */
 
-.dc-hero {
-  background: linear-gradient(135deg, #02224a 0%, #011936 60%, rgba(207,156,72,0.06) 100%);
-  border: 1px solid rgba(207,156,72,0.2);
-  border-left: 4px solid #CF9C48;
-  border-radius: 12px;
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-  overflow: hidden;
+/* ── Asegurar compatibilidad de cards principales ── */
+.card-dev,
+.card-proveedor-header {
+  background-color: var(--fondo-card) !important;
+  border: 1px solid var(--cp-borde) !important;
+  border-left: 4px solid var(--cp-dorado) !important;
+  border-radius: 12px !important;
+  color: var(--texto) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
 }
 
-.dc-hero::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(207,156,72,0.08) 0%, transparent 70%);
-  pointer-events: none;
+/* ── Tabla de Ítems (alineada exactamente al historial de compras) ── */
+#tablaDetalleCompra {
+  color: var(--texto) !important;
 }
 
-.dc-hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: rgba(207,156,72,0.12);
-  color: #CF9C48;
-  border: 1px solid rgba(207,156,72,0.3);
-  border-radius: 6px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.3rem 0.7rem;
-  margin-bottom: 0.75rem;
+#tablaDetalleCompra thead th {
+  background: color-mix(in srgb, var(--azul-claro) 8%, var(--fondo-card)) !important;
+  color: var(--azul-claro) !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 2px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  padding: 10px 14px !important;
 }
 
-.dc-hero-title {
-  color: #e2e8f0;
-  font-size: 1.9rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 0;
+#tablaDetalleCompra tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  transition: background-color 0.15s ease !important;
 }
 
-.dc-hero-title i {
-  color: #CF9C48;
-  margin-right: 0.4rem;
+#tablaDetalleCompra tbody tr:hover {
+  background-color: color-mix(in srgb, var(--cp-dorado) 6%, var(--fondo-card)) !important;
 }
 
-.dc-hero-code {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: #8FA3B1;
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin-top: 0.4rem;
-  letter-spacing: 0.04em;
+#tablaDetalleCompra tbody td {
+  padding: 10px 14px !important;
+  color: var(--texto) !important;
+  vertical-align: middle !important;
+  background: transparent !important;
 }
 
-.dc-hero-code span {
-  color: #CF9C48;
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.btn-volver {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: 1px solid rgba(207,156,72,0.3);
-  color: #CF9C48;
-  border-radius: 8px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.btn-volver:hover {
-  background: rgba(207,156,72,0.1);
-  border-color: #CF9C48;
-  color: #CF9C48;
-  transform: translateX(-2px);
-}
-
-/* ─── KPI Cards fila superior ─── */
-.dc-kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 1.5rem;
-}
-
-.dc-kpi {
-  background: #02224a;
-  border-radius: 12px;
-  padding: 1.1rem 1.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 4px solid #CF9C48 !important;
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.dc-kpi:hover {
-  transform: translateY(-4px);
-  border-color: rgba(207, 156, 72, 0.4);
-  box-shadow: 0 0 15px rgba(207, 156, 72, 0.4) !important;
-}
-
-.dc-kpi--gold,
-.dc-kpi--blue,
-.dc-kpi--green,
-.dc-kpi--red,
-.dc-kpi--purple { border-left: 4px solid #CF9C48 !important; }
-
-.dc-kpi__label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #8FA3B1;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.dc-kpi__value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  line-height: 1.1;
-  color: #e2e8f0;
-}
-
-.dc-kpi__sub {
-  font-size: 0.72rem;
-  color: #8FA3B1;
-  margin-top: 0.3rem;
-}
-
-.dc-kpi--gold .dc-kpi__value  { color: #CF9C48; }
-.dc-kpi--blue .dc-kpi__value  { color: #CF9C48; }
-.dc-kpi--green .dc-kpi__value { color: #CF9C48; }
-.dc-kpi--purple .dc-kpi__value{ color: #CF9C48; }
-
-/* ─── Secciones de información ─── */
-.dc-section {
-  background: #02224a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 4px solid #CF9C48 !important;
-  border-radius: 12px;
-  margin-bottom: 1.25rem;
-  overflow: hidden;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.dc-section:hover {
-  border-color: rgba(207, 156, 72, 0.4);
-  box-shadow: 0 0 15px rgba(207, 156, 72, 0.3) !important;
-}
-
-.dc-section__head {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(239,248,226,0.08);
-  background: rgba(207,156,72,0.04);
-}
-
-.dc-section__head-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: rgba(207,156,72,0.12);
-  border: 1px solid rgba(207,156,72,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #CF9C48;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.dc-section__head-title {
-  color: #e2e8f0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.dc-section__body {
-  padding: 1.5rem;
-}
-
-/* ─── Filas de datos ─── */
-.dc-data-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.25rem;
-}
-
-.dc-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.dc-field__label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8FA3B1;
-}
-
-.dc-field__value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.dc-field__value--big {
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.dc-field__value--gold   { color: #CF9C48; }
-.dc-field__value--blue   { color: #4DA8DA; }
-.dc-field__value--green  { color: #27ae60; }
-.dc-field__value--muted  { color: #8FA3B1; }
-
-/* ─── Divider ─── */
-.dc-divider {
-  height: 1px;
-  background: rgba(239,248,226,0.08);
-  margin: 1.25rem 0;
-}
-
-/* ─── Badge de estado ─── */
-.dc-estado-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.95rem;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.dc-estado-badge--pendiente  { background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
-.dc-estado-badge--confirmada { background: rgba(77,168,218,0.15); color: #4DA8DA; border: 1px solid rgba(77,168,218,0.35); }
-.dc-estado-badge--recibida   { background: rgba(39,174,96,0.15);  color: #27ae60; border: 1px solid rgba(39,174,96,0.35); }
-.dc-estado-badge--cancelada  { background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
-
-.dc-pago-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.95rem;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.dc-pago-badge--pagada   { background: rgba(207,156,72,0.15); color: #CF9C48; border: 1px solid rgba(207,156,72,0.35); }
-.dc-pago-badge--parcial  { background: rgba(232,168,124,0.15); color: #e8a87c; border: 1px solid rgba(232,168,124,0.35); }
-.dc-pago-badge--pendiente{ background: rgba(155,93,229,0.15); color: #9b5de5; border: 1px solid rgba(155,93,229,0.35); }
-
-/* ─── Barra de progreso de pago ─── */
-.dc-progress-wrap {
-  margin-top: 1rem;
-}
-.dc-progress-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.72rem;
-  color: #8FA3B1;
-  margin-bottom: 0.4rem;
-}
-.dc-progress-bar-bg {
-  height: 8px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.dc-progress-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #CF9C48, #e8a87c);
-  transition: width 0.6s ease;
-}
-
-/* ─── Botones de acción ─── */
-.dc-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  padding: 1.25rem 1.5rem;
-  border-top: 1px solid rgba(239,248,226,0.08);
-  background: rgba(207,156,72,0.03);
-  border-radius: 0 0 10px 10px;
-}
-
-.dc-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #CF9C48;
-  color: #011936;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dc-btn-primary:hover {
-  background: #e8b55a;
-  color: #011936;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(207,156,72,0.4);
-}
-
-.dc-btn-info {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(77,168,218,0.15);
-  color: #4DA8DA;
-  border: 1px solid rgba(77,168,218,0.35);
-  border-radius: 8px;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dc-btn-info:hover {
-  background: rgba(77,168,218,0.25);
-  color: #4DA8DA;
-  transform: translateY(-2px);
-}
-
-.dc-btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  color: #8FA3B1;
-  border: 1px solid rgba(239,248,226,0.15);
-  border-radius: 8px;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dc-btn-outline:hover {
-  background: rgba(239,248,226,0.05);
-  color: #e2e8f0;
-  border-color: rgba(239,248,226,0.3);
-}
-
-/* ─── Timeline de auditoría ─── */
+/* ── Timeline de Auditoría ── */
 .dc-timeline {
   display: flex;
   flex-direction: column;
   gap: 0;
+  padding: 0.5rem 0.25rem;
 }
+
 .dc-timeline-item {
   display: flex;
   gap: 1rem;
   position: relative;
   padding-bottom: 1.25rem;
 }
-.dc-timeline-item:last-child { padding-bottom: 0; }
+
+.dc-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
 .dc-timeline-item::before {
   content: '';
   position: absolute;
@@ -398,171 +72,124 @@
   top: 28px;
   bottom: 0;
   width: 2px;
-  background: rgba(207,156,72,0.15);
+  background: color-mix(in srgb, var(--cp-dorado) 25%, transparent);
 }
-.dc-timeline-item:last-child::before { display: none; }
+
+.dc-timeline-item:last-child::before {
+  display: none;
+}
+
 .dc-timeline-dot {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(207,156,72,0.12);
-  border: 2px solid rgba(207,156,72,0.35);
+  background: color-mix(in srgb, var(--cp-dorado) 12%, var(--fondo-card));
+  border: 2px solid color-mix(in srgb, var(--cp-dorado) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #CF9C48;
-  font-size: 0.7rem;
+  color: var(--cp-dorado);
+  font-size: 0.75rem;
   flex-shrink: 0;
   z-index: 1;
 }
-.dc-timeline-content { flex: 1; padding-top: 0.25rem; }
-.dc-timeline-title { color: #e2e8f0; font-size: 0.85rem; font-weight: 600; }
-.dc-timeline-sub { color: #8FA3B1; font-size: 0.75rem; margin-top: 0.15rem; }
 
-/* ─── Lote badge ─── */
-.dc-lote-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(77,168,218,0.1);
-  border: 1px solid rgba(77,168,218,0.25);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  color: #4DA8DA;
-  font-family: 'Courier New', monospace;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+.dc-timeline-content {
+  flex: 1;
+  padding-top: 0.2rem;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 768px) {
-  .dc-kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .dc-hero-title { font-size: 1.4rem; }
-  .dc-hero { padding: 1.25rem; }
-  .dc-section__body { padding: 1.1rem; }
-  .dc-actions { flex-direction: column; }
-  .dc-btn-primary, .dc-btn-info, .dc-btn-outline { width: 100%; justify-content: center; }
-}
-@media (max-width: 480px) {
-  .dc-kpi-row { grid-template-columns: 1fr 1fr; }
-  .dc-data-grid { grid-template-columns: 1fr; }
-}
-
-/* ─── Modal de Pago ─── */
-.dc-modal-content {
-  background: #02224a;
-  border: 1px solid rgba(207, 156, 72, 0.3);
-  color: #e2e8f0;
-}
-.dc-modal-header {
-  border-bottom: 1px solid rgba(239, 248, 226, 0.1);
-}
-.dc-modal-title {
-  color: #CF9C48;
-}
-.dc-modal-card {
-  background: rgba(3, 30, 62, 0.7);
-  border: 1px solid rgba(207, 156, 72, 0.2);
-}
-.dc-modal-subtext {
-  font-size: 0.75rem;
-}
-.dc-btn-pagar-todo {
-  font-size: 0.78rem;
-}
-.dc-modal-input-prefix {
-  background: #011936;
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #CF9C48;
-}
-.dc-modal-input {
-  background: #011936 !important;
-  color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-}
-.dc-modal-footer {
-  border-top: 1px solid rgba(239, 248, 226, 0.1);
-}
-
-/* Utilidades limpias para detalle_compra */
-.dc-hero-code { color: #CF9C48; }
-.dc-text-muted { color: #8FA3B1; }
-.dc-kpi-purple { font-size: 1.1rem; color: #9b5de5; }
-.dc-field-full { grid-column: 1 / -1; }
-.dc-cat-badge {
-  background: rgba(77, 168, 218, 0.1);
-  color: #4DA8DA;
-  border: 1px solid rgba(77, 168, 218, 0.25);
-  border-radius: 6px;
-  padding: 0.2rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  display: inline-block;
-  margin-top: 0.4rem;
-}
-.dc-cant-val { font-size: 1.5rem; font-weight: 800; }
-.dc-unit-span { font-size: 0.9rem; font-weight: 600; }
-.dc-empty-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
-.dc-badge-item-count {
-  background: rgba(207, 156, 72, 0.15);
-  color: #CF9C48;
-  border: 1px solid rgba(207, 156, 72, 0.3);
-  font-size: 0.75rem;
-}
-.dc-table-light { color: #e2e8f0; }
-.dc-table-th-gold {
-  border-bottom: 2px solid rgba(207, 156, 72, 0.3) !important;
-  color: #CF9C48 !important;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-}
-.dc-th-col-num { width: 35px; }
-.dc-tr-subtle { border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; }
-.dc-text-light { color: #e2e8f0; }
-.dc-badge-cat-table {
-  background: rgba(77, 168, 218, 0.12);
-  color: #4DA8DA;
-  border: 1px solid rgba(77, 168, 218, 0.25);
-}
-.dc-lote-tag-sm { font-size: 0.75rem; }
-.dc-text-cyan { color: #4DA8DA; }
-.dc-text-gold { color: #CF9C48; }
-.dc-field-val-gold-md { font-size: 1.3rem; font-weight: 800; }
-.dc-field-val-gold-lg { font-size: 1.6rem; font-weight: 800; }
-.dc-field-val-muted-md { font-size: 1rem; }
-.dc-val-success { color: #27ae60; font-size: 1.2rem; font-weight: 700; }
-.dc-val-danger { color: #e74c3c; font-size: 1.2rem; font-weight: 700; }
-.dc-prov-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-.dc-prov-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: rgba(207, 156, 72, 0.12);
-  border: 1.5px solid rgba(207, 156, 72, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #CF9C48;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-.dc-prov-name { color: #e2e8f0; font-size: 1.05rem; font-weight: 700; }
-.dc-prov-nit {
-  background: rgba(77, 168, 218, 0.1);
-  color: #4DA8DA;
-  border: 1px solid rgba(77, 168, 218, 0.25);
-  border-radius: 6px;
-  padding: 0.15rem 0.55rem;
-  font-size: 0.7rem;
+.dc-timeline-title {
+  color: var(--texto);
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  margin-bottom: 2px;
 }
-.dc-prov-details { display: flex; flex-direction: column; gap: 0.85rem; }
-.dc-link-cyan { color: #4DA8DA; text-decoration: none; }
-.dc-tl-blue { background: rgba(77, 168, 218, 0.12) !important; border-color: rgba(77, 168, 218, 0.35) !important; color: #4DA8DA !important; }
-.dc-tl-green { background: rgba(39, 174, 96, 0.12) !important; border-color: rgba(39, 174, 96, 0.35) !important; color: #27ae60 !important; }
-.dc-tl-red { background: rgba(231, 76, 60, 0.12) !important; border-color: rgba(231, 76, 60, 0.35) !important; color: #e74c3c !important; }
-.dc-tl-purple { background: rgba(155, 93, 229, 0.12) !important; border-color: rgba(155, 93, 229, 0.35) !important; color: #9b5de5 !important; }
 
+.dc-timeline-sub {
+  color: var(--texto-muted);
+  font-size: 0.75rem;
+}
 
+.dc-tl-blue   { background: color-mix(in srgb, var(--azul-claro) 15%, var(--fondo-card)) !important; border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent) !important; color: var(--azul-claro) !important; }
+.dc-tl-green  { background: rgba(39, 174, 96, 0.15) !important; border-color: rgba(39, 174, 96, 0.4) !important; color: #27ae60 !important; }
+.dc-tl-red    { background: rgba(231, 76, 60, 0.15) !important; border-color: rgba(231, 76, 60, 0.4) !important; color: #e74c3c !important; }
+.dc-tl-purple { background: rgba(155, 93, 229, 0.15) !important; border-color: rgba(155, 93, 229, 0.4) !important; color: #9b5de5 !important; }
+
+/* ── Barra de progreso ── */
+.dc-progress-wrap .progress {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent);
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REGLAS ESPECÍFICAS PARA MODO CLARO (Idénticas a la captura de Compras)
+   ══════════════════════════════════════════════════════════════════════════════ */
+html.cys-a11y-modo-claro,
+html[data-tema="claro"] {
+  --cp-borde: rgba(0, 0, 0, 0.08);
+}
+
+html.cys-a11y-modo-claro .card-dev,
+html[data-tema="claro"] .card-dev,
+html.cys-a11y-modo-claro .kpi-card,
+html[data-tema="claro"] .kpi-card {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.cys-a11y-modo-claro .gradient-header,
+html[data-tema="claro"] .gradient-header {
+  background: #fbeee8 !important;
+  border-bottom: 1px solid #f5cfc4 !important;
+}
+
+html.cys-a11y-modo-claro #tablaDetalleCompra thead th,
+html[data-tema="claro"] #tablaDetalleCompra thead th {
+  background: #fbeee8 !important;
+  color: #b22a1a !important;
+  border-bottom: 2px solid #f2c0b3 !important;
+}
+
+html.cys-a11y-modo-claro .btn-filtro-proveedor,
+html[data-tema="claro"] .btn-filtro-proveedor {
+  background: #fcf6eb !important;
+  color: #9a6a1f !important;
+  border: 1px solid #e8cf9f !important;
+}
+
+html.cys-a11y-modo-claro .btn-filtro-proveedor:hover,
+html[data-tema="claro"] .btn-filtro-proveedor:hover {
+  background: #faecd3 !important;
+  color: #835512 !important;
+}
+
+html.cys-a11y-modo-claro .kpi-value,
+html[data-tema="claro"] .kpi-value {
+  color: #111827 !important;
+}
+
+html.cys-a11y-modo-claro .kpi-title,
+html[data-tema="claro"] .kpi-title {
+  color: #1f2937 !important;
+}
+
+html.cys-a11y-modo-claro .kpi-sub,
+html[data-tema="claro"] .kpi-sub {
+  color: #6b7280 !important;
+}
+
+html.cys-a11y-modo-claro .detail-badge,
+html[data-tema="claro"] .detail-badge {
+  background: #fde8e4 !important;
+  color: #b22a1a !important;
+  border: 1px solid #f5c4be !important;
+}
+
+html.cys-a11y-modo-claro .estado-activo,
+html[data-tema="claro"] .estado-activo {
+  background: #e6f9ed !important;
+  color: #16a34a !important;
+  border: 1px solid #bbf2cc !important;
+}

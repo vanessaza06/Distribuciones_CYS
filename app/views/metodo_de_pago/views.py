@@ -225,7 +225,7 @@ def lista_metodos_pago(request):
             pagos_compras_qs = pagos_compras_qs.filter(
                 Q(referencia__icontains=q) |
                 Q(observacion__icontains=q) |
-                Q(compra__proveedor__nombre_proveedor__icontains=q)
+                Q(compra__proveedor__nombre_empresa__icontains=q)
             )
 
     pagos_compras_list = list(pagos_compras_qs)
@@ -234,7 +234,7 @@ def lista_metodos_pago(request):
     total_transaccion_compras = sum((p.transaccion or Decimal('0.00')) for p in pagos_compras_list)
     total_registros_compras = len(pagos_compras_list)
 
-    compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'aprobada']).order_by('-fecha')[:30]
+    compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'confirmada', 'recibida']).order_by('-fecha')[:30]
 
     context = {
         'tab': tab,

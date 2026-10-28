@@ -1,4 +1,6 @@
-from app.models import ConfiguracionEmpresa
+from django.db.models import Sum
+from app.models import ConfiguracionEmpresa, Lote, Categoria
+
 
 def config_empresa(request):
     try:
@@ -6,14 +8,20 @@ def config_empresa(request):
     except Exception:
         return {}
 
+
 def aside_stats(request):
-    # Si tenías código previo aquí para las estadísticas del "aside" (como stock),
-    # ponlo dentro de esta función. 
-    # Por ahora devolvemos un diccionario vacío para solucionar el error y que tu app funcione:
     try:
+        total_stock = Lote.objects.filter(stock_actual__gt=0).aggregate(total=Sum('stock_actual'))['total'] or 0
+        stock_criticos = Lote.objects.filter(stock_actual__gt=0, stock_actual__lte=10).count()
+        total_cats = Categoria.objects.filter(activo=True).count()
         return {
-            # 'total_productos': ...,
-            # 'stock_critico': ...
+            'sb_total_stock': total_stock,
+            'sb_stock_criticos': stock_criticos,
+            'sb_total_cats': total_cats,
         }
     except Exception:
-        return {}
+        return {
+            'sb_total_stock': 0,
+            'sb_stock_criticos': 0,
+            'sb_total_cats': 0,
+        }

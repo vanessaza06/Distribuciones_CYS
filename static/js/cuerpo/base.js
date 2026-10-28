@@ -55,14 +55,33 @@
     };
 
     const densidades = {
-        compacto: {'--card-padding':'.75rem','--gap-base':'.4rem','--font-base':'.8rem'},
-        normal:   {'--card-padding':'1.25rem','--gap-base':'.75rem','--font-base':'.875rem'},
-        relajado: {'--card-padding':'1.75rem','--gap-base':'1.1rem','--font-base':'.95rem'},
+        compacto: { '--card-padding': '.75rem', '--gap-base': '.4rem', '--font-base': '.8rem' },
+        normal: { '--card-padding': '1.25rem', '--gap-base': '.75rem', '--font-base': '.875rem' },
+        relajado: { '--card-padding': '1.75rem', '--gap-base': '1.1rem', '--font-base': '.95rem' },
     };
 
     function aplicarTema(nombreTema) {
         const vars = temas[nombreTema] || temas.oscuro;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+        HEAD
+        root.dataset.cysTema = nombreTema;
+        const esClaro = (nombreTema === 'claro');
+        root.classList.toggle('cys-modo-claro', esClaro);
+        root.classList.toggle('cys-a11y-modo-claro', esClaro);
+        root.setAttribute('data-tema', nombreTema);
+        if (nombreTema === 'claro') {
+            root.classList.add('cys-a11y-modo-claro');
+        } else {
+            try {
+                const a11y = JSON.parse(localStorage.getItem('cys_a11y') || '{}');
+                if (a11y.modo !== 'claro') {
+                    root.classList.remove('cys-a11y-modo-claro');
+                }
+            } catch (e) {
+                root.classList.remove('cys-a11y-modo-claro');
+            }
+        }
+        
     }
 
     function aplicarDensidad(nombreDensidad) {
@@ -144,13 +163,13 @@
     });
 })();
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('[title]').forEach(function (el) {
-    new bootstrap.Tooltip(el, {
-      placement: 'top',
-      trigger: 'hover',
-      container: 'body'
+    document.querySelectorAll('[title]').forEach(function (el) {
+        new bootstrap.Tooltip(el, {
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+        });
     });
-  });
 });
 
 /* ============================================================
@@ -206,10 +225,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Íconos de Reportes: azul medio CYS (#0A2A52) en modo "Claro",
-        // blancos en los demás modos (Predeterminado / Alto contraste).
-        // La clase se define y consume en reportes.css.
-        a11yRoot.classList.toggle('cys-a11y-modo-claro', cfg.modo === 'claro');
+        const esClaro = (cfg.modo === 'claro') || (cfg.modo === 'predeterminado' && (window.CYS_TEMA_SITIO === 'claro'));
+        a11yRoot.classList.toggle('cys-a11y-modo-claro', esClaro);
+        a11yRoot.classList.toggle('cys-modo-claro', esClaro);
+        if (esClaro) {
+            a11yRoot.dataset.cysTema = 'claro';
+        }
 
         // Alto contraste
         a11yRoot.classList.toggle('cys-a11y-contraste', cfg.contraste);
@@ -233,22 +254,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('DOMContentLoaded', function () {
 
-        const toggleBtn   = document.getElementById('cysA11yToggle');
-        const panel       = document.getElementById('cysA11yPanel');
-        const closeBtn    = document.getElementById('cysA11yClose');
+        const toggleBtn = document.getElementById('cysA11yToggle');
+        const panel = document.getElementById('cysA11yPanel');
+        const closeBtn = document.getElementById('cysA11yClose');
 
-        const fontMinus   = document.getElementById('cysA11yFontMinus');
-        const fontPlus    = document.getElementById('cysA11yFontPlus');
-        const fontVal     = document.getElementById('cysA11yFontVal');
+        const fontMinus = document.getElementById('cysA11yFontMinus');
+        const fontPlus = document.getElementById('cysA11yFontPlus');
+        const fontVal = document.getElementById('cysA11yFontVal');
 
-        const modoBtns    = document.querySelectorAll('.cys-a11y-colormode__btn');
+        const modoBtns = document.querySelectorAll('.cys-a11y-colormode__btn');
 
         const chkContraste = document.getElementById('cysA11yContraste');
         const chkEspaciado = document.getElementById('cysA11yEspaciado');
-        const chkEnlaces   = document.getElementById('cysA11yEnlaces');
-        const chkFuente    = document.getElementById('cysA11yFuente');
+        const chkEnlaces = document.getElementById('cysA11yEnlaces');
+        const chkFuente = document.getElementById('cysA11yFuente');
 
-        const resetBtn    = document.getElementById('cysA11yReset');
+        const resetBtn = document.getElementById('cysA11yReset');
 
         if (!toggleBtn || !panel) return; // por si algún template no tiene el panel, no rompe la página
 
@@ -262,8 +283,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             chkContraste.checked = configA11y.contraste;
             chkEspaciado.checked = configA11y.espaciado;
-            chkEnlaces.checked   = configA11y.enlaces;
-            chkFuente.checked    = configA11y.fuente;
+            chkEnlaces.checked = configA11y.enlaces;
+            chkFuente.checked = configA11y.fuente;
         }
         sincronizarUIA11y();
 

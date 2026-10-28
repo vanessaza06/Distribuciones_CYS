@@ -20,8 +20,20 @@
     </div>
   {% endfor %}
 {% endif %}
-<!-- ═══════ HEADER: TITULO + NUEVO PRODUCTO ═══════ -->
+<!-- ═══════ HEADER: EXPORTAR + NUEVO PRODUCTO ═══════ -->
 <div class="d-flex justify-content-end align-items-center mb-4 flex-wrap gap-2">
+
+  <!-- MENÚ EXPORTAR (mismo diseño que Marcas) -->
+  <div class="dropdown exp-wrap">
+    <button class="btn exp-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-box-arrow-up"></i><span>Exportar</span><i class="bi bi-chevron-down exp-chevron"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end exp-menu">
+      <li><a class="dropdown-item" href="#" id="exportar-excel"><i class="bi bi-file-earmark-excel exp-ico-excel"></i>Excel</a></li>
+      <li><a class="dropdown-item" href="#" id="exportar-pdf"><i class="bi bi-file-earmark-pdf exp-ico-pdf"></i>PDF</a></li>
+      <li><a class="dropdown-item" href="#" id="exportar-imprimir"><i class="bi bi-printer exp-ico-print"></i>Imprimir</a></li>
+    </ul>
+  </div>
 
   <button type="button" class="btn prod-btn-primary prod-btn-nuevo px-4 py-2 d-flex align-items-center gap-2"
           data-bs-toggle="modal" data-bs-target="#modalCrearProducto">
