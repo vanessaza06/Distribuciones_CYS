@@ -1415,3 +1415,123 @@ html.cys-a11y-fuente * {
   padding: 0 1.25rem;
   font-size: 1.1rem;
 }
+
+/* ============================================================
+   BOTÓN Y DROPDOWN UNIFICADO DE EXPORTACIÓN (CYS)
+   Idéntico al estilo de categorías / marcas
+   ============================================================ */
+.cat-btn-exportar,
+.cys-btn-exportar {
+  background: color-mix(in srgb, var(--azul-claro, #4DA8DA) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro, #4DA8DA) 45%, transparent) !important;
+  color: var(--texto, #e2e8f0) !important;
+  border-radius: 999px !important;
+  padding: .42rem 1.15rem !important;
+  font-size: .9rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .4rem !important;
+  transition: all .2s ease !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.cat-btn-exportar:hover,
+.cat-btn-exportar:focus,
+.cat-btn-exportar.show,
+.cys-btn-exportar:hover,
+.cys-btn-exportar:focus,
+.cys-btn-exportar.show {
+  background: color-mix(in srgb, var(--azul-claro, #4DA8DA) 22%, transparent) !important;
+  border-color: var(--azul-claro, #4DA8DA) !important;
+  color: var(--texto, #e2e8f0) !important;
+  box-shadow: 0 0 10px var(--azul-glow, rgba(77,168,218,.18)) !important;
+}
+
+.cat-dropdown-export,
+.cys-dropdown-export {
+  background: var(--fondo-card2, #0d2a4d) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro, #4DA8DA) 25%, transparent) !important;
+  border-radius: .95rem !important;
+  padding: .45rem !important;
+  min-width: 195px !important;
+  z-index: 1060 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cat-dropdown-export .dropdown-item,
+.cys-dropdown-export .dropdown-item {
+  color: var(--texto, #e2e8f0) !important;
+  background: transparent !important;
+  border: none !important;
+  width: 100% !important;
+  border-radius: .55rem !important;
+  padding: .52rem .95rem !important;
+  font-size: .93rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: background-color .15s ease, color .15s ease !important;
+}
+
+.cat-dropdown-export .dropdown-item:hover,
+.cat-dropdown-export .dropdown-item:focus,
+.cys-dropdown-export .dropdown-item:hover,
+.cys-dropdown-export .dropdown-item:focus {
+  background: color-mix(in srgb, var(--azul-claro, #4DA8DA) 16%, transparent) !important;
+  color: var(--texto, #ffffff) !important;
+}
+
+/* Modo Claro — Idéntico a la captura del usuario */
+html[data-tema="claro"] .cat-btn-exportar,
+html[data-tema="claro"] .cys-btn-exportar,
+html.cys-a11y-modo-claro .cat-btn-exportar,
+html.cys-a11y-modo-claro .cys-btn-exportar {
+  background: #fde8e5 !important;
+  border: 1px solid #b83a2d !important;
+  color: #1e293b !important;
+}
+
+html[data-tema="claro"] .cat-btn-exportar:hover,
+html[data-tema="claro"] .cat-btn-exportar:focus,
+html[data-tema="claro"] .cat-btn-exportar.show,
+html[data-tema="claro"] .cys-btn-exportar:hover,
+html[data-tema="claro"] .cys-btn-exportar:focus,
+html[data-tema="claro"] .cys-btn-exportar.show,
+html.cys-a11y-modo-claro .cat-btn-exportar:hover,
+html.cys-a11y-modo-claro .cat-btn-exportar:focus,
+html.cys-a11y-modo-claro .cat-btn-exportar.show,
+html.cys-a11y-modo-claro .cys-btn-exportar:hover,
+html.cys-a11y-modo-claro .cys-btn-exportar:focus,
+html.cys-a11y-modo-claro .cys-btn-exportar.show {
+  background: #f9d5d1 !important;
+  border-color: #a93226 !important;
+  color: #1e293b !important;
+  box-shadow: 0 2px 8px rgba(184, 58, 45, 0.16) !important;
+}
+
+html[data-tema="claro"] .cat-dropdown-export,
+html[data-tema="claro"] .cys-dropdown-export,
+html.cys-a11y-modo-claro .cat-dropdown-export,
+html.cys-a11y-modo-claro .cys-dropdown-export {
+  background: #eef2f6 !important;
+  border: 1px solid #cfd8e3 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-tema="claro"] .cat-dropdown-export .dropdown-item,
+html[data-tema="claro"] .cys-dropdown-export .dropdown-item,
+html.cys-a11y-modo-claro .cat-dropdown-export .dropdown-item,
+html.cys-a11y-modo-claro .cys-dropdown-export .dropdown-item {
+  color: #1e293b !important;
+}
+
+html[data-tema="claro"] .cat-dropdown-export .dropdown-item:hover,
+html[data-tema="claro"] .cys-dropdown-export .dropdown-item:hover,
+html.cys-a11y-modo-claro .cat-dropdown-export .dropdown-item:hover,
+html.cys-a11y-modo-claro .cys-dropdown-export .dropdown-item:hover {
+  background: #dbe4ee !important;
+  color: #0f172a !important;
+}

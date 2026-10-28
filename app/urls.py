@@ -17,6 +17,7 @@ from app.views.configuracion import views as config_views
 from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
 from app.views.ayuda.chatbot import chatbot_responder
+from app.views.respaldos import views as resp_views
 
 
 
@@ -225,5 +226,14 @@ path(
         # AYUDA
     path("ayuda/", ayuda_views.index, name="ayuda_index"),
     path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
+
+    # COPIA DE SEGURIDAD / RESPALDOS
+    path("respaldos/", resp_views.respaldos_index, name="respaldos_index"),
+    path("respaldos/crear/", resp_views.respaldo_crear, name="respaldo_crear"),
+    path("respaldos/descargar/<int:pk>/", resp_views.respaldo_descargar, name="respaldo_descargar"),
+    path("respaldos/editar/<int:pk>/", resp_views.respaldo_editar, name="respaldo_editar"),
+    path("respaldos/eliminar/<int:pk>/", resp_views.respaldo_eliminar, name="respaldo_eliminar"),
+    path("respaldos/restaurar/<int:pk>/", resp_views.respaldo_restaurar, name="respaldo_restaurar"),
+    path("respaldos/subir/", resp_views.respaldo_subir, name="respaldo_subir"),
 
 ]       

@@ -4,6 +4,13 @@
     jQuery.fn.dataTable.ext.errMode = 'none';
   }
 
+  // Helper seguro para dropdown unificado de exportar
+  var renderExportDropdown = function(dt, containerOrId) {
+    if (typeof window.cysCrearDropdownExportar === 'function') {
+      window.cysCrearDropdownExportar(dt, containerOrId);
+    }
+  };
+
   // Select con buscador (clase .dev-searchable)
   function initSearchableSelects() {
     document.querySelectorAll('select.dev-searchable').forEach(function(sel) {
@@ -338,12 +345,7 @@
 
     const exportContainer = document.getElementById('cys-dt-export-devoluciones');
     if (exportContainer) {
-      if (window.cysCrearDropdownExportar) {
-        window.cysCrearDropdownExportar(dt, exportContainer);
-      } else {
-        exportContainer.innerHTML = '';
-        dt.buttons().container().removeClass('d-none').appendTo(exportContainer);
-      }
+      renderExportDropdown(dt, exportContainer);
     }
   }
 
@@ -414,12 +416,7 @@
 
     const contProv = document.getElementById('cys-dt-export-dev-proveedor');
     if (contProv) {
-      if (window.cysCrearDropdownExportar) {
-        window.cysCrearDropdownExportar(dtProv, contProv);
-      } else {
-        contProv.innerHTML = '';
-        dtProv.buttons().container().removeClass('d-none').appendTo(contProv);
-      }
+      renderExportDropdown(dtProv, contProv);
     }
   }
 
