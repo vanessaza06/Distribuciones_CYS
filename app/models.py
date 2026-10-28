@@ -730,6 +730,7 @@ class DetalleCompra(models.Model):
         return f"Detalle #{self.numero_compra} - Compra #{self.compra.codigo_compra}"
 
     @property
+    @property
     def subtotal(self):
         return self.subtotal_compra
 
@@ -991,6 +992,7 @@ class Venta(models.Model):
         nombre_cliente = self.cliente.nombre if self.cliente else "Consumidor final"
         return f"{nombre_cliente} — {self.fecha:%d/%m/%Y %H:%M}"
 
+    @property
     def subtotal(self):
         detalles = (
             self.detalles.all()
@@ -1053,6 +1055,7 @@ class DetalleVenta(models.Model):
         verbose_name = "Detalle de Venta"
         verbose_name_plural = "Detalles de Venta"
 
+    @property
     def subtotal(self):
         if self.cantidad and self.precio_unitario:
             return Decimal(self.cantidad) * Decimal(self.precio_unitario)
@@ -1206,6 +1209,7 @@ class DetalleDevolucion(models.Model):
         verbose_name = "Detalle de Devolución"
         verbose_name_plural = "Detalles de Devolución"
 
+    @property
     def subtotal(self):
         return self.cantidad * self.precio_unitario
 

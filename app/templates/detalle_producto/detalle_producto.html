@@ -85,9 +85,37 @@
 
       <div class="search-box">
         <label class="stat-label mb-2 d-block"><i class="bi bi-filter-left me-1"></i>Filtrar</label>
-        <div class="gp-search-wrap">
-          <i class="bi bi-search gp-search-icon"></i>
-          <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre o código..." oninput="gpFiltrarProductos(this.value)">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="gp-search-wrap flex-grow-1">
+            <i class="bi bi-search gp-search-icon"></i>
+            <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre o código..." oninput="gpFiltrarProductos(this.value)">
+          </div>
+
+          <!-- Menú Exportar (mismo diseño que Marcas) -->
+          <div class="dropdown flex-shrink-0">
+            <button class="btn exp-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+              <i class="bi bi-box-arrow-up"></i>
+              <span>Exportar</span>
+              <i class="bi bi-chevron-down exp-chevron"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end exp-menu">
+              <li>
+                <a class="dropdown-item" href="#" onclick="gpExportar('excel'); return false;">
+                  <i class="bi bi-file-earmark-excel exp-ico-excel"></i>Excel
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" onclick="gpExportar('pdf'); return false;">
+                  <i class="bi bi-file-earmark-pdf exp-ico-pdf"></i>PDF
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" onclick="gpExportar('imprimir'); return false;">
+                  <i class="bi bi-printer exp-ico-print"></i>Imprimir
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -481,4 +509,19 @@
 <script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script>
 <script src="{% static 'js/detalle_producto/detalle_producto_masterdetail.js' %}"></script>
+<script>
+  const GP_URL_EXPORTAR = "{% url 'detalle_producto_exportar' 'FORMATO' %}";
+
+  function gpExportar(formato) {
+    const q = document.getElementById('buscadorProductos').value.trim();
+    let url = GP_URL_EXPORTAR.replace('FORMATO', formato);
+    if (q) url += '?q=' + encodeURIComponent(q);
+
+    if (formato === 'imprimir') {
+      window.open(url, '_blank');   // abre la vista de impresión en otra pestaña
+    } else {
+      window.location.href = url;   // descarga Excel / PDF
+    }
+  }
+</script>
 {% endblock %}

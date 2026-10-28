@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'distribuidora_cys'),
+        'NAME': os.getenv('DB_NAME', 'distribuciones_cys'),
         'USER': os.getenv('DB_USER', 'root'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -159,12 +159,24 @@ STATICFILES_DIRS = [
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'no-reply@cysltda.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    # Envío real por Gmail
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_TIMEOUT = 15
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+else:
+    # Sin credenciales: el correo solo se imprime en la terminal
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'no-reply@cysltda.com'
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'login'
-

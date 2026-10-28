@@ -26,12 +26,12 @@
         <div class="d-flex align-items-center gap-3">
           <div>
             <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Apertura</div>
-            <div style="font-size:.92rem; font-weight:800; color:#f1f5f9;">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
+            <div class="cys-pos-hora" style="font-size:.92rem; font-weight:800; color:var(--texto);">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
           </div>
-          <div style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
+          <div class="cys-pos-divider" style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
           <div>
             <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Base Inicial</div>
-            <div style="font-size:.92rem; font-weight:800; color:#38bdf8;">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
+            <div class="cys-pos-base" style="font-size:.92rem; font-weight:800; color:var(--azul-claro, #38bdf8);">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
           </div>
         </div>
       {% else %}
@@ -40,10 +40,10 @@
         </div>
       {% endif %}
 
-      <div style="width:1px; height:28px; background:rgba(255,255,255,0.12);" class="d-none d-md-block"></div>
+      <div class="cys-pos-divider d-none d-md-block" style="width:1px; height:28px; background:rgba(255,255,255,0.12);"></div>
 
       <div class="d-flex align-items-center gap-2">
-        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
+        <div class="rounded-circle d-flex align-items-center justify-content-center cys-pos-cash-icon" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
           <i class="bi bi-currency-dollar fs-5"></i>
         </div>
         <div>
@@ -142,7 +142,7 @@
                   <div class="cys-cat-icon-circle">
                     <i class="bi bi-tag-fill"></i>
                   </div>
-                  <div style="font-weight:700; font-size:.88rem; color:#fff; line-height:1.2;">{{ cat.nombre }}</div>
+                  <div class="cys-cat-card-name" style="font-weight:700; font-size:.88rem; line-height:1.2;">{{ cat.nombre }}</div>
                   <div style="font-size:.72rem; color:var(--texto-muted); margin-top:4px;">
                     {{ cat.productos.count }} producto{% if cat.productos.count != 1 %}s{% endif %}
                   </div>
@@ -225,18 +225,17 @@
             <div class="mb-3 position-relative">
               <label class="cys-filter-label" style="font-weight:700; color:var(--texto-muted); font-size:.72rem; text-transform:uppercase;">Cliente</label>
               <div class="input-group">
-                <span class="input-group-text" style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:var(--texto-muted); border-radius:8px 0 0 8px;">
+                <span class="input-group-text cys-pos-client-addon" style="border-radius:8px 0 0 8px;">
                   <i class="bi bi-person-fill"></i>
                 </span>
                 <input type="text" name="cliente_nombre" id="inputClienteNombre" class="form-control"
                        placeholder="Nombre del cliente (opcional)"
-                       style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:0 8px 8px 0; font-size:.9rem;">
+                       style="border-radius:0 8px 8px 0; font-size:.9rem;">
               </div>
               <input type="hidden" name="cliente_id" id="inputClienteId">
               <div id="sugerenciasClientes" class="list-group mt-1 shadow-lg" style="display:none; position:absolute; z-index:100; width:100%;">
                 {% for cliente in clientes %}
                 <button type="button" class="list-group-item list-group-item-action"
-                        style="background:#0F3B6C; border-color:rgba(77,168,218,0.3); color:#fff; font-size:.85rem;"
                         data-id="{{ cliente.id }}" data-nombre="{{ cliente.nombre }}">
                   <i class="bi bi-person me-2" style="color:var(--azul-claro,#4DA8DA);"></i>{{ cliente.nombre }}
                 </button>
@@ -246,10 +245,10 @@
 
             <!-- Carrito vacío -->
             <div id="carritoVacio" class="text-center py-5 mb-3 rounded-3"
-                 style="border:1px dashed rgba(77,168,218,0.3); background:rgba(10,42,82,0.4);">
+                 style="border:1px dashed rgba(77,168,218,0.3);">
               <div class="cys-empty-box" style="padding:1rem;">
                 <i class="bi bi-cart3 fs-1 d-block mb-2" style="color:rgba(77,168,218,0.4);"></i>
-                <div style="font-size:.9rem; font-weight:700; color:#fff; margin-bottom:4px;">Carrito de venta vacío</div>
+                <div style="font-size:.9rem; font-weight:700; margin-bottom:4px;">Carrito de venta vacío</div>
                 <div style="font-size:.78rem; color:var(--texto-muted);">Selecciona un producto del catálogo para agregar</div>
               </div>
             </div>
@@ -263,8 +262,8 @@
 
             <!-- Descuento -->
             <div id="seccionDescuento" style="display:none;" class="mb-3">
-              <div class="d-flex justify-content-between align-items-center rounded-3 p-2 px-3"
-                   style="background:rgba(10,20,38,0.45); border:1px solid rgba(255,255,255,0.06);">
+              <div class="cys-turno-subpanel d-flex justify-content-between align-items-center rounded-3 p-2 px-3"
+                   style="border:1px solid rgba(77,168,218,0.18);">
                 <div class="d-flex flex-column">
                   <span style="margin:0; font-weight:700; color:#94a3b8; font-size:.75rem; text-transform:uppercase;">
                     <i class="bi bi-percent me-1" style="color:#38bdf8;"></i> Descuento Aplicado
@@ -274,7 +273,7 @@
                 <div class="d-flex align-items-center gap-1">
                   <input type="number" id="inputDescuento" name="descuento_porcentaje"
                          value="0" min="0" max="5" step="0.5" class="form-control text-center"
-                         style="width:75px; background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700; font-size:1.05rem; border-radius:8px;">
+                         style="width:75px; color:var(--azul-claro, #0284c7); font-weight:700; font-size:1.05rem; border-radius:8px;">
                   <span style="color:#94a3b8; font-weight:600;">%</span>
                 </div>
               </div>
@@ -282,7 +281,7 @@
 
             <!-- Total General Display -->
             <div id="totalGeneral" style="display:none;" class="mb-3 rounded-3 p-3"
-                 style="background:linear-gradient(135deg, rgba(16,36,68,0.6), rgba(12,26,50,0.7)); border:1px solid rgba(56,189,248,0.18);">
+                 style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.22);">
               <div class="d-flex justify-content-between align-items-center">
                 <span style="margin:0; font-weight:700; color:#94a3b8; font-size:.84rem; text-transform:uppercase; letter-spacing:0.5px;">Total a Cobrar</span>
                 <span id="totalMonto" style="font-size:1.85rem; font-weight:800; color:var(--azul-claro, #38bdf8);">$0</span>
@@ -305,27 +304,27 @@
                 <div class="col-6">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Efectivo ($)</label>
                   <input type="number" name="pago_efectivo" id="inputPagoEfectivo" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
+                         style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-6">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Tarjeta ($)</label>
                   <input type="number" name="pago_tarjeta" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
+                         style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Transfer ($)</label>
                   <input type="number" name="pago_transferencia" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
+                         style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Nequi ($)</label>
                   <input type="number" name="pago_nequi" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
+                         style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Daviplata ($)</label>
                   <input type="number" name="pago_daviplata" value="0" min="0" class="form-control pago-input"
-                         style="background:rgba(10,20,38,0.5); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; border-radius:8px; font-size:.88rem;">
+                         style="border-radius:8px; font-size:.88rem;">
                 </div>
               </div>
               
@@ -388,17 +387,17 @@
       </div>
     </div>
 
-    <div class="px-3 pt-3 pb-2 d-flex flex-wrap align-items-center justify-content-between gap-3"
-         style="border-bottom:1px solid rgba(77,168,218,0.2); background:rgba(10,42,82,0.4);">
+    <div class="cys-filter-bar px-3 pt-3 pb-2 d-flex flex-wrap align-items-center justify-content-between gap-3"
+         style="border-bottom:1px solid rgba(77,168,218,0.2);">
       <div class="d-flex flex-wrap align-items-center gap-2">
-        <span style="font-size:.75rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:.06em;">Filtrar por fecha:</span>
-        <input type="date" id="filtroDesde" class="form-control form-control-sm"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
-        <span style="color:#ffffff; font-size:.85rem; font-weight:700;">a</span>
-        <input type="date" id="filtroHasta" class="form-control form-control-sm"
-               style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:8px; width:auto;">
-        <button id="btnLimpiarFiltro" class="btn btn-sm"
-                style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#ffffff; border-radius:8px; font-weight:600;">
+        <span style="font-size:.75rem; font-weight:700; color:var(--texto); text-transform:uppercase; letter-spacing:.06em;">Filtrar por fecha:</span>
+        <input type="date" id="filtroDesde" class="form-control form-control-sm prod-input"
+               style="border-radius:8px; width:auto;">
+        <span style="color:var(--texto-muted); font-size:.85rem; font-weight:700;">a</span>
+        <input type="date" id="filtroHasta" class="form-control form-control-sm prod-input"
+               style="border-radius:8px; width:auto;">
+        <button id="btnLimpiarFiltro" class="btn btn-sm prod-btn-outline"
+                style="border-radius:8px; font-weight:600;">
           <i class="bi bi-x-circle me-1"></i>Limpiar
         </button>
       </div>

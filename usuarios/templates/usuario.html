@@ -20,21 +20,25 @@
 
       {% if messages %}
         {% for message in messages %}
-          {% if message.tags == 'error' %}
+          {% if 'error' in message.tags %}
+          <!-- Error: "Acceso Denegado" solo en el login; en recuperación, un título neutro -->
           <div class="cys-access-overlay" id="overlayDenegado">
             <div class="cys-access-box cys-access-box--err">
               <div class="cys-access-icon cys-access-icon--err">
                 <i class="bi bi-shield-x"></i>
               </div>
-              <div class="cys-access-title cys-access-title--err">Acceso Denegado</div>
+              <div class="cys-access-title cys-access-title--err">
+                {% if not seccion or seccion == 'login' %}Acceso Denegado{% else %}No se pudo continuar{% endif %}
+              </div>
               <div class="cys-access-sub">{{ message }}</div>
               <button type="button" class="cys-access-btn" id="btnCerrarDenegado">
                 Entendido
               </button>
             </div>
           </div>
-          {% else %}
-          <div class="cys-access-overlay" id="overlayConcedido" data-redirect="{% url 'inicio' %}">
+          {% elif 'acceso' in message.extra_tags %}
+          <!-- "Acceso Concedido": solo si el mensaje se creó con extra_tags='acceso' -->
+          <div class="cys-access-overlay" id="overlayConcedido" data-redirect="{% url 'principal' %}">
             <div class="cys-access-box cys-access-box--ok">
               <div class="cys-access-icon cys-access-icon--ok">
                 <i class="bi bi-check-lg"></i>
@@ -43,6 +47,11 @@
               <div class="cys-access-sub">{{ message }}</div>
               <div class="cys-access-spinner"></div>
             </div>
+          </div>
+          {% else %}
+          <!-- Mensajes informativos (código enviado, enlace enviado, etc.): aviso en línea, sin overlay ni redirección -->
+          <div class="alert alert-success text-center py-2 small mb-3" role="alert">
+            <i class="bi bi-envelope-check me-1"></i> {{ message }}
           </div>
           {% endif %}
         {% endfor %}
@@ -191,11 +200,11 @@
       {% if seccion == 'otp_verificar' %}
       <form id="secOtpVerificar" method="POST" action="{% url 'verificar_otp_correo' %}">
         {% csrf_token %}
-        <input type="hidden" name="correo" value="{{ request.session.otp_correo }}">
 
         <div class="cys-title">Ingresa el Código</div>
         <p class="text-center mb-3 cys-desc">
           Revisa tu correo y escribe el código de 6 dígitos que te enviamos.
+          Tienes {{ 5 }} intentos antes de tener que pedir uno nuevo.
         </p>
 
         <div class="cys-method-badge cys-method-badge--otp mb-4" id="badgeTimer">
@@ -206,7 +215,8 @@
           <label class="cys-label" for="inputOtp">Código de Verificación</label>
           <input type="text" name="codigo" id="inputOtp" class="cys-input otp-input-custom"
                  placeholder="• • • • • •"
-                 maxlength="6" autocomplete="off" required>
+                 maxlength="6" inputmode="numeric" pattern="[0-9]{6}"
+                 autocomplete="one-time-code" required>
         </div>
 
         <button type="submit" class="cys-btn-primary mb-3" id="btnVerificar">
@@ -228,4 +238,4 @@
   <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'js/usuario/usuario.js' %}"></script>
 </body>
-</html>
+</html> 

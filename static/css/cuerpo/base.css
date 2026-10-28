@@ -1417,6 +1417,7 @@ html.cys-a11y-fuente * {
 }
 
 /* ============================================================
+<<<<<<< HEAD
    BOTÓN Y DROPDOWN UNIFICADO DE EXPORTACIÓN (CYS)
    Idéntico al estilo de categorías / marcas
    ============================================================ */
@@ -1533,5 +1534,34 @@ html[data-tema="claro"] .cys-dropdown-export .dropdown-item:hover,
 html.cys-a11y-modo-claro .cat-dropdown-export .dropdown-item:hover,
 html.cys-a11y-modo-claro .cys-dropdown-export .dropdown-item:hover {
   background: #dbe4ee !important;
+=======
+   REGLAS GLOBALES PARA MODO CLARO (Legibilidad y Estética)
+   ============================================================ */
+html.cys-a11y-modo-claro,
+html.cys-modo-claro,
+html[data-cys-tema="claro"] {
+  --cys-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --cys-shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+  --cys-shadow-lg: 0 10px 28px rgba(15, 23, 42, 0.1);
+}
+
+/* Evitar que clases Bootstrap text-white / text-white-50 oculten textos sobre fondos blancos */
+html.cys-a11y-modo-claro .text-white:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.cys-btn-checkout):not(.prod-btn-primary):not(.badge-success):not(.badge-danger):not(.badge.bg-success):not(.badge.bg-danger):not(.badge.bg-primary):not(.badge.bg-danger):not(.cys-pulse-badge):not(.badge.bg-dark),
+html.cys-modo-claro .text-white:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.cys-btn-checkout):not(.prod-btn-primary):not(.badge-success):not(.badge-danger):not(.badge.bg-success):not(.badge.bg-danger):not(.badge.bg-primary):not(.badge.bg-danger):not(.cys-pulse-badge):not(.badge.bg-dark),
+html[data-cys-tema="claro"] .text-white:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.cys-btn-checkout):not(.prod-btn-primary):not(.badge-success):not(.badge-danger):not(.badge.bg-success):not(.badge.bg-danger):not(.badge.bg-primary):not(.badge.bg-danger):not(.cys-pulse-badge):not(.badge.bg-dark) {
+  color: #1e293b !important;
+}
+
+html.cys-a11y-modo-claro .text-white-50,
+html.cys-modo-claro .text-white-50,
+html[data-cys-tema="claro"] .text-white-50 {
+  color: #64748b !important;
+}
+
+/* En modo claro, los encabezados de subnav y páginas lucen nítidos */
+html.cys-a11y-modo-claro .cys-subnav__page,
+html.cys-modo-claro .cys-subnav__page,
+html[data-cys-tema="claro"] .cys-subnav__page {
+>>>>>>> 62e80e86682ffe9aa02b98464cd818356fbf3b98
   color: #0f172a !important;
 }

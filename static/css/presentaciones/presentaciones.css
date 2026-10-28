@@ -1,5 +1,4 @@
 /* ── Presentaciones: tabla ── */
-body { background: red !important; }
 .pres-table-wrap {
   background: var(--cys-card-bg, #1b2735);
   border-radius: 12px;
@@ -87,6 +86,7 @@ body { background: red !important; }
   color: #e8eef5;
   box-shadow: 0 0 0 0.2rem rgba(77, 168, 218, 0.15);
 }
+
 .pres-search-grupo {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -114,6 +114,7 @@ body { background: red !important; }
   box-shadow: none;
   color: #e8eef5;
 }
+
 .pres-table-wrap table,
 .pres-table-wrap thead,
 .pres-table-wrap tbody,
@@ -132,3 +133,72 @@ body { background: red !important; }
 .pres-table-wrap tbody tr:hover td {
   background-color: rgba(77, 168, 218, 0.06) !important;
 }
+
+/* ══════════════════════════════════════════
+   MENÚ EXPORTAR (Excel / PDF / Imprimir) — mismo diseño que Marcas
+   Va al final para ganar a las reglas globales de .dropdown-menu .dropdown-item.
+   ══════════════════════════════════════════ */
+.exp-btn {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #0d2a4f;
+  --bs-btn-border-color: #2f7fd1;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #123562;
+  --bs-btn-hover-border-color: #4DA8DA;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #123562;
+  --bs-btn-active-border-color: #4DA8DA;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: #0d2a4f;
+  border: 1px solid #2f7fd1;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: .9rem;
+  border-radius: 999px;
+  padding: .5rem 1.15rem;
+  transition: background .15s, border-color .15s;
+}
+.exp-btn::after { display: none; }
+.exp-btn:hover,
+.exp-btn:focus,
+.exp-btn.show {
+  background: #123562;
+  border-color: #4DA8DA;
+  color: #ffffff;
+  box-shadow: none;
+}
+.exp-btn .exp-chevron {
+  font-size: .7rem;
+  transition: transform .2s;
+}
+.exp-btn.show .exp-chevron { transform: rotate(180deg); }
+
+.exp-menu {
+  background: #111f33;
+  border: 1px solid rgba(77, 168, 218, .18);
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 180px;
+  margin-top: 8px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+.exp-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: #e6eefc;
+  font-size: .9rem;
+  border-radius: 10px;
+  padding: .65rem .9rem;
+}
+.exp-menu .dropdown-item:hover,
+.exp-menu .dropdown-item:focus {
+  background-color: rgba(77, 168, 218, .12) !important;
+  color: #ffffff !important;
+}
+.exp-menu .dropdown-item i { font-size: 1.1rem; }
+.exp-ico-excel { color: #22c55e; }
+.exp-ico-pdf   { color: #ef4444; }
+.exp-ico-print { color: #4DA8DA; }

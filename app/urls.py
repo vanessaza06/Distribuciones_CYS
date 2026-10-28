@@ -118,6 +118,7 @@ urlpatterns = [
 
     # PRODUCTOS
     path("productos/", prod_views.lista_productos, name="lista_productos"),
+    path("productos/exportar/<str:formato>/", prod_views.producto_exportar, name="producto_exportar"),
     path("crear-producto/", prod_views.crear_producto, name="crear_producto"),
     path("buscar/", prod_views.buscar_producto, name="buscar_producto"),
     path("producto/<int:pk>/", prod_views.producto_detalle, name="producto_detalle"),
@@ -134,6 +135,11 @@ urlpatterns = [
 
         # PRESENTACIONES
 path("presentaciones/", pres_views.presentacion_lista, name="presentacion_lista"),
+path(
+    "presentaciones/exportar/<str:formato>/",
+    pres_views.presentacion_exportar,
+    name="presentacion_exportar",
+),
 path(
     "presentacion/<int:producto_pk>/crear/",
     pres_views.presentacion_crear,
@@ -158,10 +164,11 @@ path(
     path("compras/pago/",compra_views.registrar_pago_compra,name="registrar_pago_compra",),
     path("compras/pago/<int:id>/",compra_views.registrar_pago_compra,name="registrar_pago_compra_id",),
 
-    # LOTES
+        # LOTES
     path("lotes/", lot_views.gestion_stock, name="gestion_stock"),
     path("lotes/lista/", lot_views.lote_list, name="lote_list"),
     path("lotes/crear/", lot_views.lote_create, name="lote_create"),
+    path("lotes/exportar/<str:formato>/", lot_views.lote_exportar, name="lote_exportar"),
     path("lotes/<str:numero_lote>/", lot_views.lote_detail, name="lote_detail"),
     path("lotes/<str:numero_lote>/editar/", lot_views.lote_update, name="lote_update"),
     path(
@@ -169,12 +176,16 @@ path(
         lot_views.lote_ajustar_stock,
         name="lote_ajustar_stock",
     ),
-
-    # DETALLE PRODUCTO
+        # DETALLE PRODUCTO
     path(
         "detalle-producto/",
         deta_views.detalle_producto_lista,
         name="detalle_producto_lista",
+    ),
+    path(
+        "detalle-producto/exportar/<str:formato>/",
+        deta_views.detalle_producto_exportar,
+        name="detalle_producto_exportar",
     ),
     path(
         "detalle-producto/crear/<int:producto_pk>/",
@@ -190,6 +201,11 @@ path(
         "detalle-producto/guardar-codigo/<int:pk>/",
         deta_views.guardar_codigo,
         name="guardar_codigo",
+    ),
+    path(
+        "detalle/<int:producto_pk>/crear-rapido/",
+        deta_views.detalle_producto_crear_rapido,
+        name="detalle_producto_crear_rapido",
     ),
     path("detalle/<int:producto_pk>/crear-rapido/", deta_views.detalle_producto_crear_rapido, name="detalle_producto_crear_rapido"),
     # BODEGA
