@@ -359,3 +359,82 @@ button.lote-btn-crear:active,
   font-size: .75rem;
   margin-top: .35rem;
 }
+
+/* ══════════════════════════════════════════
+   MENÚ EXPORTAR (Excel / PDF / Imprimir) — mismo diseño que Marcas
+   Acotado a .exp-wrap + !important para ganar a los estilos globales
+   de .dropdown-toggle / .dropdown-menu / .dropdown-item.
+   ══════════════════════════════════════════ */
+.exp-wrap .exp-btn {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #0d2a4f;
+  --bs-btn-border-color: #2f7fd1;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #123562;
+  --bs-btn-hover-border-color: #4DA8DA;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #123562;
+  --bs-btn-active-border-color: #4DA8DA;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  height: 40px;
+  background: #0d2a4f !important;
+  border: 1px solid #2f7fd1 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: .9rem;
+  line-height: 1;
+  border-radius: 999px !important;
+  padding: 0 1.15rem;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: background .15s, border-color .15s;
+}
+.exp-wrap .exp-btn::after { display: none !important; }
+.exp-wrap .exp-btn:hover,
+.exp-wrap .exp-btn:focus,
+.exp-wrap .exp-btn.show {
+  background: #123562 !important;
+  border-color: #4DA8DA !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.exp-wrap .exp-btn .exp-chevron {
+  font-size: .7rem;
+  transition: transform .2s;
+}
+.exp-wrap .exp-btn.show .exp-chevron { transform: rotate(180deg); }
+
+.exp-wrap .exp-menu {
+  background: #111f33 !important;
+  border: 1px solid rgba(77, 168, 218, .18) !important;
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 180px !important;
+  width: auto !important;
+  margin-top: 8px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  z-index: 1030;
+}
+.exp-wrap .exp-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: #e6eefc !important;
+  background: transparent;
+  font-size: .9rem;
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  white-space: nowrap;
+}
+.exp-wrap .exp-menu .dropdown-item:hover,
+.exp-wrap .exp-menu .dropdown-item:focus {
+  background-color: rgba(77, 168, 218, .12) !important;
+  color: #ffffff !important;
+}
+.exp-wrap .exp-menu .dropdown-item i { font-size: 1.1rem; }
+.exp-wrap .exp-ico-excel { color: #22c55e !important; }
+.exp-wrap .exp-ico-pdf   { color: #ef4444 !important; }
+.exp-wrap .exp-ico-print { color: #4DA8DA !important; }
