@@ -153,13 +153,8 @@
     });
 
     const exportContainer = document.getElementById('cys-dt-export-compra');
-    if (exportContainer) {
-      if (window.cysCrearDropdownExportar) {
-        window.cysCrearDropdownExportar(dtCompra, exportContainer);
-      } else {
-        exportContainer.innerHTML = '';
-        dtCompra.buttons().container().removeClass('d-none').appendTo(exportContainer);
-      }
+    if (exportContainer && typeof window.cysCrearDropdownExportar === 'function') {
+      window.cysCrearDropdownExportar(dtCompra, exportContainer);
     }
   }
 

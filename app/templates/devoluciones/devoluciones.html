@@ -189,7 +189,25 @@
             <h2>Devoluciones Registradas a Proveedores</h2>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2"></div>
+            <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2">
+              <div class="dropdown d-inline-block">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar devoluciones">
+                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                  <li>
+                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
             <span class="badge badge-motivo">{{ devoluciones_proveedor|length }} registros</span>
           </div>
         </div>
@@ -383,7 +401,25 @@
         </button>
         <div class="dev-history-body d-none" id="devHistoryBody">
           <div class="d-flex justify-content-end align-items-center mb-2 px-2 pt-2">
-            <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2"></div>
+            <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2">
+              <div class="dropdown d-inline-block">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar historial">
+                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                  <li>
+                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="table-responsive dev-history-table-wrap">
             <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">

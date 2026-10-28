@@ -8,19 +8,27 @@ from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.urls import reverse, NoReverseMatch
 from datetime import timedelta
 from django.http import JsonResponse
 from .forms import UsuarioForm
-from .models import RegistroActividad 
-import random
+from .models import RegistroActividad
+import hmac
 import logging
 import re
 
 logger = logging.getLogger(__name__)
 
 Usuario = get_user_model()
+
+# ── CONTROL DE INTENTOS (recuperación) ─────────────────────────────────────────
+OTP_MAX_INTENTOS = 5      # intentos fallidos permitidos por código
+OTP_VENTANA_SEG  = 600    # el contador de intentos dura lo mismo que el código
+OTP_REENVIO_SEG  = 60     # espera mínima entre solicitudes de código/enlace
+
+SECCIONES_VALIDAS = {'login', 'recuperar', 'correo', 'otp', 'otp_verificar'}
 
 
 # ── HELPERS PRIVADOS ───────────────────────────────────────────────────────────
@@ -67,6 +75,14 @@ def _ctx_base(request):
     }
 
 
+def _login_url(action):
+    return f"{reverse('login')}?action={action}"
+
+
+def _limpiar_token(usuario):
+    Usuario.objects.filter(pk=usuario.pk).update(reset_token=None, reset_token_expira=None)
+
+
 def _destino_post_login(request):
     """
     Lee la cookie 'cys_pagina_inicio' (guardada desde Configuración) y
@@ -94,6 +110,13 @@ def login_view(request):
 
     seccion       = request.GET.get('action', 'login')
     usuario_input = ''
+
+    if seccion not in SECCIONES_VALIDAS:
+        seccion = 'login'
+
+    # No se puede verificar un código sin haberlo solicitado antes
+    if seccion == 'otp_verificar' and not request.session.get('otp_correo'):
+        seccion = 'otp'
 
     if request.method == 'POST':
         identificacion = request.POST.get('usuario_input', '').strip()
@@ -396,8 +419,8 @@ def editar_usuario(request, pk):
         return redirect('usuario')
 
     return render(request, 'editar_usuario.html', {
-        **_ctx_base(request), 
-        
+        **_ctx_base(request),
+
             'perfil': usuario,
             'breadcrumb_items': [
             {'nombre': 'Usuarios', 'url': reverse('usuario')},  # ← confirma este nombre
@@ -502,15 +525,24 @@ def perfil_editar(request):
 # ── RECUPERAR CLAVE (ENLACE POR CORREO) ───────────────────────────────────────
 
 def solicitar_recuperacion(request):
-    if request.method == 'POST':
-        correo = request.POST.get('correo', '').strip().lower()
+    if request.method != 'POST':
+        return redirect('login')
 
-        try:
-            usuario = Usuario.objects.get(email__iexact=correo, activo=True)
-        except Usuario.DoesNotExist:
-            messages.error(request, 'No existe una cuenta activa con ese correo.')
-            return redirect('/usuarios/login/?action=correo')
+    correo = request.POST.get('correo', '').strip().lower()
 
+    if not correo:
+        messages.error(request, 'Ingresa tu correo electrónico.')
+        return redirect(_login_url('correo'))
+
+    clave_espera = f'link_envio:{correo}'
+    if cache.get(clave_espera):
+        messages.error(request, 'Espera un minuto antes de solicitar otro enlace.')
+        return redirect(_login_url('correo'))
+    cache.set(clave_espera, True, OTP_REENVIO_SEG)
+
+    usuario = Usuario.objects.filter(email__iexact=correo, activo=True).first()
+
+    if usuario:
         token  = get_random_string(32)
         expira = timezone.now() + timedelta(minutes=15)
         usuario.reset_token        = token
@@ -529,14 +561,16 @@ def solicitar_recuperacion(request):
 
         try:
             _enviar_correo(usuario.email, 'Recuperación de contraseña — CYS Ltda', cuerpo)
-            messages.success(request, f'Enlace enviado a {usuario.email}')
         except Exception as e:
             logger.error(f'[CYS EMAIL] Error al enviar correo a {usuario.email}: {e}')
+            _limpiar_token(usuario)
+            cache.delete(clave_espera)
             messages.error(request, 'No se pudo enviar el correo. Intenta más tarde.')
+            return redirect(_login_url('correo'))
 
-        return redirect('/usuarios/login/?action=correo')
-
-    return redirect('login')
+    # Mismo mensaje exista o no la cuenta (no revela qué correos están registrados)
+    messages.success(request, 'Si el correo está registrado, recibirás un enlace en breve.')
+    return redirect(_login_url('correo'))
 
 
 # ── RECUPERAR CLAVE (CÓDIGO OTP POR CORREO) ───────────────────────────────────
@@ -549,75 +583,126 @@ def solicitar_otp_correo(request):
 
     if not correo:
         messages.error(request, 'Ingresa tu correo electrónico.')
-        return redirect('/usuarios/login/?action=otp')
+        return redirect(_login_url('otp'))
 
-    try:
-        usuario = Usuario.objects.get(email__iexact=correo, activo=True)
-    except Usuario.DoesNotExist:
-        messages.success(request, 'Si el correo está registrado, recibirás un código en breve.')
-        return redirect('/usuarios/login/?action=otp')
+    clave_espera   = f'otp_envio:{correo}'
+    clave_intentos = f'otp_intentos:{correo}'
 
-    codigo = str(random.randint(100000, 999999))
-    expira = timezone.now() + timedelta(minutes=10)
+    if cache.get(clave_espera):
+        messages.error(request, 'Espera un minuto antes de solicitar otro código.')
+        if request.session.get('otp_correo') == correo:
+            return redirect(_login_url('otp_verificar'))
+        return redirect(_login_url('otp'))
 
-    usuario.reset_token        = codigo
-    usuario.reset_token_expira = expira
-    usuario.save(update_fields=['reset_token', 'reset_token_expira'])
+    cache.set(clave_espera, True, OTP_REENVIO_SEG)
+    cache.delete(clave_intentos)  # código nuevo = contador de intentos nuevo
 
-    cuerpo = (
-        f'Hola {usuario.first_name},\n\n'
-        f'Tu código de verificación para restablecer tu contraseña en CYS Ltda es:\n\n'
-        f'        {codigo}\n\n'
-        f'Este código expira en 10 minutos.\n'
-        f'Si no solicitaste esto, ignora este mensaje.\n\n'
-        f'CYS Ltda'
-    )
+    usuario = Usuario.objects.filter(email__iexact=correo, activo=True).first()
 
-    try:
-        _enviar_correo(usuario.email, f'Código de verificación: {codigo} — CYS Ltda', cuerpo)
-    except Exception as e:
-        logger.error(f'[CYS OTP] Error al enviar código a {usuario.email}: {e}')
-        messages.error(request, 'No se pudo enviar el correo. Intenta más tarde.')
-        return redirect('/usuarios/login/?action=otp')
+    if usuario:
+        codigo = get_random_string(6, allowed_chars='0123456789')
+        expira = timezone.now() + timedelta(minutes=10)
 
+        usuario.reset_token        = codigo
+        usuario.reset_token_expira = expira
+        usuario.save(update_fields=['reset_token', 'reset_token_expira'])
+
+        cuerpo = (
+            f'Hola {usuario.first_name},\n\n'
+            f'Tu código de verificación para restablecer tu contraseña en CYS Ltda es:\n\n'
+            f'        {codigo}\n\n'
+            f'Este código expira en 10 minutos.\n'
+            f'Si no solicitaste esto, ignora este mensaje.\n\n'
+            f'CYS Ltda'
+        )
+
+        try:
+            _enviar_correo(usuario.email, f'Código de verificación: {codigo} — CYS Ltda', cuerpo)
+        except Exception as e:
+            logger.error(f'[CYS OTP] Error al enviar código a {usuario.email}: {e}')
+            _limpiar_token(usuario)
+            cache.delete(clave_espera)
+            messages.error(request, 'No se pudo enviar el correo. Intenta más tarde.')
+            return redirect(_login_url('otp'))
+
+    # Mismo flujo exista o no la cuenta (no revela qué correos están registrados)
     request.session['otp_correo'] = correo
-    messages.success(request, f'Código enviado a {correo}')
-    return redirect('/usuarios/login/?action=otp_verificar')
+    messages.success(request, 'Si el correo está registrado, recibirás un código en breve.')
+    return redirect(_login_url('otp_verificar'))
 
 
 def verificar_otp_correo(request):
     if request.method != 'POST':
         return redirect('login')
 
-    correo = request.POST.get('correo', '').strip().lower() or request.session.get('otp_correo', '')
+    # El correo sale solo de la sesión: no se acepta uno enviado en el formulario
+    correo = request.session.get('otp_correo', '')
     codigo = request.POST.get('codigo', '').strip()
 
-    if not correo or not codigo:
-        messages.error(request, 'Datos incompletos.')
-        return redirect('/usuarios/login/?action=otp_verificar')
+    if not correo:
+        messages.error(request, 'La verificación expiró. Solicita un nuevo código.')
+        return redirect(_login_url('otp'))
 
-    try:
-        usuario = Usuario.objects.get(
-            email__iexact=correo,
-            reset_token=codigo,
-            activo=True,
+    if not (codigo.isascii() and codigo.isdigit() and len(codigo) == 6):
+        messages.error(request, 'El código debe tener 6 dígitos.')
+        return redirect(_login_url('otp_verificar'))
+
+    clave_intentos = f'otp_intentos:{correo}'
+    usuario        = Usuario.objects.filter(email__iexact=correo, activo=True).first()
+
+    # Bloqueo por demasiados intentos
+    if cache.get(clave_intentos, 0) >= OTP_MAX_INTENTOS:
+        if usuario:
+            _limpiar_token(usuario)
+        request.session.pop('otp_correo', None)
+        messages.error(request, 'Superaste el máximo de intentos. Solicita un código nuevo.')
+        return redirect(_login_url('otp'))
+
+    codigo_valido = bool(
+        usuario
+        and usuario.reset_token
+        and len(usuario.reset_token) == 6
+        and usuario.reset_token_expira
+        and hmac.compare_digest(str(usuario.reset_token), codigo)
+    )
+
+    if not codigo_valido:
+        cache.add(clave_intentos, 0, OTP_VENTANA_SEG)
+        try:
+            intentos = cache.incr(clave_intentos)
+        except ValueError:
+            cache.set(clave_intentos, 1, OTP_VENTANA_SEG)
+            intentos = 1
+
+        restantes = OTP_MAX_INTENTOS - intentos
+        if restantes <= 0:
+            if usuario:
+                _limpiar_token(usuario)
+            request.session.pop('otp_correo', None)
+            messages.error(request, 'Superaste el máximo de intentos. Solicita un código nuevo.')
+            return redirect(_login_url('otp'))
+
+        messages.error(
+            request,
+            f'Código incorrecto. Te quedan {restantes} intento{"s" if restantes != 1 else ""}.'
         )
-    except Usuario.DoesNotExist:
-        messages.error(request, 'Código incorrecto. Verifica e intenta de nuevo.')
-        return redirect('/usuarios/login/?action=otp_verificar')
+        return redirect(_login_url('otp_verificar'))
 
     if timezone.now() > usuario.reset_token_expira:
-        Usuario.objects.filter(pk=usuario.pk).update(reset_token=None, reset_token_expira=None)
+        _limpiar_token(usuario)
+        cache.delete(clave_intentos)
         request.session.pop('otp_correo', None)
         messages.error(request, 'El código expiró. Solicita uno nuevo.')
-        return redirect('/usuarios/login/?action=otp')
+        return redirect(_login_url('otp'))
 
+    # Código correcto: se cambia por un token largo de un solo uso
     token  = get_random_string(32)
     expira = timezone.now() + timedelta(minutes=10)
     usuario.reset_token        = token
     usuario.reset_token_expira = expira
     usuario.save(update_fields=['reset_token', 'reset_token_expira'])
 
+    cache.delete(clave_intentos)
     request.session.pop('otp_correo', None)
     return redirect(f'/usuarios/restablecer/{token}/')
 
@@ -625,6 +710,13 @@ def verificar_otp_correo(request):
 # ── RESTABLECER CLAVE ──────────────────────────────────────────────────────────
 
 def restablecer_clave(request, token):
+    # Solo se aceptan tokens largos. Un código OTP de 6 dígitos NO sirve aquí,
+    # así nadie puede saltarse la verificación ni adivinarlo por la URL.
+    if len(token) != 32:
+        return render(request, 'restablecer_clave.html', {
+            'error': 'El enlace o código no es válido o ya fue utilizado.'
+        })
+
     try:
         usuario = Usuario.objects.get(reset_token=token, activo=True)
     except Usuario.DoesNotExist:
@@ -632,8 +724,8 @@ def restablecer_clave(request, token):
             'error': 'El enlace o código no es válido o ya fue utilizado.'
         })
 
-    if timezone.now() > usuario.reset_token_expira:
-        Usuario.objects.filter(pk=usuario.pk).update(reset_token=None, reset_token_expira=None)
+    if not usuario.reset_token_expira or timezone.now() > usuario.reset_token_expira:
+        _limpiar_token(usuario)
         return render(request, 'restablecer_clave.html', {
             'error': 'El enlace o código expiró. Solicita uno nuevo.'
         })
@@ -652,7 +744,7 @@ def restablecer_clave(request, token):
 
         usuario.set_password(nueva)
         usuario.save(update_fields=['password'])
-        Usuario.objects.filter(pk=usuario.pk).update(reset_token=None, reset_token_expira=None)
+        _limpiar_token(usuario)
         return render(request, 'restablecer_clave.html', {'exito': True})
 
     return render(request, 'restablecer_clave.html', {'token': token})

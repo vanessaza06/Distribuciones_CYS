@@ -1384,6 +1384,7 @@ class ConfiguracionEmpresa(models.Model):
 
 class BackupRegistro(models.Model):
     nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, default="")
     ruta = models.CharField(max_length=500, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     tamaño_mb = models.FloatField(default=0)

@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Copia de Seguridad — CYS Ltda{% endblock %}
+{% block page_title %}Copia de Seguridad{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/respaldos/respaldos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 py-3 respaldos-container">
+
+  <!-- ====== MENSAJES ====== -->
+  {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+          <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill text-success fs-5{% elif message.tags == 'error' %}bi-exclamation-triangle-fill text-danger fs-5{% else %}bi-info-circle-fill text-info fs-5{% endif %}"></i>
+          <div class="flex-grow-1">{{ message }}</div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- ====== TARJETAS KPI ====== -->
+  <div class="resp-kpi-grid">
+    <!-- Total Respaldos -->
+    <div class="resp-kpi-card" title="Total de copias de seguridad registradas">
+      <div class="resp-kpi-icon resp-kpi-icon--gold">
+        <i class="bi bi-database-fill-check"></i>
+      </div>
+      <div class="resp-kpi-body">
+        <div class="resp-kpi-val">{{ total_respaldos }}</div>
+        <p class="resp-kpi-title">Copias de Seguridad</p>
+        <div class="resp-kpi-sub">Archivos generados</div>
+      </div>
+    </div>
+
+    <!-- Último Respaldo -->
+    <div class="resp-kpi-card" title="Fecha del respaldo más reciente">
+      <div class="resp-kpi-icon resp-kpi-icon--green">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="resp-kpi-body">
+        <div class="resp-kpi-val" style="font-size: 1.15rem; margin-bottom: .4rem;">
+          {% if ultimo_respaldo %}{{ ultimo_respaldo.fecha|date:"d/m/Y H:i" }}{% else %}Sin respaldos{% endif %}
+        </div>
+        <p class="resp-kpi-title">Último Respaldo</p>
+        <div class="resp-kpi-sub">{% if ultimo_respaldo %}{{ ultimo_respaldo.tamaño_mb }} MB guardados{% else %}Genera el primero{% endif %}</div>
+      </div>
+    </div>
+
+    <!-- Espacio Total -->
+    <div class="resp-kpi-card" title="Espacio acumulado de los respaldos">
+      <div class="resp-kpi-icon resp-kpi-icon--blue">
+        <i class="bi bi-hdd-fill"></i>
+      </div>
+      <div class="resp-kpi-body">
+        <div class="resp-kpi-val">{{ total_mb }} <span style="font-size: 1rem; font-weight: 600;">MB</span></div>
+        <p class="resp-kpi-title">Espacio en Disco</p>
+        <div class="resp-kpi-sub">Almacenado en /backups</div>
+      </div>
+    </div>
+
+    <!-- Base de Datos Activa -->
+    <div class="resp-kpi-card" title="Base de datos de producción conectada">
+      <div class="resp-kpi-icon resp-kpi-icon--purple">
+        <i class="bi bi-server"></i>
+      </div>
+      <div class="resp-kpi-body">
+        <div class="resp-kpi-val" style="font-size: 1.15rem; margin-bottom: .4rem;">{{ db_name }}</div>
+        <p class="resp-kpi-title">Base de Datos</p>
+        <div class="resp-kpi-sub">{{ db_host }}:{{ db_port }} (MySQL)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== PANEL PRINCIPAL ====== -->
+  <div class="resp-main-card">
+    
+    <!-- Barra de Herramientas -->
+    <div class="resp-toolbar">
+      <div class="resp-search-wrap">
+        <i class="bi bi-search resp-search-icon"></i>
+        <input type="text" id="respSearchInput" class="resp-search-input" placeholder="Buscar por nombre, nota o fecha...">
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Botón Subir Archivo -->
+        <button type="button" class="resp-btn-subir" data-bs-toggle="modal" data-bs-target="#modalSubirRespaldo" title="Subir un archivo .sql externo como respaldo">
+          <i class="bi bi-upload"></i>
+          <span>Subir Respaldo .sql</span>
+        </button>
+
+        <!-- Botón Crear Respaldo -->
+        <button type="button" class="resp-btn-crear" data-bs-toggle="modal" data-bs-target="#modalCrearRespaldo" title="Generar una nueva copia de seguridad inmediata de la base de datos">
+          <i class="bi bi-cloud-arrow-up-fill"></i>
+          <span>Crear Copia de Seguridad</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de Tabla / Estado Vacío -->
+    <div class="table-responsive">
+      {% if respaldos %}
+      <table class="resp-table table align-middle" id="tablaRespaldos">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 50px;">#</th>
+            <th>Copia de Seguridad</th>
+            <th>Fecha de Creación</th>
+            <th class="text-center">Tamaño</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center" style="width: 170px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in respaldos %}
+          <tr class="resp-row" id="resp-row-{{ r.pk }}">
+            <td class="text-center text-muted fw-bold">{{ forloop.counter }}</td>
+            
+            <td>
+              <div class="resp-file-cell">
+                <div class="resp-file-icon">
+                  <i class="bi bi-filetype-sql"></i>
+                </div>
+                <div>
+                  <div class="resp-file-title">{{ r.nombre }}</div>
+                  <div class="resp-file-desc">
+                    {% if r.descripcion %}
+                      {{ r.descripcion }}
+                    {% else %}
+                      <span class="text-muted fst-italic">Sin descripción</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-calendar3 text-muted"></i>
+                <span>{{ r.fecha|date:"d/m/Y H:i" }}</span>
+              </div>
+            </td>
+
+            <td class="text-center">
+              <span class="resp-badge-size">{{ r.tamaño_mb }} MB</span>
+            </td>
+
+            <td class="text-center">
+              {% if r.existe_en_disco %}
+                <span class="resp-badge-ok" title="El archivo .sql existe en la carpeta /backups">
+                  <i class="bi bi-check-circle-fill"></i> Disponible
+                </span>
+              {% else %}
+                <span class="resp-badge-missing" title="El archivo físico fue movido o borrado del disco">
+                  <i class="bi bi-exclamation-circle-fill"></i> No en disco
+                </span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              <div class="resp-actions-group">
+                <!-- Descargar -->
+                {% if r.existe_en_disco %}
+                <a href="{% url 'respaldo_descargar' r.pk %}"
+                   class="resp-act-btn resp-act-btn--download"
+                   title="Descargar base de datos (.sql)"
+                   data-bs-toggle="tooltip">
+                  <i class="bi bi-download"></i>
+                </a>
+                {% else %}
+                <button type="button" class="resp-act-btn resp-act-btn--download opacity-50" disabled title="Archivo no disponible en disco">
+                  <i class="bi bi-download"></i>
+                </button>
+                {% endif %}
+
+                <!-- Editar -->
+                <button type="button"
+                        class="resp-act-btn resp-act-btn--edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEditarRespaldo"
+                        data-id="{{ r.pk }}"
+                        data-nombre="{{ r.nombre }}"
+                        data-desc="{{ r.descripcion }}"
+                        data-url="{% url 'respaldo_editar' r.pk %}"
+                        title="Editar nombre y notas"
+                        data-bs-toggle="tooltip">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+
+                <!-- Restaurar -->
+                {% if r.existe_en_disco %}
+                <button type="button"
+                        class="resp-act-btn resp-act-btn--restore"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalRestaurarRespaldo"
+                        data-id="{{ r.pk }}"
+                        data-nombre="{{ r.nombre }}"
+                        data-fecha="{{ r.fecha|date:'d/m/Y H:i' }}"
+                        data-tamano="{{ r.tamaño_mb }} MB"
+                        data-url="{% url 'respaldo_restaurar' r.pk %}"
+                        title="Restaurar base de datos a este punto"
+                        data-bs-toggle="tooltip">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                {% else %}
+                <button type="button" class="resp-act-btn resp-act-btn--restore opacity-50" disabled title="Archivo no disponible para restaurar">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                {% endif %}
+
+                <!-- Eliminar -->
+                <button type="button"
+                        class="resp-act-btn resp-act-btn--delete"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEliminarRespaldo"
+                        data-id="{{ r.pk }}"
+                        data-nombre="{{ r.nombre }}"
+                        data-url="{% url 'respaldo_eliminar' r.pk %}"
+                        title="Eliminar copia de seguridad"
+                        data-bs-toggle="tooltip">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+
+          <!-- Mensaje cuando la búsqueda no coincide -->
+          <tr id="respNoResults" style="display: none;">
+            <td colspan="6" class="text-center py-4 text-muted">
+              <i class="bi bi-search me-2"></i>No se encontraron copias de seguridad que coincidan con la búsqueda.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      {% else %}
+      <!-- Estado Vacío -->
+      <div class="resp-empty-state">
+        <div class="resp-empty-icon">
+          <i class="bi bi-database-slash"></i>
+        </div>
+        <h4 class="resp-empty-title">Aún no hay copias de seguridad</h4>
+        <p class="resp-empty-text">
+          Genera tu primer respaldo de la base de datos MySQL para proteger la información de ventas, compras, productos e inventario.
+        </p>
+        <button type="button" class="resp-btn-crear" data-bs-toggle="modal" data-bs-target="#modalCrearRespaldo">
+          <i class="bi bi-cloud-arrow-up-fill"></i> Crear Primer Respaldo
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ====== MODAL 1: CREAR COPIA DE SEGURIDAD ====== -->
+<div class="modal fade resp-modal" id="modalCrearRespaldo" tabindex="-1" aria-labelledby="modalCrearRespaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'respaldo_crear' %}" id="formCrearRespaldo">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCrearRespaldoLabel">
+            <i class="bi bi-cloud-arrow-up text-warning"></i>
+            Nueva Copia de Seguridad
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Se generará un volcado SQL completo de la base de datos <strong>{{ db_name }}</strong>, incluyendo esquemas, tablas y datos actuales.
+          </p>
+
+          <div class="mb-3">
+            <label for="crearRespaldoNombre" class="resp-form-label">Nombre personalizado (opcional):</label>
+            <input type="text" class="form-control resp-form-control" id="crearRespaldoNombre" name="nombre" placeholder="Ej: respaldo_fin_de_mes">
+            <small class="text-muted">Si lo dejas vacío, se usará la fecha y hora automática.</small>
+          </div>
+
+          <div class="mb-2">
+            <label for="crearRespaldoDesc" class="resp-form-label">Descripción o notas (opcional):</label>
+            <textarea class="form-control resp-form-control" id="crearRespaldoDesc" name="descripcion" rows="3" placeholder="Ej: Respaldo previo a cierre de inventario y balance contable"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="resp-btn-crear" id="btnSubmitCrear">
+            <i class="bi bi-check2-circle"></i> Generar Respaldo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL 2: EDITAR RESPALDO ====== -->
+<div class="modal fade resp-modal" id="modalEditarRespaldo" tabindex="-1" aria-labelledby="modalEditarRespaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="" id="formEditarRespaldo">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditarRespaldoLabel">
+            <i class="bi bi-pencil-square text-warning"></i>
+            Editar Copia de Seguridad
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editRespaldoNombre" class="resp-form-label">Nombre del archivo:</label>
+            <input type="text" class="form-control resp-form-control font-monospace" id="editRespaldoNombre" name="nombre" required>
+          </div>
+
+          <div class="mb-2">
+            <label for="editRespaldoDesc" class="resp-form-label">Descripción o notas:</label>
+            <textarea class="form-control resp-form-control" id="editRespaldoDesc" name="descripcion" rows="3" placeholder="Añade notas sobre este respaldo..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+            <i class="bi bi-save me-1"></i> Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL 3: RESTAURAR RESPALDO ====== -->
+<div class="modal fade resp-modal" id="modalRestaurarRespaldo" tabindex="-1" aria-labelledby="modalRestaurarRespaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="" id="formRestaurarRespaldo">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger" id="modalRestaurarRespaldoLabel">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Restaurar Base de Datos
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="resp-danger-box">
+            <div class="resp-danger-box__title">
+              <i class="bi bi-shield-exclamation"></i> ¡ADVERTENCIA DE SEGURIDAD!
+            </div>
+            <p class="resp-danger-box__text">
+              Esta operación <strong>reemplazará toda la información actual</strong> de la base de datos <strong>{{ db_name }}</strong> con los datos contenidos en este archivo de respaldo. Los cambios realizados después de esta copia se perderán.
+            </p>
+          </div>
+
+          <div class="card p-3 mb-3" style="background: var(--fondo-card2); border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent); border-radius: 10px;">
+            <div class="small text-muted mb-1">Archivo seleccionado:</div>
+            <div class="fw-bold font-monospace text-primary fs-6" id="restoreRespaldoNombre">archivo.sql</div>
+            <div class="small text-muted mt-1" id="restoreRespaldoMeta">01/01/2026 00:00 · 0 MB</div>
+          </div>
+
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="chkConfirmRestore" required>
+            <label class="form-check-label small fw-bold" for="chkConfirmRestore">
+              Confirmo que deseo restaurar la base de datos a este punto y entiendo las consecuencias.
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold" id="btnSubmitRestore" disabled>
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Sí, Restaurar Ahora
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL 4: ELIMINAR RESPALDO ====== -->
+<div class="modal fade resp-modal" id="modalEliminarRespaldo" tabindex="-1" aria-labelledby="modalEliminarRespaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="" id="formEliminarRespaldo">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger" id="modalEliminarRespaldoLabel">
+            <i class="bi bi-trash"></i>
+            Eliminar Copia de Seguridad
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar permanentemente esta copia de seguridad?</p>
+          <div class="p-2 px-3 rounded font-monospace small mb-2" style="background: var(--fondo-card2); border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);" id="deleteRespaldoNombre">
+            backup.sql
+          </div>
+          <p class="small text-muted mb-0">Esta acción eliminará tanto el registro del sistema como el archivo físico del disco.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL 5: SUBIR RESPALDO EXTERNO ====== -->
+<div class="modal fade resp-modal" id="modalSubirRespaldo" tabindex="-1" aria-labelledby="modalSubirRespaldoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'respaldo_subir' %}" enctype="multipart/form-data" id="formSubirRespaldo">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSubirRespaldoLabel">
+            <i class="bi bi-upload text-info"></i>
+            Subir Copia de Seguridad (.sql)
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Sube un archivo de volcado MySQL <code>.sql</code> generado previamente para agregarlo a la lista de copias de seguridad de Distribuciones CYS.
+          </p>
+
+          <div class="mb-3">
+            <label for="subirArchivoSql" class="resp-form-label">Selecciona el archivo .sql:</label>
+            <input type="file" class="form-control resp-form-control" id="subirArchivoSql" name="archivo_sql" accept=".sql" required>
+          </div>
+
+          <div class="mb-2">
+            <label for="subirArchivoDesc" class="resp-form-label">Descripción o notas (opcional):</label>
+            <textarea class="form-control resp-form-control" id="subirArchivoDesc" name="descripcion" rows="2" placeholder="Ej: Respaldo externo importado"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSubmitSubir">
+            <i class="bi bi-cloud-arrow-up me-1"></i> Subir y Registrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/respaldos/respaldos.js' %}"></script>
+{% endblock %}

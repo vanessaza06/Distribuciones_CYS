@@ -175,7 +175,25 @@
                 <i class="bi bi-plus-circle me-2"></i>Nueva compra
               </button>
               <!-- Botones Exportar DataTables (Excel y PDF) -->
-              <div id="cys-dt-export-compras-historial" class="d-inline-flex align-items-center gap-2"></div>
+              <div id="cys-dt-export-compras-historial" class="d-inline-flex align-items-center gap-2">
+                <div class="dropdown d-inline-block">
+                  <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar compras">
+                    <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                        <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
               <span class="badge badge-cyan" title="Total de compras registradas para este proveedor">{{ compras_count|default:0 }}</span>
               <!-- Solo el chevron controla el collapse -->
               <i class="bi bi-chevron-down" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
