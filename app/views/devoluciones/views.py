@@ -93,10 +93,10 @@ def buscar_venta_devolucion(request):
         ventas = ventas.filter(pk=int(q))[:10]
     else:
         ventas = ventas.filter(
-            Q(vendedor__nombre__icontains=q) |
-            Q(vendedor__apellido__icontains=q) |
-            Q(vendedor__documento__icontains=q) |
-            Q(cliente__nombre__icontains=q)
+            Q(vendedor__first_name__icontains=q) | Q(vendedor__username__icontains=q) |
+            Q(vendedor__last_name__icontains=q) |
+            Q(vendedor__identificacion__icontains=q) |
+            Q(cliente_nombre__icontains=q)
         )[:10]
 
     return JsonResponse({'ventas': [
@@ -795,7 +795,7 @@ def metodos_pago_lista(request):
             Q(metodo__referencia__icontains=q) |
             Q(metodo__observacion__icontains=q) |
             Q(observaciones__icontains=q) |
-            Q(venta__vendedor__nombre__icontains=q)
+            Q(venta__vendedor__first_name__icontains=q) | Q(venta__vendedor__last_name__icontains=q) | Q(venta__vendedor__username__icontains=q) | Q(venta__cliente_nombre__icontains=q)
         ).distinct()
 
     total_monto = pagos_qs.aggregate(total=Sum('monto'))['total'] or Decimal('0')

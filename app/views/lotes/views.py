@@ -18,7 +18,7 @@ from app.forms import LoteForm
 
 # Nombre del campo de fecha de ingreso en el modelo Lote.
 # Si tu modelo lo llama distinto, cámbialo aquí.
-CAMPO_FECHA_LOTE = 'fecha_ingreso'
+CAMPO_FECHA_LOTE = 'fecha_registro'
 
 
 def _stats_lotes(hoy):
