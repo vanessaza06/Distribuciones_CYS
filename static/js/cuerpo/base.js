@@ -57,6 +57,10 @@
     function aplicarTema(nombreTema) {
         const vars = temas[nombreTema] || temas.oscuro;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+        root.dataset.cysTema = nombreTema;
+        const esClaro = (nombreTema === 'claro');
+        root.classList.toggle('cys-modo-claro', esClaro);
+        root.classList.toggle('cys-a11y-modo-claro', esClaro);
     }
 
     function aplicarDensidad(nombreDensidad) {
@@ -153,10 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Íconos de Reportes: azul medio CYS (#0A2A52) en modo "Claro",
-        // blancos en los demás modos (Predeterminado / Alto contraste).
-        // La clase se define y consume en reportes.css.
-        a11yRoot.classList.toggle('cys-a11y-modo-claro', cfg.modo === 'claro');
+        const esClaro = (cfg.modo === 'claro') || (cfg.modo === 'predeterminado' && (window.CYS_TEMA_SITIO === 'claro'));
+        a11yRoot.classList.toggle('cys-a11y-modo-claro', esClaro);
+        a11yRoot.classList.toggle('cys-modo-claro', esClaro);
+        if (esClaro) {
+            a11yRoot.dataset.cysTema = 'claro';
+        }
 
         // Alto contraste
         a11yRoot.classList.toggle('cys-a11y-contraste', cfg.contraste);

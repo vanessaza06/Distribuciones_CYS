@@ -2330,4 +2330,552 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   line-height: 1.2;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   DISEÑO PRÉMIUM EN MODO CLARO PARA VENTAS, CAJA Y MÉTODOS DE PAGO
+   Activado automáticamente cuando el modo claro esté activo
+   ════════════════════════════════════════════════════════════════ */
+
+.cys-turno-subpanel { background: rgba(12, 30, 56, 0.55); border: 1px solid rgba(77, 168, 218, 0.18); } .cys-turno-item-row { background: rgba(15, 59, 108, 0.35); border: 1px solid rgba(77, 168, 218, 0.15); } html.cys-a11y-modo-claro,
+html.cys-modo-claro,
+html[data-cys-tema="claro"] {
+
+  /* ── 1. BARRA DE ESTADO POS (VENTAS) ── */
+  .cys-pos-header-bar {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #0284c7 !important;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+    backdrop-filter: none !important;
+  }
+
+  .cys-pos-header-bar div[style*="background:rgba(255,255,255,0.12)"],
+  .cys-pos-divider {
+    background: #e2e8f0 !important;
+  }
+
+  .cys-status-pill--abierta {
+    background: #ecfdf5 !important;
+    color: #15803d !important;
+    border: 1px solid #86efac !important;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.15) !important;
+  }
+
+  .cys-status-pill--cerrada {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
+  }
+
+  .cys-btn-danger-soft {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
+  }
+  .cys-btn-danger-soft:hover {
+    background: #fecaca !important;
+    color: #991b1b !important;
+    border-color: #f87171 !important;
+  }
+
+  .cys-btn-ghost-soft {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+  .cys-btn-ghost-soft:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+
+  /* ── 2. TARJETAS CONTENEDORAS POS (CATÁLOGO Y ORDEN) ── */
+  .cys-pos-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+    backdrop-filter: none !important;
+  }
+
+  .cys-pos-card-header {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .cys-pos-card-title {
+    color: #0f172a !important;
+    font-weight: 800;
+  }
+
+  .cys-pos-card-title i {
+    color: #0284c7 !important;
+  }
+
+  /* Buscador POS */
+  .cys-search-group .cys-search-input,
+  .cys-search-input {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  }
+  .cys-search-group .cys-search-input:focus,
+  .cys-search-input:focus {
+    background: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+  }
+  .cys-search-group .cys-search-input::placeholder,
+  .cys-search-input::placeholder {
+    color: #94a3b8 !important;
+  }
+  .cys-search-group .bi-search {
+    color: #0284c7 !important;
+  }
+
+  /* Tarjetas de Categoría */
+  .cys-cat-card-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    color: #0f172a !important;
+  }
+  .cys-cat-card-item:hover {
+    background: #f0f9ff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12) !important;
+    transform: translateY(-2px);
+  }
+  .cys-cat-icon-circle {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+  }
+  .cys-cat-card-item:hover .cys-cat-icon-circle {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+  }
+
+  /* Tarjetas de Producto */
+  .cys-prod-card-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  }
+  .cys-prod-card-item:hover {
+    background: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 10px 25px rgba(2, 132, 199, 0.12) !important;
+    transform: translateY(-3px);
+  }
+  .cys-prod-name {
+    color: #0f172a !important;
+  }
+  .cys-prod-sub {
+    color: #64748b !important;
+  }
+  .cys-prod-card-footer {
+    border-top: 1px solid #e2e8f0 !important;
+  }
+  .cys-prod-price-label {
+    color: #64748b !important;
+  }
+  .cys-prod-price {
+    color: #0284c7 !important;
+  }
+  .cys-prod-icon-circle {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+  }
+  .cys-prod-action-btn {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+  }
+  .cys-prod-card-item:hover .cys-prod-action-btn:not(.disabled) {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.35) !important;
+  }
+
+  /* Presentaciones */
+  .cys-pres-card-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+  .cys-pres-card-item:hover:not(.cys-pres-card-item--disabled) {
+    background: #f0f9ff !important;
+    border-color: #38bdf8 !important;
+  }
+  .cys-pres-name {
+    color: #0f172a !important;
+  }
+  .cys-pres-price {
+    color: #0284c7 !important;
+  }
+  .cys-pres-icon-box {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+  }
+  .cys-pres-add-btn {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+  }
+  .cys-pres-card-item:hover .cys-pres-add-btn:not(.disabled) {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+  }
+
+  /* Breadcrumbs POS */
+  .cys-breadcrumb-bar {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .cys-btn-back {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+  .cys-btn-back:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+  .cys-breadcrumb-chip {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0369a1 !important;
+  }
+  .cys-breadcrumb-chip--active {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+  }
+  .cys-count-badge {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+  }
+
+  /* Sección Carrito / Orden de Venta */
+  .cys-pos-card .form-control {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .cys-pos-card .form-control:focus {
+    background-color: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+  }
+  .cys-cart-item {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+  .cys-cart-item:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+  }
+  .cys-qty-btn {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+  .cys-qty-btn:hover {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #bae6fd !important;
+  }
+
+  .cys-payment-panel {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .cys-payment-panel label {
+    color: #64748b !important;
+  }
+  .pago-input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+
+  #totalGeneral {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+  }
+  #totalGeneral span {
+    color: #1e3a8a !important;
+  }
+  #totalGeneral #totalMonto {
+    color: #0284c7 !important;
+  }
+
+  /* Autocomplete sugerencias */
+  #sugerenciasClientes .list-group-item-action {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  #sugerenciasClientes .list-group-item-action:hover {
+    background: #f0f9ff !important;
+    color: #0284c7 !important;
+  }
+
+  /* ── 3. MÓDULO DE CAJA Y TURNOS ── */
+  .cys-caja-header-banner {
+    color: #0f172a !important;
+  }
+  .cys-caja-header-banner h3 {
+    color: #0f172a !important;
+  }
+  .cys-caja-header-banner p {
+    color: #64748b !important;
+  }
+
+  .cys-kpi-card,
+  .mp-kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    color: #0f172a !important;
+  }
+  .cys-kpi-card:hover,
+  .mp-kpi-card:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08) !important;
+    transform: translateY(-2px);
+  }
+
+  .cys-kpi-label,
+  .mp-kpi-label {
+    color: #64748b !important;
+  }
+
+  .cys-turno-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+    color: #0f172a !important;
+  }
+  .cys-turno-card--activo {
+    border-left: 4px solid #16a34a !important;
+  }
+  .cys-turno-header {
+    background: #ffffff !important;
+  }
+
+  .cys-mini-stat-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .cys-mini-stat-card:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+  }
+  .cys-mini-stat-card .cys-stat-label {
+    color: #64748b !important;
+  }
+  .cys-mini-stat-card .cys-stat-val {
+    color: #0f172a !important;
+  }
+
+  /* ── 4. MÉTODOS DE PAGO ── */
+  .mp-tab-btn {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+  .mp-tab-btn:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+  .mp-tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
+  }
+
+  .prod-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+    color: #0f172a !important;
+  }
+  .prod-card-header {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+  .prod-input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .prod-input:focus {
+    background: #ffffff !important;
+    border-color: #0284c7 !important;
+    color: #0f172a !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+  }
+  .prod-btn-outline {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+  .prod-btn-outline:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+
+  /* Modales y Conteo de Caja */
+  .modal-content.cys-modal,
+  .modal-content {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15) !important;
+  }
+  .modal-content .modal-title {
+    color: #0f172a !important;
+  }
+  .modal-content .modal-header,
+  .modal-content .modal-footer {
+    border-color: #e2e8f0 !important;
+  }
+  .cys-denom-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+  .cys-denom-card:hover,
+  .cys-denom-card:focus-within {
+    background: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1) !important;
+  }
+  .cys-denom-card input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .cys-denom-section-title {
+    color: #0284c7 !important;
+    border-bottom-color: #cbd5e1 !important;
+  }
+
+  /* Tablas limpias */
+  .cys-clean-table thead,
+  .table thead {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .cys-clean-table thead th,
+  .table thead th {
+    color: #475569 !important;
+    background: #f8fafc !important;
+  }
+  .cys-clean-table tbody tr,
+  .table tbody tr {
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+  .cys-clean-table tbody tr:hover,
+  .table tbody tr:hover {
+    background: #f8fafc !important;
+  }
+
+  /* Botones secundarios estándar */
+  .cys-btn-secondary {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+  }
+  .cys-btn-secondary:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+
+  /* Subpaneles internos de turnos de caja */
+  .cys-turno-subpanel, .cys-filter-bar,
+  .cys-turno-card div[style*="rgba(8,24,46"],
+  .cys-turno-card div[style*="rgba(8, 24, 46"] {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .cys-turno-card div[style*="rgba(5,22,43"],
+  .cys-turno-card div[style*="rgba(5, 22, 43"] {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .cys-turno-item-row, .cys-turno-card div[style*="rgba(15,59,108"],
+  .cys-turno-card div[style*="rgba(15, 59, 108"] {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  /* Modales en modo claro */
+  .modal-content.cys-modal,
+  .modal-content[style*="background:#091d36"],
+  .modal-content[style*="background:#0b223e"],
+  .modal-content[style*="background:#06172b"],
+  .prod-modal {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15) !important;
+    color: #0f172a !important;
+  }
+  .cys-modal__header,
+  .prod-modal-header {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .cys-modal__title {
+    color: #0f172a !important;
+  }
+  .cys-modal .modal-body,
+  .prod-modal .modal-body {
+    color: #1e293b !important;
+  }
+  .modal-body p[style*="color:#ffffff"],
+  .modal-body p[style*="color: #ffffff"] {
+    color: #475569 !important;
+  }
+  .modal-body label.text-white,
+  .modal-body span.text-white,
+  .modal-body div.text-white {
+    color: #0f172a !important;
+  }
+  .modal-body input[style*="background:#06172b"],
+  .modal-body input[style*="background: #06172b"] {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .modal-body div[style*="background:rgba(10,20,38"] {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  /* Tarjetas de ventas tope en ventas del día */
+  .cys-top-sales-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  }
+  .cys-top-sales-card:hover {
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.1) !important;
+    border-color: #bae6fd !important;
+  }
+}
+
 
