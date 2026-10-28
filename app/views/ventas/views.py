@@ -1098,7 +1098,7 @@ def registrar_devolucion(request):
         estado='completado',
         cantidad_cambio=0,
         metodo_pago_devolucion=venta.metodo_pago,
-        usuario=request.user if request.user.is_authenticated else Usuario.objects.first(),
+        usuario=Usuario.objects.filter(documento=getattr(request.user, 'identificacion', None) or getattr(request.user, 'username', '')).first() or Usuario.objects.first(),
     )
 
     for i in range(len(producto_ids)):
@@ -1154,7 +1154,7 @@ def exportar_ventas_excel(request):
     if q:
         ventas_qs = ventas_qs.filter(
             Q(pk__icontains=q) |
-            Q(cliente__nombre__icontains=q) |
+            Q(cliente_nombre__icontains=q) |
             Q(vendedor__first_name__icontains=q) |
             Q(vendedor__username__icontains=q) |
             Q(metodo_pago__icontains=q) |
@@ -1283,7 +1283,7 @@ def exportar_ventas_pdf(request):
     if q:
         ventas_qs = ventas_qs.filter(
             Q(pk__icontains=q) |
-            Q(cliente__nombre__icontains=q) |
+            Q(cliente_nombre__icontains=q) |
             Q(vendedor__first_name__icontains=q) |
             Q(vendedor__username__icontains=q) |
             Q(metodo_pago__icontains=q) |
