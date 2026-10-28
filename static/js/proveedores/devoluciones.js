@@ -338,8 +338,12 @@
 
     const exportContainer = document.getElementById('cys-dt-export-devoluciones');
     if (exportContainer) {
-      exportContainer.innerHTML = '';
-      dt.buttons().container().removeClass('d-none').appendTo(exportContainer);
+      if (window.cysCrearDropdownExportar) {
+        window.cysCrearDropdownExportar(dt, exportContainer);
+      } else {
+        exportContainer.innerHTML = '';
+        dt.buttons().container().removeClass('d-none').appendTo(exportContainer);
+      }
     }
   }
 
@@ -410,8 +414,12 @@
 
     const contProv = document.getElementById('cys-dt-export-dev-proveedor');
     if (contProv) {
-      contProv.innerHTML = '';
-      dtProv.buttons().container().removeClass('d-none').appendTo(contProv);
+      if (window.cysCrearDropdownExportar) {
+        window.cysCrearDropdownExportar(dtProv, contProv);
+      } else {
+        contProv.innerHTML = '';
+        dtProv.buttons().container().removeClass('d-none').appendTo(contProv);
+      }
     }
   }
 

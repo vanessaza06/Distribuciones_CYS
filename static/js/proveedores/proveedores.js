@@ -129,8 +129,10 @@ $(document).ready(function() {
     ]
   });
 
-  // Colocar el botón de exportación PDF en la barra de herramientas
-  if ($('#cys-dt-export-proveedores').length) {
+  // Colocar el dropdown de exportación (PDF y Excel) en la barra de herramientas
+  if (window.cysCrearDropdownExportar) {
+    window.cysCrearDropdownExportar(table, 'cys-dt-export-proveedores');
+  } else if ($('#cys-dt-export-proveedores').length) {
     $('#cys-dt-export-proveedores').empty();
     table.buttons().container().removeClass('d-none').appendTo('#cys-dt-export-proveedores');
   }

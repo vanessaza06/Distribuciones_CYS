@@ -129,7 +129,9 @@ function initTabla() {
     ]
   });
 
-  if (byId('cys-dt-export-compras-historial')) {
+  if (window.cysCrearDropdownExportar) {
+    window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
+  } else if (byId('cys-dt-export-compras-historial')) {
     byId('cys-dt-export-compras-historial').innerHTML = '';
     dt.buttons().container().removeClass('d-none').appendTo('#cys-dt-export-compras-historial');
   }
