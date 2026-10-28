@@ -4,6 +4,97 @@
     jQuery.fn.dataTable.ext.errMode = 'none';
   }
 
+  // Asegurar disponibilidad del helper de exportación unificado
+  if (typeof window.cysCrearDropdownExportar !== 'function') {
+    window.cysCrearDropdownExportar = function(dt, containerOrId) {
+      if (!dt) return;
+      var container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+      if (!container) return;
+
+      var api = (typeof dt.button === 'function') ? dt : (window.jQuery && jQuery.fn && jQuery.fn.dataTable ? jQuery(dt).DataTable() : null);
+      if (!api || typeof api.button !== 'function') return;
+
+      if (!api._buttons || (typeof api.buttons === 'function' && api.buttons().count() === 0)) {
+        var initOptions = (typeof api.init === 'function') ? api.init() : null;
+        if (initOptions && initOptions.buttons && window.DataTable && window.DataTable.Buttons) {
+          try { new window.DataTable.Buttons(api, initOptions.buttons); } catch (e) {}
+        }
+      }
+
+      try {
+        if (typeof api.buttons === 'function') {
+          var dtBtns = api.buttons().container();
+          if (dtBtns && dtBtns.length) {
+            dtBtns.addClass('d-none');
+            if (!document.body.contains(dtBtns[0])) container.appendChild(dtBtns[0]);
+          }
+        }
+      } catch (eBtns) {}
+
+      var btnPdf = container.querySelector('[data-cys-export="pdf"]');
+      var btnExcel = container.querySelector('[data-cys-export="excel"]');
+
+      function dispararExport(tipo) {
+        var isPdf = (tipo === 'pdf');
+        var primaryClass = isPdf ? '.cys-dt-btn-pdf' : '.cys-dt-btn-excel';
+        var fallbackClass = isPdf ? '.buttons-pdf' : '.buttons-excel';
+
+        try {
+          var b = api.button(primaryClass);
+          if (b && b.length) { b.trigger(); return; }
+        } catch (e1) {}
+
+        try {
+          var b2 = api.button(fallbackClass);
+          if (b2 && b2.length) { b2.trigger(); return; }
+        } catch (e2) {}
+
+        try {
+          if (typeof api.buttons === 'function') {
+            var btns = api.buttons();
+            var count = (typeof btns.count === 'function') ? btns.count() : (btns.length || 0);
+            for (var i = 0; i < count; i++) {
+              var singleBtn = api.button(i);
+              var node = singleBtn.node();
+              if (node) {
+                var cls = (node.className || '').toLowerCase();
+                var txt = (node.textContent || '').toLowerCase();
+                if (isPdf && (cls.indexOf('pdf') !== -1 || txt.indexOf('pdf') !== -1)) {
+                  singleBtn.trigger(); return;
+                }
+                if (!isPdf && (cls.indexOf('excel') !== -1 || txt.indexOf('excel') !== -1)) {
+                  singleBtn.trigger(); return;
+                }
+              }
+            }
+            if (count >= 2) {
+              api.button(isPdf ? 1 : 0).trigger();
+              return;
+            }
+          }
+        } catch (e3) {
+          console.error('Error al exportar ' + tipo, e3);
+        }
+      }
+
+      if (btnPdf && !btnPdf.dataset.cysExportBound) {
+        btnPdf.dataset.cysExportBound = 'true';
+        btnPdf.addEventListener('click', function(e) {
+          e.preventDefault();
+          dispararExport('pdf');
+        });
+      }
+
+      if (btnExcel && !btnExcel.dataset.cysExportBound) {
+        btnExcel.dataset.cysExportBound = 'true';
+        btnExcel.addEventListener('click', function(e) {
+          e.preventDefault();
+          dispararExport('excel');
+        });
+      }
+    };
+  }
+
   // Helper seguro para dropdown unificado de exportar
   var renderExportDropdown = function(dt, containerOrId) {
     if (typeof window.cysCrearDropdownExportar === 'function') {
