@@ -824,3 +824,75 @@
     grid-row: auto;
   }
 }
+
+/* ══════════════════════════════════════════
+   MENÚ EXPORTAR (Excel / PDF / Imprimir) — mismo diseño que Marcas
+   Va al final y con !important para ganar a las reglas globales
+   de .dropdown-toggle / .dropdown-menu / .dropdown-item.
+   ══════════════════════════════════════════ */
+.search-box .exp-btn {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #0d2a4f;
+  --bs-btn-border-color: #2f7fd1;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #123562;
+  --bs-btn-hover-border-color: #4DA8DA;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #123562;
+  --bs-btn-active-border-color: #4DA8DA;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: #0d2a4f !important;
+  border: 1px solid #2f7fd1 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: .9rem;
+  border-radius: 999px;
+  padding: .5rem 1.15rem;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+.search-box .exp-btn::after { display: none !important; }
+.search-box .exp-btn:hover,
+.search-box .exp-btn:focus,
+.search-box .exp-btn.show {
+  background: #123562 !important;
+  border-color: #4DA8DA !important;
+  color: #ffffff !important;
+  box-shadow: none;
+}
+.search-box .exp-btn .exp-chevron {
+  font-size: .7rem;
+  transition: transform .2s;
+}
+.search-box .exp-btn.show .exp-chevron { transform: rotate(180deg); }
+
+.search-box .exp-menu {
+  background: #111f33 !important;
+  border: 1px solid rgba(77, 168, 218, .18) !important;
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 180px;
+  margin-top: 8px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+.search-box .exp-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: #e6eefc !important;
+  background: transparent;
+  font-size: .9rem;
+  border-radius: 10px;
+  padding: .65rem .9rem;
+}
+.search-box .exp-menu .dropdown-item:hover,
+.search-box .exp-menu .dropdown-item:focus {
+  background-color: rgba(77, 168, 218, .12) !important;
+  color: #ffffff !important;
+}
+.search-box .exp-menu .dropdown-item i { font-size: 1.1rem; }
+.search-box .exp-ico-excel { color: #22c55e !important; }
+.search-box .exp-ico-pdf   { color: #ef4444 !important; }
+.search-box .exp-ico-print { color: #4DA8DA !important; }
