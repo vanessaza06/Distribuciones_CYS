@@ -57,6 +57,19 @@
     function aplicarTema(nombreTema) {
         const vars = temas[nombreTema] || temas.oscuro;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+        root.setAttribute('data-tema', nombreTema);
+        if (nombreTema === 'claro') {
+            root.classList.add('cys-a11y-modo-claro');
+        } else {
+            try {
+                const a11y = JSON.parse(localStorage.getItem('cys_a11y') || '{}');
+                if (a11y.modo !== 'claro') {
+                    root.classList.remove('cys-a11y-modo-claro');
+                }
+            } catch (e) {
+                root.classList.remove('cys-a11y-modo-claro');
+            }
+        }
     }
 
     function aplicarDensidad(nombreDensidad) {

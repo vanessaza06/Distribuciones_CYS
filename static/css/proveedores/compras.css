@@ -2787,25 +2787,25 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 /* ── Compras: formulario y modales ── */
 .cmp-input,
 .cmp-input:focus {
-  background-color: #02224a;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.18);
+  background-color: var(--fondo-card);
+  color: var(--texto);
+  border: 1px solid color-mix(in srgb, var(--texto) 18%, transparent);
 }
 .cmp-input:focus {
   border-color: #CF9C48;
   box-shadow: 0 0 0 .2rem rgba(207,156,72,0.18);
 }
-.cmp-input option { background: #02224a; color: #fff; }
+.cmp-input option { background: var(--fondo-card); color: var(--texto); }
 .cmp-input option:disabled { display: none; }
 .cmp-total-box {
-  background: linear-gradient(135deg, rgba(207,156,72,0.12) 0%, rgba(77,168,218,0.10) 100%);
-  border: 1px solid rgba(207,156,72,0.35);
+  background: color-mix(in srgb, var(--cp-dorado) 12%, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 35%, transparent);
   border-left: 4px solid #CF9C48 !important;
   border-radius: 12px;
 }
 .cmp-extra-box {
-  background: rgba(3,30,62,0.6);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: color-mix(in srgb, var(--texto) 4%, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
   border-left: 4px solid #CF9C48 !important;
   border-radius: 12px;
 }
@@ -2814,23 +2814,23 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-confirm {
   display: flex; gap: 14px; align-items: flex-start;
   margin-top: 14px; padding: 16px 18px;
-  background: linear-gradient(135deg, rgba(207,156,72,0.14) 0%, rgba(3,30,62,0.85) 100%);
-  border: 1px solid rgba(207,156,72,0.45);
+  background: color-mix(in srgb, var(--cp-dorado) 12%, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 45%, transparent);
   border-left: 4px solid #CF9C48 !important;
   border-radius: 12px;
   animation: cmpConfirmIn .25s ease-out;
 }
 .cmp-confirm.is-pagada {
-  background: linear-gradient(135deg, rgba(207,156,72,0.18) 0%, rgba(3,30,62,0.85) 100%);
-  border-color: rgba(207,156,72,0.5);
+  background: color-mix(in srgb, var(--cp-dorado) 18%, var(--fondo-card));
+  border-color: color-mix(in srgb, var(--cp-dorado) 50%, transparent);
   border-left-color: #CF9C48 !important;
 }
 .cmp-confirm__icon { font-size: 1.6rem; line-height: 1; color: #CF9C48 !important; }
 .cmp-confirm.is-pagada .cmp-confirm__icon { color: #CF9C48 !important; }
 .cmp-confirm__body { flex: 1; }
-.cmp-confirm__title { margin: 0 0 4px; font-weight: 700; color: #fff; }
-.cmp-confirm__text { margin: 0 0 12px; color: rgba(239,248,226,0.85); font-size: .92rem; }
-.cmp-confirm__text strong { color: #fff; }
+.cmp-confirm__title { margin: 0 0 4px; font-weight: 700; color: var(--texto); }
+.cmp-confirm__text { margin: 0 0 12px; color: var(--texto-muted); font-size: .92rem; }
+.cmp-confirm__text strong { color: var(--texto); }
 .cmp-confirm__actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .cmp-confirm__ok {
   background: linear-gradient(135deg, #CF9C48, #e0b566); color: #011936;
@@ -2846,10 +2846,10 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 }
 #tablaHistorialCompras td, #tablaHistorialCompras th { white-space: nowrap; }
 .cmp-sug-item {
-  background: #02224a !important;
-  color: #fff !important;
+  background: var(--fondo-card) !important;
+  color: var(--texto) !important;
   border: none !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent) !important;
   padding: 10px 14px;
   cursor: pointer;
   text-align: left;
@@ -2859,8 +2859,8 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-sug-item:hover,
 .cmp-sug-item:focus,
 .cmp-sug-item.active {
-  background: rgba(207,156,72,0.22) !important;
-  color: #fff !important;
+  background: color-mix(in srgb, var(--cp-dorado) 16%, var(--fondo-card)) !important;
+  color: var(--texto) !important;
   border-left: 3px solid #CF9C48 !important;
   outline: none;
 }
@@ -2869,16 +2869,16 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-search-box-wrap {
   position: relative;
   border-radius: 12px;
-  background: rgba(2, 34, 74, 0.85);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  background: color-mix(in srgb, var(--texto) 4%, var(--fondo-card));
+  border: 1.5px solid color-mix(in srgb, var(--texto) 18%, transparent);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .cmp-search-box-wrap:focus-within,
 .cmp-search-box-wrap.is-focused {
   border-color: #CF9C48 !important;
-  background: #022045;
-  box-shadow: 0 0 0 3.5px rgba(207, 156, 72, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  background: var(--fondo-card);
+  box-shadow: 0 0 0 3.5px rgba(207, 156, 72, 0.25), 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 }
 .cmp-search-box-wrap.has-error {
   border-color: #e74c3c !important;
@@ -2889,7 +2889,7 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #4DA8DA;
+  color: var(--azul-claro);
   font-size: 1.15rem;
   pointer-events: none;
   transition: color 0.2s ease;
@@ -2900,14 +2900,14 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-search-main-input {
   background: transparent !important;
   border: none !important;
-  color: #ffffff !important;
+  color: var(--texto) !important;
   padding: 13px 44px 13px 44px !important;
   font-size: 0.96rem !important;
   font-weight: 500;
   box-shadow: none !important;
 }
 .cmp-search-main-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--texto-muted);
   font-size: 0.90rem;
   font-weight: 400;
 }
@@ -2918,7 +2918,7 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--texto-muted);
   font-size: 1.15rem;
   padding: 4px 6px;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -2931,11 +2931,11 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 
 /* Tarjeta de producto seleccionado */
 .cmp-selected-product {
-  background: linear-gradient(135deg, rgba(207, 156, 72, 0.16) 0%, rgba(3, 27, 56, 0.95) 100%);
-  border: 1px solid rgba(207, 156, 72, 0.45);
+  background: color-mix(in srgb, var(--cp-dorado) 12%, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 40%, transparent);
   border-left: 4px solid #CF9C48 !important;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   animation: cmpFadeIn 0.25s ease-out;
 }
 .cmp-selected-icon {
@@ -2957,10 +2957,10 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: #02162e;
-  border: 1.5px solid rgba(207, 156, 72, 0.45);
+  background: var(--fondo-card);
+  border: 1.5px solid color-mix(in srgb, var(--cp-dorado) 45%, transparent);
   border-radius: 12px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
   overflow-y: auto;
   z-index: 1070;
 }
@@ -2973,9 +2973,9 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 }
 .cmp-dropdown-item {
   background: transparent;
-  color: #fff;
+  color: var(--texto);
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent);
   padding: 10px 16px;
   width: 100%;
   text-align: left;
@@ -2989,8 +2989,8 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-dropdown-item:hover,
 .cmp-dropdown-item:focus,
 .cmp-dropdown-item.active {
-  background: rgba(207, 156, 72, 0.2) !important;
-  color: #fff !important;
+  background: color-mix(in srgb, var(--cp-dorado) 15%, var(--fondo-card)) !important;
+  color: var(--texto) !important;
   border-left: 4px solid #CF9C48 !important;
   outline: none;
 }
