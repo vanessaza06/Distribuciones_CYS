@@ -22,23 +22,47 @@
 </div>
 {% endif %}
 
-<div class="d-flex justify-content-end mb-3">
+<div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+
+  <!-- MENÚ EXPORTAR (mismo diseño que Marcas) -->
+  <div class="dropdown exp-wrap">
+    <button class="btn exp-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-box-arrow-up"></i><span>Exportar</span><i class="bi bi-chevron-down exp-chevron"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end exp-menu">
+      <li>
+        <a class="dropdown-item" href="{% url 'presentacion_exportar' 'excel' %}">
+          <i class="bi bi-file-earmark-excel exp-ico-excel"></i>Excel
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{% url 'presentacion_exportar' 'pdf' %}">
+          <i class="bi bi-file-earmark-pdf exp-ico-pdf"></i>PDF
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{% url 'presentacion_exportar' 'imprimir' %}" target="_blank" rel="noopener">
+          <i class="bi bi-printer exp-ico-print"></i>Imprimir
+        </a>
+      </li>
+    </ul>
+  </div>
+
   <a href="{% url 'bodega_home' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
     <i class="bi bi-boxes me-1" title="Ver Bodega"></i> Ir a Bodega
   </a>
 </div>
 
 <div class="search-box d-flex justify-content-between align-items-center flex-wrap gap-2">
-  <div class="d-flex flex-grow-1" style="max-width: 420px;">
-    <span class="search-prefix" style="border-radius: 8px 0 0 8px;"><i class="bi bi-search"></i></span>
-    <input type="text" id="buscarPresentacion" class="prod-input"
-           style="width: 100%; border-radius: 0 8px 8px 0; border-left: none;"
+  <div class="d-flex flex-grow-1 pres-buscador-wrap">
+    <span class="search-prefix pres-search-prefix"><i class="bi bi-search"></i></span>
+    <input type="text" id="buscarPresentacion" class="prod-input pres-search-input"
            placeholder="Buscar por producto o presentación…">
   </div>
 
-<button type="button" class="btn prod-btn-primary prod-btn-nuevo px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalCrearPresentacion">
-  <i class="bi bi-plus-lg me-1" title="Crear Presentación"></i> <span class="btn-texto">Nueva Presentación</span>
-</button>
+  <button type="button" class="btn prod-btn-primary prod-btn-nuevo px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalCrearPresentacion">
+    <i class="bi bi-plus-lg me-1" title="Crear Presentación"></i> <span class="btn-texto">Nueva Presentación</span>
+  </button>
 </div>
 
 <div class="prod-card">
@@ -58,7 +82,7 @@
       <tbody>
         {% for pres in presentaciones %}
         <tr data-producto="{{ pres.producto.nombre|lower }}" data-presentacion="{{ pres.nombre|lower }}"
-    {% if pres.pk == resaltar_pk %}class="fila-resaltada"{% endif %}>
+            {% if pres.pk == resaltar_pk %}class="fila-resaltada"{% endif %}>
           <td class="ps-3">
             <div class="fw-semibold prod-cell-nombre">{{ pres.producto.nombre }}</div>
             <small class="text-muted">{{ pres.producto.categoria.nombre|default:"—" }}</small>
@@ -81,13 +105,13 @@
               </button>
               <div class="dd-menu">
                 <a href="#" class="dd-item" data-bs-toggle="modal" data-bs-target="#modalEditarPresentacion{{ pres.pk }}">
-                  <i class="bi bi-pencil" style="color: #dcb535;"></i> Editar
+                  <i class="bi bi-pencil pres-icon-editar"></i> Editar
                 </a>
                 <div class="dd-sep"></div>
                 <form method="POST" action="{% url 'presentacion_toggle_activo' pres.pk %}">
                   {% csrf_token %}
                   <input type="hidden" name="next" value="{{ request.path }}">
-                  <button type="submit" class="dd-item {% if pres.activo %}danger{% endif %}" style="width:100%; border:none; background:none; text-align:left;">
+                  <button type="submit" class="dd-item pres-dd-submit {% if pres.activo %}danger{% endif %}">
                     {% if pres.activo %}
                       <i class="bi bi-pause-circle"></i> Desactivar
                     {% else %}
@@ -137,7 +161,8 @@
           <div class="mb-3">
             <label class="form-label prod-label">Nombre <span class="text-danger">*</span></label>
             <input type="text" name="nombre" class="form-control prod-input" placeholder="Ej: Six-pack" required
-       data-validar-nombre data-etiqueta="El nombre de la presentación">
+                   data-validar-nombre data-etiqueta="El nombre de la presentación">
+          </div><!-- ← este cierre faltaba -->
           <div class="row g-3">
             <div class="col-6">
               <label class="form-label prod-label">Cantidad <span class="text-danger">*</span></label>
@@ -168,7 +193,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title"><i class="bi bi-pencil me-2" style="color: #dcb535;"></i>Editar Presentación</h6>
+        <h6 class="modal-title"><i class="bi bi-pencil me-2 pres-icon-editar"></i>Editar Presentación</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="{% url 'presentacion_editar' pres.pk %}">
@@ -178,8 +203,8 @@
           <p class="prod-label mb-3">{{ pres.producto.nombre }}</p>
           <div class="mb-3">
             <label class="form-label prod-label">Nombre</label>
-          <input type="text" name="nombre" class="form-control prod-input" value="{{ pres.nombre }}"
-       data-validar-nombre data-etiqueta="El nombre de la presentación">
+            <input type="text" name="nombre" class="form-control prod-input" value="{{ pres.nombre }}"
+                   data-validar-nombre data-etiqueta="El nombre de la presentación">
           </div>
           <div class="row g-3">
             <div class="col-6">
