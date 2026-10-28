@@ -15,10 +15,11 @@ const URL_BLOQUEAR_EMPRESA     = cfgData.dataset.urlBloquearEmpresa;
 const URL_GUARDAR_IMPUESTOS    = cfgData.dataset.urlGuardarImpuestos;
 const URL_CREAR_BACKUP         = cfgData.dataset.urlCrearBackup;
 const URL_GUARDAR_TEMA_SISTEMA = cfgData.dataset.urlGuardarTemaSistema;
-const ES_ADMIN_EMPRESA         = cfgData.dataset.esAdmin === 'true';
 
-// Tema predeterminado actual del sistema (viene del servidor)
-let TEMA_SISTEMA = cfgData.dataset.temaSistema || 'oscuro';
+// FIX: antes era `=== 'true'` exacto. Django entrega "True" (con mayúscula)
+// si el template no lo pasa por |lower, y entonces el modal de confirmación
+// de tema del sistema NUNCA salía. Ahora se acepta cualquier mayúscula.
+const ES_ADMIN_EMPRESA = ['true', '1'].includes(String(cfgData.dataset.esAdmin || '').trim().toLowerCase());
 
 const NOMBRES_TEMA = {
   'oscuro': 'Oscuro',
@@ -27,6 +28,20 @@ const NOMBRES_TEMA = {
   'basecys': 'Base CyS',
   'sepia': 'Sepia',
 };
+
+// FIX: el tema del sistema se lee primero de <html data-tema-sistema> (que base.js
+// mantiene al día en cada navegación htmx) y luego del data-attribute de esta página.
+// Antes solo se leía una vez de cfg-data y quedaba desactualizado.
+function leerTemaSistema() {
+  const deHtml = document.documentElement.dataset.temaSistema;
+  if (deHtml && NOMBRES_TEMA[deHtml]) return deHtml;
+  const deCfg = cfgData.dataset.temaSistema;
+  if (deCfg && NOMBRES_TEMA[deCfg]) return deCfg;
+  return 'oscuro';
+}
+
+// Tema predeterminado actual del sistema (viene del servidor)
+let TEMA_SISTEMA = leerTemaSistema();
 
 // ══════════════════════════════════════════
 // CSRF helper
@@ -313,27 +328,80 @@ function actualizarEtiquetaTemaSistema() {
   if (el) el.textContent = NOMBRES_TEMA[TEMA_SISTEMA] || TEMA_SISTEMA;
 }
 
-function seleccionarTema(tema, el) {
-  document.querySelectorAll('#opcionesTema .cfg-opt').forEach(o => o.classList.remove('activo'));
-  el.classList.add('activo');
-  cfgActual.tema = tema;
-  // Si coincide con el del sistema no es una elección propia: sigue al sistema
-  temaPersonal = (tema !== TEMA_SISTEMA);
-  aplicarTema(tema);
-  window.CYS_TEMA_SITIO = tema;
-  guardarCfg(cfgActual);
-  mostrarToastPreferencia();
+// FIX: si el usuario había dejado un "Modo de color" del widget de accesibilidad
+// distinto de "Predeterminado" (Claro / Alto contraste), base.js lo reaplicaba
+// ENCIMA del tema elegido en cada navegación y por eso el color "no se quedaba".
+// Al elegir un tema aquí, ese modo vuelve a "Predeterminado".
+function liberarModoA11y() {
+  try {
+    const a = JSON.parse(localStorage.getItem('cys_a11y') || '{}');
+    if (a.modo && a.modo !== 'predeterminado') {
+      a.modo = 'predeterminado';
+      localStorage.setItem('cys_a11y', JSON.stringify(a));
+      if (typeof window.reaplicarA11yCYS === 'function') {
+        window.reaplicarA11yCYS();       // relee cys_a11y y reaplica con el tema elegido
+        aplicarFuente(cfgActual.fuente); // reaplicarA11yCYS pisa el tamaño de fuente
+      }
+    }
+  } catch (e) {}
+}
 
-  if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
-    pedirConfirmacionTemaSistema(tema);
+// FIX: ya no depende de que se pase `el` (si llegaba null, lanzaba un error
+// en la primera línea y no se hacía NADA: ni color, ni guardado, ni aviso).
+// Se marca la opción activa por su data-tema.
+function seleccionarTema(tema, el) {
+  try {
+    if (!NOMBRES_TEMA[tema]) return;
+
+    TEMA_SISTEMA = leerTemaSistema();
+
+    document.querySelectorAll('#opcionesTema .cfg-opt').forEach(o =>
+      o.classList.toggle('activo', o.dataset.tema === tema));
+
+    cfgActual.tema = tema;
+    // Si coincide con el del sistema no es una elección propia: sigue al sistema
+    temaPersonal = (tema !== TEMA_SISTEMA);
+
+    aplicarTema(tema);
+    window.CYS_TEMA_SITIO = tema;
+    liberarModoA11y();
+    guardarCfg(cfgActual);
+    mostrarToastPreferencia();
+
+    if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
+      pedirConfirmacionTemaSistema(tema);
+    }
+  } catch (err) {
+    console.error('[CYS] Error al cambiar el tema:', err);
   }
 }
 
 function pedirConfirmacionTemaSistema(tema) {
   temaPendiente = tema;
-  document.getElementById('temaConfirmNombre').textContent = NOMBRES_TEMA[tema] || tema;
-  document.getElementById('temaConfirmError').style.display = 'none';
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTemaSistema')).show();
+  const nombre  = NOMBRES_TEMA[tema] || tema;
+  const modalEl = document.getElementById('modalTemaSistema');
+
+  if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+    const nombreEl = document.getElementById('temaConfirmNombre');
+    const errorEl  = document.getElementById('temaConfirmError');
+    if (nombreEl) nombreEl.textContent = nombre;
+    if (errorEl)  errorEl.style.display = 'none';
+    try {
+      window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      return;
+    } catch (err) {
+      console.error('[CYS] No se pudo abrir el modal de tema del sistema:', err);
+    }
+  } else {
+    console.warn('[CYS] Falta #modalTemaSistema en el HTML o Bootstrap no está cargado.');
+  }
+
+  // Respaldo: si el modal no existe o falla, igual se pregunta al administrador
+  if (window.confirm(`¿Establecer "${nombre}" como tema predeterminado de todo el sistema?`)) {
+    confirmarTemaSistema();
+  } else {
+    temaPendiente = null;
+  }
 }
 
 async function confirmarTemaSistema() {
@@ -341,8 +409,8 @@ async function confirmarTemaSistema() {
 
   const btn     = document.getElementById('btnConfirmarTemaSistema');
   const errorEl = document.getElementById('temaConfirmError');
-  errorEl.style.display = 'none';
-  btn.disabled = true;
+  if (errorEl) errorEl.style.display = 'none';
+  if (btn) btn.disabled = true;
 
   const fd = new FormData();
   fd.append('tema', temaPendiente);
@@ -357,31 +425,40 @@ async function confirmarTemaSistema() {
 
     if (data.ok) {
       TEMA_SISTEMA = temaPendiente;
-      temaPersonal = false;     // el admin ahora sigue el tema del sistema
-      guardarCfg(cfgActual);    // quita "tema" y la marca del localStorage
+      // FIX: el administrador CONSERVA también su elección en este navegador.
+      // Antes se borraba y dependía 100% de que el servidor devolviera el tema
+      // nuevo en la siguiente página; si lo devolvía viejo, el color se revertía.
+      temaPersonal = true;
+      cfgActual.tema = TEMA_SISTEMA;
+      guardarCfg(cfgActual);
       window.CYS_TEMA_SISTEMA = TEMA_SISTEMA;
       window.CYS_TEMA_SITIO   = TEMA_SISTEMA;
       // Mantiene <html data-tema-sistema> al día aunque htmx no recargue el <html>
       document.documentElement.dataset.temaSistema = TEMA_SISTEMA;
       actualizarEtiquetaTemaSistema();
-      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTemaSistema')).hide();
+      const modalEl = document.getElementById('modalTemaSistema');
+      if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+      }
       mostrarToast('Tema predeterminado del sistema actualizado');
       temaPendiente = null;
     } else {
-      errorEl.textContent = data.error || 'No se pudo establecer el tema del sistema.';
-      errorEl.style.display = 'block';
+      const msg = data.error || 'No se pudo establecer el tema del sistema.';
+      if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+      else mostrarToast(msg, 'error');
     }
   } catch (e) {
-    errorEl.textContent = 'Error de conexión con el servidor.';
-    errorEl.style.display = 'block';
+    const msg = 'Error de conexión con el servidor.';
+    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+    else mostrarToast(msg, 'error');
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
 function seleccionarInicio(valor, el) {
-  document.querySelectorAll('#opcionesInicio .cfg-opt').forEach(o => o.classList.remove('activo'));
-  el.classList.add('activo');
+  document.querySelectorAll('#opcionesInicio .cfg-opt').forEach(o =>
+    o.classList.toggle('activo', o.dataset.inicio === valor));
   cfgActual.paginaInicio = valor;
   guardarCfg(cfgActual);
   document.cookie = `cys_pagina_inicio=${valor}; path=/; max-age=31536000; SameSite=Lax`;
@@ -638,6 +715,7 @@ async function generarRespaldo() {
 // ══════════════════════════════════════════
 function mostrarToast(msg = 'Configuración guardada', tipo = 'ok') {
   const t = document.getElementById('cfg-toast');
+  if (!t) return;
   t.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${msg}`;
   if (tipo === 'error') {
     t.style.background  = 'rgba(192,57,43,.15)';

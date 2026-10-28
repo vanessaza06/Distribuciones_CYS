@@ -10,6 +10,7 @@
     //
     // --azul-oscuro  -> fondo del header y del aside
     // --azul-medio   -> fondo de la franja del título (.cys-subnav)
+    // --btn-close-filter -> filtro de la X de cierre de los modales
     const temas = {
         oscuro: {
             '--fondo':'#011936','--fondo-card':'#0a2240','--fondo-card2':'#0d2a4d',
@@ -17,6 +18,7 @@
             '--azul-borde':'rgba(77,168,218,.2)','--azul-oscuro':'#05244a',
             '--azul-medio':'#0F3B6C','--azul-glow':'rgba(77,168,218,.15)',
             '--verde':'#2ecc71','--rojo':'#c0392b','--blanco':'#e8edf2','--gris-claro':'#8899aa',
+            '--btn-close-filter':'brightness(0) saturate(100%) invert(1)',
         },
         claro: {
             '--fondo':'#f0f4f8','--fondo-card':'#ffffff','--fondo-card2':'#e8eef5',
@@ -24,6 +26,7 @@
             '--azul-borde':'rgba(178,42,26,.18)','--azul-oscuro':'#ddeaf5',
             '--azul-medio':'#cfe0f0','--azul-glow':'rgba(178,42,26,.12)',
             '--verde':'#1a8a4a','--rojo':'#B22A1A','--blanco':'#1a2a3a','--gris-claro':'#3a5a7a',
+            '--btn-close-filter':'none',
         },
         'alto-contraste': {
             '--fondo':'#000000','--fondo-card':'#0a0a0a','--fondo-card2':'#111111',
@@ -31,6 +34,7 @@
             '--azul-borde':'rgba(0,207,255,.4)','--azul-oscuro':'#001a22',
             '--azul-medio':'#00262f','--azul-glow':'rgba(0,207,255,.25)',
             '--verde':'#00ff88','--rojo':'#ff4444','--blanco':'#ffffff','--gris-claro':'#aaaaaa',
+            '--btn-close-filter':'brightness(0) saturate(100%) invert(1)',
         },
         basecys: {
             '--fondo':'#241008','--fondo-card':'#34160D','--fondo-card2':'#421B10',
@@ -38,6 +42,7 @@
             '--azul-borde':'rgba(217,164,65,.25)','--azul-oscuro':'#1A0A06',
             '--azul-medio':'#4A2216','--azul-glow':'rgba(217,164,65,.15)',
             '--verde':'#8AB86F','--rojo':'#B0392E','--blanco':'#F2DFB8','--gris-claro':'#B89868',
+            '--btn-close-filter':'brightness(0) saturate(100%) invert(1)',
         },
         sepia: {
             '--fondo':'#1a0f05','--fondo-card':'#2c1f0e','--fondo-card2':'#3d2b14',
@@ -45,6 +50,7 @@
             '--azul-borde':'rgba(212,160,96,.25)','--azul-oscuro':'#150c04',
             '--azul-medio':'#4a3418','--azul-glow':'rgba(212,160,96,.15)',
             '--verde':'#7ab870','--rojo':'#c05030','--blanco':'#f5e6c8','--gris-claro':'#907060',
+            '--btn-close-filter':'brightness(0) saturate(100%) invert(1)',
         },
     };
 
@@ -89,6 +95,53 @@
     // Tema efectivo de este usuario: el widget de accesibilidad lo restaura
     // cuando su modo está en "predeterminado" en vez de forzar 'oscuro'.
     window.CYS_TEMA_SITIO = temaInicial;
+
+    // ── RESINCRONIZACIÓN DEL TEMA (necesaria con htmx / hx-boost) ──
+    // Con hx-boost la página NO se recarga al navegar, así que este archivo
+    // no se vuelve a ejecutar y el <html> tampoco se reemplaza. Por eso:
+    //  1) si la respuesta de htmx trae una página completa, se lee de ella el
+    //     data-tema-sistema actual (así el tema que fijó el admin para todo el
+    //     sistema le llega a los usuarios que no tienen tema propio);
+    //  2) se vuelve a leer localStorage (tema personal) y se reaplica todo.
+    // configuracion.js puede llamarla justo después de guardar el tema.
+    function sincronizarTemaCYS(evt) {
+        try {
+            const xhr = evt && evt.detail && evt.detail.xhr;
+            const html = (xhr && typeof xhr.responseText === 'string') ? xhr.responseText : '';
+            const m = html.match(/<html[^>]*\sdata-tema-sistema="([^"]*)"/i);
+            if (m && temas[m[1]]) root.dataset.temaSistema = m[1];
+        } catch (e) {}
+
+        let cfgActual = {};
+        try { cfgActual = JSON.parse(localStorage.getItem('cys_config') || '{}'); } catch (e) { cfgActual = {}; }
+
+        const sistemaActual = temas[root.dataset.temaSistema] ? root.dataset.temaSistema : 'oscuro';
+        const temaActual = (cfgActual.temaPersonal === true && temas[cfgActual.tema]) ? cfgActual.tema : sistemaActual;
+
+        window.CYS_TEMA_SISTEMA = sistemaActual;
+        window.CYS_TEMA_SITIO = temaActual;
+
+        aplicarTema(temaActual);
+        aplicarDensidad(cfgActual.densidad);
+
+        // El modo de accesibilidad (si no es "predeterminado") se aplica encima, igual que al cargar
+        if (typeof window.reaplicarA11yCYS === 'function') window.reaplicarA11yCYS();
+    }
+    window.sincronizarTemaCYS = sincronizarTemaCYS;
+
+    // Después de cada navegación/intercambio de htmx
+    document.addEventListener('htmx:afterSettle', sincronizarTemaCYS);
+
+    // Al volver con el botón atrás/adelante (htmx restaura la página desde su caché)
+    document.addEventListener('htmx:historyRestore', function () { sincronizarTemaCYS(); });
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) sincronizarTemaCYS();
+    });
+
+    // Si el tema o la accesibilidad cambian desde otra pestaña
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'cys_config' || e.key === 'cys_a11y') sincronizarTemaCYS();
+    });
 })();
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('[title]').forEach(function (el) {
@@ -170,6 +223,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Aplica de inmediato al cargar la página (antes de esperar el DOM completo)
     aplicarTodoA11y(configA11y);
+
+    // Permite que la resincronización del tema (primer bloque de este archivo)
+    // vuelva a leer 'cys_a11y' y reaplique el modo de color tras una navegación htmx.
+    window.reaplicarA11yCYS = function () {
+        configA11y = cargarConfigA11y();
+        aplicarTodoA11y(configA11y);
+    };
 
     document.addEventListener('DOMContentLoaded', function () {
 
