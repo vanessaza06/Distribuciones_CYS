@@ -1,4 +1,14 @@
-import pandas as pd
+from importlib import import_module
+
+try:
+    pd = import_module("pandas")
+except ModuleNotFoundError as exc:
+    if exc.name == "pandas":
+        raise SystemExit(
+            "No se encontró pandas. Instálalo en el entorno de Python activo con: "
+            "python -m pip install pandas openpyxl"
+        ) from exc
+    raise
 import warnings
 warnings.filterwarnings('ignore')
 
