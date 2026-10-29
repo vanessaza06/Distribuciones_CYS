@@ -730,7 +730,6 @@ class DetalleCompra(models.Model):
         return f"Detalle #{self.numero_compra} - Compra #{self.compra.codigo_compra}"
 
     @property
-    @property
     def subtotal(self):
         return self.subtotal_compra
 

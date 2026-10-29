@@ -63,7 +63,6 @@
     function aplicarTema(nombreTema) {
         const vars = temas[nombreTema] || temas.oscuro;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-        HEAD
         root.dataset.cysTema = nombreTema;
         const esClaro = (nombreTema === 'claro');
         root.classList.toggle('cys-modo-claro', esClaro);

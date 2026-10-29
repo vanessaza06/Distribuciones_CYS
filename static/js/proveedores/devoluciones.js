@@ -25,10 +25,11 @@
         if (typeof api.buttons === 'function') {
           var dtBtns = api.buttons().container();
           if (dtBtns && dtBtns.length) {
-            dtBtns.addClass('d-none');
-            if (!document.body.contains(dtBtns[0])) container.appendChild(dtBtns[0]);
+            dtBtns.remove();
           }
         }
+        var extraBtns = container.querySelectorAll('.dt-buttons, .cys-dt-btn-excel, .cys-dt-btn-pdf');
+        extraBtns.forEach(function(el) { el.remove(); });
       } catch (eBtns) {}
 
       var btnPdf = container.querySelector('[data-cys-export="pdf"]');

@@ -1534,9 +1534,11 @@ html[data-tema="claro"] .cys-dropdown-export .dropdown-item:hover,
 html.cys-a11y-modo-claro .cat-dropdown-export .dropdown-item:hover,
 html.cys-a11y-modo-claro .cys-dropdown-export .dropdown-item:hover {
   background: #dbe4ee !important;
-=======
+}
+
+/* ════════════════════════════════════════════════════════════════
    REGLAS GLOBALES PARA MODO CLARO (Legibilidad y Estética)
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 html.cys-a11y-modo-claro,
 html.cys-modo-claro,
 html[data-cys-tema="claro"] {
@@ -1562,6 +1564,5 @@ html[data-cys-tema="claro"] .text-white-50 {
 html.cys-a11y-modo-claro .cys-subnav__page,
 html.cys-modo-claro .cys-subnav__page,
 html[data-cys-tema="claro"] .cys-subnav__page {
->>>>>>> 62e80e86682ffe9aa02b98464cd818356fbf3b98
   color: #0f172a !important;
 }
