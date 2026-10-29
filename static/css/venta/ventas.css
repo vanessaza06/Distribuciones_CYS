@@ -5,9 +5,8 @@
    --azul-claro, --azul-oscuro, --azul-borde, --verde, --rojo).
    Este archivo NO define fondo ni color base de la página: eso lo
    pone el CSS global, igual que home.css y compras.css.
-   --cys-dorado (CF9C48) es el único color fijo de marca: queda
-   reservado para lo que antes era rojo/peligro (cancelar, eliminar,
-   alertas, stock crítico, faltante) y los acentos de borde/hover.
+   --cys-marca  -> acentos de borde/hover/brillo (sigue el acento del tema)
+   --cys-rojo   -> peligro: cancelar, eliminar, alertas, stock bajo, faltante
    ════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -20,8 +19,8 @@
   --cys-verde:          var(--verde);
   --cys-rojo:           var(--rojo);
   --cys-cian-brillante: var(--azul-claro);
-  --cys-dorado:         var(--dorado, #CF9C48);   /* color de marca fijo */
-  --cys-dorado-texto:   #2A1E05;                  /* texto sobre fondo dorado */
+  --cys-marca:          var(--azul-claro);   /* acentos de borde / hover / brillo */
+  --cys-peligro-texto:  #ffffff;             /* texto sobre fondo de peligro sólido */
 }
 
 /* ── CONTENEDOR GENERAL ──
@@ -44,9 +43,9 @@ body,
 /* ── Alertas de Bootstrap alineadas a la paleta CYS ── */
 .cys-pos-wrapper .alert-danger,
 .cys-page-wrapper .alert-danger {
-  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
-  color: var(--cys-dorado) !important;
+  background: color-mix(in srgb, var(--cys-rojo) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-rojo) 35%, transparent) !important;
+  color: var(--cys-rojo) !important;
 }
 .cys-pos-wrapper .alert-info,
 .cys-page-wrapper .alert-info {
@@ -63,7 +62,7 @@ body,
   background-color: var(--fondo-card) !important;
   background: var(--fondo-card) !important;
   border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
-  border-left: 3px solid var(--cys-dorado) !important;
+  border-left: 3px solid var(--cys-marca) !important;
   border-radius: 12px;
   padding: 1.25rem;
   color: var(--texto) !important;
@@ -80,7 +79,7 @@ body,
   flex-shrink: 0;
 }
 .cys-icon-circle--verde { background: color-mix(in srgb, var(--verde) 10%, transparent); }
-.cys-icon-circle--rojo  { background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); }
+.cys-icon-circle--rojo  { background: color-mix(in srgb, var(--cys-rojo) 10%, transparent); }
 .cys-icon-circle--verde i { color: var(--cys-verde); font-size: 0.6rem; }
 .cys-icon-circle--rojo  i { color: var(--cys-rojo); font-size: 1.1rem; }
 
@@ -143,9 +142,9 @@ body,
 }
 
 .cys-btn-action-rojo {
-  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent);
-  color: var(--cys-dorado);
+  background: color-mix(in srgb, var(--cys-rojo) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cys-rojo) 30%, transparent);
+  color: var(--cys-rojo);
   border-radius: 50px;
   padding: 8px 24px;
   font-size: 0.9rem;
@@ -157,8 +156,8 @@ body,
   cursor: pointer;
 }
 .cys-btn-action-rojo:hover {
-  background: color-mix(in srgb, var(--cys-dorado) 20%, transparent);
-  border-color: var(--cys-dorado);
+  background: color-mix(in srgb, var(--cys-rojo) 20%, transparent);
+  border-color: var(--cys-rojo);
 }
 
 /* ══════════════════════════════════════
@@ -289,7 +288,7 @@ body,
 /* ══════════════════════════════════════
    FIX 1 — ALERTA DE CLIENTE OBLIGATORIO
    Mismo estilo tipográfico que la página
-   (sans-serif, peso 600, dorado CYS para peligro/error)
+   (sans-serif, peso 600, rojo del tema para peligro/error)
 ══════════════════════════════════════ */
 .cys-campo-error {
   display: flex;
@@ -297,8 +296,8 @@ body,
   gap: 6px;
   margin-top: 6px;
   padding: 6px 10px;
-  background: color-mix(in srgb, var(--cys-dorado) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 25%, transparent);
+  background: color-mix(in srgb, var(--cys-rojo) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cys-rojo) 25%, transparent);
   border-radius: 6px;
   color: var(--cys-rojo);
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -315,7 +314,7 @@ body,
 /* Estado de error en el input */
 .cys-input-error {
   border-color: var(--cys-rojo) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cys-dorado) 15%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cys-rojo) 15%, transparent) !important;
 }
 
 /* ══════════════════════════════════════
@@ -324,7 +323,7 @@ body,
 .cys-cat-card-premium {
   background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  border-left: 3px solid var(--cys-dorado);
+  border-left: 3px solid var(--cys-marca);
   border-radius: 12px;
   padding: 1.1rem 1rem;
   text-align: left;
@@ -333,10 +332,10 @@ body,
   transition: all 0.2s ease-in-out;
 }
 .cys-cat-card-premium:hover {
-  border-color: var(--cys-dorado) !important;
+  border-color: var(--cys-marca) !important;
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
   transform: translateY(-3px);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-marca) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-marca) 5%, transparent) !important;
 }
 
 /* Variante centrada (vista de categorías padre) */
@@ -365,7 +364,7 @@ body,
   height: 32px;
   border-radius: 8px;
   background: var(--fondo) !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-marca) 35%, transparent) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -412,8 +411,8 @@ body,
   flex-shrink: 0;
 }
 .cys-stock-badge--ok      { color: var(--cys-verde); background: color-mix(in srgb, var(--verde) 10%, transparent); border-color: color-mix(in srgb, var(--verde) 25%, transparent); }
-.cys-stock-badge--bajo    { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 6%, transparent); border-color: color-mix(in srgb, var(--cys-dorado) 18%, transparent); }
-.cys-stock-badge--critico { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 18%, transparent); border-color: color-mix(in srgb, var(--cys-dorado) 40%, transparent); }
+.cys-stock-badge--bajo    { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-rojo) 6%, transparent); border-color: color-mix(in srgb, var(--cys-rojo) 18%, transparent); }
+.cys-stock-badge--critico { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-rojo) 18%, transparent); border-color: color-mix(in srgb, var(--cys-rojo) 40%, transparent); }
 
 /* ══════════════════════════════════════
    FORMULARIO DE VENTA / CARRITO
@@ -860,14 +859,14 @@ body,
 
 .cys-btn-cancel {
   background: transparent !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 30%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-rojo) 30%, transparent) !important;
   color: var(--cys-rojo) !important;
   border-radius: 8px !important;
   padding: 10px 14px;
   transition: all 0.2s;
 }
 .cys-btn-cancel:hover {
-  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent) !important;
+  background: color-mix(in srgb, var(--cys-rojo) 10%, transparent) !important;
   border-color: var(--cys-rojo) !important;
 }
 .cys-btn-cancel.cys-btn-block-lg {
@@ -877,20 +876,20 @@ body,
 
 /* Variante sólida para acciones de "peligro" importantes (ej. cerrar caja) */
 .cys-btn-cancel--peligro {
-  background: color-mix(in srgb, var(--cys-dorado) 90%, transparent) !important;
-  border: 1px solid var(--cys-dorado) !important;
-  color: var(--cys-dorado-texto) !important;
+  background: color-mix(in srgb, var(--cys-rojo) 90%, transparent) !important;
+  border: 1px solid var(--cys-rojo) !important;
+  color: var(--cys-peligro-texto) !important;
   font-weight: 700 !important;
 }
 .cys-btn-cancel--peligro:hover {
-  background: var(--cys-dorado) !important;
-  border-color: var(--cys-dorado) !important;
+  background: var(--cys-rojo) !important;
+  border-color: var(--cys-rojo) !important;
 }
 
 /* Botón eliminar fila (historial) */
 .cys-btn-eliminar-fila {
-  background: color-mix(in srgb, var(--cys-dorado) 8%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 20%, transparent) !important;
+  background: color-mix(in srgb, var(--cys-rojo) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-rojo) 20%, transparent) !important;
   color: var(--cys-rojo) !important;
   border-radius: 8px !important;
   padding: 5px 9px;
@@ -898,7 +897,7 @@ body,
   transition: all 0.2s;
 }
 .cys-btn-eliminar-fila:hover {
-  background: color-mix(in srgb, var(--cys-dorado) 18%, transparent) !important;
+  background: color-mix(in srgb, var(--cys-rojo) 18%, transparent) !important;
   border-color: var(--cys-rojo) !important;
 }
 
@@ -1279,7 +1278,7 @@ body,
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent);
+  background: color-mix(in srgb, var(--cys-rojo) 10%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1384,39 +1383,39 @@ body,
    ══════════════════════════════════════════════════════ */
 
 /* ── Estado de Caja (tarjetas KPI) — variantes ── */
-.cys-caja-card--abierta  { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--abierta  { border-left-color: var(--cys-marca) !important; background: var(--fondo-card) !important; }
 .cys-caja-card--cerrada  { border-left-color: var(--cys-rojo) !important; background: var(--fondo-card) !important; }
-.cys-caja-card--base     { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
-.cys-caja-card--ventas   { border-left-color: var(--cys-dorado) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--base     { border-left-color: var(--cys-marca) !important; background: var(--fondo-card) !important; }
+.cys-caja-card--ventas   { border-left-color: var(--cys-marca) !important; background: var(--fondo-card) !important; }
 
 .cys-caja-card-icono-box {
   width: 38px; height: 38px;
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   background: var(--fondo) !important;
-  border: 1px solid var(--cys-dorado) !important;
+  border: 1px solid var(--cys-marca) !important;
 }
 .cys-caja-card-icono-box--verde  { background: var(--fondo) !important; }
 .cys-caja-card-icono-box--rojo   { background: var(--fondo) !important; }
 .cys-caja-card-icono-box--acento { background: var(--fondo) !important; }
 
 .cys-caja-card-icono-box i { font-size: 1rem; }
-.cys-caja-card-icono-box--verde i  { color: var(--cys-dorado) !important; }
+.cys-caja-card-icono-box--verde i  { color: var(--cys-marca) !important; }
 .cys-caja-card-icono-box--rojo i   { color: var(--cys-rojo) !important; }
-.cys-caja-card-icono-box--acento i { color: var(--cys-dorado) !important; }
-.cys-caja-card-icono-box--verde i.bi-circle-fill { font-size: 0.6rem; color: var(--cys-dorado) !important; }
+.cys-caja-card-icono-box--acento i { color: var(--cys-marca) !important; }
+.cys-caja-card-icono-box--verde i.bi-circle-fill { font-size: 0.6rem; color: var(--cys-marca) !important; }
 
-/* Íconos en dorado para las cards Abierta / Base / Ventas */
+/* Íconos en color de marca para las cards Abierta / Base / Ventas */
 .cys-caja-card--abierta .cys-caja-card-icono-box,
 .cys-caja-card--base .cys-caja-card-icono-box,
 .cys-caja-card--ventas .cys-caja-card-icono-box {
   background: var(--fondo) !important;
-  border: 1px solid var(--cys-dorado) !important;
+  border: 1px solid var(--cys-marca) !important;
 }
 .cys-caja-card--abierta .cys-caja-card-icono-box i,
 .cys-caja-card--base .cys-caja-card-icono-box i,
 .cys-caja-card--ventas .cys-caja-card-icono-box i {
-  color: var(--cys-dorado) !important;
+  color: var(--cys-marca) !important;
 }
 
 .cys-caja-badge {
@@ -1425,7 +1424,7 @@ body,
   text-transform: uppercase; letter-spacing: 0.4px;
 }
 .cys-caja-badge--verde  { color: var(--cys-verde); background: color-mix(in srgb, var(--verde) 10%, transparent); border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent); }
-.cys-caja-badge--rojo   { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-dorado) 25%, transparent); }
+.cys-caja-badge--rojo   { color: var(--cys-rojo); background: color-mix(in srgb, var(--cys-rojo) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-rojo) 25%, transparent); }
 .cys-caja-badge--acento { color: var(--cys-acento); background: color-mix(in srgb, var(--texto) 10%, transparent); border: 1px solid color-mix(in srgb, var(--texto) 25%, transparent); }
 
 .cys-caja-titulo       { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
@@ -1451,8 +1450,8 @@ body,
 }
 .cys-pres-item:hover {
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
-  border-color: var(--cys-dorado) !important;
-  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
+  border-color: var(--cys-marca) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-marca) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-marca) 5%, transparent) !important;
 }
 .cys-pres-item--sin-stock { cursor: not-allowed; opacity: .5; }
 .cys-pres-nombre { font-weight: 700; color: var(--texto); font-size: .9rem; }
@@ -1483,7 +1482,7 @@ body,
   min-width: 70px; text-align: right; font-size: .9rem;
 }
 .cys-carrito-btn-quitar {
-  background: color-mix(in srgb, var(--cys-dorado) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-dorado) 20%, transparent);
+  background: color-mix(in srgb, var(--cys-rojo) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cys-rojo) 20%, transparent);
   color: var(--cys-rojo); border-radius: 6px; padding: 2px 7px; font-size: .8rem;
 }
 /* ══════════════════════════════════════
@@ -1623,15 +1622,15 @@ body,
 
 .cys-denom-card:hover {
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
-  border-color: var(--cys-dorado) !important;
+  border-color: var(--cys-marca) !important;
   transform: translateY(-2px);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-dorado) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-dorado) 5%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cys-marca) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--cys-marca) 5%, transparent) !important;
 }
 
 .cys-denom-card--active {
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
-  border-color: var(--cys-dorado) !important;
-  box-shadow: 0 0 18px color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
+  border-color: var(--cys-marca) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cys-marca) 35%, transparent) !important;
 }
 
 .cys-denom-card-header {
@@ -1639,7 +1638,7 @@ body,
   padding-bottom: 0.5rem;
 }
 
-/* Iconos y badges por denominación — fondo del tema con borde dorado */
+/* Iconos y badges por denominación — fondo del tema con borde de marca */
 .cys-denom-icon-wrapper,
 .cys-denom-icon--billete-100000,
 .cys-denom-icon--billete-50000,
@@ -1662,7 +1661,7 @@ body,
   font-weight: bold;
   color: var(--texto) !important;
   background: var(--cys-bg-card) !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 40%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-marca) 40%, transparent) !important;
 }
 
 .cys-denom-icon-wrapper i {
@@ -1693,9 +1692,9 @@ body,
 }
 
 .cys-denom-card--active .cys-denom-subtotal-badge {
-  background: color-mix(in srgb, var(--cys-dorado) 20%, transparent) !important;
-  color: var(--cys-dorado) !important;
-  border: 1px solid color-mix(in srgb, var(--cys-dorado) 35%, transparent) !important;
+  background: color-mix(in srgb, var(--cys-marca) 20%, transparent) !important;
+  color: var(--cys-marca) !important;
+  border: 1px solid color-mix(in srgb, var(--cys-marca) 35%, transparent) !important;
 }
 
 /* Stepper y botones */
@@ -1717,7 +1716,7 @@ body,
 
 .cys-btn-step:hover {
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
-  border-color: var(--cys-dorado) !important;
+  border-color: var(--cys-marca) !important;
   color: var(--texto) !important;
 }
 
@@ -1738,8 +1737,8 @@ body,
 
 .cys-chip-btn:hover {
   background: color-mix(in srgb, var(--azul-claro) 12%, var(--fondo-card)) !important;
-  color: var(--cys-dorado) !important;
-  border-color: var(--cys-dorado) !important;
+  color: var(--cys-marca) !important;
+  border-color: var(--cys-marca) !important;
   transform: translateY(-1px);
 }
 
