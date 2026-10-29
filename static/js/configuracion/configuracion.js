@@ -210,8 +210,54 @@ function aplicarZoom(val) {
   document.body.style.zoom = val === 100 ? '' : (val / 100);
 }
 function aplicarTema(tema) {
-  if (window.aplicarTemaCYS) {
+  const root = document.documentElement;
+  const vars = window.CYS_TEMAS && window.CYS_TEMAS[tema];
+
+  if (vars) {
+    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    const esClaro = (tema === 'claro');
+    root.dataset.cysTema = tema;
+    root.setAttribute('data-tema', tema);
+    root.classList.toggle('cys-modo-claro', esClaro);
+    root.classList.toggle('cys-a11y-modo-claro', esClaro);
+  } else if (window.aplicarTemaCYS) {
     window.aplicarTemaCYS(tema);
+  } else {
+    console.warn('[CYS] No existe window.CYS_TEMAS ni aplicarTemaCYS: base.js no está cargando bien.');
+  }
+}
+
+function seleccionarTema(tema, el) {
+  try {
+    if (!NOMBRES_TEMA[tema]) return;
+
+    TEMA_SISTEMA = leerTemaSistema();
+
+    document.querySelectorAll('#opcionesTema .cfg-opt').forEach(o =>
+      o.classList.toggle('activo', o.dataset.tema === tema));
+
+    cfgActual.tema = tema;
+    temaPersonal = (tema !== TEMA_SISTEMA);
+
+    window.CYS_TEMA_SITIO = tema;
+    liberarModoA11y();
+    guardarCfg(cfgActual);
+
+    // Mismo disparador que usa htmx al navegar (el que ya sabemos que funciona)
+    document.dispatchEvent(new CustomEvent('htmx:afterSettle'));
+    // Respaldo por si el listener tarda un ciclo
+    setTimeout(() => {
+      document.dispatchEvent(new CustomEvent('htmx:afterSettle'));
+      aplicarFuente(cfgActual.fuente);
+    }, 0);
+
+    mostrarToastPreferencia();
+
+    if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
+      pedirConfirmacionTemaSistema(tema);
+    }
+  } catch (err) {
+    console.error('[CYS] Error al cambiar el tema:', err);
   }
 }
 

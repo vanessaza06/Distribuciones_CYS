@@ -7,35 +7,49 @@
   font-display: swap;
 }
 
+/* =========================================================
+   VARIABLES — ahora salen del sistema de temas (base.js)
+   base.js pone --fondo, --fondo-card, --texto, --azul-claro...
+   en <html>; aquí solo se mapean a los nombres --cys-* de
+   esta página. Los valores de respaldo son el tema oscuro.
+   ========================================================= */
 :root {
-  --cys-bg: #0a1628;
-  --cys-surface: #0f2036;
-  --cys-surface-alt: #12243c;
-  --cys-border: #1d3050;
-  --cys-border-soft: #17273f;
+  --cys-bg: var(--fondo, #0a1628);
+  --cys-surface: var(--fondo-card, #0f2036);
+  --cys-surface-alt: var(--fondo-card2, #12243c);
+  --cys-border: var(--azul-borde, rgba(77, 168, 218, 0.2));
+  --cys-border-soft: color-mix(in srgb, var(--azul-claro, #4da8da) 14%, transparent);
 
-  --cys-text: #eef3fb;
-  --cys-text-secondary: #8ea3c4;
-  --cys-text-muted: #5c7195;
+  --cys-text: var(--texto, #eef3fb);
+  --cys-text-secondary: var(--texto-muted, #8ea3c4);
+  --cys-text-muted: var(--gris-claro, #5c7195);
 
-  --cys-amber: #f5b301;
-  --cys-amber-dark: #d99a00;
-  --cys-amber-soft: rgba(245, 179, 1, 0.12);
-  --cys-amber-border: rgba(245, 179, 1, 0.35);
+  /* Color de acento del tema (y color del texto que va encima) */
+  --cys-accent: var(--azul-claro, #4da8da);
+  --cys-accent-soft: var(--azul-glow, rgba(77, 168, 218, 0.15));
+  --cys-accent-border: color-mix(in srgb, var(--cys-accent) 40%, transparent);
+  --cys-on-accent: var(--fondo, #0a2240);
 
-  --cys-cyan: #4da8da;
-  --cys-cyan-soft: rgba(77, 168, 218, 0.12);
-  --cys-cyan-border: rgba(77, 168, 218, 0.55);
+  /* amber / cyan / blue ahora siguen el acento del tema */
+  --cys-amber: var(--cys-accent);
+  --cys-amber-dark: var(--cys-accent);
+  --cys-amber-soft: var(--cys-accent-soft);
+  --cys-amber-border: var(--cys-accent-border);
 
-  --cys-blue: #2f7bf5;
-  --cys-blue-soft: rgba(47, 123, 245, 0.12);
-  --cys-blue-border: rgba(47, 123, 245, 0.35);
-  --cys-green: #22c55e;
-  --cys-green-soft: rgba(34, 197, 94, 0.12);
-  --cys-green-border: rgba(34, 197, 94, 0.35);
-  --cys-red: #ef4444;
-  --cys-red-soft: rgba(239, 68, 68, 0.12);
-  --cys-red-border: rgba(239, 68, 68, 0.35);
+  --cys-cyan: var(--cys-accent);
+  --cys-cyan-soft: var(--cys-accent-soft);
+  --cys-cyan-border: color-mix(in srgb, var(--cys-accent) 55%, transparent);
+
+  --cys-blue: var(--cys-accent);
+  --cys-blue-soft: var(--cys-accent-soft);
+  --cys-blue-border: var(--cys-accent-border);
+
+  --cys-green: var(--verde, #22c55e);
+  --cys-green-soft: color-mix(in srgb, var(--cys-green) 14%, transparent);
+  --cys-green-border: color-mix(in srgb, var(--cys-green) 40%, transparent);
+  --cys-red: var(--rojo, #ef4444);
+  --cys-red-soft: color-mix(in srgb, var(--cys-red) 14%, transparent);
+  --cys-red-border: color-mix(in srgb, var(--cys-red) 40%, transparent);
 
   --cys-radius-sm: 8px;
   --cys-radius-md: 12px;
@@ -133,6 +147,12 @@
   color-scheme: dark;
 }
 
+/* El calendario nativo se ve claro u oscuro según el tema */
+:root.cys-modo-claro .cys-date-field input[type="date"],
+:root[data-tema="claro"] .cys-date-field input[type="date"] {
+  color-scheme: light;
+}
+
 .cys-date-field input[type="date"]:focus {
   border-color: var(--cys-cyan);
   box-shadow: 0 0 0 3px var(--cys-cyan-soft);
@@ -147,6 +167,11 @@
   cursor: pointer;
   opacity: 0.9;
   filter: invert(62%) sepia(46%) saturate(580%) hue-rotate(170deg) brightness(95%);
+}
+
+:root.cys-modo-claro .cys-date-field input[type="date"]::-webkit-calendar-picker-indicator,
+:root[data-tema="claro"] .cys-date-field input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
 }
 
 /* ---------- Exportar (botón + menú desplegable) ---------- */
@@ -165,7 +190,7 @@
 }
 
 .cys-btn--export:hover {
-  background: rgba(47, 123, 245, 0.2);
+  background: color-mix(in srgb, var(--cys-accent) 22%, transparent);
 }
 
 .cys-export__chevron {
@@ -251,8 +276,8 @@
 }
 
 .cys-btn--primary {
-  background: #4da8da;
-  color: #0a2240;
+  background: var(--cys-accent);
+  color: var(--cys-on-accent);
 }
 
 .cys-btn--primary:hover {
@@ -364,7 +389,7 @@
   align-items: center;
   justify-content: center;
   background: var(--cys-blue);
-  color: #fff;
+  color: var(--cys-on-accent);
   font-size: 15px;
 }
 
@@ -486,7 +511,7 @@
 }
 
 .cys-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--cys-text) 4%, transparent);
 }
 
 .cys-col-num {
@@ -561,7 +586,7 @@
 }
 
 .cys-action-btn--edit {
-  border-color: rgba(245, 179, 1, 0.4);
+  border-color: var(--cys-amber-border);
   color: var(--cys-amber);
 }
 
@@ -570,7 +595,7 @@
 }
 
 .cys-action-btn--activate {
-  border-color: rgba(34, 197, 94, 0.4);
+  border-color: var(--cys-green-border);
   color: var(--cys-green);
 }
 
@@ -579,7 +604,7 @@
 }
 
 .cys-action-btn--deactivate {
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: var(--cys-red-border);
   color: var(--cys-red);
 }
 
@@ -700,7 +725,7 @@
 .cys-page-numbers button.cys-page-numbers__active {
   background: var(--cys-amber);
   border-color: var(--cys-amber);
-  color: #1a1204;
+  color: var(--cys-on-accent);
   font-weight: 700;
 }
 
@@ -1076,8 +1101,8 @@
 }
 
 #cysMarcaForm .cys-btn--primary {
-  background: var(--cys-blue) !important;
-  color: #fff !important;
+  background: var(--cys-accent) !important;
+  color: var(--cys-on-accent) !important;
 }
 
 #cysMarcaForm .cys-btn--primary:hover {
@@ -1141,7 +1166,7 @@
 .cys-marcas-page #cysExportTrigger {
   height: 46px !important;
   background: var(--cys-blue-soft) !important;
-  background-color: rgba(47, 123, 245, 0.12) !important;
+  background-color: var(--cys-blue-soft) !important;
   border: 1px solid var(--cys-blue) !important;
   border-radius: var(--cys-radius-sm) !important;
   color: var(--cys-text) !important;
@@ -1152,7 +1177,7 @@
 }
 
 .cys-marcas-page .cys-btn.cys-btn--export:hover {
-  background-color: rgba(47, 123, 245, 0.2) !important;
+  background-color: color-mix(in srgb, var(--cys-accent) 22%, transparent) !important;
 }
 
 /* Menú de exportar: oculto por defecto, flotante, sin viñetas */
@@ -1265,7 +1290,7 @@
 /* ---------- Tarjetas de resumen (blindado) ----------
    Las 3 tarjetas (Marcas, Activas, Inactivas) usan EXACTAMENTE
    el mismo estilo que las de Stock & Productos:
-   borde izquierdo ámbar, número blanco, ícono ámbar tenue.
+   borde izquierdo de acento, número del color de texto, ícono de acento tenue.
    Sin variantes de color por tarjeta. */
 .cys-marcas-page .cys-stats {
   display: grid !important;
@@ -1340,9 +1365,9 @@
 button.cys-btn--primary,
 a.cys-btn--primary,
 #btnNuevaMarca.cys-btn {
-  background: #4da8da !important;
-  background-color: #4da8da !important;
-  color: #0a2240 !important;
+  background: var(--cys-accent) !important;
+  background-color: var(--cys-accent) !important;
+  color: var(--cys-on-accent) !important;
   border: 1px solid transparent !important;
   border-radius: var(--cys-radius-sm) !important;
   text-transform: none !important;
@@ -1528,7 +1553,7 @@ a.cys-btn--primary,
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  background: #0f2a4d;
+  background: var(--cys-surface-alt);
   border: 1px solid var(--cys-cyan-border);
   color: var(--cys-text);
   font-size: 12px;

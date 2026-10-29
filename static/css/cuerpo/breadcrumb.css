@@ -6,22 +6,26 @@
   font-size: .85rem;
 }
 
+/* Enlaces: gris suave del tema (en Oscuro es el mismo #8899aa de antes) */
 .cys-breadcrumb__link {
-  color: #8899aa;
+  color: var(--gris-claro, #8899aa);
   text-decoration: none;
   transition: color .15s ease;
 }
 
+/* Hover: color de acento del tema (celeste, rojo, dorado o cian según el tema) */
 .cys-breadcrumb__link:hover {
-  color: #4DA8DA;
+  color: var(--azul-claro, #4DA8DA);
 }
 
+/* Separador: el color de texto del tema, muy tenue, para que se vea en fondos claros y oscuros */
 .cys-breadcrumb__sep {
-  color: rgba(200,214,229,.3);
+  color: color-mix(in srgb, var(--texto, #c8d6e5) 30%, transparent);
   font-size: .7rem;
 }
 
+/* Página actual: el color de texto principal del tema */
 .cys-breadcrumb__current {
-  color: #c8d6e5;
+  color: var(--texto, #c8d6e5);
   font-weight: 600;
 }

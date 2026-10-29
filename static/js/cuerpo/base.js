@@ -63,7 +63,6 @@
     function aplicarTema(nombreTema) {
         const vars = temas[nombreTema] || temas.oscuro;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-        HEAD
         root.dataset.cysTema = nombreTema;
         const esClaro = (nombreTema === 'claro');
         root.classList.toggle('cys-modo-claro', esClaro);
@@ -81,7 +80,6 @@
                 root.classList.remove('cys-a11y-modo-claro');
             }
         }
-        
     }
 
     function aplicarDensidad(nombreDensidad) {
@@ -122,7 +120,7 @@
     //     data-tema-sistema actual (así el tema que fijó el admin para todo el
     //     sistema le llega a los usuarios que no tienen tema propio);
     //  2) se vuelve a leer localStorage (tema personal) y se reaplica todo.
-    // configuracion.js puede llamarla justo después de guardar el tema.
+    // configuracion.js la dispara justo después de guardar el tema.
     function sincronizarTemaCYS(evt) {
         try {
             const xhr = evt && evt.detail && evt.detail.xhr;
