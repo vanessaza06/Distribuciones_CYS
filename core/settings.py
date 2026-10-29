@@ -222,13 +222,13 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'principal'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Rutas (prefijos) accesibles SIN iniciar sesión. Agrega aquí las de tu app
-# de usuarios, por ejemplo recuperar contraseña.
 LOGIN_EXEMPT_URLS = [
     '/static/',
     '/media/',
     '/admin/',
-    '/logout/',
-    '/recuperar/',
-    '/password-reset/',
+    '/usuarios/login/',
+    '/usuarios/logout/',
+    '/usuarios/crear/',
+    '/usuarios/recuperar/',
+    '/usuarios/restablecer/',
 ]

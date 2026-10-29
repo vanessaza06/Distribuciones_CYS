@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 
 from app.models import (
-    Venta, DetalleVenta, Caja, Devolucion, DetalleDevolucion,
+    Venta, DetalleVenta, Caja, Devolucion, DetalleDevolucion, Usuario,
     Producto, Categoria, PresentacionProducto, Lote
 )
 
