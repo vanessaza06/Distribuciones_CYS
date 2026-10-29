@@ -59,8 +59,8 @@ html[data-tema="sepia"] .bot-wrap { --bot-on-accent: #150c04; }
 
 .bot-wrap.bot-intro .bot-mascota {
   animation: bot-entrada .9s cubic-bezier(.34, 1.56, .64, 1) both,
-             bot-saludo 1.2s ease-in-out .9s 3,
-             bot-flotar 4s ease-in-out 4.6s infinite;
+          bot-saludo 1.2s ease-in-out .9s 3,
+          bot-flotar 4s ease-in-out 4.6s infinite;
 }
 .bot-wrap.bot-regreso .bot-mascota {
   animation: bot-saludo 1s ease-in-out 2, bot-flotar 4s ease-in-out 2s infinite;

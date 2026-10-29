@@ -117,7 +117,25 @@
         </div>
 
         <div class="proveedor-actions d-flex align-items-center gap-2 flex-wrap">
-          <div id="cys-dt-export-compra" class="d-flex align-items-center gap-2"></div>
+          <div id="cys-dt-export-compra" class="d-flex align-items-center gap-2">
+            <div class="dropdown d-inline-block">
+              <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar compra">
+                <i class="bi bi-box-arrow-up me-2"></i>Exportar
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                <li>
+                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                  </button>
+                </li>
+                <li>
+                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                    <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
           <a href="{{ url_lista }}" class="btn btn-sm btn-filtro-proveedor d-flex align-items-center gap-2" title="Volver al listado de compras">
             <i class="bi bi-arrow-left"></i>
             <span>Volver a Compras</span>

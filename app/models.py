@@ -730,7 +730,6 @@ class DetalleCompra(models.Model):
         return f"Detalle #{self.numero_compra} - Compra #{self.compra.codigo_compra}"
 
     @property
-    @property
     def subtotal(self):
         return self.subtotal_compra
 
@@ -1384,6 +1383,7 @@ class ConfiguracionEmpresa(models.Model):
 
 class BackupRegistro(models.Model):
     nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, default="")
     ruta = models.CharField(max_length=500, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     tamaño_mb = models.FloatField(default=0)
