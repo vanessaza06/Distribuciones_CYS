@@ -117,18 +117,11 @@ def nueva_venta(request):
 
     caja_actual = obtener_caja_abierta()
     if not caja_actual:
-        denoms = {}
-        if vendedor:
-            denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
-        caja_actual = Caja.objects.create(
-            fecha_hora=timezone.now(),
-            monto_base=Decimal('0'),
-            total_efectivo=Decimal('0'),
-            total_transferencias=Decimal('0'),
-            total_retirado=Decimal('0'),
-            observacion='Turno iniciado automáticamente al registrar venta',
-            denominaciones=denoms,
+        messages.error(
+            request,
+            "La caja está bloqueada o cerrada. Debes abrir la caja e iniciar un turno antes de registrar una venta."
         )
+        return redirect('ventas')
 
     producto_ids = request.POST.getlist('producto_id[]')
     presentacion_ids = request.POST.getlist('presentacion_id[]')
@@ -325,6 +318,14 @@ def nueva_venta(request):
 
 @session_required
 def eliminar_venta(request, pk):
+    caja_actual = obtener_caja_abierta()
+    if not caja_actual:
+        messages.error(
+            request,
+            "No se puede eliminar la venta: la caja está bloqueada o cerrada. Debe haber un turno activo para realizar modificaciones."
+        )
+        return redirect('ventas')
+
     venta = get_object_or_404(Venta, pk=pk)
     if request.method == 'POST':
         with transaction.atomic():
@@ -333,14 +334,33 @@ def eliminar_venta(request, pk):
                 if det.lote:
                     det.lote.stock_actual += det.cantidad
                     det.lote.save(update_fields=['stock_actual'])
+
+            # Descontar de la caja activa si la venta correspondía a este turno
+            if venta.caja == caja_actual:
+                if venta.pago_efectivo:
+                    caja_actual.total_efectivo = max(Decimal('0'), (caja_actual.total_efectivo or Decimal('0')) - venta.pago_efectivo)
+                monto_digital = (venta.pago_tarjeta or Decimal('0')) + (venta.pago_transferencia or Decimal('0')) + (venta.pago_nequi or Decimal('0')) + (venta.pago_daviplata or Decimal('0'))
+                if monto_digital > Decimal('0'):
+                    caja_actual.total_transferencias = max(Decimal('0'), (caja_actual.total_transferencias or Decimal('0')) - monto_digital)
+                caja_actual.save(update_fields=['total_efectivo', 'total_transferencias'])
+
             venta.delete()
-            messages.success(request, "Venta eliminada y stock restituido a bodega.")
+            messages.success(request, f"Venta #{pk} eliminada exitosamente y stock restituido a bodega.")
     return redirect('ventas')
 
 
 @session_required
 @require_POST
 def cobrar_saldo_pendiente(request, pk):
+    caja_actual = obtener_caja_abierta()
+    redirect_url = request.META.get('HTTP_REFERER') or 'ventas'
+    if not caja_actual:
+        messages.error(
+            request,
+            "No se puede registrar el cobro: la caja está bloqueada o cerrada. Debe haber un turno activo para ingresar dinero."
+        )
+        return redirect(redirect_url)
+
     venta = get_object_or_404(Venta, pk=pk)
     redirect_url = request.META.get('HTTP_REFERER') or 'ventas'
 
