@@ -1,11 +1,12 @@
 """
 Vistas de Marcas (reemplaza tu archivo completo).
-Requiere: pip install openpyxl reportlab
+Requiere: pip install openpyxl reportlab Pillow
 """
 import base64
 import io
 import os
 import re
+from datetime import datetime  # noqa: F401  (por si lo usas en otros lados)
 
 from django.conf import settings
 from django.contrib import messages
@@ -351,113 +352,170 @@ def _resumen(filas):
 
 
 # ---------------------------------------------------------------------------
-# EXCEL
+# EXCEL  (diseño "Reporte de Marcas": banner azul noche + dorado)
 # ---------------------------------------------------------------------------
+XL_NAVY = "0A1A33"
+XL_GOLD = "C9A24B"
+XL_GOLD_LIGHT = "E8CE8A"
+XL_ZEBRA = "EEF1F5"
+XL_TXT = "0F1B2D"
+XL_VERDE_BG, XL_VERDE_TX = "D5EBD3", "17692A"
+XL_ROJO_BG, XL_ROJO_TX = "F6D5D5", "9B1C1C"
+XL_FUENTE = "Calibri"
+XL_FUENTE_TITULO = "Cambria"
+
+
+def _xl_fill(hex_):
+    return PatternFill("solid", start_color=hex_, end_color=hex_)
+
+
+def _imagen_franjas(ancho_px, alto_px):
+    """PNG con las franjas doradas diagonales de la esquina del banner. None si no hay Pillow."""
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+
+    k = 4  # supersampling para bordes suaves
+    W, H = ancho_px * k, alto_px * k
+    img = Image.new("RGB", (W, H), "#" + XL_NAVY)
+    d = ImageDraw.Draw(img)
+    skew = int(H * 0.9)
+
+    def franja(x0, x1, color):
+        d.polygon([(x0 + skew, 0), (x1 + skew, 0), (x1, H), (x0, H)], fill=color)
+
+    franja(int(W * 0.42), int(W * 0.62), "#" + XL_GOLD_LIGHT)
+    franja(int(W * 0.62), int(W * 0.68), "#" + XL_NAVY)
+    franja(int(W * 0.68), int(W * 0.74), "#" + XL_GOLD)
+    franja(int(W * 0.74), int(W * 0.80), "#" + XL_NAVY)
+    franja(int(W * 0.80), int(W * 0.84), "#" + XL_GOLD)
+
+    img = img.resize((ancho_px, alto_px), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    buf.seek(0)
+    return buf
+
+
 def exportar_marcas_excel(request):
     qs, filtros = _filtrar_marcas(request)
     filas = _filas(qs)
     total, activas, inactivas = _resumen(filas)
     encabezados = _encabezados()
-    n = len(encabezados)
+    n = len(encabezados)                 # 5 columnas (6 si el modelo tiene fecha)
     ultima = get_column_letter(n)
+    antes_ultima = get_column_letter(n - 1)
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Marcas"
-    ws.sheet_properties.tabColor = GOLD
+    ws.sheet_properties.tabColor = XL_GOLD
     ws.sheet_view.showGridLines = False
 
-    # Anchos de columna
-    anchos = [12, 28, 48, 13, 13, 16][:n]
+    anchos = [8, 34, 46, 16, 22, 18][:n]
     for idx, ancho in enumerate(anchos, start=1):
         ws.column_dimensions[get_column_letter(idx)].width = ancho
 
-    relleno_navy = PatternFill("solid", fgColor=NAVY)
-    relleno_oro = PatternFill("solid", fgColor=GOLD)
-
-    # --- Banner superior (filas 1-4) ---
-    for r in range(1, 5):
-        ws.row_dimensions[r].height = 24
+    # ---------- Banner (filas 1-3) ----------
+    alturas = {1: 26, 2: 40, 3: 28}
+    for r, h in alturas.items():
+        ws.row_dimensions[r].height = h
         for c in range(1, n + 1):
-            ws.cell(row=r, column=c).fill = relleno_navy
+            ws.cell(r, c).fill = _xl_fill(XL_NAVY)
 
-    ws.merge_cells(f"B1:{ultima}2")
-    ws["B1"] = "CYS LTDA · DISTRIBUCIONES"
-    ws["B1"].font = Font(name="Georgia", bold=True, size=20, color=GOLD)
-    ws["B1"].alignment = Alignment(vertical="center", horizontal="left", indent=1)
+    # "CYS LTDA"
+    ws.merge_cells("A1:B3")
+    ws["A1"] = "CYS LTDA"
+    ws["A1"].font = Font(name=XL_FUENTE_TITULO, size=30, color="FFFFFF")
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws.merge_cells(f"B3:{ultima}4")
-    ws["B3"] = "Reporte de marcas"
-    ws["B3"].font = Font(name="Calibri", size=14, color=CREAM)
-    ws["B3"].alignment = Alignment(vertical="top", horizontal="left", indent=1)
+    # Divisor dorado vertical
+    lado_oro = Side(style="thick", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
 
-    logo = _logo_png(200)
-    if logo:
-        img = XLImage(io.BytesIO(logo))
-        img.width, img.height = 92, 92
-        ws.add_image(img, "A1")
+    # Título y lema
+    ws.merge_cells(f"C1:{antes_ultima}2")
+    ws["C1"] = "Reporte de Marcas"
+    ws["C1"].font = Font(name=XL_FUENTE_TITULO, size=28, bold=True, color="FFFFFF")
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{antes_ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=14, italic=True, color="DCE3EE")
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
 
-    # Franja dorada
-    ws.row_dimensions[5].height = 5
+    # Franjas diagonales en la última columna
+    png = _imagen_franjas(int(anchos[-1] * 7 + 5), int(sum(alturas.values()) * 4 / 3))
+    if png:
+        img = XLImage(png)
+        img.anchor = f"{ultima}1"
+        ws.add_image(img)
+
+    # Línea dorada bajo el banner + espacio
+    ws.row_dimensions[4].height = 5
     for c in range(1, n + 1):
-        ws.cell(row=5, column=c).fill = relleno_oro
+        ws.cell(4, c).fill = _xl_fill(XL_GOLD)
+    ws.row_dimensions[5].height = 10
 
-    # Filtros y fecha de generación
-    ws.merge_cells(f"A6:{ultima}6")
-    ws["A6"] = f"{_texto_filtros(filtros)}   ·   Generado: {timezone.localtime():%d/%m/%Y %H:%M}"
-    ws["A6"].font = Font(italic=True, size=10, color="6B6B6B")
-    ws["A6"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
-    ws.row_dimensions[6].height = 22
-    ws.row_dimensions[7].height = 6
+    # ---------- Encabezado de tabla (fila 6) ----------
+    fila_enc = 6
+    ws.row_dimensions[fila_enc].height = 30
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=13, bold=True, color="FFFFFF")
+        c.fill = _xl_fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center")
+        c.border = Border(left=Side(style="thin", color="2A3A57"))
 
-    # --- Encabezado de la tabla ---
-    fila_enc = 8
-    ws.row_dimensions[fila_enc].height = 26
-    borde_oro = Border(bottom=Side(style="medium", color=GOLD))
-    for c, texto in enumerate(encabezados, start=1):
-        cell = ws.cell(row=fila_enc, column=c, value=texto)
-        cell.font = Font(bold=True, color=GOLD, size=11)
-        cell.fill = relleno_navy
-        cell.border = borde_oro
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    # --- Datos ---
-    borde_fino = Border(
-        left=Side(style="thin", color=BORDE), right=Side(style="thin", color=BORDE),
-        top=Side(style="thin", color=BORDE), bottom=Side(style="thin", color=BORDE),
-    )
+    # ---------- Datos ----------
+    fino = Side(style="thin", color="D5DAE1")
     for k, fila in enumerate(filas):
         r = fila_enc + 1 + k
-        ws.row_dimensions[r].height = 21
-        for c, valor in enumerate(fila, start=1):
-            cell = ws.cell(row=r, column=c, value=valor)
-            cell.border = borde_fino
-            cell.font = Font(size=11, color="1F2937")
-            if k % 2 == 1:
-                cell.fill = PatternFill("solid", fgColor=ZEBRA)
-            if c in (1, 4, 5, 6):
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif c == 3:
-                cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True, indent=1)
-            else:
-                cell.alignment = Alignment(horizontal="left", vertical="center", indent=1)
-        # Marca en negrita y estado con color
-        ws.cell(row=r, column=2).font = Font(bold=True, size=11, color=NAVY)
-        est = ws.cell(row=r, column=5)
-        est.font = Font(bold=True, size=11, color=VERDE if fila[4] == "Activa" else ROJO)
+        ws.row_dimensions[r].height = 24
+        bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
+        activa = fila[4] == "Activa"
+        for i, valor in enumerate(fila, start=1):
+            if i == 5:
+                valor = "●  " + valor
+            c = ws.cell(r, i, valor)
+            c.fill = _xl_fill(bg)
+            c.font = Font(name=XL_FUENTE, size=12, color=XL_TXT, bold=(i == 2))
+            c.border = Border(bottom=fino, left=fino if i > 1 else None)
+            izquierda = i in (2, 3)
+            c.alignment = Alignment(
+                horizontal="left" if izquierda else "center",
+                vertical="center",
+                indent=1 if izquierda else 0,
+                wrap_text=(i == 3),
+            )
+        # Estado tipo "píldora"
+        e = ws.cell(r, 5)
+        e.fill = _xl_fill(XL_VERDE_BG if activa else XL_ROJO_BG)
+        e.font = Font(name=XL_FUENTE, size=12, bold=True, color=XL_VERDE_TX if activa else XL_ROJO_TX)
 
-    # --- Totales ---
-    r_tot = fila_enc + len(filas) + 2
-    ws.merge_cells(f"A{r_tot}:{ultima}{r_tot}")
-    ws[f"A{r_tot}"] = f"Total: {total} marcas   ·   Activas: {activas}   ·   Inactivas: {inactivas}"
-    ws[f"A{r_tot}"].font = Font(bold=True, size=11, color=NAVY)
-    ws[f"A{r_tot}"].alignment = Alignment(horizontal="right", vertical="center", indent=1)
-    ws.row_dimensions[r_tot].height = 24
+    # ---------- Pie ----------
+    r = fila_enc + len(filas) + 1
+    ws.row_dimensions[r].height = 6
     for c in range(1, n + 1):
-        ws.cell(row=r_tot, column=c).fill = PatternFill("solid", fgColor=CREAM)
-        ws.cell(row=r_tot, column=c).border = Border(top=Side(style="medium", color=GOLD))
+        ws.cell(r, c).fill = _xl_fill(XL_GOLD)
 
-    # Extras: filtros, congelar encabezado, impresión
+    textos_pie = [
+        f"Total: {total} marcas   ·   Activas: {activas}   ·   Inactivas: {inactivas}",
+        f"{_texto_filtros(filtros)}   ·   Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
+    ]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = r + j
+        ws.row_dimensions[rr].height = 24
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        for c in range(1, n + 1):
+            ws.cell(rr, c).fill = _xl_fill(XL_NAVY)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2),
+                      color="FFFFFF" if j == 1 else "DCE3EE")
+        p.alignment = Alignment(horizontal="center", vertical="center")
+
+    # ---------- Extras ----------
     if filas:
         ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
     ws.freeze_panes = f"A{fila_enc + 1}"
