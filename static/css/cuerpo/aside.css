@@ -769,3 +769,52 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   font-weight: 600;
   letter-spacing: .05em;
 }
+/* ============================================================
+   SCROLL DEL ASIDE (texto agrandado / pantallas bajas)
+   ============================================================ */
+#sidebarRight:not(.cys-sb-mini) {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+#sidebarRight:not(.cys-sb-mini) .cys-sb-header {
+  flex: 0 0 auto !important;
+}
+
+#sidebarRight:not(.cys-sb-mini) .cys-sb-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-bottom: 1.5rem;
+}
+
+#sidebarRight:not(.cys-sb-mini) .cys-sb-section,
+#sidebarRight:not(.cys-sb-mini) .cys-sb-nav,
+#sidebarRight:not(.cys-sb-mini) .cys-sb-inventario-wrap,
+#sidebarRight:not(.cys-sb-mini) .cys-sb-link,
+#sidebarRight:not(.cys-sb-mini) .cys-sb-stat {
+  flex-shrink: 0;
+}
+
+#sidebarRight .cys-sb-body::-webkit-scrollbar { width: 6px; }
+#sidebarRight .cys-sb-body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--azul-claro) 30%, transparent);
+  border-radius: 6px;
+}
+/* Submenú abierto: altura en rem para que crezca con el tamaño del texto */
+.cys-sb-submenu.abierto,
+.cys-sb-inventario-wrap:hover .cys-sb-submenu {
+  max-height: 60rem;
+}
+
+/* En modo compacto el flyout ya no tiene límite */
+.offcanvas.cys-sb-mini .cys-sb-submenu {
+  max-height: none !important;
+}
