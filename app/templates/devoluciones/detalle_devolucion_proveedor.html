@@ -28,13 +28,13 @@
         <h2>{{ dev.numero }}</h2>
       </div>
       {% if dev.estado == 'pendiente' %}
-        <span class="badge-estado badge-pendiente"><i class="bi bi-clock-history"></i> Pendiente</span>
+        <span class="badge-estado badge-pendiente" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Pendiente de aprobar o rechazar"><i class="bi bi-clock-history"></i> Pendiente</span>
       {% elif dev.estado == 'aprobada' %}
-        <span class="badge-estado badge-aprobada"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
+        <span class="badge-estado badge-aprobada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aprobada; falta aplicarla"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
       {% elif dev.estado == 'aplicada' %}
-        <span class="badge-estado badge-aplicada"><i class="bi bi-check-all"></i> Aplicada</span>
+        <span class="badge-estado badge-aplicada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aplicada; inventario descontado"><i class="bi bi-check-all"></i> Aplicada</span>
       {% else %}
-        <span class="badge-estado badge-rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
+        <span class="badge-estado badge-rechazada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Devolución rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
       {% endif %}
     </div>
 
@@ -46,18 +46,18 @@
       <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dev.numero_proveedor %}" class="d-flex gap-2 flex-wrap">
         {% csrf_token %}
         <input type="hidden" name="nuevo_estado" value="{{ confirmar.estado }}">
-        <button type="submit" class="dev-act dev-act--{{ confirmar.tono }}">
+        <button type="submit" class="dev-act dev-act--{{ confirmar.tono }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Confirmar el cambio de estado">
           <i class="bi {{ confirmar.icono }}"></i> Sí, {{ confirmar.etiqueta|lower }}
         </button>
-        <a href="{% url 'detalle_devolucion_proveedor' dev.numero_proveedor %}" class="dev-btn dev-btn--ghost">Cancelar</a>
+        <a href="{% url 'detalle_devolucion_proveedor' dev.numero_proveedor %}" class="dev-btn dev-btn--ghost" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar sin cambiar el estado">Cancelar</a>
       </form>
     </div>
     {% endif %}
 
     <div class="dpv-grid">
-      <div class="dpv-box"><span>Proveedor</span><strong>{{ dev.proveedor.nombre_empresa }}</strong><small>NIT {{ dev.proveedor.pk }}</small></div>
-      <div class="dpv-box"><span>Fecha</span><strong>{{ dev.fecha|date:"d/m/Y H:i" }}</strong></div>
-      <div class="dpv-box">
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Proveedor que recibe la devolución"><span>Proveedor</span><strong>{{ dev.proveedor.nombre_empresa }}</strong><small>NIT {{ dev.proveedor.pk }}</small></div>
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Fecha y hora del registro"><span>Fecha</span><strong>{{ dev.fecha|date:"d/m/Y H:i" }}</strong></div>
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Compra de la que proviene el producto">
         <span>Compra de origen</span>
         {% if compra %}
           <strong>Compra #{{ compra.pk }}</strong>
@@ -66,15 +66,15 @@
           <strong>—</strong>
         {% endif %}
       </div>
-      <div class="dpv-box"><span>Motivo</span><strong>{{ dev.get_motivo_display }}</strong></div>
-      <div class="dpv-box"><span>Solución requerida</span><strong>{{ dev.get_tipo_resolucion_display }}</strong></div>
-      <div class="dpv-box"><span>Total reclamado</span><strong class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</strong></div>
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Razón de la devolución"><span>Motivo</span><strong>{{ dev.get_motivo_display }}</strong></div>
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Compensación solicitada al proveedor"><span>Solución requerida</span><strong>{{ dev.get_tipo_resolucion_display }}</strong></div>
+      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Valor total reclamado al proveedor"><span>Total reclamado</span><strong class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</strong></div>
     </div>
 
     <div class="table-responsive dev-table-wrap">
       <table class="table dev-table align-middle mb-0">
         <thead>
-          <tr><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio unitario</th><th class="text-end">Subtotal</th></tr>
+          <tr><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Producto devuelto">Producto</th><th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Unidades devueltas">Cantidad</th><th class="text-end" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Precio por unidad">Precio unitario</th><th class="text-end" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cantidad × precio unitario">Subtotal</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -88,11 +88,11 @@
     </div>
 
     {% if dev.texto_observaciones %}
-    <div class="dpv-box mt-3"><span>Observaciones</span><strong>{{ dev.texto_observaciones }}</strong></div>
+    <div class="dpv-box mt-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Comentarios registrados con la devolución"><span>Observaciones</span><strong>{{ dev.texto_observaciones }}</strong></div>
     {% endif %}
 
     {% if extra.unidades_descontadas is not None %}
-    <div class="dpv-box mt-3">
+    <div class="dpv-box mt-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Unidades descontadas del inventario al aplicar">
       <span>Inventario</span>
       <strong>{{ extra.unidades_descontadas }} de {{ extra.cantidad }} unidades descontadas</strong>
       {% if extra.unidades_descontadas < extra.cantidad %}<small>El resto no estaba registrado en inventario.</small>{% endif %}
@@ -101,9 +101,9 @@
 
     <div class="dpv-actions">
       {% for a in acciones %}
-        <a href="?accion={{ a.estado }}" class="dev-act dev-act--{{ a.tono }}"><i class="bi {{ a.icono }}"></i> {{ a.etiqueta }}</a>
+        <a href="?accion={{ a.estado }}" class="dev-act dev-act--{{ a.tono }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ a.etiqueta }} esta devolución (pide confirmación)"><i class="bi {{ a.icono }}"></i> {{ a.etiqueta }}</a>
       {% endfor %}
-      <a href="{% url 'lista_devoluciones' %}?tab=proveedor" class="dev-btn dev-btn--ghost"><i class="bi bi-arrow-left"></i> Volver a devoluciones</a>
+      <a href="{% url 'lista_devoluciones' %}?tab=proveedor" class="dev-btn dev-btn--ghost" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Regresar al listado de devoluciones a proveedores"><i class="bi bi-arrow-left"></i> Volver a devoluciones</a>
     </div>
   </section>
 </div>
