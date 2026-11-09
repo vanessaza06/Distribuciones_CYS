@@ -361,80 +361,103 @@ button.lote-btn-crear:active,
 }
 
 /* ══════════════════════════════════════════
-   MENÚ EXPORTAR (Excel / PDF / Imprimir) — mismo diseño que Marcas
+   MENÚ EXPORTAR (Excel / PDF / Imprimir) — IGUAL a Marcas
+   Usa las mismas variables del sistema de temas (base.js) que Marcas,
+   así el color del botón/menú sigue el tema (oscuro/claro/acento).
    Acotado a .exp-wrap + !important para ganar a los estilos globales
    de .dropdown-toggle / .dropdown-menu / .dropdown-item.
    ══════════════════════════════════════════ */
+.exp-wrap {
+  --exp-accent: var(--azul-claro, #4da8da);
+  --exp-accent-soft: var(--azul-glow, rgba(77, 168, 218, 0.15));
+  --exp-surface-alt: var(--fondo-card2, #12243c);
+  --exp-border: var(--azul-borde, rgba(77, 168, 218, 0.2));
+  --exp-text: var(--texto, #eef3fb);
+  --exp-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  position: relative;
+  display: inline-block;
+}
+
+/* Botón Exportar  */
 .exp-wrap .exp-btn {
-  --bs-btn-color: #ffffff;
-  --bs-btn-bg: #0d2a4f;
-  --bs-btn-border-color: #2f7fd1;
-  --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-bg: #123562;
-  --bs-btn-hover-border-color: #4DA8DA;
-  --bs-btn-active-color: #ffffff;
-  --bs-btn-active-bg: #123562;
-  --bs-btn-active-border-color: #4DA8DA;
+  --bs-btn-color: var(--exp-text);
+  --bs-btn-bg: var(--exp-accent-soft);
+  --bs-btn-border-color: var(--exp-accent);
+  --bs-btn-hover-color: var(--exp-text);
+  --bs-btn-hover-bg: var(--exp-accent-soft);
+  --bs-btn-hover-border-color: var(--exp-accent);
+  --bs-btn-active-color: var(--exp-text);
+  --bs-btn-active-bg: var(--exp-accent-soft);
+  --bs-btn-active-border-color: var(--exp-accent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
-  height: 40px;
-  background: #0d2a4f !important;
-  border: 1px solid #2f7fd1 !important;
-  color: #ffffff !important;
-  font-weight: 600;
-  font-size: .9rem;
-  line-height: 1;
-  border-radius: 999px !important;
-  padding: 0 1.15rem;
-  white-space: nowrap;
+  gap: 8px;
+  height: 46px;
   box-sizing: border-box;
-  transition: background .15s, border-color .15s;
+  background: var(--exp-accent-soft) !important;
+  background-color: var(--exp-accent-soft) !important;
+  border: 1px solid var(--exp-accent) !important;
+  border-radius: 999px !important;
+  color: var(--exp-text) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  padding: 0 22px !important;
+  white-space: nowrap;
+  box-shadow: none !important;
 }
 .exp-wrap .exp-btn::after { display: none !important; }
 .exp-wrap .exp-btn:hover,
 .exp-wrap .exp-btn:focus,
+.exp-wrap .exp-btn:focus-visible,
+.exp-wrap .exp-btn:active,
 .exp-wrap .exp-btn.show {
-  background: #123562 !important;
-  border-color: #4DA8DA !important;
-  color: #ffffff !important;
+  background: color-mix(in srgb, var(--exp-accent) 22%, transparent) !important;
+  background-color: color-mix(in srgb, var(--exp-accent) 22%, transparent) !important;
+  border-color: var(--exp-accent) !important;
+  color: var(--exp-text) !important;
   box-shadow: none !important;
 }
 .exp-wrap .exp-btn .exp-chevron {
-  font-size: .7rem;
-  transition: transform .2s;
+  font-size: 11px;
+  transition: transform .15s ease;
 }
 .exp-wrap .exp-btn.show .exp-chevron { transform: rotate(180deg); }
 
+/* Menú desplegable */
 .exp-wrap .exp-menu {
-  background: #111f33 !important;
-  border: 1px solid rgba(77, 168, 218, .18) !important;
-  border-radius: 14px;
-  padding: 8px;
-  min-width: 180px !important;
-  width: auto !important;
-  margin-top: 8px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  background-color: var(--exp-surface-alt) !important;
+  border: 1px solid var(--exp-border) !important;
+  border-radius: 20px !important;
+  padding: 6px !important;
+  margin-top: 6px !important;
+  min-width: 100% !important;
+  width: max-content !important;
+  box-shadow: var(--exp-shadow) !important;
   z-index: 1030;
 }
 .exp-wrap .exp-menu .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  color: #e6eefc !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 11px 16px !important;
+  font-size: 14px !important;
+  color: var(--exp-text) !important;
   background: transparent;
-  font-size: .9rem;
-  border-radius: 10px;
-  padding: .65rem .9rem;
+  border-radius: 999px !important;
   white-space: nowrap;
+  cursor: pointer;
 }
 .exp-wrap .exp-menu .dropdown-item:hover,
 .exp-wrap .exp-menu .dropdown-item:focus {
-  background-color: rgba(77, 168, 218, .12) !important;
-  color: #ffffff !important;
+  background: var(--exp-accent-soft) !important;
+  color: var(--exp-text) !important;
 }
-.exp-wrap .exp-menu .dropdown-item i { font-size: 1.1rem; }
+.exp-wrap .exp-menu .dropdown-item i { font-size: 17px; }
 .exp-wrap .exp-ico-excel { color: #22c55e !important; }
 .exp-wrap .exp-ico-pdf   { color: #ef4444 !important; }
-.exp-wrap .exp-ico-print { color: #4DA8DA !important; }
+.exp-wrap .exp-ico-print { color: #2f7fd1 !important; }   

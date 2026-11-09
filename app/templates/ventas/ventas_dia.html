@@ -8,76 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
-<style>
-  /* ══ Botón Exportar (mismo estilo que Marcas, siguiendo variables del tema) ══ */
-  .cys-export-btn {
-    display: inline-flex; align-items: center; gap: .5rem;
-    background: color-mix(in srgb, var(--rojo, #d9534f) 14%, var(--fondo-card, #fff));
-    color: var(--texto);
-    border: 1.5px solid var(--rojo, #d9534f);
-    border-radius: 999px;
-    padding: .42rem 1.15rem;
-    font-size: .85rem; font-weight: 700;
-    cursor: pointer;
-    transition: background .15s ease, box-shadow .15s ease;
-  }
-  .cys-export-btn:hover,
-  .cys-export-btn:focus,
-  .cys-export-btn.show {
-    background: color-mix(in srgb, var(--rojo, #d9534f) 24%, var(--fondo-card, #fff));
-    color: var(--texto);
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--rojo, #d9534f) 28%, transparent);
-    outline: none;
-  }
-  .cys-export-btn .chev { font-size: .7rem; transition: transform .2s ease; }
-  .cys-export-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
-  .cys-export-btn.dropdown-toggle::after { display: none; }
-
-  /* Menú desplegable */
-  .cys-export-menu {
-    background: var(--fondo-card2, var(--fondo-card));
-    border: 1px solid var(--azul-borde);
-    border-radius: 18px;
-    padding: .5rem;
-    min-width: 200px;
-    box-shadow: 0 12px 30px rgba(0,0,0,.28);
-  }
-  .cys-export-menu .dropdown-item {
-    display: flex; align-items: center; gap: .75rem;
-    width: 100%; text-align: left;
-    padding: .65rem .85rem;
-    border: 0; border-radius: 12px;
-    background: transparent;
-    color: var(--texto);
-    font-weight: 600; font-size: .92rem;
-  }
-  .cys-export-menu .dropdown-item i { font-size: 1.15rem; }
-  .cys-export-menu .dropdown-item:hover,
-  .cys-export-menu .dropdown-item:focus {
-    background: color-mix(in srgb, var(--texto) 8%, transparent);
-    color: var(--texto);
-  }
-  .cys-export-menu .ico-excel { color: var(--verde, #1f9a55); }
-  .cys-export-menu .ico-pdf   { color: var(--rojo, #c62828); }
-  .cys-export-menu .ico-print { color: var(--azul-claro, #4DA8DA); }
-
-  /* ══ Imprimir: solo la tabla de transacciones ══ */
-  @media print {
-    body * { visibility: hidden !important; }
-    #seccionTablaVentasDia,
-    #seccionTablaVentasDia * { visibility: visible !important; }
-    #seccionTablaVentasDia {
-      position: absolute; left: 0; top: 0; width: 100%;
-      background: #fff !important; border: 0 !important; box-shadow: none !important;
-    }
-    #seccionTablaVentasDia .cys-filter-bar,
-    #seccionTablaVentasDia .col-accion { display: none !important; }
-    #seccionTablaVentasDia * { color: #000 !important; background: transparent !important; }
-    #seccionTablaVentasDia table { width: 100%; border-collapse: collapse; }
-    #seccionTablaVentasDia th,
-    #seccionTablaVentasDia td { border: 1px solid #999 !important; padding: 4px 6px !important; }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -374,7 +305,7 @@
         </a>
       </div>
 
-      <!-- Buscador en tiempo real + botón Exportar (estilo Marcas) -->
+      <!-- Buscador en tiempo real + botón Exportar -->
       <div class="d-flex flex-wrap align-items-center gap-2">
         <div class="cys-search-group" style="min-width:220px;">
           <i class="bi bi-search"></i>

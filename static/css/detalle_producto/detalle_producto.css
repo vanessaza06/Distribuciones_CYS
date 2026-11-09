@@ -826,73 +826,76 @@
 }
 
 /* ══════════════════════════════════════════
-   MENÚ EXPORTAR (Excel / PDF / Imprimir) — mismo diseño que Marcas
+   MENÚ EXPORTAR (Excel / PDF / Imprimir)
+   Botón rojo suave + menú del mismo ancho del botón.
    Va al final y con !important para ganar a las reglas globales
    de .dropdown-toggle / .dropdown-menu / .dropdown-item.
    ══════════════════════════════════════════ */
 .search-box .exp-btn {
-  --bs-btn-color: #ffffff;
-  --bs-btn-bg: #0d2a4f;
-  --bs-btn-border-color: #2f7fd1;
-  --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-bg: #123562;
-  --bs-btn-hover-border-color: #4DA8DA;
-  --bs-btn-active-color: #ffffff;
-  --bs-btn-active-bg: #123562;
-  --bs-btn-active-border-color: #4DA8DA;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: .5rem;
-  background: #0d2a4f !important;
-  border: 1px solid #2f7fd1 !important;
-  color: #ffffff !important;
-  font-weight: 600;
+  height: 40px;
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  border: 1px solid var(--rojo, #d9534f) !important;
+  color: var(--texto) !important;
+  font-weight: 500;
   font-size: .9rem;
-  border-radius: 999px;
-  padding: .5rem 1.15rem;
+  line-height: 1;
+  border-radius: 999px !important;
+  padding: 0 1.15rem;
   white-space: nowrap;
-  transition: background .15s, border-color .15s;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  transition: background .15s;
 }
 .search-box .exp-btn::after { display: none !important; }
 .search-box .exp-btn:hover,
 .search-box .exp-btn:focus,
+.search-box .exp-btn:active,
 .search-box .exp-btn.show {
-  background: #123562 !important;
-  border-color: #4DA8DA !important;
-  color: #ffffff !important;
-  box-shadow: none;
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  border-color: var(--rojo, #d9534f) !important;
+  color: var(--texto) !important;
+  box-shadow: none !important;
+  outline: none;
 }
 .search-box .exp-btn .exp-chevron {
-  font-size: .7rem;
+  font-size: .65rem;
   transition: transform .2s;
 }
 .search-box .exp-btn.show .exp-chevron { transform: rotate(180deg); }
 
 .search-box .exp-menu {
-  background: #111f33 !important;
-  border: 1px solid rgba(77, 168, 218, .18) !important;
-  border-radius: 14px;
-  padding: 8px;
-  min-width: 180px;
-  margin-top: 8px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  background: var(--fondo-card2, var(--fondo-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+  border-radius: 16px;
+  padding: .4rem;
+  min-width: 100% !important;
+  width: 100% !important;
+  margin-top: .4rem !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .10);
 }
+.search-box .exp-menu li + li { margin-top: .1rem; }
 .search-box .exp-menu .dropdown-item {
   display: flex;
   align-items: center;
-  gap: .75rem;
-  color: #e6eefc !important;
+  gap: .7rem;
+  color: var(--texto) !important;
   background: transparent;
+  font-weight: 500;
   font-size: .9rem;
   border-radius: 10px;
-  padding: .65rem .9rem;
+  padding: .6rem .8rem;
+  white-space: nowrap;
 }
 .search-box .exp-menu .dropdown-item:hover,
 .search-box .exp-menu .dropdown-item:focus {
-  background-color: rgba(77, 168, 218, .12) !important;
-  color: #ffffff !important;
+  background-color: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  color: var(--texto) !important;
 }
 .search-box .exp-menu .dropdown-item i { font-size: 1.1rem; }
-.search-box .exp-ico-excel { color: #22c55e !important; }
-.search-box .exp-ico-pdf   { color: #ef4444 !important; }
-.search-box .exp-ico-print { color: #4DA8DA !important; }
+.search-box .exp-ico-excel { color: #1f9a55 !important; }
+.search-box .exp-ico-pdf   { color: #c62828 !important; }
+.search-box .exp-ico-print { color: #3b82c4 !important; }

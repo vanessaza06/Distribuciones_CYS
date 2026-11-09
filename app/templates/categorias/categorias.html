@@ -63,7 +63,7 @@
 
     <!-- Listado de categorías -->
     <div class="col-lg-8">
-      <div class="card cat-card border-0 rounded-4 shadow-sm">
+      <div class="card cat-card border-0 rounded-4 shadow-sm" id="seccionListaCategorias">
         <div class="card-body p-4">
 
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
@@ -71,24 +71,29 @@
               <i class="bi bi-tags me-2 cat-icon-tag"></i> Categorías
             </h5>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 cat-no-print">
 
-              <!-- Exportar -->
-              <div class="dropdown">
-                <button class="btn cat-btn-exportar dropdown-toggle" type="button"
+              <!-- Exportar (mismo diseño que Marcas) -->
+              <div class="dropdown exp-wrap">
+                <button class="btn exp-btn dropdown-toggle" type="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                  <i class="bi bi-box-arrow-up"></i><span>Exportar</span><i class="bi bi-chevron-down exp-chevron"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
+                <ul class="dropdown-menu dropdown-menu-end exp-menu">
                   <li>
-                    <a class="dropdown-item" href="{% url 'categoria_exportar_pdf' %}">
-                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    <a class="dropdown-item" href="{% url 'categoria_exportar_excel' %}">
+                      <i class="bi bi-file-earmark-excel exp-ico-excel"></i>Excel
                     </a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{% url 'categoria_exportar_excel' %}">
-                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    <a class="dropdown-item" href="{% url 'categoria_exportar_pdf' %}">
+                      <i class="bi bi-file-earmark-pdf exp-ico-pdf"></i>PDF
                     </a>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item" id="btn-imprimir-categorias">
+                      <i class="bi bi-printer exp-ico-print"></i>Imprimir
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -122,7 +127,7 @@
                   </small>
                 </div>
 
-                <div class="d-flex gap-2 ms-auto">
+                <div class="d-flex gap-2 ms-auto cat-acciones">
                   <button class="btn btn-sm rounded-pill px-3 cat-btn-editar"
                           data-bs-toggle="modal" data-bs-target="#modalEditarCat{{ cat.pk }}"
                           title="Editar categoría">
@@ -238,6 +243,11 @@
     if (!input) return;
     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setTimeout(() => input.focus(), 300);
+  });
+
+  // Imprimir: solo el listado de categorías (el CSS @media print oculta lo demás)
+  document.getElementById('btn-imprimir-categorias')?.addEventListener('click', function () {
+    window.print();
   });
 </script>
 {% endblock %}
