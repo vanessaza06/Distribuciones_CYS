@@ -615,7 +615,9 @@ def ventas_dia(request):
         dash_offset = c_val - (c_val * (pct_v / 100.0))
         
         cliente_nombre = 'Consumidor final'
-        if getattr(v, 'cliente', None) and getattr(v.cliente, 'nombre', None):
+        if getattr(v, 'cliente_nombre', None):
+            cliente_nombre = v.cliente_nombre
+        elif getattr(v, 'cliente', None) and getattr(v.cliente, 'nombre', None):
             cliente_nombre = v.cliente.nombre
         elif getattr(v, 'usuario', None) and getattr(v.usuario, 'nombre', None):
             cliente_nombre = f"{v.usuario.nombre} {getattr(v.usuario, 'apellido', '')}".strip()
@@ -1058,7 +1060,7 @@ def buscar_venta_devolucion(request):
         ventas_qs = Venta.objects.filter(pk=int(q))
 
     return JsonResponse({'ventas': [
-        {'id': v.pk, 'cliente': str(getattr(v, 'usuario', 'Cliente')),
+        {'id': v.pk, 'cliente': v.cliente_nombre or 'Consumidor final',
          'fecha': v.fecha.strftime('%d/%m/%Y %H:%M'), 'total': float(v.total_venta)}
         for v in ventas_qs[:10]
     ]})
@@ -1069,7 +1071,7 @@ def detalle_venta_devolucion(request, venta_id):
     venta = get_object_or_404(Venta, pk=venta_id)
     return JsonResponse({
         'venta_id': venta.pk,
-        'cliente': str(getattr(venta, 'usuario', 'Cliente')),
+        'cliente': venta.cliente_nombre or 'Consumidor final',
         'fecha': venta.fecha.strftime('%d/%m/%Y %H:%M'),
         'total': float(venta.total_venta),
         'descuento': 0,
@@ -1080,9 +1082,9 @@ def detalle_venta_devolucion(request, venta_id):
                 'producto': d.producto.nombre,
                 'cantidad': d.cantidad,
                 'precio': float(d.precio_unitario),
-                'subtotal': float(d.subtotal),
+                'subtotal': float(d.subtotal_val or (d.cantidad * d.precio_unitario)),
             }
-            for d in getattr(venta, 'detalles', [])
+            for d in venta.detalles.all() if d.producto
         ],
     })
 
@@ -1147,14 +1149,8 @@ def comprobante_devolucion(request, pk):
 # EXPORTACIÓN EXCEL Y PDF DE VENTAS
 # ════════════════════════════════════════
 
-@session_required
-def exportar_ventas_excel(request):
-    import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.utils import get_column_letter
-    from django.db.models import Q
-    from django.http import HttpResponse
-
+def _filtrar_ventas_export(request):
+    """Aplica rango de fechas y búsqueda (q) a las ventas a exportar."""
     fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
     fecha_fin_str = request.GET.get('fecha_fin', '').strip()
     q = request.GET.get('q', '').strip()
@@ -1181,6 +1177,18 @@ def exportar_ventas_excel(request):
             Q(detalles__producto__nombre__icontains=q)
         ).distinct()
 
+    return ventas_qs
+
+
+@session_required
+def exportar_ventas_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    from django.http import HttpResponse
+
+    ventas_qs = _filtrar_ventas_export(request)
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Reporte de Ventas"
@@ -1201,7 +1209,7 @@ def exportar_ventas_excel(request):
     ws["A1"].font = title_font
     ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
 
-    gen_date = timezone.now().strftime("%d/%m/%Y %H:%M")
+    gen_date = timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
     ws.merge_cells("A2:J2")
     ws["A2"] = f"Fecha de generación: {gen_date} | Transacciones: {ventas_qs.count()}"
     ws["A2"].font = sub_font
@@ -1222,9 +1230,9 @@ def exportar_ventas_excel(request):
 
     for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
         detalles = list(v.detalles.all())
-        cliente_nombre = v.cliente.nombre if v.cliente else "Consumidor Final"
+        cliente_nombre = v.cliente_nombre or "Consumidor Final"
         vendedor_nombre = str(v.vendedor.username if v.vendedor else "Sistema")
-        fecha_str = v.fecha.strftime("%d/%m/%Y %H:%M")
+        fecha_str = timezone.localtime(v.fecha).strftime("%d/%m/%Y %H:%M")
 
         if detalles:
             for det in detalles:
@@ -1236,7 +1244,7 @@ def exportar_ventas_excel(request):
                     det.producto.nombre if det.producto else "Ítem",
                     det.cantidad,
                     float(det.precio_unitario),
-                    float(det.subtotal),
+                    float(det.subtotal_val or (det.cantidad * det.precio_unitario)),
                     (v.metodo_pago or 'Efectivo').capitalize(),
                     float(v.total_venta)
                 ])
@@ -1264,7 +1272,7 @@ def exportar_ventas_excel(request):
                 cell.alignment = Alignment(horizontal="center")
 
     for col in ws.columns:
-        max_len = max(len(str(cell.value or '')) for cell in col)
+        max_len = max(len(str(cell.value or '')) for cell in col[3:]) if len(col) > 3 else 12
         col_letter = get_column_letter(col[0].column)
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
@@ -1277,38 +1285,13 @@ def exportar_ventas_excel(request):
 @session_required
 def exportar_ventas_pdf(request):
     import io
-    from django.db.models import Q
     from django.http import HttpResponse
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import letter, landscape
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-    fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
-    fecha_fin_str = request.GET.get('fecha_fin', '').strip()
-    q = request.GET.get('q', '').strip()
-
-    ventas_qs = Venta.objects.all().order_by('-fecha')
-
-    if fecha_inicio_str and fecha_fin_str:
-        try:
-            f_ini = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
-            f_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
-            if f_ini > f_fin:
-                f_fin = f_ini
-            ventas_qs = ventas_qs.filter(fecha__date__range=[f_ini, f_fin])
-        except ValueError:
-            pass
-
-    if q:
-        ventas_qs = ventas_qs.filter(
-            Q(pk__icontains=q) |
-            Q(cliente_nombre__icontains=q) |
-            Q(vendedor__first_name__icontains=q) |
-            Q(vendedor__username__icontains=q) |
-            Q(metodo_pago__icontains=q) |
-            Q(detalles__producto__nombre__icontains=q)
-        ).distinct()
+    ventas_qs = _filtrar_ventas_export(request)
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -1349,7 +1332,7 @@ def exportar_ventas_pdf(request):
 
     elements = []
     elements.append(Paragraph("CYS Ltda — Reporte Consolidado de Ventas", title_style))
-    gen_date = timezone.now().strftime("%d/%m/%Y %H:%M")
+    gen_date = timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
     elements.append(Paragraph(f"Fecha de generación: {gen_date} | Total transacciones: {ventas_qs.count()}", sub_style))
 
     data = [[
@@ -1367,8 +1350,8 @@ def exportar_ventas_pdf(request):
 
     for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
         detalles = list(v.detalles.all())
-        cliente_nombre = v.cliente.nombre if v.cliente else "Consumidor Final"
-        fecha_str = v.fecha.strftime("%d/%m/%Y %H:%M")
+        cliente_nombre = v.cliente_nombre or "Consumidor Final"
+        fecha_str = timezone.localtime(v.fecha).strftime("%d/%m/%Y %H:%M")
         total_general += v.total_venta
 
         if detalles:
