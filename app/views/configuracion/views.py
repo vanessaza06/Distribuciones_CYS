@@ -1,4 +1,4 @@
-﻿import os
+import os
 import subprocess
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -12,7 +12,6 @@ from django.db import connection
 from django.utils import timezone
 from django.utils.html import escape
 
-from app.models import ConfiguracionEmpresa, BackupRegistro
 from usuarios.models import RegistroActividad
 
 

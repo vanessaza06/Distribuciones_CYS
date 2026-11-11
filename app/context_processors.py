@@ -1,12 +1,6 @@
 from django.db.models import Sum
-from app.models import ConfiguracionEmpresa, Lote, Categoria
+from app.models import Lote, Categoria
 
-
-def config_empresa(request):
-    try:
-        return {'config': ConfiguracionEmpresa.get_config()}
-    except Exception:
-        return {}
 
 
 def aside_stats(request):

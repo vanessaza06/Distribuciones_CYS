@@ -1,10 +1,10 @@
-﻿from django.contrib import admin
+from django.contrib import admin
 from .models import (
     Usuario, Bodega, Categoria, Producto, PresentacionProducto,
     Lote, Marca, DetalleProducto, Proveedor, Compra, DetalleCompra,
     DevolucionProveedores, Caja, Venta, DetalleVenta, PagoVenta,
     Devolucion, DetalleDevolucion, MetodoPago,
-    AgendaInventario, ConfiguracionEmpresa, BackupRegistro
+    AgendaInventario
 )
 
 admin.site.register(Usuario)
@@ -27,5 +27,3 @@ admin.site.register(Devolucion)
 admin.site.register(DetalleDevolucion)
 admin.site.register(MetodoPago)
 admin.site.register(AgendaInventario)
-admin.site.register(ConfiguracionEmpresa)
-admin.site.register(BackupRegistro)
