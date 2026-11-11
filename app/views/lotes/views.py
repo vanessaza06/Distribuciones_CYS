@@ -108,7 +108,6 @@ def gestion_stock(request):
         'lotes_por_vencer': lotes_por_vencer,
         'lotes_vencidos': lotes_vencidos,
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Stock & Productos', 'url': reverse('gestion_stock')},
         ],
     }

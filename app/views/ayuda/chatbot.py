@@ -131,18 +131,68 @@ RESPUESTAS = [
      "(conteo físico, corrección de error…).\n"
      "5. Clic en **Guardar**."),
 
-    ([("categoria", "cre"), ("categoria", "nuev"), ("categoria", "agreg"), ("categoria", "registr"),
-      ("subcategoria", "cre"), ("subcategoria", "nuev")], PENDIENTE),
+    ([("categoria", "cre"), ("categoria", "nuev"), ("categoria", "agreg"), ("categoria", "registr")],
+     "Para crear una categoría:\n"
+     "1. Ve a **Inventario → Categorías**.\n"
+     "2. En el formulario **Nueva Categoría** (a la izquierda) escribe el **Nombre** (ej. Vinos).\n"
+     "3. Escribe el **Código** (ej. VIN).\n"
+     "4. Si quieres, agrega una **Descripción** (es opcional).\n"
+     "5. Clic en **Crear Categoría**.\n"
+     "También puedes pulsar **Nueva categoría** (arriba a la derecha) y te lleva directo al formulario.\n"
+     "Para editarla usa el lápiz de su fila y **Guardar Cambios**. Las categorías no se eliminan: se desactivan."),
 
     ([("presentacion", "cre"), ("presentacion", "nuev"), ("presentacion", "agreg"),
-      ("presentacion", "registr")], PENDIENTE),
+      ("presentacion", "registr")],
+     "Para crear una presentación:\n"
+     "1. Ve a **Inventario → Presentaciones**.\n"
+     "2. Clic en **Nueva Presentación**.\n"
+     "3. Elige el **Producto** (si no aparece, primero créalo en **Productos**).\n"
+     "4. Escribe el **Nombre** (ej. Six-pack).\n"
+     "5. Escribe la **Cantidad** (mínimo 1) y el **Precio venta ($)**, que debe ser mayor a 0.\n"
+     "6. Si quieres, agrega **Observaciones** (opcional).\n"
+     "7. Clic en **Guardar**."),
 
-    ([(" marca ", "cre"), (" marca ", "nuev"), (" marca ", "agreg"), (" marca ", "registr")], PENDIENTE),
+    ([(" marca ", "cre"), (" marca ", "nuev"), (" marca ", "agreg"), (" marca ", "registr")],
+     "Para crear una marca:\n"
+     "1. Ve a **Inventario → Marcas**.\n"
+     "2. Clic en **Nueva marca** (arriba a la derecha).\n"
+     "3. Escribe el **Nombre de la marca** (ej. Corona).\n"
+     "4. Si quieres, agrega una **Descripción** (opcional, máximo 200 caracteres).\n"
+     "5. Elige el **Estado**: **Activa** (viene marcada) o **Inactiva**.\n"
+     "6. Clic en **Guardar marca**."),
 
-    ([("detalle", "cre"), ("detalle", "nuev"), ("detalle", "agreg"), ("detalle", "registr")], PENDIENTE),
+    ([("detalle", "cre"), ("detalle", "nuev"), ("detalle", "agreg"), ("detalle", "registr"),
+      ("codigo", "registr"), ("codigo", "asign"), ("codigo", "agreg"),
+      ("barras", "registr"), ("barras", "asign"), ("barras", "agreg")],
+     "Para registrar el código de barras de un producto:\n"
+     "1. Ve a **Inventario → Detalle de Producto**.\n"
+     "2. En la columna izquierda, clic en la tarjeta **Registrar Códigos** (muestra cuántos productos están "
+     "**Sin código**).\n"
+     "3. Se abre **Registrar Códigos de Barras**. Haz clic en la fila del producto (los pendientes aparecen "
+     "como **Sin código**).\n"
+     "4. Escribe el **Código** o escanéalo con un lector. También puedes usar el botón de la cámara 📷 para "
+     "escanearlo con el celular.\n"
+     "5. Si el producto aún no tiene detalle, elige también la **Marca** y el **Vencimiento**.\n"
+     "6. Clic en **Guardar**. La fila pasa a **Registrado**.\n"
+     "Cada código debe ser único. Puedes buscar por producto, categoría o código con la barra de arriba de la tabla."),
 
-    ([("proveedor", "cre"), ("proveedor", "nuev"), ("proveedor", "agreg"), ("proveedor", "registr"),
-      ("proveedor", "edit"), ("proveedor", "modific")], PENDIENTE),
+    ([("proveedor", "cre"), ("proveedor", "nuev"), ("proveedor", "agreg"), ("proveedor", "registr")],
+     "Para crear un proveedor:\n"
+     "1. Ve a **Proveedores**.\n"
+     "2. Clic en **Nuevo proveedor**.\n"
+     "3. Escribe la **Empresa**.\n"
+     "4. Escribe el **NIT**: solo números, entre 5 y 15 dígitos.\n"
+     "5. Escribe el **Correo** y el **Teléfono** (solo números, entre 7 y 15 dígitos).\n"
+     "6. Clic en **Guardar Proveedor**.\n"
+     "Todos los campos son obligatorios. El tipo y las observaciones se completan después, al editarlo."),
+
+    ([("proveedor", "edit"), ("proveedor", "modific"), ("proveedor", "actualiz")],
+     "Para editar un proveedor:\n"
+     "1. Ve a **Proveedores**.\n"
+     "2. En su fila, abre el menú de tres puntos (**Acciones**) y elige **Editar**.\n"
+     "3. Cambia **Empresa**, **Correo**, **Teléfono**, **Tipo de Proveedor** u **Observaciones**.\n"
+     "4. Clic en **Guardar Cambios**.\n"
+     "El **NIT** no se puede modificar porque es su identificador único."),
 
     ([("agenda", "cre"), ("agenda", "nuev"), ("agenda", "agreg"), ("agenda", "program")], PENDIENTE),
 

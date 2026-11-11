@@ -98,7 +98,6 @@ def lista_productos(request):
         'resumen_categorias': resumen_categorias,
         'form': ProductoRegistroForm(),
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Productos', 'url': None},
         ],
     }
