@@ -219,3 +219,13 @@
 #tablaLotes.dataTable > tbody > tr.dtr-expanded > td.dtr-control:before {
   border-top-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }
+/* KPI cards: las 4 miden lo mismo aunque un título ocupe dos líneas */
+.kpi-card--stock,
+.kpi-card--lotes-activos,
+.kpi-card--por-vencer,
+.kpi-card--vencidos {
+  align-self: stretch;   /* se estira a la altura de la fila (flex o grid) */
+  height: 100%;          /* cubre el caso en que estén dentro de una columna de Bootstrap */
+  min-height: 150px;     /* respaldo: altura mínima igual para todas */
+  box-sizing: border-box;
+}
