@@ -3,6 +3,7 @@ from app.models import Lote, Categoria
 
 
 
+
 def aside_stats(request):
     try:
         total_stock = Lote.objects.filter(stock_actual__gt=0).aggregate(total=Sum('stock_actual'))['total'] or 0
