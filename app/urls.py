@@ -13,11 +13,9 @@ from app.views.bodega import views as bod_views
 from app.views.principal import views as principal_views
 from app.views.ventas import views as ventas_views
 from app.views.reportes import views as rep_views
-from app.views.configuracion import views as config_views
 from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
 from app.views.ayuda.chatbot import chatbot_responder
-from app.views.respaldos import views as resp_views
 
 
 
@@ -231,25 +229,9 @@ path(
     
     path("reportes/", rep_views.reportes, name="reportes"),
 
-    # CONFIGURACION
-    path("configuracion/", config_views.index, name="configuracion_index"),
-    path("configuracion/empresa/", config_views.guardar_empresa, name="guardar_empresa"),
-    path("configuracion/empresa/verificar/", config_views.verificar_clave_empresa, name="verificar_clave_empresa"),
-    path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
-    path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
-    path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),  # <-- NUEVA
-    path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
         # AYUDA
     path("ayuda/", ayuda_views.index, name="ayuda_index"),
     path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
 
-    # COPIA DE SEGURIDAD / RESPALDOS
-    path("respaldos/", resp_views.respaldos_index, name="respaldos_index"),
-    path("respaldos/crear/", resp_views.respaldo_crear, name="respaldo_crear"),
-    path("respaldos/descargar/<int:pk>/", resp_views.respaldo_descargar, name="respaldo_descargar"),
-    path("respaldos/editar/<int:pk>/", resp_views.respaldo_editar, name="respaldo_editar"),
-    path("respaldos/eliminar/<int:pk>/", resp_views.respaldo_eliminar, name="respaldo_eliminar"),
-    path("respaldos/restaurar/<int:pk>/", resp_views.respaldo_restaurar, name="respaldo_restaurar"),
-    path("respaldos/subir/", resp_views.respaldo_subir, name="respaldo_subir"),
 
 ]       
