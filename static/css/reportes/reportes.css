@@ -2772,3 +2772,82 @@ table.dataTable {
   }
 }
 
+/* =========================================================
+   FIX MÓVIL — Reportes > Historial de ventas
+   (debe ir AL FINAL del archivo para ganar sobre todo lo anterior)
+
+   Problema: "No hay ventas registradas aún." se encimaba con
+   "Mostrando 1 a 1 de 1 ventas" y la paginación. La celda vacía
+   (.cys-td--empty) tiene padding grande pero #reportes-table td
+   fuerza height: 44px !important, así que el contenido se
+   desbordaba hacia abajo y caía sobre el pie de la tabla.
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* 1) Estado vacío: altura automática, ocupa su propio espacio */
+  html body #reportes-table tbody td.cys-td--empty,
+  html body #reportes-table td.cys-td--empty,
+  html body .cys-inv-table td.cys-td--empty {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 32px 16px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    text-align: center !important;
+  }
+
+  html body #reportes-table tbody tr:has(.cys-td--empty) {
+    height: auto !important;
+  }
+
+  html body .cys-empty-box {
+    position: static !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+  }
+
+  html body .cys-empty-box i {
+    margin-bottom: 10px !important;
+  }
+
+  /* 2) Pie de tabla: apilado y centrado, sin invadir la tabla */
+  html body .cys-hv-table-footer {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    height: auto !important;
+    padding: 16px !important;
+    text-align: center !important;
+  }
+
+  html body .cys-hv-table-footer .dt-info,
+  html body .cys-hv-table-footer .dataTables_info {
+    flex: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+
+  html body .cys-hv-table-footer .dt-paging,
+  html body .cys-hv-table-footer .dataTables_paginate {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  html body .cys-hv-table-footer .pagination {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+}
