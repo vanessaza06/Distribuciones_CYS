@@ -9,7 +9,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
+
+<div class="container-fluid p-0 cfg-page">
 
   {% csrf_token %}
 
@@ -22,417 +23,670 @@
       data-url-guardar-impuestos="{% url 'guardar_impuestos' %}"
       data-url-crear-backup="{% url 'crear_backup' %}"
       data-url-guardar-tema-sistema="{% url 'guardar_tema_sistema' %}"
+      data-url-a11y-extra="{% static 'js/cys-a11y-extra.js' %}"
       data-tema-sistema="{{ config.tema_predeterminado|default:'oscuro' }}"
       data-es-admin="{{ es_admin_empresa|yesno:'true,false' }}"></div>
 
-  <!-- ① VISUALIZACIÓN: BRILLO / FUENTE / AUMENTO (3 TARJETAS CON PERILLA) -->
-  <div class="cfg-section">
-    <div class="cfg-title"><i class="bi bi-sliders2"></i> Visualización</div>
+  <!-- ══════════ ENCABEZADO + MENÚ DE ACCESOS ══════════ -->
+  <div class="cfg-hero">
+    <div>
+      <h1 class="cfg-hero__titulo"><i class="bi bi-gear-fill"></i> Ajustes del sistema</h1>
+      <p class="cfg-hero__sub">Personaliza la apariencia, la accesibilidad, tu cuenta y los datos de la empresa.</p>
+    </div>
+  </div>
+
+  <nav class="cfg-nav" aria-label="Secciones de configuración" hx-boost="false">
+    <button type="button" class="cfg-nav__btn activo" data-target="cfg-apariencia"><i class="bi bi-palette-fill"></i> Apariencia</button>
+    <button type="button" class="cfg-nav__btn" data-target="cfg-accesibilidad"><i class="bi bi-universal-access-circle"></i> Accesibilidad</button>
+    <button type="button" class="cfg-nav__btn" data-target="cfg-navegacion"><i class="bi bi-compass-fill"></i> Navegación y alertas</button>
+    <button type="button" class="cfg-nav__btn" data-target="cfg-cuenta"><i class="bi bi-person-badge-fill"></i> Cuenta</button>
+    <button type="button" class="cfg-nav__btn" data-target="cfg-sistema"><i class="bi bi-building"></i> Empresa y sistema</button>
+  </nav>
+
+  <!-- ══════════ ① APARIENCIA ══════════ -->
+  <div class="cfg-group" id="cfg-apariencia">
+    <div class="cfg-group__head">
+      <div class="cfg-group__titulo">Apariencia</div>
+      <div class="cfg-group__sub">Tema de colores y cómo se ve la interfaz en tu pantalla.</div>
+    </div>
+
+    <!-- TEMA -->
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-palette-fill"></i> Tema y apariencia</div>
+      <p class="cfg-hint">
+        Tema predeterminado del sistema: <strong id="temaSistemaLabel"></strong>
+      </p>
+      <div class="cfg-options" id="opcionesTema">
+
+        <div class="cfg-opt" data-tema="oscuro" onclick="seleccionarTema('oscuro', this)">
+          <div class="tema-preview tema-preview-oscuro"></div>
+          <i class="bi bi-moon-stars-fill tema-icon"></i>
+          Oscuro
+        </div>
+
+        <div class="cfg-opt" data-tema="claro" onclick="seleccionarTema('claro', this)">
+          <div class="tema-preview tema-preview-claro"></div>
+          <i class="bi bi-sun-fill tema-icon"></i>
+          Claro
+        </div>
+
+        <div class="cfg-opt" data-tema="alto-contraste" onclick="seleccionarTema('alto-contraste', this)">
+          <div class="tema-preview tema-preview-alto-contraste"></div>
+          <i class="bi bi-circle-half tema-icon"></i>
+          Alto contraste
+        </div>
+
+        <div class="cfg-opt" data-tema="basecys" onclick="seleccionarTema('basecys', this)">
+          <div class="tema-preview tema-preview-base-cys"></div>
+          <i class="bi bi-cup-straw tema-icon"></i>
+          Base CyS
+        </div>
+
+        <div class="cfg-opt" data-tema="sepia" onclick="seleccionarTema('sepia', this)">
+          <div class="tema-preview tema-preview-sepia"></div>
+          <i class="bi bi-book-fill tema-icon"></i>
+          Sepia
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VISUALIZACIÓN: BRILLO / FUENTE / AUMENTO -->
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-sliders2"></i> Visualización</div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-brightness-high"></i> Brillo</div>
+                <div class="cfg-knob-card__hint">Brillo general de la interfaz</div>
+              </div>
+              <div class="cfg-knob" id="knobBrillo" data-min="60" data-max="120" data-step="1" data-unit="%" data-default="100"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetBrillo" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-fonts"></i> Tamaño de letra</div>
+                <div class="cfg-knob-card__hint">Tamaño base del texto</div>
+              </div>
+              <div class="cfg-knob" id="knobFuente" data-min="12" data-max="20" data-step="1" data-unit="px" data-default="14"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetFuente" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="cfg-knob-card">
+            <div class="cfg-knob-card__top">
+              <div class="cfg-knob-card__info">
+                <div class="cfg-knob-card__label"><i class="bi bi-zoom-in"></i> Aumento</div>
+                <div class="cfg-knob-card__hint">Escala general de la pantalla</div>
+              </div>
+              <div class="cfg-knob" id="knobZoom" data-min="80" data-max="150" data-step="5" data-unit="%" data-default="100"></div>
+            </div>
+            <button type="button" class="cfg-knob-card__reset" id="btnResetZoom" disabled>
+              <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ② ACCESIBILIDAD ══════════ -->
+  <div class="cfg-group" id="cfg-accesibilidad">
+    <div class="cfg-group__head">
+      <div class="cfg-group__titulo">Accesibilidad</div>
+      <div class="cfg-group__sub">Los mismos ajustes del botón flotante, ahora también aquí. Quedan sincronizados.</div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-universal-access-circle"></i> Ayudas, color y vista previa</div>
+
+      <div class="row g-3">
+
+        <!-- Ayudas de movimiento y foco (reemplaza al "Tamaño de texto", que ya está en Apariencia) -->
+        <div class="col-md-6 col-xl-4">
+          <div class="cfg-knob-card cfg-a11y-card">
+            <div class="cfg-a11y-card__head">
+              <div class="cfg-knob-card__label"><i class="bi bi-cursor-fill"></i> Movimiento y foco</div>
+              <div class="cfg-knob-card__hint">Menos distracciones y mejor guía al navegar</div>
+            </div>
+            <div class="cfg-a11y-card__body cfg-a11y-card__body--top">
+              <div class="cfg-a11y-mini">
+                <div class="cfg-toggle-row">
+                  <div class="cfg-toggle-label">
+                    <i class="bi bi-lightning-charge icon-azul"></i>
+                    <div>Reducir animaciones<span>Quita transiciones y movimientos</span></div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="cfgXAnimaciones">
+                    <span class="slider-sw"></span>
+                  </label>
+                </div>
+                <div class="cfg-toggle-row">
+                  <div class="cfg-toggle-label">
+                    <i class="bi bi-cursor icon-azul"></i>
+                    <div>Cursor grande<span>Puntero más visible</span></div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="cfgXCursor">
+                    <span class="slider-sw"></span>
+                  </label>
+                </div>
+                <div class="cfg-toggle-row">
+                  <div class="cfg-toggle-label">
+                    <i class="bi bi-bounding-box icon-azul"></i>
+                    <div>Resaltar foco del teclado<span>Contorno marcado al usar Tab</span></div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="cfgXFoco">
+                    <span class="slider-sw"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modo de color -->
+        <div class="col-md-6 col-xl-4">
+          <div class="cfg-knob-card cfg-a11y-card">
+            <div class="cfg-a11y-card__head">
+              <div class="cfg-knob-card__label"><i class="bi bi-circle-half"></i> Modo de color</div>
+              <div class="cfg-knob-card__hint">Cambia los colores para leer mejor</div>
+            </div>
+            <div class="cfg-a11y-card__body">
+              <div class="cfg-chips cfg-chips--stack" id="cfgA11yModos">
+                <button type="button" class="cfg-chip" data-modo="predeterminado">
+                  <i class="bi bi-circle-half"></i> Predeterminado
+                </button>
+                <button type="button" class="cfg-chip" data-modo="alto-contraste">
+                  <i class="bi bi-brightness-high"></i> Alto contraste
+                </button>
+                <button type="button" class="cfg-chip" data-modo="claro">
+                  <i class="bi bi-sun"></i> Claro
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista previa -->
+        <div class="col-md-12 col-xl-4">
+          <div class="cfg-knob-card cfg-a11y-card">
+            <div class="cfg-a11y-card__head">
+              <div class="cfg-knob-card__label"><i class="bi bi-eye"></i> Vista previa</div>
+              <div class="cfg-knob-card__hint">Así se ve el texto con tus ajustes actuales</div>
+            </div>
+            <div class="cfg-a11y-card__body">
+              <div class="cfg-a11y-preview">
+                <div class="cfg-a11y-preview__titulo">Licorera CYS</div>
+                <p class="cfg-a11y-preview__texto">
+                  Ejemplo de texto para comprobar el tamaño, el espaciado y la tipografía.
+                </p>
+                <a href="#" class="cfg-a11y-preview__link" hx-boost="false" onclick="return false;">Enlace de ejemplo</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title-row">
+        <div class="cfg-title cfg-title-no-margin"><i class="bi bi-universal-access"></i> Lectura y enlaces</div>
+        <button type="button" class="cfg-knob-card__reset cfg-reset-inline" id="cfgA11yReset">
+          <i class="bi bi-arrow-counterclockwise"></i> Restablecer accesibilidad
+        </button>
+      </div>
+
+      <div class="cfg-toggle-grid">
+        <div class="cfg-toggle-row">
+          <div class="cfg-toggle-label">
+            <i class="bi bi-circle-half icon-azul"></i>
+            <div>
+              Alto contraste
+              <span>Colores más marcados en toda la interfaz</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="cfgA11yContraste">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+
+        <div class="cfg-toggle-row">
+          <div class="cfg-toggle-label">
+            <i class="bi bi-text-paragraph icon-azul"></i>
+            <div>
+              Espaciado de texto
+              <span>Más aire entre letras, palabras y líneas</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="cfgA11yEspaciado">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+
+        <div class="cfg-toggle-row">
+          <div class="cfg-toggle-label">
+            <i class="bi bi-link-45deg icon-azul"></i>
+            <div>
+              Resaltar enlaces
+              <span>Subraya y destaca los enlaces de la página</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="cfgA11yEnlaces">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+
+        <div class="cfg-toggle-row">
+          <div class="cfg-toggle-label">
+            <i class="bi bi-fonts icon-azul"></i>
+            <div>
+              Fuente legible
+              <span>Usa una tipografía más simple y clara</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="cfgA11yFuente">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+      </div>
+
+      <p class="cfg-hint-sm" id="cfgA11yAviso" hidden>
+        No se encontró el widget de accesibilidad en esta página.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════ ③ NAVEGACIÓN Y ALERTAS ══════════ -->
+  <div class="cfg-group" id="cfg-navegacion">
+    <div class="cfg-group__head">
+      <div class="cfg-group__titulo">Navegación y alertas</div>
+      <div class="cfg-group__sub">Dónde empiezas, cómo se comporta la barra lateral y qué avisos ves.</div>
+    </div>
 
     <div class="row g-3">
-      <div class="col-md-4">
-        <div class="cfg-knob-card">
-          <div class="cfg-knob-card__top">
-            <div class="cfg-knob-card__info">
-              <div class="cfg-knob-card__label"><i class="bi bi-brightness-high"></i> Brillo</div>
-              <div class="cfg-knob-card__hint">Brillo general de la interfaz</div>
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-house-door-fill"></i> Página de inicio al entrar</div>
+          <div class="cfg-options" id="opcionesInicio">
+
+            <div class="cfg-opt" data-inicio="tablero" onclick="seleccionarInicio('tablero', this)">
+              <i class="bi bi-grid-1x2-fill cfg-opt-icon-lg"></i>
+              Tablero
+              <div class="cfg-opt-desc">Vista general del negocio</div>
             </div>
-            <div class="cfg-knob" id="knobBrillo" data-min="60" data-max="120" data-step="1" data-unit="%" data-default="100"></div>
+
+            <div class="cfg-opt" data-inicio="ventas" onclick="seleccionarInicio('ventas', this)">
+              <i class="bi bi-receipt cfg-opt-icon-lg"></i>
+              Ventas
+              <div class="cfg-opt-desc">Directo a registrar ventas</div>
+            </div>
+
+            <div class="cfg-opt" data-inicio="productos" onclick="seleccionarInicio('productos', this)">
+              <i class="bi bi-box-seam-fill cfg-opt-icon-lg"></i>
+              Productos
+              <div class="cfg-opt-desc">Gestión de productos</div>
+            </div>
+
           </div>
-          <button type="button" class="cfg-knob-card__reset" id="btnResetBrillo" disabled>
-            <i class="bi bi-arrow-counterclockwise"></i> Restablecer
-          </button>
         </div>
       </div>
 
-      <div class="col-md-4">
-        <div class="cfg-knob-card">
-          <div class="cfg-knob-card__top">
-            <div class="cfg-knob-card__info">
-              <div class="cfg-knob-card__label"><i class="bi bi-fonts"></i> Tamaño de letra</div>
-              <div class="cfg-knob-card__hint">Tamaño base del texto</div>
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-layout-sidebar-reverse"></i> Barra lateral</div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-pin-angle icon-azul"></i>
+              <div>
+                Abrir automáticamente al entrar
+                <span>La barra lateral se abre al cargar cualquier página</span>
+              </div>
             </div>
-            <div class="cfg-knob" id="knobFuente" data-min="12" data-max="20" data-step="1" data-unit="px" data-default="14"></div>
+            <label class="switch">
+              <input type="checkbox" id="toggleSidebarAuto">
+              <span class="slider-sw"></span>
+            </label>
           </div>
-          <button type="button" class="cfg-knob-card__reset" id="btnResetFuente" disabled>
-            <i class="bi bi-arrow-counterclockwise"></i> Restablecer
-          </button>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bar-chart-steps icon-azul"></i>
+              <div>
+                Mostrar sección Resumen
+                <span>Stock total, crítico y categorías en el sidebar</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleResumenSidebar" checked>
+              <span class="slider-sw"></span>
+            </label>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-4">
-        <div class="cfg-knob-card">
-          <div class="cfg-knob-card__top">
-            <div class="cfg-knob-card__info">
-              <div class="cfg-knob-card__label"><i class="bi bi-zoom-in"></i> Aumento</div>
-              <div class="cfg-knob-card__hint">Escala general de la pantalla</div>
+      <div class="col-12">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-bell-fill"></i> Notificaciones y alertas</div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-exclamation-triangle-fill icon-rojo-alert"></i>
+              <div>
+                Alertas de stock crítico
+                <span>Muestra el banner rojo cuando hay productos en 0 o bajo mínimo</span>
+              </div>
             </div>
-            <div class="cfg-knob" id="knobZoom" data-min="80" data-max="150" data-step="5" data-unit="%" data-default="100"></div>
+            <label class="switch">
+              <input type="checkbox" id="toggleAlertaStock" checked>
+              <span class="slider-sw"></span>
+            </label>
           </div>
-          <button type="button" class="cfg-knob-card__reset" id="btnResetZoom" disabled>
-            <i class="bi bi-arrow-counterclockwise"></i> Restablecer
-          </button>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bar-chart-fill icon-azul"></i>
+              <div>
+                Widget de estadísticas en productos
+                <span>Muestra la sección de rotación y producto estrella</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleWidgetRotacion" checked>
+              <span class="slider-sw"></span>
+            </label>
+          </div>
+
+          <div class="cfg-toggle-row">
+            <div class="cfg-toggle-label">
+              <i class="bi bi-bell-slash icon-muted"></i>
+              <div>
+                Modo silencioso
+                <span>Oculta todas las alertas visuales del sistema</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleSilencioso">
+              <span class="slider-sw"></span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ② TEMA -->
-  <div class="cfg-section">
-    <div class="cfg-title"><i class="bi bi-palette-fill"></i> Tema y apariencia</div>
-    <p class="cfg-hint">
-      Tema predeterminado del sistema: <strong id="temaSistemaLabel"></strong>
-    </p>
-    <div class="cfg-options" id="opcionesTema">
-
-      <div class="cfg-opt" data-tema="oscuro" onclick="seleccionarTema('oscuro', this)">
-        <div class="tema-preview tema-preview-oscuro"></div>
-        <i class="bi bi-moon-stars-fill tema-icon"></i>
-        Oscuro
-      </div>
-
-      <div class="cfg-opt" data-tema="claro" onclick="seleccionarTema('claro', this)">
-        <div class="tema-preview tema-preview-claro"></div>
-        <i class="bi bi-sun-fill tema-icon"></i>
-        Claro
-      </div>
-
-      <div class="cfg-opt" data-tema="alto-contraste" onclick="seleccionarTema('alto-contraste', this)">
-        <div class="tema-preview tema-preview-alto-contraste"></div>
-        <i class="bi bi-circle-half tema-icon"></i>
-        Alto contraste
-      </div>
-
-      <div class="cfg-opt" data-tema="basecys" onclick="seleccionarTema('basecys', this)">
-        <div class="tema-preview tema-preview-base-cys"></div>
-        <i class="bi bi-cup-straw tema-icon"></i>
-        Base CyS
-      </div>
-
-      <div class="cfg-opt" data-tema="sepia" onclick="seleccionarTema('sepia', this)">
-        <div class="tema-preview tema-preview-sepia"></div>
-        <i class="bi bi-book-fill tema-icon"></i>
-        Sepia
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ③ PÁGINA DE INICIO + ④ BARRA LATERAL -->
-  <div class="row g-3">
-    <div class="col-lg-6">
-      <div class="cfg-section">
-        <div class="cfg-title"><i class="bi bi-house-door-fill"></i> Página de inicio al entrar</div>
-        <div class="cfg-options" id="opcionesInicio">
-
-          <div class="cfg-opt" data-inicio="tablero" onclick="seleccionarInicio('tablero', this)">
-            <i class="bi bi-grid-1x2-fill cfg-opt-icon-lg"></i>
-            Tablero
-            <div class="cfg-opt-desc">Vista general del negocio</div>
-          </div>
-
-          <div class="cfg-opt" data-inicio="ventas" onclick="seleccionarInicio('ventas', this)">
-            <i class="bi bi-receipt cfg-opt-icon-lg"></i>
-            Ventas
-            <div class="cfg-opt-desc">Directo a registrar ventas</div>
-          </div>
-
-          <div class="cfg-opt" data-inicio="productos" onclick="seleccionarInicio('productos', this)">
-            <i class="bi bi-box-seam-fill cfg-opt-icon-lg"></i>
-            Productos
-            <div class="cfg-opt-desc">Gestión de productos</div>
-          </div>
-
-        </div>
-      </div>
+  <!-- ══════════ ④ CUENTA: USUARIOS Y PERFILES ══════════ -->
+  <div class="cfg-group" id="cfg-cuenta">
+    <div class="cfg-group__head">
+      <div class="cfg-group__titulo">Cuenta</div>
+      <div class="cfg-group__sub">Tu perfil, los usuarios del sistema y el registro de inicios de sesión.</div>
     </div>
 
-    <div class="col-lg-6">
-      <div class="cfg-section">
-        <div class="cfg-title"><i class="bi bi-layout-sidebar-reverse"></i> Barra lateral</div>
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="bi bi-person-badge-fill"></i> Usuarios y perfiles</div>
 
-        <div class="cfg-toggle-row">
-          <div class="cfg-toggle-label">
-            <i class="bi bi-pin-angle icon-azul"></i>
-            <div>
-              Abrir automáticamente al entrar
-              <span>La barra lateral se abre al cargar cualquier página</span>
-            </div>
+      <div class="cfg-profile">
+        <div class="cfg-profile__avatar">{{ user.first_name|default:user.username|slice:":1"|upper }}</div>
+        <div class="cfg-profile__info">
+          <div class="cfg-profile__nombre">{{ user.get_full_name|default:user.username }}</div>
+          <div class="cfg-profile__meta">
+            <span class="cfg-badge {% if es_admin_empresa %}cfg-badge--admin{% endif %}">
+              <i class="bi {% if es_admin_empresa %}bi-shield-fill-check{% else %}bi-person-fill{% endif %}"></i>
+              {% if es_admin_empresa %}Administrador{% else %}Usuario{% endif %}
+            </span>
+            <span class="cfg-profile__ultimo">
+              Último ingreso: {{ user.last_login|date:"d/m/Y H:i"|default:"—" }}
+            </span>
           </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleSidebarAuto">
-            <span class="slider-sw"></span>
-          </label>
         </div>
-
-        <div class="cfg-toggle-row">
-          <div class="cfg-toggle-label">
-            <i class="bi bi-bar-chart-steps icon-azul"></i>
-            <div>
-              Mostrar sección Resumen
-              <span>Stock total, crítico y categorías en el sidebar</span>
-            </div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleResumenSidebar" checked>
-            <span class="slider-sw"></span>
-          </label>
-        </div>
-
       </div>
-    </div>
-  </div>
 
-  <!-- ⑤ ACTIVIDAD DE USUARIOS + ⑥ NOTIFICACIONES -->
-  <div class="row g-3 cfg-row">
-    <div class="col-lg-6">
-      <div class="cfg-section">
-        <div class="cfg-title"><i class="bi bi-clock-history"></i> Actividad de usuarios</div>
+      <div class="cfg-actions">
 
-        <p class="cfg-hint" id="actividadHint">
-          Consulta los inicios de sesión registrados en el sistema.
-        </p>
+        <a href="{% url 'perfil_pagina' %}" class="cfg-action">
+          <span class="cfg-action__icon"><i class="bi bi-person-circle"></i></span>
+          <span class="cfg-action__body">
+            <span class="cfg-action__titulo">Mi perfil</span>
+            <span class="cfg-action__desc">Foto, datos personales y contraseña</span>
+          </span>
+          <i class="bi bi-chevron-right cfg-action__arrow"></i>
+        </a>
 
-        <button type="button" class="cys-btn cys-btn--primary" data-bs-toggle="modal" data-bs-target="#modalActividad">
-          <i class="bi bi-eye me-1"></i> Ver actividad
-        </button>
-      </div>
-    </div>
-
-    <div class="col-lg-6">
-      <div class="cfg-section">
-        <div class="cfg-title"><i class="bi bi-bell-fill"></i> Notificaciones y alertas</div>
-
-        <div class="cfg-toggle-row">
-          <div class="cfg-toggle-label">
-            <i class="bi bi-exclamation-triangle-fill icon-rojo-alert"></i>
-            <div>
-              Alertas de stock crítico
-              <span>Muestra el banner rojo cuando hay productos en 0 o bajo mínimo</span>
-            </div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleAlertaStock" checked>
-            <span class="slider-sw"></span>
-          </label>
-        </div>
-
-        <div class="cfg-toggle-row">
-          <div class="cfg-toggle-label">
-            <i class="bi bi-bar-chart-fill icon-azul"></i>
-            <div>
-              Widget de estadísticas en productos
-              <span>Muestra la sección de rotación y producto estrella</span>
-            </div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleWidgetRotacion" checked>
-            <span class="slider-sw"></span>
-          </label>
-        </div>
-
-        <div class="cfg-toggle-row">
-          <div class="cfg-toggle-label">
-            <i class="bi bi-bell-slash icon-muted"></i>
-            <div>
-              Modo silencioso
-              <span>Oculta todas las alertas visuales del sistema</span>
-            </div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleSilencioso">
-            <span class="slider-sw"></span>
-          </label>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ⑦ INFORMACIÓN DE LA EMPRESA — BLOQUEADA CON CONTRASEÑA DE ADMIN -->
-  <div class="cfg-section cfg-row">
-    <div class="cfg-title-row">
-      <div class="cfg-title cfg-title-no-margin"><i class="bi bi-building"></i> Información de la empresa</div>
-      <div class="cfg-title-row__acciones">
         {% if es_admin_empresa %}
-        <button type="button" onclick="bloquearEmpresa()" class="cfg-btn-lock" id="btnBloquearEmpresa" style="display:none;">
-          <i class="bi bi-lock-fill"></i> Bloquear
-        </button>
+        <a href="{% url 'usuario' %}" class="cfg-action">
+          <span class="cfg-action__icon"><i class="bi bi-people-fill"></i></span>
+          <span class="cfg-action__body">
+            <span class="cfg-action__titulo">Gestionar usuarios</span>
+            <span class="cfg-action__desc">Crear, editar roles y activar o desactivar</span>
+          </span>
+          <i class="bi bi-chevron-right cfg-action__arrow"></i>
+        </a>
         {% endif %}
-        <button type="button" onclick="guardarInfoEmpresa()" class="cfg-btn-mini" id="btnGuardarEmpresa" style="display:none;">
+
+        <button type="button" class="cfg-action" data-bs-toggle="modal" data-bs-target="#modalActividad">
+          <span class="cfg-action__icon"><i class="bi bi-clock-history"></i></span>
+          <span class="cfg-action__body">
+            <span class="cfg-action__titulo">Actividad de inicio de sesión</span>
+            <span class="cfg-action__desc" id="actividadHint">
+              Consulta los inicios de sesión registrados en el sistema.
+            </span>
+          </span>
+          <i class="bi bi-chevron-right cfg-action__arrow"></i>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ⑤ EMPRESA Y SISTEMA ══════════ -->
+  <div class="cfg-group" id="cfg-sistema">
+    <div class="cfg-group__head">
+      <div class="cfg-group__titulo">Empresa y sistema</div>
+      <div class="cfg-group__sub">Datos de la empresa, impuestos y copias de seguridad.</div>
+    </div>
+
+    <!-- INFORMACIÓN DE LA EMPRESA — BLOQUEADA CON CONTRASEÑA DE ADMIN -->
+    <div class="cfg-section">
+      <div class="cfg-title-row">
+        <div class="cfg-title cfg-title-no-margin"><i class="bi bi-building"></i> Información de la empresa</div>
+        <div class="cfg-title-row__acciones">
+          {% if es_admin_empresa %}
+          <button type="button" onclick="bloquearEmpresa()" class="cfg-btn-lock" id="btnBloquearEmpresa" style="display:none;">
+            <i class="bi bi-lock-fill"></i> Bloquear
+          </button>
+          {% endif %}
+          <button type="button" onclick="guardarInfoEmpresa()" class="cfg-btn-mini" id="btnGuardarEmpresa" style="display:none;">
+            <i class="bi bi-check-lg"></i> Guardar
+          </button>
+        </div>
+      </div>
+
+      <div id="empresaBody">
+
+        <!-- Barra de bloqueo compacta -->
+        <div id="empresaLockScreen" class="cfg-lockscreen">
+          <div class="cfg-lockscreen__icon" id="empresaLockIcon">
+            <i class="bi bi-lock-fill" id="empresaLockIconGlyph"></i>
+          </div>
+
+          <div class="cfg-lockscreen__texto">
+            <div class="cfg-lockscreen__titulo">Información protegida</div>
+            {% if es_admin_empresa %}
+              <div class="cfg-lockscreen__sub">Ingresa tu contraseña de administrador para desbloquear</div>
+            {% else %}
+              <div class="cfg-lockscreen__sub">Solo un administrador puede ver y editar esta información.</div>
+            {% endif %}
+          </div>
+
+          {% if es_admin_empresa %}
+          <div class="cfg-lockscreen__acciones">
+            <div class="cfg-lockscreen__form">
+              <input type="password"
+                    id="claveEmpresaInput"
+                    class="cfg-lockscreen__input"
+                    placeholder="••••••••"
+                    autocomplete="current-password">
+              <button type="button" class="cfg-lockscreen__btn" id="btnVerificarClaveEmpresa" onclick="verificarClaveEmpresa()">
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+            <div id="claveEmpresaError" class="cfg-lockscreen__error" style="display:none;"></div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Contenido real, oculto hasta desbloquear -->
+        <div id="empresaCampos" class="cfg-locked-content" style="display:none;">
+          <div class="cfg-empresa-header">
+            <div class="cfg-logo-preview" id="logoEmpresaPreview"
+                onclick="document.getElementById('inputLogoEmpresa').click()">
+              {% if config.logo %}
+                <img src="{{ config.logo.url }}" alt="Logo empresa">
+              {% else %}
+                <i class="bi bi-image"></i>
+              {% endif %}
+            </div>
+            <input type="file" id="inputLogoEmpresa" accept="image/*" class="input-file-hidden"
+                  onchange="previewLogoEmpresa(this)">
+
+            <div class="cfg-empresa-header__campos">
+              <div>
+                <label class="cfg-label">Nombre de la empresa</label>
+                <input type="text" class="cfg-input" id="empresaNombre" placeholder="Licorera CYS Ltda">
+              </div>
+              <div>
+                <label class="cfg-label">NIT</label>
+                <input type="text" class="cfg-input" id="empresaNit" placeholder="900.123.456-7">
+              </div>
+              <div>
+                <label class="cfg-label">Teléfono</label>
+                <input type="text" class="cfg-input" id="empresaTelefono" placeholder="+57 300 000 0000">
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="cfg-label">Correo de contacto</label>
+              <input type="email" class="cfg-input" id="empresaEmail" placeholder="contacto@cysltda.com">
+            </div>
+            <div class="col-sm-6">
+              <label class="cfg-label">Dirección</label>
+              <input type="text" class="cfg-input" id="empresaDireccion" placeholder="Calle 00 # 00-00, local 00">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- IMPUESTOS Y MONEDA -->
+    <div class="cfg-section">
+      <div class="cfg-title-row">
+        <div class="cfg-title cfg-title-no-margin"><i class="bi bi-cash-coin"></i> Impuestos y moneda</div>
+        <button onclick="guardarImpuestos()" class="cfg-btn-mini" id="btnGuardarImpuestos">
           <i class="bi bi-check-lg"></i> Guardar
         </button>
       </div>
+
+      <div class="row g-3">
+        <div class="col-sm-6 col-lg-4">
+          <label class="cfg-label">IVA (%)</label>
+          <input type="number" step="0.01" min="0" max="100" class="cfg-input" id="ivaPorcentaje" value="{{ config.iva_porcentaje }}">
+        </div>
+        <div class="col-sm-6 col-lg-4">
+          <label class="cfg-label">Moneda</label>
+          <select class="cfg-select" id="monedaSelect">
+            <option value="COP" {% if config.moneda == 'COP' %}selected{% endif %}>COP — Peso colombiano</option>
+            <option value="USD" {% if config.moneda == 'USD' %}selected{% endif %}>USD — Dólar</option>
+          </select>
+        </div>
+        <div class="col-sm-12 col-lg-4">
+          <label class="cfg-label">Unidades de medida</label>
+          <input type="text" class="cfg-input" id="unidadesMedida"
+                value="{{ config.unidades_medida|join:', ' }}"
+                placeholder="unidad, caja, paquete">
+          <div class="cfg-hint-sm">Sepáralas con comas</div>
+        </div>
+      </div>
     </div>
 
-    <div id="empresaBody">
-
-      <!-- Pantalla de bloqueo, estilo "desbloquear celular" -->
-      <div id="empresaLockScreen" class="cfg-lockscreen">
-        <div class="cfg-lockscreen__icon" id="empresaLockIcon">
-          <i class="bi bi-lock-fill" id="empresaLockIconGlyph"></i>
-        </div>
-        <div class="cfg-lockscreen__titulo">Información protegida</div>
-
-        {% if es_admin_empresa %}
-          <div class="cfg-lockscreen__sub">Ingresa tu contraseña de administrador para desbloquear</div>
-          <div class="cfg-lockscreen__form">
-            <input type="password"
-                  id="claveEmpresaInput"
-                  class="cfg-lockscreen__input"
-                  placeholder="••••••••"
-                  autocomplete="current-password">
-            <button type="button" class="cfg-lockscreen__btn" id="btnVerificarClaveEmpresa" onclick="verificarClaveEmpresa()">
-              <i class="bi bi-arrow-right"></i>
-            </button>
+    <!-- COPIA DE SEGURIDAD: apartado con botón a su página -->
+    <div class="cfg-section cfg-backup-card">
+      <div class="cfg-backup-card__head">
+        <div class="cfg-backup-card__icon"><i class="bi bi-database-fill"></i></div>
+        <div class="cfg-backup-card__texto">
+          <div class="cfg-backup-card__titulo">Copia de seguridad</div>
+          <div class="cfg-backup-card__desc">
+            Genera, descarga y administra los respaldos de la base de datos desde su propia página.
           </div>
-          <div id="claveEmpresaError" class="cfg-lockscreen__error" style="display:none;"></div>
-        {% else %}
-          <div class="cfg-lockscreen__sub">Solo un administrador puede ver y editar esta información.</div>
-        {% endif %}
+        </div>
+        <a href="{% url 'respaldos_index' %}" class="cys-btn cys-btn--primary cfg-backup-card__btn">
+          Ir a copia de seguridad <i class="bi bi-arrow-right ms-1"></i>
+        </a>
       </div>
 
-      <!-- Contenido real, oculto hasta desbloquear -->
-      <div id="empresaCampos" class="cfg-locked-content" style="display:none;">
-        <div class="cfg-empresa-header">
-          <div class="cfg-logo-preview" id="logoEmpresaPreview"
-              onclick="document.getElementById('inputLogoEmpresa').click()">
-            {% if config.logo %}
-              <img src="{{ config.logo.url }}" alt="Logo empresa">
-            {% else %}
-              <i class="bi bi-image"></i>
-            {% endif %}
-          </div>
-          <input type="file" id="inputLogoEmpresa" accept="image/*" class="input-file-hidden"
-                onchange="previewLogoEmpresa(this)">
-
-          <div class="cfg-empresa-header__campos">
+      <div class="row g-3 cfg-backup-card__stats">
+        <div class="col-6 col-lg-3">
+          <div class="cfg-db-stat">
             <div>
-              <label class="cfg-label">Nombre de la empresa</label>
-              <input type="text" class="cfg-input" id="empresaNombre" placeholder="Licorera CYS Ltda">
+              <div class="lbl">Tablas</div>
+              <div class="val" id="dbTablas">{{ db_stats.tablas }}</div>
             </div>
+            <i class="bi bi-hdd-stack db-stat-icon"></i>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="cfg-db-stat">
             <div>
-              <label class="cfg-label">NIT</label>
-              <input type="text" class="cfg-input" id="empresaNit" placeholder="900.123.456-7">
+              <div class="lbl">Registros</div>
+              <div class="val" id="dbRegistros">{{ db_stats.registros }}</div>
             </div>
+            <i class="bi bi-stack db-stat-icon"></i>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="cfg-db-stat">
             <div>
-              <label class="cfg-label">Teléfono</label>
-              <input type="text" class="cfg-input" id="empresaTelefono" placeholder="+57 300 000 0000">
+              <div class="lbl">Tamaño BD</div>
+              <div class="val" id="dbTamano">{{ db_stats.tamaño }}</div>
             </div>
+            <i class="bi bi-hdd db-stat-icon"></i>
           </div>
         </div>
-
-        <div class="row g-3">
-          <div class="col-sm-6">
-            <label class="cfg-label">Correo de contacto</label>
-            <input type="email" class="cfg-input" id="empresaEmail" placeholder="contacto@cysltda.com">
-          </div>
-          <div class="col-sm-6">
-            <label class="cfg-label">Dirección</label>
-            <input type="text" class="cfg-input" id="empresaDireccion" placeholder="Calle 00 # 00-00, local 00">
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ⑧ IMPUESTOS Y MONEDA (CONECTADO A guardar_impuestos) -->
-  <div class="cfg-section cfg-row">
-    <div class="cfg-title-row">
-      <div class="cfg-title cfg-title-no-margin"><i class="bi bi-cash-coin"></i> Impuestos y moneda</div>
-      <button onclick="guardarImpuestos()" class="cfg-btn-mini" id="btnGuardarImpuestos">
-        <i class="bi bi-check-lg"></i> Guardar
-      </button>
-    </div>
-
-    <div class="row g-3">
-      <div class="col-sm-6 col-lg-4">
-        <label class="cfg-label">IVA (%)</label>
-        <input type="number" step="0.01" min="0" max="100" class="cfg-input" id="ivaPorcentaje" value="{{ config.iva_porcentaje }}">
-      </div>
-      <div class="col-sm-6 col-lg-4">
-        <label class="cfg-label">Moneda</label>
-        <select class="cfg-select" id="monedaSelect">
-          <option value="COP" {% if config.moneda == 'COP' %}selected{% endif %}>COP — Peso colombiano</option>
-          <option value="USD" {% if config.moneda == 'USD' %}selected{% endif %}>USD — Dólar</option>
-        </select>
-      </div>
-      <div class="col-sm-12 col-lg-4">
-        <label class="cfg-label">Unidades de medida</label>
-        <input type="text" class="cfg-input" id="unidadesMedida"
-              value="{{ config.unidades_medida|join:', ' }}"
-              placeholder="unidad, caja, paquete">
-        <div class="cfg-hint-sm">Sepáralas con comas</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ⑨ BASE DE DATOS (CONECTADO A crear_backup) -->
-  <div class="cfg-section cfg-row">
-    <div class="cfg-title"><i class="bi bi-database-fill"></i> Base de datos</div>
-
-    <div class="row g-3">
-      <div class="col-sm-6 col-lg-3">
-        <div class="cfg-db-stat">
-          <div>
-            <div class="lbl">Tablas</div>
-            <div class="val" id="dbTablas">{{ db_stats.tablas }}</div>
-          </div>
-          <i class="bi bi-hdd-stack db-stat-icon"></i>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="cfg-db-stat">
-          <div>
-            <div class="lbl">Registros totales</div>
-            <div class="val" id="dbRegistros">{{ db_stats.registros }}</div>
-          </div>
-          <i class="bi bi-stack db-stat-icon"></i>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="cfg-db-stat">
-          <div>
-            <div class="lbl">Tamaño BD</div>
-            <div class="val" id="dbTamano">{{ db_stats.tamaño }}</div>
-          </div>
-          <i class="bi bi-hdd db-stat-icon"></i>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="cfg-db-stat">
-          <div>
-            <div class="lbl">Último respaldo</div>
-            <div class="val" id="dbUltimoRespaldo">
-              {% if backups.0 %}{{ backups.0.fecha|date:"d/m/Y H:i" }}{% else %}Sin registrar{% endif %}
+        <div class="col-6 col-lg-3">
+          <div class="cfg-db-stat">
+            <div>
+              <div class="lbl">Último respaldo</div>
+              <div class="val" id="dbUltimoRespaldo">
+                {% if backups.0 %}{{ backups.0.fecha|date:"d/m/Y H:i" }}{% else %}Sin registrar{% endif %}
+              </div>
             </div>
+            <i class="bi bi-clock-history db-stat-icon"></i>
           </div>
-          <i class="bi bi-clock-history db-stat-icon"></i>
         </div>
       </div>
-    </div>
-
-    <div class="cfg-db-actions">
-      <button onclick="generarRespaldo()" class="cys-btn cys-btn--primary" id="btnBackup">
-        <i class="bi bi-cloud-arrow-down me-1"></i> Generar respaldo
-      </button>
-    </div>
-
-    <div id="listaBackups" class="mt-backups">
-      {% for b in backups %}
-        <div class="cfg-backup-item" data-backup-item>
-          <div>
-            <div class="cfg-backup-item__nombre">{{ b.nombre }}</div>
-            <div class="cfg-backup-item__meta">{{ b.fecha|date:"d/m/Y H:i" }} · {{ b.tamaño_mb }} MB</div>
-          </div>
-          <i class="bi bi-file-earmark-zip icon-azul"></i>
-        </div>
-      {% empty %}
-        <div class="backup-empty-text" data-backup-empty>
-          Todavía no hay respaldos generados.
-        </div>
-      {% endfor %}
     </div>
   </div>
 

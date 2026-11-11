@@ -5,6 +5,8 @@
 const cfgData = document.getElementById('cfg-data');
 if (!cfgData) return;
 
+const $ = (id) => document.getElementById(id);
+
 // ══════════════════════════════════════════
 // URLs de Django (pasadas desde el template vía data-attributes)
 // ══════════════════════════════════════════
@@ -13,12 +15,10 @@ const URL_GUARDAR_EMPRESA      = cfgData.dataset.urlGuardarEmpresa;
 const URL_VERIFICAR_EMPRESA    = cfgData.dataset.urlVerificarEmpresa;
 const URL_BLOQUEAR_EMPRESA     = cfgData.dataset.urlBloquearEmpresa;
 const URL_GUARDAR_IMPUESTOS    = cfgData.dataset.urlGuardarImpuestos;
-const URL_CREAR_BACKUP         = cfgData.dataset.urlCrearBackup;
 const URL_GUARDAR_TEMA_SISTEMA = cfgData.dataset.urlGuardarTemaSistema;
+const URL_A11Y_EXTRA           = cfgData.dataset.urlA11yExtra;
 
-// FIX: antes era `=== 'true'` exacto. Django entrega "True" (con mayúscula)
-// si el template no lo pasa por |lower, y entonces el modal de confirmación
-// de tema del sistema NUNCA salía. Ahora se acepta cualquier mayúscula.
+// Django puede entregar "True"/"true"/"1": se acepta cualquier mayúscula.
 const ES_ADMIN_EMPRESA = ['true', '1'].includes(String(cfgData.dataset.esAdmin || '').trim().toLowerCase());
 
 const NOMBRES_TEMA = {
@@ -29,9 +29,15 @@ const NOMBRES_TEMA = {
   'sepia': 'Sepia',
 };
 
-// FIX: el tema del sistema se lee primero de <html data-tema-sistema> (que base.js
+// Escapa texto antes de meterlo con innerHTML
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// El tema del sistema se lee primero de <html data-tema-sistema> (que base.js
 // mantiene al día en cada navegación htmx) y luego del data-attribute de esta página.
-// Antes solo se leía una vez de cfg-data y quedaba desactualizado.
 function leerTemaSistema() {
   const deHtml = document.documentElement.dataset.temaSistema;
   if (deHtml && NOMBRES_TEMA[deHtml]) return deHtml;
@@ -96,6 +102,7 @@ let cfgActual = cargarCfg();
 let perillaBrillo, perillaFuente, perillaZoom;
 let logoEmpresaFile = null; // archivo seleccionado, pendiente de subir al guardar
 let toastPrefTimeout = null;
+let toastTimeout = null;
 let temaPendiente = null;   // tema a confirmar como predeterminado del sistema
 
 // ══════════════════════════════════════════
@@ -227,37 +234,203 @@ function aplicarTema(tema) {
   }
 }
 
-function seleccionarTema(tema, el) {
-  try {
-    if (!NOMBRES_TEMA[tema]) return;
+// ══════════════════════════════════════════
+// ACCESIBILIDAD — espejo del widget flotante (#cys-a11y-widget)
+// Los controles de Configuración NO guardan nada por su cuenta:
+// accionan el widget de base.html, así base.js sigue siendo la única
+// fuente de verdad (localStorage.cys_a11y).
+// (El tamaño de texto ya se maneja arriba, en Apariencia.)
+// ══════════════════════════════════════════
+const A11Y_SWITCHES = [
+  ['cfgA11yContraste', 'cysA11yContraste'],
+  ['cfgA11yEspaciado', 'cysA11yEspaciado'],
+  ['cfgA11yEnlaces',   'cysA11yEnlaces'],
+  ['cfgA11yFuente',    'cysA11yFuente'],
+];
 
-    TEMA_SISTEMA = leerTemaSistema();
+// Ayudas extra (movimiento y foco). Las guarda cys-a11y-extra.js
+const A11Y_EXTRA = [
+  ['cfgXAnimaciones', 'animaciones'],
+  ['cfgXCursor',      'cursor'],
+  ['cfgXFoco',        'foco'],
+];
 
-    document.querySelectorAll('#opcionesTema .cfg-opt').forEach(o =>
-      o.classList.toggle('activo', o.dataset.tema === tema));
-
-    cfgActual.tema = tema;
-    temaPersonal = (tema !== TEMA_SISTEMA);
-
-    window.CYS_TEMA_SITIO = tema;
-    liberarModoA11y();
-    guardarCfg(cfgActual);
-
-    // Mismo disparador que usa htmx al navegar (el que ya sabemos que funciona)
-    document.dispatchEvent(new CustomEvent('htmx:afterSettle'));
-    // Respaldo por si el listener tarda un ciclo
-    setTimeout(() => {
-      document.dispatchEvent(new CustomEvent('htmx:afterSettle'));
-      aplicarFuente(cfgActual.fuente);
-    }, 0);
-
-    mostrarToastPreferencia();
-
-    if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
-      pedirConfirmacionTemaSistema(tema);
+function modoActivoDelWidget() {
+  let activo = null;
+  document.querySelectorAll('.cys-a11y-colormode__btn').forEach(b => {
+    const c = b.classList;
+    if (c.contains('active') || c.contains('activo') || c.contains('is-active') ||
+        b.getAttribute('aria-pressed') === 'true') {
+      activo = b.dataset.modo;
     }
-  } catch (err) {
-    console.error('[CYS] Error al cambiar el tema:', err);
+  });
+  return activo;
+}
+
+// Se redefine en cada carga (htmx reemplaza el DOM de la página)
+window.cfgSyncA11y = function () {
+  A11Y_SWITCHES.forEach(([mioId, widgetId]) => {
+    const mio = $(mioId);
+    const widget = $(widgetId);
+    if (mio && widget) mio.checked = widget.checked;
+  });
+
+  const modo = modoActivoDelWidget();
+  document.querySelectorAll('#cfgA11yModos .cfg-chip').forEach(chip => {
+    chip.classList.toggle('activo', !!modo && chip.dataset.modo === modo);
+  });
+
+  // Ayudas extra
+  if (window.CYS_A11Y_EXTRA) {
+    const ex = window.CYS_A11Y_EXTRA.get();
+    A11Y_EXTRA.forEach(([id, clave]) => {
+      const el = $(id);
+      if (el) el.checked = !!ex[clave];
+    });
+  }
+};
+
+function sincronizarA11yLuego() {
+  setTimeout(() => { if (window.cfgSyncA11y) window.cfgSyncA11y(); }, 80);
+}
+
+function clickWidgetA11y(id) {
+  const el = $(id);
+  if (el) el.click();
+  sincronizarA11yLuego();
+}
+
+// Carga cys-a11y-extra.js si base.html todavía no lo incluye
+function cargarExtraA11y(cb) {
+  if (window.CYS_A11Y_EXTRA || !URL_A11Y_EXTRA) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = URL_A11Y_EXTRA;
+  s.onload = cb;
+  s.onerror = cb;
+  document.head.appendChild(s);
+}
+
+function initA11yExtra() {
+  A11Y_EXTRA.forEach(([id, clave]) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      if (window.CYS_A11Y_EXTRA) {
+        window.CYS_A11Y_EXTRA.set(clave, el.checked);
+        mostrarToastPreferencia();
+      } else {
+        el.checked = false;
+        mostrarToast('No se pudo cargar cys-a11y-extra.js', 'error');
+      }
+    });
+  });
+  if (window.cfgSyncA11y) window.cfgSyncA11y();
+}
+
+function initA11y() {
+  const widget = $('cys-a11y-widget');
+  if (!widget) {
+    const aviso = $('cfgA11yAviso');
+    if (aviso) aviso.hidden = false;
+  } else {
+    // Modo de color
+    document.querySelectorAll('#cfgA11yModos .cfg-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const destino = document.querySelector(
+          '.cys-a11y-colormode__btn[data-modo="' + chip.dataset.modo + '"]'
+        );
+        if (destino) destino.click();
+        sincronizarA11yLuego();
+      });
+    });
+
+    // Interruptores
+    A11Y_SWITCHES.forEach(([mioId, widgetId]) => {
+      const mio = $(mioId);
+      if (!mio) return;
+      mio.addEventListener('change', () => {
+        const w = $(widgetId);
+        if (w && w.checked !== mio.checked) w.click();
+        sincronizarA11yLuego();
+      });
+    });
+
+    // El widget es persistente (hx-preserve): se enlaza UNA sola vez.
+    // El callback usa window.cfgSyncA11y, que apunta siempre al DOM actual.
+    if (!widget.dataset.cfgBound) {
+      widget.dataset.cfgBound = '1';
+      ['click', 'change'].forEach(ev => {
+        widget.addEventListener(ev, () => {
+          setTimeout(() => { if (window.cfgSyncA11y) window.cfgSyncA11y(); }, 80);
+        });
+      });
+    }
+  }
+
+  // Restablecer: widget + ayudas extra
+  const reset = $('cfgA11yReset');
+  if (reset) {
+    reset.addEventListener('click', () => {
+      if (widget) clickWidgetA11y('cysA11yReset');
+      if (window.CYS_A11Y_EXTRA) window.CYS_A11Y_EXTRA.reset();
+      sincronizarA11yLuego();
+    });
+  }
+
+  cargarExtraA11y(initA11yExtra);
+}
+
+// ══════════════════════════════════════════
+// MENÚ DE ACCESOS (chips de arriba): scroll suave a cada grupo
+// ══════════════════════════════════════════
+function initNavegacion() {
+  const botones = document.querySelectorAll('.cfg-nav__btn');
+  botones.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const destino = $(btn.dataset.target);
+      if (!destino) return;
+      destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      botones.forEach(b => b.classList.toggle('activo', b === btn));
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+// ACTIVIDAD DE USUARIOS (modal)
+// ══════════════════════════════════════════
+async function cargarActividad() {
+  const tbody = $('tablaActividad');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
+
+  try {
+    const res = await fetch(URL_ACTIVIDAD, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    const esAdmin = !!data.es_admin;
+    const cols = esAdmin ? 3 : 2;
+
+    $('tituloActividad').textContent = esAdmin ? 'Actividad de todos los usuarios' : 'Mi actividad';
+    $('colUsuario').style.display = esAdmin ? '' : 'none';
+
+    const registros = Array.isArray(data.registros) ? data.registros : [];
+    if (registros.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${cols}" class="text-center">Sin registros</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = registros.map(r => `
+      <tr>
+        ${esAdmin ? `<td>${esc(r.usuario)}</td>` : ''}
+        <td>${esc(r.fecha_hora)}</td>
+        <td>${esc(r.ip)}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center">Error al cargar la actividad</td></tr>';
   }
 }
 
@@ -265,23 +438,23 @@ function seleccionarTema(tema, el) {
 // INIT
 // ══════════════════════════════════════════
 function init() {
-  perillaBrillo = crearPerilla(document.getElementById('knobBrillo'), 'btnResetBrillo');
-  perillaFuente = crearPerilla(document.getElementById('knobFuente'), 'btnResetFuente');
-  perillaZoom   = crearPerilla(document.getElementById('knobZoom'), 'btnResetZoom');
+  perillaBrillo = crearPerilla($('knobBrillo'), 'btnResetBrillo');
+  perillaFuente = crearPerilla($('knobFuente'), 'btnResetFuente');
+  perillaZoom   = crearPerilla($('knobZoom'), 'btnResetZoom');
 
-  document.getElementById('knobBrillo').addEventListener('cambio', e => {
+  $('knobBrillo').addEventListener('cambio', e => {
     cfgActual.brillo = e.detail;
     aplicarBrillo(e.detail);
     guardarCfg(cfgActual);
     mostrarToastPreferencia();
   });
-  document.getElementById('knobFuente').addEventListener('cambio', e => {
+  $('knobFuente').addEventListener('cambio', e => {
     cfgActual.fuente = e.detail;
     aplicarFuente(e.detail);
     guardarCfg(cfgActual);
     mostrarToastPreferencia();
   });
-  document.getElementById('knobZoom').addEventListener('cambio', e => {
+  $('knobZoom').addEventListener('cambio', e => {
     cfgActual.zoom = e.detail;
     aplicarZoom(e.detail);
     guardarCfg(cfgActual);
@@ -295,11 +468,11 @@ function init() {
 
   actualizarEtiquetaTemaSistema();
 
-  document.getElementById('toggleSidebarAuto').checked    = cfgActual.sidebarAuto;
-  document.getElementById('toggleResumenSidebar').checked = cfgActual.resumenSidebar;
-  document.getElementById('toggleAlertaStock').checked    = cfgActual.alertaStock;
-  document.getElementById('toggleWidgetRotacion').checked = cfgActual.widgetRotacion;
-  document.getElementById('toggleSilencioso').checked     = cfgActual.silencioso;
+  $('toggleSidebarAuto').checked    = cfgActual.sidebarAuto;
+  $('toggleResumenSidebar').checked = cfgActual.resumenSidebar;
+  $('toggleAlertaStock').checked    = cfgActual.alertaStock;
+  $('toggleWidgetRotacion').checked = cfgActual.widgetRotacion;
+  $('toggleSilencioso').checked     = cfgActual.silencioso;
 
   perillaBrillo.pintar(cfgActual.brillo);
   perillaFuente.pintar(cfgActual.fuente);
@@ -314,7 +487,7 @@ function init() {
     toggleSilencioso:     'silencioso',
   };
   Object.entries(togglesMap).forEach(([id, key]) => {
-    document.getElementById(id).addEventListener('change', function () {
+    $(id).addEventListener('change', function () {
       cfgActual[key] = this.checked;
       guardarCfg(cfgActual);
       window.dispatchEvent(new CustomEvent('cys-config-changed', { detail: cfgActual }));
@@ -322,40 +495,18 @@ function init() {
     });
   });
 
-  // ── Modal de actividad de usuarios ──
-  document.getElementById('modalActividad').addEventListener('show.bs.modal', function () {
-    const tbody = document.getElementById('tablaActividad');
-    tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
-
-    fetch(URL_ACTIVIDAD)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('tituloActividad').textContent =
-          data.es_admin ? 'Actividad de todos los usuarios' : 'Mi actividad';
-        document.getElementById('colUsuario').style.display = data.es_admin ? '' : 'none';
-
-        tbody.innerHTML = '';
-        if (data.registros.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="3" class="text-center">Sin registros</td></tr>';
-          return;
-        }
-        data.registros.forEach(r => {
-          const fila = document.createElement('tr');
-          fila.innerHTML = `
-            ${data.es_admin ? `<td>${r.usuario}</td>` : ''}
-            <td>${r.fecha_hora}</td>
-            <td>${r.ip}</td>
-          `;
-          tbody.appendChild(fila);
-        });
-      })
-      .catch(() => {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Error al cargar la actividad</td></tr>';
-      });
-  });
+  // ── Usuarios y perfiles: texto del acceso + modal de actividad ──
+  const hint = $('actividadHint');
+  if (hint) {
+    hint.textContent = ES_ADMIN_EMPRESA
+      ? 'Consulta los inicios de sesión de todos los usuarios.'
+      : 'Consulta tus últimos inicios de sesión.';
+  }
+  const modalAct = $('modalActividad');
+  if (modalAct) modalAct.addEventListener('show.bs.modal', cargarActividad);
 
   // ── Enter en el input de clave del bloqueo de empresa ──
-  const claveInput = document.getElementById('claveEmpresaInput');
+  const claveInput = $('claveEmpresaInput');
   if (claveInput) {
     claveInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
@@ -364,17 +515,20 @@ function init() {
       }
     });
   }
+
+  initNavegacion();
+  initA11y();
 }
 
 // ══════════════════════════════════════════
 // TEMA / PÁGINA DE INICIO — se aplican y guardan al instante
 // ══════════════════════════════════════════
 function actualizarEtiquetaTemaSistema() {
-  const el = document.getElementById('temaSistemaLabel');
+  const el = $('temaSistemaLabel');
   if (el) el.textContent = NOMBRES_TEMA[TEMA_SISTEMA] || TEMA_SISTEMA;
 }
 
-// FIX: si el usuario había dejado un "Modo de color" del widget de accesibilidad
+// Si el usuario había dejado un "Modo de color" del widget de accesibilidad
 // distinto de "Predeterminado" (Claro / Alto contraste), base.js lo reaplicaba
 // ENCIMA del tema elegido en cada navegación y por eso el color "no se quedaba".
 // Al elegir un tema aquí, ese modo vuelve a "Predeterminado".
@@ -392,9 +546,7 @@ function liberarModoA11y() {
   } catch (e) {}
 }
 
-// FIX: ya no depende de que se pase `el` (si llegaba null, lanzaba un error
-// en la primera línea y no se hacía NADA: ni color, ni guardado, ni aviso).
-// Se marca la opción activa por su data-tema.
+// No depende de que se pase `el`: se marca la opción activa por su data-tema.
 function seleccionarTema(tema, el) {
   try {
     if (!NOMBRES_TEMA[tema]) return;
@@ -412,6 +564,7 @@ function seleccionarTema(tema, el) {
     window.CYS_TEMA_SITIO = tema;
     liberarModoA11y();
     guardarCfg(cfgActual);
+    sincronizarA11yLuego(); // los chips de "Modo de color" reflejan el reset
     mostrarToastPreferencia();
 
     if (ES_ADMIN_EMPRESA && tema !== TEMA_SISTEMA) {
@@ -425,11 +578,11 @@ function seleccionarTema(tema, el) {
 function pedirConfirmacionTemaSistema(tema) {
   temaPendiente = tema;
   const nombre  = NOMBRES_TEMA[tema] || tema;
-  const modalEl = document.getElementById('modalTemaSistema');
+  const modalEl = $('modalTemaSistema');
 
   if (modalEl && window.bootstrap && window.bootstrap.Modal) {
-    const nombreEl = document.getElementById('temaConfirmNombre');
-    const errorEl  = document.getElementById('temaConfirmError');
+    const nombreEl = $('temaConfirmNombre');
+    const errorEl  = $('temaConfirmError');
     if (nombreEl) nombreEl.textContent = nombre;
     if (errorEl)  errorEl.style.display = 'none';
     try {
@@ -453,8 +606,8 @@ function pedirConfirmacionTemaSistema(tema) {
 async function confirmarTemaSistema() {
   if (!temaPendiente) return;
 
-  const btn     = document.getElementById('btnConfirmarTemaSistema');
-  const errorEl = document.getElementById('temaConfirmError');
+  const btn     = $('btnConfirmarTemaSistema');
+  const errorEl = $('temaConfirmError');
   if (errorEl) errorEl.style.display = 'none';
   if (btn) btn.disabled = true;
 
@@ -471,9 +624,8 @@ async function confirmarTemaSistema() {
 
     if (data.ok) {
       TEMA_SISTEMA = temaPendiente;
-      // FIX: el administrador CONSERVA también su elección en este navegador.
-      // Antes se borraba y dependía 100% de que el servidor devolviera el tema
-      // nuevo en la siguiente página; si lo devolvía viejo, el color se revertía.
+      // El administrador CONSERVA también su elección en este navegador, para que
+      // el color no se revierta si el servidor devuelve el tema viejo en la siguiente página.
       temaPersonal = true;
       cfgActual.tema = TEMA_SISTEMA;
       guardarCfg(cfgActual);
@@ -482,7 +634,7 @@ async function confirmarTemaSistema() {
       // Mantiene <html data-tema-sistema> al día aunque htmx no recargue el <html>
       document.documentElement.dataset.temaSistema = TEMA_SISTEMA;
       actualizarEtiquetaTemaSistema();
-      const modalEl = document.getElementById('modalTemaSistema');
+      const modalEl = $('modalTemaSistema');
       if (modalEl && window.bootstrap && window.bootstrap.Modal) {
         window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
       }
@@ -514,13 +666,26 @@ function seleccionarInicio(valor, el) {
 // ══════════════════════════════════════════
 // LOGO EMPRESA — preview local, se sube junto con "Guardar"
 // ══════════════════════════════════════════
+function pintarLogo(url) {
+  const cont = $('logoEmpresaPreview');
+  if (!cont) return;
+  cont.innerHTML = url
+    ? `<img src="${esc(url)}" alt="Logo empresa">`
+    : '<i class="bi bi-image"></i>';
+}
+
+// Evita que el navegador muestre el logo viejo desde caché
+function conCacheBust(url) {
+  if (!url) return '';
+  return url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+}
+
 function previewLogoEmpresa(input) {
   if (!input.files || !input.files[0]) return;
   logoEmpresaFile = input.files[0];
   const reader = new FileReader();
   reader.onload = function (e) {
-    document.getElementById('logoEmpresaPreview').innerHTML =
-      `<img src="${e.target.result}" alt="Logo empresa">`;
+    pintarLogo(e.target.result);
   };
   reader.readAsDataURL(logoEmpresaFile);
 }
@@ -542,11 +707,11 @@ function sacudirElemento(el) {
 async function verificarClaveEmpresa() {
   if (!ES_ADMIN_EMPRESA) return;
 
-  const input   = document.getElementById('claveEmpresaInput');
+  const input   = $('claveEmpresaInput');
   const clave   = input.value;
-  const errorEl = document.getElementById('claveEmpresaError');
-  const btn     = document.getElementById('btnVerificarClaveEmpresa');
-  const icono   = document.getElementById('empresaLockIcon');
+  const errorEl = $('claveEmpresaError');
+  const btn     = $('btnVerificarClaveEmpresa');
+  const icono   = $('empresaLockIcon');
 
   errorEl.style.display = 'none';
 
@@ -571,21 +736,25 @@ async function verificarClaveEmpresa() {
 
     if (data.ok) {
       // Animación de candado abriéndose
-      document.getElementById('empresaLockIconGlyph').className = 'bi bi-unlock-fill';
+      $('empresaLockIconGlyph').className = 'bi bi-unlock-fill';
       icono.classList.add('cfg-lockscreen__icon--open');
 
-      // Rellenar campos con los datos reales
-      document.getElementById('empresaNombre').value    = data.empresa.nombre_empresa;
-      document.getElementById('empresaNit').value       = data.empresa.nit;
-      document.getElementById('empresaDireccion').value = data.empresa.direccion;
-      document.getElementById('empresaTelefono').value  = data.empresa.telefono;
-      document.getElementById('empresaEmail').value     = data.empresa.email;
+      // Rellenar campos con los datos reales (sin mostrar "null")
+      const emp = data.empresa || {};
+      $('empresaNombre').value    = emp.nombre_empresa ?? '';
+      $('empresaNit').value       = emp.nit ?? '';
+      $('empresaDireccion').value = emp.direccion ?? '';
+      $('empresaTelefono').value  = emp.telefono ?? '';
+      $('empresaEmail').value     = emp.email ?? '';
+
+      // Logo guardado (si la vista devuelve emp.logo_url)
+      if (emp.logo_url) pintarLogo(conCacheBust(emp.logo_url));
 
       setTimeout(() => {
-        document.getElementById('empresaLockScreen').style.display = 'none';
-        document.getElementById('empresaCampos').style.display = 'block';
-        document.getElementById('btnGuardarEmpresa').style.display = 'inline-flex';
-        const btnBloquear = document.getElementById('btnBloquearEmpresa');
+        $('empresaLockScreen').style.display = 'none';
+        $('empresaCampos').style.display = 'block';
+        $('btnGuardarEmpresa').style.display = 'inline-flex';
+        const btnBloquear = $('btnBloquearEmpresa');
         if (btnBloquear) btnBloquear.style.display = 'inline-flex';
       }, 300);
 
@@ -616,26 +785,30 @@ async function bloquearEmpresa() {
   }
 
   // Limpiar del DOM los datos sensibles
-  document.getElementById('empresaNombre').value    = '';
-  document.getElementById('empresaNit').value       = '';
-  document.getElementById('empresaDireccion').value = '';
-  document.getElementById('empresaTelefono').value  = '';
-  document.getElementById('empresaEmail').value     = '';
+  $('empresaNombre').value    = '';
+  $('empresaNit').value       = '';
+  $('empresaDireccion').value = '';
+  $('empresaTelefono').value  = '';
+  $('empresaEmail').value     = '';
+  logoEmpresaFile = null;
+  const inputLogo = $('inputLogoEmpresa');
+  if (inputLogo) inputLogo.value = '';
 
-  document.getElementById('empresaCampos').style.display = 'none';
-  document.getElementById('btnGuardarEmpresa').style.display = 'none';
-  const btnBloquear = document.getElementById('btnBloquearEmpresa');
+  $('empresaCampos').style.display = 'none';
+  $('btnGuardarEmpresa').style.display = 'none';
+  const btnBloquear = $('btnBloquearEmpresa');
   if (btnBloquear) btnBloquear.style.display = 'none';
 
-  const icono = document.getElementById('empresaLockIcon');
+  const icono = $('empresaLockIcon');
   icono.classList.remove('cfg-lockscreen__icon--open');
-  document.getElementById('empresaLockIconGlyph').className = 'bi bi-lock-fill';
+  $('empresaLockIconGlyph').className = 'bi bi-lock-fill';
 
-  const input = document.getElementById('claveEmpresaInput');
+  const input = $('claveEmpresaInput');
   if (input) input.value = '';
-  document.getElementById('claveEmpresaError').style.display = 'none';
+  const errorEl = $('claveEmpresaError');
+  if (errorEl) errorEl.style.display = 'none';
 
-  document.getElementById('empresaLockScreen').style.display = 'flex';
+  $('empresaLockScreen').style.display = 'flex';
 
   mostrarToast('Sección bloqueada', 'info');
 }
@@ -644,17 +817,21 @@ async function bloquearEmpresa() {
 // EMPRESA — POST real a configuracion:guardar_empresa (incluye logo si se cambió)
 // ══════════════════════════════════════════
 async function guardarInfoEmpresa() {
-  const btn = document.getElementById('btnGuardarEmpresa');
+  const btn = $('btnGuardarEmpresa');
   btn.disabled = true;
 
   const fd = new FormData();
-  fd.append('nombre_empresa', document.getElementById('empresaNombre').value.trim());
-  fd.append('nit',            document.getElementById('empresaNit').value.trim());
-  fd.append('telefono',       document.getElementById('empresaTelefono').value.trim());
-  fd.append('email',          document.getElementById('empresaEmail').value.trim());
-  fd.append('direccion',      document.getElementById('empresaDireccion').value.trim());
-  if (logoEmpresaFile) {
-    fd.append('logo', logoEmpresaFile);
+  fd.append('nombre_empresa', $('empresaNombre').value.trim());
+  fd.append('nit',            $('empresaNit').value.trim());
+  fd.append('telefono',       $('empresaTelefono').value.trim());
+  fd.append('email',          $('empresaEmail').value.trim());
+  fd.append('direccion',      $('empresaDireccion').value.trim());
+
+  // Respaldo: si por algo logoEmpresaFile se perdió, se toma directo del input
+  const inputLogo = $('inputLogoEmpresa');
+  const archivoLogo = logoEmpresaFile || (inputLogo && inputLogo.files && inputLogo.files[0]) || null;
+  if (archivoLogo) {
+    fd.append('logo', archivoLogo, archivoLogo.name);
   }
 
   try {
@@ -663,14 +840,31 @@ async function guardarInfoEmpresa() {
       headers: { 'X-CSRFToken': CSRF_TOKEN },
       body: fd,
     });
-    const data = await resp.json();
+
+    let data = null;
+    try {
+      data = await resp.json();
+    } catch (e) {
+      throw new Error('El servidor no devolvió JSON (HTTP ' + resp.status + ')');
+    }
+
     if (data.ok) {
-      mostrarToast('Información de la empresa guardada');
       logoEmpresaFile = null;
+      if (inputLogo) inputLogo.value = '';
+
+      // Si el servidor devuelve la URL del logo guardado, se muestra esa (prueba de que sí se guardó)
+      if (data.logo_url) {
+        pintarLogo(conCacheBust(data.logo_url));
+      } else if (archivoLogo) {
+        // Se envió un logo pero el servidor no confirmó URL: se avisa
+        console.warn('[CYS] Se envió el logo pero guardar_empresa no devolvió logo_url.');
+      }
+      mostrarToast('Información de la empresa guardada');
     } else {
       mostrarToast(data.error || 'No se pudo guardar', 'error');
     }
   } catch (e) {
+    console.error('[CYS] guardarInfoEmpresa:', e);
     mostrarToast('Error de conexión con el servidor', 'error');
   } finally {
     btn.disabled = false;
@@ -681,14 +875,21 @@ async function guardarInfoEmpresa() {
 // IMPUESTOS — POST real a configuracion:guardar_impuestos
 // ══════════════════════════════════════════
 async function guardarImpuestos() {
-  const btn = document.getElementById('btnGuardarImpuestos');
+  const btn = $('btnGuardarImpuestos');
+
+  const iva = parseFloat($('ivaPorcentaje').value);
+  if (isNaN(iva) || iva < 0 || iva > 100) {
+    mostrarToast('El IVA debe estar entre 0 y 100', 'error');
+    return;
+  }
+
   btn.disabled = true;
 
   const fd = new FormData();
-  fd.append('iva_porcentaje', document.getElementById('ivaPorcentaje').value);
-  fd.append('moneda', document.getElementById('monedaSelect').value);
+  fd.append('iva_porcentaje', $('ivaPorcentaje').value);
+  fd.append('moneda', $('monedaSelect').value);
 
-  const unidadesRaw = document.getElementById('unidadesMedida').value;
+  const unidadesRaw = $('unidadesMedida').value;
   unidadesRaw.split(',').map(u => u.trim()).filter(Boolean).forEach(u => {
     fd.append('unidades[]', u);
   });
@@ -713,71 +914,28 @@ async function guardarImpuestos() {
 }
 
 // ══════════════════════════════════════════
-// BACKUP — POST real a configuracion:crear_backup
-// ══════════════════════════════════════════
-async function generarRespaldo() {
-  const btn = document.getElementById('btnBackup');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Generando...';
-
-  try {
-    const resp = await fetch(URL_CREAR_BACKUP, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': CSRF_TOKEN },
-    });
-    const data = await resp.json();
-
-    if (data.ok) {
-      document.getElementById('dbUltimoRespaldo').textContent = data.fecha;
-      mostrarToast('Respaldo generado: ' + data.nombre);
-
-      const lista = document.getElementById('listaBackups');
-      const vacio = lista.querySelector('[data-backup-empty]');
-      if (vacio) vacio.remove();
-
-      const item = document.createElement('div');
-      item.className = 'cfg-backup-item';
-      item.innerHTML = `
-        <div>
-          <div class="cfg-backup-item__nombre">${data.nombre}</div>
-          <div class="cfg-backup-item__meta">${data.fecha} · ${data.tamaño}</div>
-        </div>
-        <i class="bi bi-file-earmark-zip" style="color:var(--azul-claro);"></i>
-      `;
-      lista.prepend(item);
-    } else {
-      mostrarToast(data.error || 'No se pudo generar el respaldo', 'error');
-    }
-  } catch (e) {
-    mostrarToast('Error de conexión con el servidor', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-cloud-arrow-down me-1"></i> Generar respaldo';
-  }
-}
-
-// ══════════════════════════════════════════
-// TOAST
+// TOAST (colores desde variables de tema)
 // ══════════════════════════════════════════
 function mostrarToast(msg = 'Configuración guardada', tipo = 'ok') {
-  const t = document.getElementById('cfg-toast');
+  const t = $('cfg-toast');
   if (!t) return;
-  t.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${msg}`;
-  if (tipo === 'error') {
-    t.style.background  = 'rgba(192,57,43,.15)';
-    t.style.borderColor = 'rgba(192,57,43,.4)';
-    t.style.color       = '#e87070';
-  } else if (tipo === 'info') {
-    t.style.background  = 'rgba(77,168,218,.15)';
-    t.style.borderColor = 'rgba(77,168,218,.4)';
-    t.style.color       = '#4DA8DA';
-  } else {
-    t.style.background  = 'rgba(39,174,96,.15)';
-    t.style.borderColor = 'rgba(39,174,96,.4)';
-    t.style.color       = '#2ecc71';
-  }
-  t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 2800);
+
+  const estilos = {
+    ok:    { color: 'var(--verde, #2ecc71)',  icono: 'bi-check-circle-fill' },
+    error: { color: 'var(--rojo, #e87070)',   icono: 'bi-exclamation-triangle-fill' },
+    info:  { color: 'var(--azul-claro)',      icono: 'bi-info-circle-fill' },
+  };
+  const e = estilos[tipo] || estilos.ok;
+
+  t.innerHTML = `<i class="bi ${e.icono} me-2"></i>`;
+  t.appendChild(document.createTextNode(msg));
+  t.style.background  = `color-mix(in srgb, ${e.color} 15%, var(--fondo-card, #fff))`;
+  t.style.borderColor = `color-mix(in srgb, ${e.color} 45%, transparent)`;
+  t.style.color       = e.color;
+  t.style.display     = 'block';
+
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { t.style.display = 'none'; }, 2800);
 }
 
 // Toast corto y silencioso para autoguardado de preferencias (evita spam si se togglean varias seguidas)
@@ -800,10 +958,11 @@ Object.assign(window, {
   bloquearEmpresa,
   guardarInfoEmpresa,
   guardarImpuestos,
-  generarRespaldo,
 });
 
-// Inicializa aunque el script se cargue después de DOMContentLoaded (htmx)
+// Inicializa aunque el script se cargue después de DOMContentLoaded (htmx).
+// Si la página se carga completa por primera vez, el widget de accesibilidad
+// aún no existe cuando corre este script, así que se espera al DOM completo.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
