@@ -1,5 +1,6 @@
 from django.db.models import Sum
-from app.models import ConfiguracionEmpresa, Lote, Categoria
+from app.config_empresa import ConfiguracionEmpresa
+from app.models import Lote, Categoria
 
 
 def config_empresa(request):
