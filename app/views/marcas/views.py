@@ -1,7 +1,3 @@
-"""
-Vistas de Marcas (reemplaza tu archivo completo).
-Requiere: pip install openpyxl reportlab Pillow
-"""
 import base64
 import io
 import os
@@ -21,14 +17,18 @@ from django.utils.html import escape
 
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
+from openpyxl.drawing.xdr import XDRPositiveSize2D
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.utils.units import pixels_to_EMU
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import Image as RLImage
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Flowable
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import Marca  # type: ignore
@@ -160,9 +160,8 @@ def lista_marcas(request):
         'desde': filtros['desde'],
         'hasta': filtros['hasta'],
         'filtro_fechas': _campo_fecha()[0] is not None,  # habilita Desde / Hasta solo si hay campo de fecha
-        # Breadcrumb: Tablero > Inventario > Marcas
+        # Breadcrumb: Tablero > Marcas
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Marcas', 'url': reverse('lista_marcas')},
         ],
     })
@@ -241,7 +240,7 @@ BORDE = "E3D3B5"     # bordes finos dorados claros
 VERDE = "1E8449"
 ROJO = "B03A2E"
 
-LOGO_ARCHIVO = "LOGO_NUEVO.png"   # <- nombre de tu logo dentro de la carpeta static
+LOGO_ARCHIVO = "logo.20.png"   # <- nombre de tu logo dentro de la carpeta static
 _LOGO_CACHE = {}
 
 
@@ -352,136 +351,134 @@ def _resumen(filas):
 
 
 # ---------------------------------------------------------------------------
-# EXCEL  (diseño "Reporte de Marcas": banner azul noche + dorado)
+# EXCEL  (diseño "Reporte de Marcas": logo + título, tabla azul marino)
 # ---------------------------------------------------------------------------
-XL_NAVY = "0A1A33"
-XL_GOLD = "C9A24B"
-XL_GOLD_LIGHT = "E8CE8A"
-XL_ZEBRA = "EEF1F5"
-XL_TXT = "0F1B2D"
-XL_VERDE_BG, XL_VERDE_TX = "D5EBD3", "17692A"
-XL_ROJO_BG, XL_ROJO_TX = "F6D5D5", "9B1C1C"
+XL_NAVY = "061B3A"       # títulos, encabezado de tabla y texto
+XL_GOLD = "E8A317"       # divisor y barrita dorada
+XL_ZEBRA = "EDF0F5"      # fila alterna
+XL_BORDE = "AEB9CC"      # líneas verticales de la tabla
+XL_ROJO = "9B1C1C"       # estado inactiva
 XL_FUENTE = "Calibri"
-XL_FUENTE_TITULO = "Cambria"
 
 
 def _xl_fill(hex_):
     return PatternFill("solid", start_color=hex_, end_color=hex_)
 
 
-def _imagen_franjas(ancho_px, alto_px):
-    """PNG con las franjas doradas diagonales de la esquina del banner. None si no hay Pillow."""
+def _poner_imagen(ws, datos_png, col, fila, ancho, alto, off_x=0, off_y=0):
+    """Pega una imagen PNG (bytes) en la celda (col, fila) 0-indexada, con desplazamiento en px."""
+    img = XLImage(io.BytesIO(datos_png))
+    img.width, img.height = ancho, alto
+    marcador = AnchorMarker(col=col, row=fila,
+                            colOff=pixels_to_EMU(off_x), rowOff=pixels_to_EMU(off_y))
+    img.anchor = OneCellAnchor(
+        _from=marcador,
+        ext=XDRPositiveSize2D(pixels_to_EMU(ancho), pixels_to_EMU(alto)),
+    )
+    ws.add_image(img)
+
+
+def _barra_dorada(ancho, alto):
     try:
-        from PIL import Image, ImageDraw
+        from PIL import Image
     except ImportError:
         return None
-
-    k = 4  # supersampling para bordes suaves
-    W, H = ancho_px * k, alto_px * k
-    img = Image.new("RGB", (W, H), "#" + XL_NAVY)
-    d = ImageDraw.Draw(img)
-    skew = int(H * 0.9)
-
-    def franja(x0, x1, color):
-        d.polygon([(x0 + skew, 0), (x1 + skew, 0), (x1, H), (x0, H)], fill=color)
-
-    franja(int(W * 0.42), int(W * 0.62), "#" + XL_GOLD_LIGHT)
-    franja(int(W * 0.62), int(W * 0.68), "#" + XL_NAVY)
-    franja(int(W * 0.68), int(W * 0.74), "#" + XL_GOLD)
-    franja(int(W * 0.74), int(W * 0.80), "#" + XL_NAVY)
-    franja(int(W * 0.80), int(W * 0.84), "#" + XL_GOLD)
-
-    img = img.resize((ancho_px, alto_px), Image.LANCZOS)
     buf = io.BytesIO()
-    img.save(buf, "PNG")
-    buf.seek(0)
-    return buf
+    Image.new("RGB", (ancho, alto), "#" + XL_GOLD).save(buf, "PNG")
+    return buf.getvalue()
 
 
 def exportar_marcas_excel(request):
     qs, filtros = _filtrar_marcas(request)
-    filas = _filas(qs)
+    marcas = list(qs)
+    filas = _filas(marcas)
+    # La columna "#" muestra el código real de la marca (como en el diseño)
+    for f, m in zip(filas, marcas):
+        f[0] = m.codigo_marca
+
     total, activas, inactivas = _resumen(filas)
     encabezados = _encabezados()
-    n = len(encabezados)                 # 5 columnas (6 si el modelo tiene fecha)
+    n = len(encabezados)
     ultima = get_column_letter(n)
-    antes_ultima = get_column_letter(n - 1)
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Marcas"
-    ws.sheet_properties.tabColor = XL_GOLD
+    ws.sheet_properties.tabColor = XL_NAVY
     ws.sheet_view.showGridLines = False
 
-    anchos = [8, 34, 46, 16, 22, 18][:n]
+    anchos = [12, 34, 46, 16, 20, 18][:n]
     for idx, ancho in enumerate(anchos, start=1):
         ws.column_dimensions[get_column_letter(idx)].width = ancho
 
-    # ---------- Banner (filas 1-3) ----------
-    alturas = {1: 26, 2: 40, 3: 28}
-    for r, h in alturas.items():
+    # ---------- Banner (filas 1-3, fondo blanco) ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
         ws.row_dimensions[r].height = h
-        for c in range(1, n + 1):
-            ws.cell(r, c).fill = _xl_fill(XL_NAVY)
 
-    # "CYS LTDA"
-    ws.merge_cells("A1:B3")
-    ws["A1"] = "CYS LTDA"
-    ws["A1"].font = Font(name=XL_FUENTE_TITULO, size=30, color="FFFFFF")
-    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    # Logo circular (columnas A:B, centrado)
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
     # Divisor dorado vertical
-    lado_oro = Side(style="thick", color=XL_GOLD)
+    lado_oro = Side(style="medium", color=XL_GOLD)
     for r in (1, 2, 3):
         ws.cell(r, 3).border = Border(left=lado_oro)
 
     # Título y lema
-    ws.merge_cells(f"C1:{antes_ultima}2")
+    ws.merge_cells(f"C1:{ultima}2")
     ws["C1"] = "Reporte de Marcas"
-    ws["C1"].font = Font(name=XL_FUENTE_TITULO, size=28, bold=True, color="FFFFFF")
+    ws["C1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
     ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
-    ws.merge_cells(f"C3:{antes_ultima}3")
+    ws.merge_cells(f"C3:{ultima}3")
     ws["C3"] = "Calidad que llega más lejos"
-    ws["C3"].font = Font(name=XL_FUENTE, size=14, italic=True, color="DCE3EE")
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
     ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
 
-    # Franjas diagonales en la última columna
-    png = _imagen_franjas(int(anchos[-1] * 7 + 5), int(sum(alturas.values()) * 4 / 3))
-    if png:
-        img = XLImage(png)
-        img.anchor = f"{ultima}1"
-        ws.add_image(img)
-
-    # Línea dorada bajo el banner + espacio
-    ws.row_dimensions[4].height = 5
-    for c in range(1, n + 1):
-        ws.cell(4, c).fill = _xl_fill(XL_GOLD)
-    ws.row_dimensions[5].height = 10
+    # Barrita dorada corta bajo el lema
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
 
     # ---------- Encabezado de tabla (fila 6) ----------
     fila_enc = 6
-    ws.row_dimensions[fila_enc].height = 30
+    ws.row_dimensions[fila_enc].height = 34
+    blanco = Side(style="thin", color="FFFFFF")
     for i, texto in enumerate(encabezados, start=1):
         c = ws.cell(fila_enc, i, texto)
-        c.font = Font(name=XL_FUENTE, size=13, bold=True, color="FFFFFF")
+        c.font = Font(name=XL_FUENTE, size=15, bold=True, color="FFFFFF")
         c.fill = _xl_fill(XL_NAVY)
         c.alignment = Alignment(horizontal="center", vertical="center")
-        c.border = Border(left=Side(style="thin", color="2A3A57"))
+        c.border = Border(left=blanco if i > 1 else None)
 
     # ---------- Datos ----------
-    fino = Side(style="thin", color="D5DAE1")
+    vertical = Side(style="thin", color=XL_BORDE)
     for k, fila in enumerate(filas):
         r = fila_enc + 1 + k
-        ws.row_dimensions[r].height = 24
+        ws.row_dimensions[r].height = 26
         bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
         activa = fila[4] == "Activa"
+        ultima_fila = (k == len(filas) - 1)
         for i, valor in enumerate(fila, start=1):
             if i == 5:
                 valor = "●  " + valor
             c = ws.cell(r, i, valor)
             c.fill = _xl_fill(bg)
-            c.font = Font(name=XL_FUENTE, size=12, color=XL_TXT, bold=(i == 2))
-            c.border = Border(bottom=fino, left=fino if i > 1 else None)
+            c.border = Border(
+                left=vertical,
+                right=vertical if i == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            c.font = Font(name=XL_FUENTE, size=13, color="1F2937", bold=(i == 2))
             izquierda = i in (2, 3)
             c.alignment = Alignment(
                 horizontal="left" if izquierda else "center",
@@ -489,36 +486,28 @@ def exportar_marcas_excel(request):
                 indent=1 if izquierda else 0,
                 wrap_text=(i == 3),
             )
-        # Estado tipo "píldora"
+        # Estado
         e = ws.cell(r, 5)
-        e.fill = _xl_fill(XL_VERDE_BG if activa else XL_ROJO_BG)
-        e.font = Font(name=XL_FUENTE, size=12, bold=True, color=XL_VERDE_TX if activa else XL_ROJO_TX)
+        e.font = Font(name=XL_FUENTE, size=13, bold=True, color=XL_NAVY if activa else XL_ROJO)
 
     # ---------- Pie ----------
     r = fila_enc + len(filas) + 1
-    ws.row_dimensions[r].height = 6
-    for c in range(1, n + 1):
-        ws.cell(r, c).fill = _xl_fill(XL_GOLD)
-
+    ws.row_dimensions[r].height = 8
     textos_pie = [
         f"Total: {total} marcas   ·   Activas: {activas}   ·   Inactivas: {inactivas}",
         f"{_texto_filtros(filtros)}   ·   Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
     ]
     for j, texto in enumerate(textos_pie, start=1):
         rr = r + j
-        ws.row_dimensions[rr].height = 24
+        ws.row_dimensions[rr].height = 22
         ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
-        for c in range(1, n + 1):
-            ws.cell(rr, c).fill = _xl_fill(XL_NAVY)
         p = ws.cell(rr, 1, texto)
-        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2),
-                      color="FFFFFF" if j == 1 else "DCE3EE")
-        p.alignment = Alignment(horizontal="center", vertical="center")
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
 
-    # ---------- Extras ----------
+    # ---------- Extras (sin freeze_panes para que el banner no se repita) ----------
     if filas:
         ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
-    ws.freeze_panes = f"A{fila_enc + 1}"
     ws.page_setup.orientation = "landscape"
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 0
@@ -538,122 +527,174 @@ def exportar_marcas_excel(request):
 
 
 # ---------------------------------------------------------------------------
-# PDF
+# PDF  (mismo diseño que el Excel: banner blanco con logo + título,
+#       tabla azul marino con esquinas redondeadas)
 # ---------------------------------------------------------------------------
+class _BannerPDF(Flowable):
+    """Banner: logo circular | divisor dorado | título | lema | barrita dorada."""
+
+    def __init__(self, ancho, logo_bytes=None):
+        super().__init__()
+        self.width = ancho
+        self.height = 96
+        self.logo_bytes = logo_bytes
+
+    def wrap(self, aw, ah):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        navy = colors.HexColor("#" + XL_NAVY)
+        oro = colors.HexColor("#" + XL_GOLD)
+
+        # Logo circular
+        diam = 84
+        x_logo, y_logo = 14, (self.height - diam) / 2
+        if self.logo_bytes:
+            c.drawImage(ImageReader(io.BytesIO(self.logo_bytes)), x_logo, y_logo,
+                        width=diam, height=diam, mask="auto")
+        else:
+            c.setFillColor(navy)
+            c.circle(x_logo + diam / 2, y_logo + diam / 2, diam / 2, stroke=0, fill=1)
+            c.setFillColor(colors.white)
+            c.setFont("Helvetica-Bold", 20)
+            c.drawCentredString(x_logo + diam / 2, y_logo + diam / 2 - 6, "CYS")
+
+        # Divisor dorado vertical
+        x_div = x_logo + diam + 26
+        c.setStrokeColor(oro)
+        c.setLineWidth(2.5)
+        c.line(x_div, 8, x_div, self.height - 8)
+
+        # Título
+        x_txt = x_div + 26
+        c.setFillColor(navy)
+        c.setFont("Helvetica-Bold", 34)
+        c.drawString(x_txt, self.height - 46, "Reporte de Marcas")
+
+        # Lema en cursiva
+        c.setFont("Helvetica-Oblique", 15)
+        c.drawString(x_txt, self.height - 70, "Calidad que llega más lejos")
+
+        # Barrita dorada corta
+        c.setFillColor(oro)
+        c.roundRect(x_txt, 8, 72, 4.5, 2, stroke=0, fill=1)
+
+
 def exportar_marcas_pdf(request):
     qs, filtros = _filtrar_marcas(request)
     filas = _filas(qs)
     total, activas, inactivas = _resumen(filas)
     encabezados = _encabezados()
 
-    c_navy = colors.HexColor("#" + NAVY)
-    c_gold = colors.HexColor("#" + GOLD)
-    c_cream = colors.HexColor("#" + CREAM)
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_rojo = "#" + XL_ROJO
+    c_texto = colors.HexColor("#1F2937")
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=landscape(A4),
-        leftMargin=30, rightMargin=30, topMargin=30, bottomMargin=40,
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
         title="Reporte de marcas — CYS Ltda",
     )
-    ancho_util = landscape(A4)[0] - 60
 
     estilos = getSampleStyleSheet()
-    st_titulo = ParagraphStyle("t", parent=estilos["Title"], fontName="Times-Bold", fontSize=22,
-                               textColor=c_gold, alignment=0, spaceAfter=2, leading=24)
-    st_sub = ParagraphStyle("s", parent=estilos["Normal"], fontSize=12, textColor=c_cream, leading=15)
-    st_meta = ParagraphStyle("m", parent=estilos["Normal"], fontSize=8.5,
-                             textColor=colors.HexColor("#6B6B6B"), leading=12)
-    st_celda = ParagraphStyle("c", parent=estilos["BodyText"], fontSize=9, leading=11,
-                              textColor=colors.HexColor("#1F2937"))
-    st_marca = ParagraphStyle("mk", parent=st_celda, fontName="Helvetica-Bold", textColor=c_navy)
-    st_centro = ParagraphStyle("ce", parent=st_celda, alignment=TA_CENTER)
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=10.5, leading=13, textColor=c_texto)
+    st_marca = ParagraphStyle("marca", parent=st_base, fontName="Helvetica-Bold",
+                              textColor=c_navy, leftIndent=8)
+    st_desc = ParagraphStyle("desc", parent=st_base, leftIndent=8)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_estado = ParagraphStyle("estado", parent=st_base, alignment=TA_CENTER,
+                               fontName="Helvetica-Bold")
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=12,
+                             textColor=colors.white, alignment=TA_CENTER, leading=15)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=10.5)
 
-    # --- Banner con logo ---
-    logo = _logo_png(300)
-    celda_logo = RLImage(io.BytesIO(logo), width=62, height=62) if logo else ""
-    celda_texto = [Paragraph("CYS LTDA · DISTRIBUCIONES", st_titulo),
-                   Paragraph("Reporte de marcas", st_sub)]
-    banner = Table([[celda_logo, celda_texto]], colWidths=[80, ancho_util - 80])
-    banner.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), c_navy),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12),
-        ("TOPPADDING", (0, 0), (-1, -1), 9),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-        ("LINEBELOW", (0, 0), (-1, -1), 3, c_gold),
-    ]))
-
+    # --- Banner ---
     elementos = [
-        banner,
-        Spacer(1, 8),
-        Paragraph(escape(_texto_filtros(filtros)) + " &nbsp;·&nbsp; Generado: "
-                  + timezone.localtime().strftime("%d/%m/%Y %H:%M"), st_meta),
-        Spacer(1, 10),
+        _BannerPDF(ancho_util, _logo_png(300)),
+        Spacer(1, 14),
     ]
 
     # --- Tabla ---
-    st_head = ParagraphStyle("h", parent=st_celda, fontName="Helvetica-Bold", textColor=c_gold,
-                             alignment=TA_CENTER, fontSize=9.5)
     data = [[Paragraph(h, st_head) for h in encabezados]]
     for f in filas:
-        color = "#" + (VERDE if f[4] == "Activa" else ROJO)
+        activa = f[4] == "Activa"
+        color = "#" + XL_NAVY if activa else c_rojo
+        # El punto "●" se dibuja con ZapfDingbats (Helvetica no trae ese símbolo)
+        estado_html = (
+            f'<font color="{color}"><font name="ZapfDingbats" size="9">l</font>'
+            f'&nbsp;&nbsp;{f[4]}</font>'
+        )
         fila = [
             Paragraph(str(f[0]), st_centro),
             Paragraph(escape(f[1]), st_marca),
-            Paragraph(escape(f[2]), st_celda),
+            Paragraph(escape(f[2]), st_desc),
             Paragraph(str(f[3]), st_centro),
-            Paragraph(f'<font color="{color}"><b>{f[4]}</b></font>', st_centro),
+            Paragraph(estado_html, st_estado),
         ]
         if len(f) > 5:
-            fila.append(Paragraph(str(f[5]), st_centro))
+            fila.append(Paragraph(escape(str(f[5])), st_centro))
         data.append(fila)
 
     if not filas:
-        data.append([Paragraph("No hay marcas para mostrar.", st_centro)] + [""] * (len(encabezados) - 1))
+        data.append([Paragraph("No hay marcas para mostrar.", st_centro)]
+                    + [""] * (len(encabezados) - 1))
 
-    anchos = [30, 150, 290, 65, 70, 90] if len(encabezados) == 6 else [30, 170, 340, 70, 80]
+    anchos = [40, 190, 330, 85, 100, 95] if len(encabezados) == 6 else [45, 210, 360, 90, 110]
     escala = ancho_util / sum(anchos)
     tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
+
     estilo = [
+        # Encabezado azul marino
         ("BACKGROUND", (0, 0), (-1, 0), c_navy),
-        ("LINEBELOW", (0, 0), (-1, 0), 2, c_gold),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        # Filas con cebra y líneas verticales
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
+        ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("GRID", (0, 1), (-1, -1), 0.4, colors.HexColor("#" + BORDE)),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#" + ZEBRA)]),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        # Contorno azul marino con esquinas redondeadas
+        ("BOX", (0, 0), (-1, -1), 1, c_navy),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
     ]
     if not filas:
         estilo.append(("SPAN", (0, 1), (-1, 1)))
     tabla.setStyle(TableStyle(estilo))
     elementos.append(tabla)
 
-    # --- Totales ---
-    st_tot = ParagraphStyle("tot", parent=st_celda, alignment=2, fontName="Helvetica-Bold",
-                            textColor=c_navy, fontSize=10)
-    resumen = Table(
-        [[Paragraph(f"Total: {total} marcas &nbsp;·&nbsp; Activas: {activas} &nbsp;·&nbsp; Inactivas: {inactivas}", st_tot)]],
-        colWidths=[ancho_util],
-    )
-    resumen.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), c_cream),
-        ("LINEABOVE", (0, 0), (-1, 0), 2, c_gold),
-        ("TOPPADDING", (0, 0), (-1, -1), 7),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-    ]))
-    elementos += [Spacer(1, 6), resumen]
+    # --- Totales y filtros (discretos, debajo de la tabla) ---
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(
+            f"Total: {total} marcas &nbsp;·&nbsp; Activas: {activas} &nbsp;·&nbsp; Inactivas: {inactivas}",
+            st_tot),
+        Spacer(1, 2),
+        Paragraph(
+            escape(_texto_filtros(filtros)) + " &nbsp;·&nbsp; Generado el "
+            + timezone.localtime().strftime("%d/%m/%Y %H:%M"),
+            st_meta),
+    ]
 
     def pie(canvas, documento):
         canvas.saveState()
-        canvas.setStrokeColor(c_gold)
-        canvas.setLineWidth(1)
-        canvas.line(30, 28, landscape(A4)[0] - 30, 28)
         canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(colors.HexColor("#6B6B6B"))
-        canvas.drawString(30, 16, "CYS Ltda · Distribuciones")
-        canvas.drawRightString(landscape(A4)[0] - 30, 16, f"Página {documento.page}")
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
         canvas.restoreState()
 
     doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
