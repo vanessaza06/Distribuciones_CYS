@@ -38,7 +38,6 @@ def detalle_producto_lista(request):
         'sin_codigo': sin_codigo,
         'marcas': Marca.objects.all(),
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Detalle de Producto', 'url': None},
         ],
     }

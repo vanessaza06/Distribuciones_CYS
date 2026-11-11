@@ -119,7 +119,6 @@ def presentacion_lista(request):
         'productos': productos,
         'resaltar_pk': resaltar_pk,
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Presentaciones', 'url': None},
         ],
     }
