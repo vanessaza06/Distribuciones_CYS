@@ -578,3 +578,79 @@
 .cys-fecha-dia { display: block; color: var(--texto); font-weight: 600; font-size: 0.82rem; }
 .cys-fecha-hora { display: block; color: var(--cys-texto-muted); font-size: 0.72rem; }
 .cys-tabla-scroll-wrap { overflow-x: auto; }
+
+/* ══════════════════════════════════════
+   BOTÓN EXPORTAR (Excel / PDF / Imprimir)
+══════════════════════════════════════ */
+.cys-export-btn {
+  display: inline-flex; align-items: center; gap: .45rem;
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff));
+  color: var(--texto);
+  border: 1px solid var(--rojo, #d9534f);
+  border-radius: 999px;
+  padding: .4rem 1.1rem;
+  font-size: .85rem; font-weight: 500;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.cys-export-btn:hover,
+.cys-export-btn:focus,
+.cys-export-btn:active,
+.cys-export-btn.show {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff));
+  color: var(--texto);
+  box-shadow: none !important;
+  outline: none;
+}
+.cys-export-btn .chev { font-size: .65rem; transition: transform .2s ease; }
+.cys-export-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.cys-export-btn.dropdown-toggle::after { display: none; }
+
+/* Menú desplegable */
+.cys-export-menu {
+  background: var(--fondo-card2, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
+  border-radius: 16px;
+  padding: .4rem;
+  min-width: 100%;
+  width: 100%;
+  margin-top: .4rem !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.10);
+}
+.cys-export-menu li + li { margin-top: .1rem; }
+.cys-export-menu .dropdown-item {
+  display: flex; align-items: center; gap: .7rem;
+  width: 100%; text-align: left;
+  padding: .6rem .8rem;
+  border: 0; border-radius: 10px;
+  background: transparent;
+  color: var(--texto);
+  font-weight: 500; font-size: .9rem;
+}
+.cys-export-menu .dropdown-item i { font-size: 1.1rem; }
+.cys-export-menu .dropdown-item:hover,
+.cys-export-menu .dropdown-item:focus {
+  background: color-mix(in srgb, var(--texto) 6%, transparent);
+  color: var(--texto);
+}
+.cys-export-menu .dropdown-item .ico-excel { color: #1f9a55 !important; }
+.cys-export-menu .dropdown-item .ico-pdf   { color: #c62828 !important; }
+.cys-export-menu .dropdown-item .ico-print { color: #3b82c4 !important; }
+
+/* ══ Imprimir: solo la tabla de transacciones ══ */
+@media print {
+  body * { visibility: hidden !important; }
+  #seccionTablaVentasDia,
+  #seccionTablaVentasDia * { visibility: visible !important; }
+  #seccionTablaVentasDia {
+    position: absolute; left: 0; top: 0; width: 100%;
+    background: #fff !important; border: 0 !important; box-shadow: none !important;
+  }
+  #seccionTablaVentasDia .cys-filter-bar,
+  #seccionTablaVentasDia .col-accion { display: none !important; }
+  #seccionTablaVentasDia * { color: #000 !important; background: transparent !important; }
+  #seccionTablaVentasDia table { width: 100%; border-collapse: collapse; }
+  #seccionTablaVentasDia th,
+  #seccionTablaVentasDia td { border: 1px solid #999 !important; padding: 4px 6px !important; }
+}

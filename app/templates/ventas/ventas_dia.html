@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -31,7 +32,7 @@
 
   <!-- KPI Cards Grid Unificado con Altura Idéntica -->
   <div class="row gx-3 gy-3 mb-4 align-items-stretch">
-    
+
     <div class="col-12 col-md-4">
       <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3 w-100">
@@ -96,13 +97,11 @@
       </span>
     </div>
 
-    <!-- Grid de tarjetas de Franjas Horarias (Diseño Limpio Sin Superposiciones) -->
     <div class="row g-3 align-items-stretch">
       {% for item in franjas_horarias_resumen %}
       <div class="col-12 col-md-4">
         <div class="cys-top-sales-card h-100 d-flex flex-column justify-content-between p-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Franja Horaria">
           <div>
-            <!-- Fila superior: Ícono a la izquierda y Badge de conteo a la derecha (Sin solapamiento) -->
             <div class="d-flex align-items-center justify-content-between mb-2.5">
               <div class="rounded-circle d-flex align-items-center justify-content-center"
                    style="width:38px; height:38px; background:{{ item.badge_bg }}; color:{{ item.color }}; border:1px solid {{ item.color }}; flex-shrink:0;">
@@ -113,7 +112,6 @@
               </span>
             </div>
 
-            <!-- Fila de nombres: Ancho completo libre para que ningún texto colisione -->
             <div class="mb-2">
               <div class="fw-bold text-uppercase" style="color:var(--texto); font-size:.88rem; letter-spacing:0.5px; line-height:1.2;">
                 {{ item.label }}
@@ -125,14 +123,12 @@
           </div>
 
           <div>
-            <!-- Monto recaudado en la franja -->
             <div class="my-2">
               <div style="font-size:1.55rem; font-weight:800; color:{{ item.color }}; line-height:1.1;">
-                ${{ item.monto|floatformat:0 }}
+                ${{ item.monto|floatformat:0|intcomma }}
               </div>
             </div>
 
-            <!-- Barra de participación horaria -->
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:.68rem; color:var(--texto-muted);">
                 <span>Participación diaria</span>
@@ -176,13 +172,12 @@
                     <span class="fw-bold text-truncate" style="color:var(--texto); font-size: 0.9rem;" title="{{ p.nombre }}">{{ p.nombre }}</span>
                   </div>
                   <div class="text-end d-flex align-items-center gap-2">
-                    <span class="fw-bold fs-6" style="color: var(--verde, #2ed573);">${{ p.recaudo|floatformat:0 }}</span>
+                    <span class="fw-bold fs-6" style="color: var(--verde, #2ed573);">${{ p.recaudo|floatformat:0|intcomma }}</span>
                     <span class="badge" style="background:color-mix(in srgb, var(--azul-claro) 15%, transparent); color:var(--azul-claro); border:1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent); border-radius:12px; font-weight:600; font-size:0.75rem;">
                       {{ p.cantidad }} unid{% if p.cantidad != 1 %}es{% endif %}
                     </span>
                   </div>
                 </div>
-                <!-- Barra de progreso visual por producto -->
                 <div class="d-flex align-items-center gap-2">
                   <div class="progress flex-grow-1" style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow:hidden;">
                     <div class="progress-bar" role="progressbar"
@@ -225,13 +220,11 @@
           </div>
 
           <div class="d-flex align-items-center justify-content-start gap-4 my-3 ps-1 flex-wrap flex-sm-nowrap">
-            <!-- Concentric SVG Donut Chart con contador central -->
             <div class="position-relative d-flex align-items-center justify-content-center flex-shrink-0" style="width: 105px; height: 105px;">
               <svg width="105" height="105" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
-                <!-- Base track background circles -->
                 <circle cx="50" cy="50" r="38" stroke="rgba(255, 255, 255, 0.08)" stroke-width="7" fill="transparent" />
                 <circle cx="50" cy="50" r="27" stroke="rgba(255, 255, 255, 0.08)" stroke-width="7" fill="transparent" />
-                
+
                 {% if ventas_tope_data %}
                   {% for v in ventas_tope_data %}
                   <circle cx="50" cy="50" r="{{ v.r }}" stroke="{{ v.color }}" stroke-width="7" fill="transparent"
@@ -247,7 +240,6 @@
               </div>
             </div>
 
-            <!-- Listado Detallado de Transacciones Tope -->
             <div class="d-flex flex-column gap-2 flex-grow-1 w-100" style="min-width: 0;">
               {% if ventas_tope_data %}
                 {% for v in ventas_tope_data %}
@@ -260,7 +252,7 @@
                     </div>
                   </div>
                   <div class="text-end ps-2 flex-shrink-0">
-                    <div class="fw-bold" style="color: {{ v.color }}; font-size: 0.95rem;">${{ v.monto|floatformat:0 }}</div>
+                    <div class="fw-bold" style="color: {{ v.color }}; font-size: 0.95rem;">${{ v.monto|floatformat:0|intcomma }}</div>
                     <div class="text-muted" style="font-size: 0.72rem; font-weight: 600;">{{ v.porcentaje }}% del día</div>
                   </div>
                 </div>
@@ -272,7 +264,6 @@
           </div>
         </div>
 
-        <!-- Footer caption -->
         <div class="mt-3 pt-2 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; font-size: 0.78rem; color: var(--texto-muted);">
           Total recaudado hoy: <strong style="color:var(--texto);">${{ total_dia|floatformat:0|intcomma }}</strong>
         </div>
@@ -281,8 +272,8 @@
   </div>
 
   <!-- Historical Sales Table Section -->
-  <section class="cys-pos-card">
-    
+  <section class="cys-pos-card" id="seccionTablaVentasDia">
+
     <div class="cys-pos-card-header">
       <div class="cys-pos-card-title">
         <i class="bi bi-clock-history me-1"></i>Detalle de Transacciones del Día
@@ -294,15 +285,15 @@
         <span style="font-size:.75rem; font-weight:700; color:var(--texto); text-transform:uppercase; letter-spacing:0.5px;">
           Rango de fechas:
         </span>
-        
+
         <input type="date" name="fecha_inicio" id="filtroFechaIni" value="{{ fecha_inicio }}"
                class="form-control form-control-sm prod-input" style="width: auto; border-radius:8px;">
-        
+
         <span style="color:var(--texto-muted); font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
-        
+
         <input type="date" name="fecha_fin" id="filtroFechaFin" value="{{ fecha_fin }}"
                class="form-control form-control-sm prod-input" style="width: auto; border-radius:8px;">
-        
+
         <button type="submit" class="btn btn-sm prod-btn-primary px-3"
                 data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas">
           <i class="bi bi-funnel me-1"></i> Filtrar
@@ -314,7 +305,7 @@
         </a>
       </div>
 
-      <!-- Buscador en tiempo real y Botones de Exportación -->
+      <!-- Buscador en tiempo real + botón Exportar -->
       <div class="d-flex flex-wrap align-items-center gap-2">
         <div class="cys-search-group" style="min-width:220px;">
           <i class="bi bi-search"></i>
@@ -322,21 +313,31 @@
                  placeholder="Buscar cliente, ítem..." style="padding-left:36px !important;">
         </div>
 
-        <a href="{% url 'exportar_ventas_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
-           id="btnExportExcel"
-           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar Excel"
-           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
-           style="background:linear-gradient(135deg, #107c41, #1f9a55); border:none; border-radius:8px; padding:.4rem .85rem;">
-          <i class="bi bi-file-earmark-excel-fill"></i> Excel
-        </a>
-
-        <a href="{% url 'exportar_ventas_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
-           id="btnExportPdf"
-           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar PDF"
-           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
-           style="background:linear-gradient(135deg, #d32f2f, #b71c1c); border:none; border-radius:8px; padding:.4rem .85rem;">
-          <i class="bi bi-file-earmark-pdf-fill"></i> PDF
-        </a>
+        <div class="dropdown">
+          <button type="button" class="cys-export-btn dropdown-toggle"
+                  data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+            <i class="bi bi-box-arrow-up"></i> Exportar <i class="bi bi-chevron-down chev"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end cys-export-menu">
+            <li>
+              <a class="dropdown-item" id="btnExportExcel"
+                 href="{% url 'exportar_ventas_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}">
+                <i class="bi bi-file-earmark-excel ico-excel"></i> Excel
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" id="btnExportPdf"
+                 href="{% url 'exportar_ventas_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}">
+                <i class="bi bi-file-earmark-pdf ico-pdf"></i> PDF
+              </a>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item" id="btnImprimirVentasDia">
+                <i class="bi bi-printer ico-print"></i> Imprimir
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </form>
 
@@ -351,7 +352,7 @@
               Atención Arqueo / Cierre: Hay {{ ventas_pendientes_count }} venta{{ ventas_pendientes_count|pluralize }} con saldo pendiente
             </div>
             <div style="font-size:0.75rem; color:#fde68a;">
-              Total pendiente por cobrar: <strong>${{ total_pendiente_dia|floatformat:0 }}</strong> (resaltadas en color ámbar para cambio de turno).
+              Total pendiente por cobrar: <strong>${{ total_pendiente_dia|floatformat:0|intcomma }}</strong> (resaltadas en color ámbar para cambio de turno).
             </div>
           </div>
         </div>
@@ -374,7 +375,7 @@
             <th style="text-align: right;">Precio Uni.</th>
             <th style="text-align: right;">Total</th>
             <th style="text-align: center;">Fecha</th>
-            <th style="text-align: center; width: 95px;">Acción</th>
+            <th class="col-accion" style="text-align: center; width: 95px;">Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -384,17 +385,11 @@
               <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}">
                 <td style="text-align: center; color: var(--texto-muted);">{{ forloop.parentloop.counter }}</td>
                 <td style="font-weight: 600; color: var(--texto);">
-                  {% if venta.cliente %}
-                    {{ venta.cliente.nombre }}
-                  {% elif venta.usuario %}
-                    {{ venta.usuario.nombre }} {{ venta.usuario.apellido }}
-                  {% else %}
-                    Consumidor Final
-                  {% endif %}
+                  {{ venta.cliente_nombre|default:"Consumidor final" }}
                   {% if venta.saldo_pendiente > 0 and forloop.first %}
                   <div class="mt-1 d-flex flex-column gap-1">
                     <span class="cys-debt-pill">
-                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0 }}
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0|intcomma }}
                     </span>
                     {% if venta.observacion %}
                     <span class="cys-debt-obs" title="{{ venta.observacion }}">
@@ -412,26 +407,26 @@
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto);">{{ det.cantidad }}</td>
-                <td style="text-align: right; color: var(--texto);">${{ det.precio_unitario|floatformat:0 }}</td>
+                <td style="text-align: right; color: var(--texto);">${{ det.precio_unitario|floatformat:0|intcomma }}</td>
                 <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">
-                  ${{ det.subtotal|floatformat:0 }}
+                  ${{ det.subtotal_val|floatformat:0|intcomma }}
                   {% if venta.saldo_pendiente > 0 and forloop.first %}
                   <div style="font-size:0.7rem; color:#fbbf24; font-weight:700;">
-                    Cobrado: ${{ venta.total_cobrado|floatformat:0 }}
+                    Cobrado: ${{ venta.total_cobrado|floatformat:0|intcomma }}
                   </div>
                   <span class="badge cys-badge-pendiente mt-1">PENDIENTE</span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
                 {% if forloop.first %}
-                <td style="text-align: center; vertical-align: middle;" rowspan="{{ venta.detalles.all|length }}">
+                <td class="col-accion" style="text-align: center; vertical-align: middle;" rowspan="{{ venta.detalles.all|length }}">
                   <div class="d-flex align-items-center justify-content-center gap-1.5">
                     {% if venta.saldo_pendiente > 0 %}
                     <button type="button" class="btn btn-sm btn-abrir-cobro"
                             data-bs-toggle="modal"
                             data-bs-target="#modalCobrarSaldo"
                             data-venta-id="{{ venta.pk }}"
-                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                            data-cliente="{{ venta.cliente_nombre|default:'Consumidor final' }}"
                             data-total="{{ venta.total_venta|floatformat:0 }}"
                             data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
                             data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
@@ -454,17 +449,11 @@
               <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}">
                 <td style="text-align: center; color: var(--texto-muted);">{{ forloop.counter }}</td>
                 <td style="font-weight: 600; color: var(--texto);">
-                  {% if venta.cliente %}
-                    {{ venta.cliente.nombre }}
-                  {% elif venta.usuario %}
-                    {{ venta.usuario.nombre }} {{ venta.usuario.apellido }}
-                  {% else %}
-                    Consumidor Final
-                  {% endif %}
+                  {{ venta.cliente_nombre|default:"Consumidor final" }}
                   {% if venta.saldo_pendiente > 0 %}
                   <div class="mt-1 d-flex flex-column gap-1">
                     <span class="cys-debt-pill">
-                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0 }}
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0|intcomma }}
                     </span>
                     {% if venta.observacion %}
                     <span class="cys-debt-obs" title="{{ venta.observacion }}">
@@ -474,27 +463,27 @@
                   </div>
                   {% endif %}
                 </td>
-                <td style="color: var(--texto);">Venta #{{ venta.codigo_venta }} ({{ venta.metodo_pago }})</td>
+                <td style="color: var(--texto);">Venta #{{ venta.pk }} ({{ venta.metodo_pago }})</td>
                 <td style="text-align: center; color: var(--texto);">—</td>
                 <td style="text-align: right; color: var(--texto);">—</td>
                 <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">
-                  ${{ venta.total_venta|floatformat:0 }}
+                  ${{ venta.total_venta|floatformat:0|intcomma }}
                   {% if venta.saldo_pendiente > 0 %}
                   <div style="font-size:0.7rem; color:#fbbf24; font-weight:700;">
-                    Cobrado: ${{ venta.total_cobrado|floatformat:0 }}
+                    Cobrado: ${{ venta.total_cobrado|floatformat:0|intcomma }}
                   </div>
                   <span class="badge cys-badge-pendiente mt-1">PENDIENTE</span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                <td style="text-align: center; vertical-align: middle;">
+                <td class="col-accion" style="text-align: center; vertical-align: middle;">
                   <div class="d-flex align-items-center justify-content-center gap-1.5">
                     {% if venta.saldo_pendiente > 0 %}
                     <button type="button" class="btn btn-sm btn-abrir-cobro"
                             data-bs-toggle="modal"
                             data-bs-target="#modalCobrarSaldo"
                             data-venta-id="{{ venta.pk }}"
-                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                            data-cliente="{{ venta.cliente_nombre|default:'Consumidor final' }}"
                             data-total="{{ venta.total_venta|floatformat:0 }}"
                             data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
                             data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
@@ -520,7 +509,7 @@
     <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;">
       <div>
         <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
-          Total efectivamente cobrado ({{ ventas.count }} transacciones)
+          Total efectivamente cobrado ({{ ventas|length }} transacciones)
         </span>
         {% if total_pendiente_dia > 0 %}
         <span style="font-size: .75rem; color:#fbbf24; font-weight:700; display:block;">
@@ -548,7 +537,7 @@
 <div class="modal fade" id="modalCobrarSaldo" tabindex="-1" aria-labelledby="modalCobrarSaldoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content cys-modal" style="background:#0b223e; border:1px solid rgba(245,158,11,0.45); border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.6);">
-      
+
       <div class="cys-modal__header" style="border-bottom:1px solid rgba(245,158,11,0.25); padding:1rem 1.25rem; background:linear-gradient(135deg, rgba(80,50,10,0.9), rgba(15,28,52,0.95)); border-radius:18px 18px 0 0;">
         <div class="d-flex align-items-center justify-content-between w-100">
           <div class="d-flex align-items-center gap-2.5">
@@ -569,8 +558,7 @@
       <form id="formCobrarSaldo" method="POST" action="">
         {% csrf_token %}
         <div class="modal-body p-3 p-md-4">
-          
-          <!-- Resumen de la venta -->
+
           <div class="p-3 rounded-3 mb-3" style="background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.08);">
             <div class="d-flex justify-content-between align-items-center mb-1.5">
               <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Cliente</span>
@@ -594,7 +582,6 @@
             </div>
           </div>
 
-          <!-- Monto a pagar -->
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label for="inputMontoCobro" class="form-label text-white small fw-bold mb-0">
@@ -610,7 +597,6 @@
                    style="background:rgba(10,20,38,0.85); border:1px solid rgba(245,158,11,0.5); font-size:1.15rem; color:#fbbf24 !important; border-radius:10px;">
           </div>
 
-          <!-- Método de pago recibido -->
           <div class="mb-3">
             <label for="selectMetodoCobro" class="form-label text-white small fw-bold mb-1">
               Forma de Pago Recibida <span class="text-danger">*</span>
@@ -629,7 +615,6 @@
             </div>
           </div>
 
-          <!-- Nota adicional -->
           <div class="mb-3">
             <label for="inputNotaCobro" class="form-label text-white small fw-bold mb-1">
               Nota u Observación (Opcional)
@@ -668,16 +653,28 @@ document.addEventListener('DOMContentLoaded', function() {
   const fIni     = document.getElementById('filtroFechaIni');
   const fFin     = document.getElementById('filtroFechaFin');
 
+  // Construye las URLs de exportación con fechas + búsqueda actuales
+  function actualizarUrlsExport() {
+    const q = buscador ? buscador.value.trim() : '';
+    const vIni = fIni ? fIni.value : '';
+    const vFin = fFin ? fFin.value : '';
+    const params = new URLSearchParams();
+    if (vIni) params.set('fecha_inicio', vIni);
+    if (vFin) params.set('fecha_fin', vFin);
+    if (q) params.set('q', q);
+
+    const queryStr = params.toString() ? ('?' + params.toString()) : '';
+    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + queryStr;
+    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + queryStr;
+  }
+
   function validarYEnlazarFechasDia(origen) {
     if (!fIni || !fFin) return;
     let vIni = fIni.value;
     let vFin = fFin.value;
 
     if (vIni && vFin && vIni > vFin) {
-      if (origen === 'ini') {
-        fFin.value = vIni;
-        vFin = vIni;
-      } else if (origen === 'fin') {
+      if (origen === 'fin') {
         fIni.value = vFin;
         vIni = vFin;
       } else {
@@ -707,39 +704,28 @@ document.addEventListener('DOMContentLoaded', function() {
   // Prevenir envío de formulario con fechas contradictorias
   const formFechas = fIni ? fIni.closest('form') : null;
   if (formFechas) {
-    formFechas.addEventListener('submit', function(e) {
+    formFechas.addEventListener('submit', function() {
       if (fIni && fFin && fIni.value && fFin.value && fIni.value > fFin.value) {
         fFin.value = fIni.value;
       }
     });
   }
 
-  // Inicializar restricciones
+  // Inicializar restricciones y URLs
   validarYEnlazarFechasDia();
 
-  function actualizarUrlsExport() {
-    const q = buscador ? buscador.value.trim() : '';
-    const vIni = fIni ? fIni.value : '';
-    const vFin = fFin ? fFin.value : '';
-    const params = new URLSearchParams();
-    if (vIni) params.set('fecha_inicio', vIni);
-    if (vFin) params.set('fecha_fin', vFin);
-    if (q) params.set('q', q);
-
-    const queryStr = params.toString() ? ('?' + params.toString()) : '';
-    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + queryStr;
-    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + queryStr;
-  }
-
+  // Buscador en tiempo real
   if (buscador) {
     buscador.addEventListener('input', function() {
       const q = this.value.toLowerCase().trim();
       actualizarUrlsExport();
-      const filas = document.querySelectorAll('.fila-venta-dia');
-      filas.forEach(f => {
-        const txt = f.textContent.toLowerCase();
-        f.style.display = txt.includes(q) ? '' : 'none';
+      document.querySelectorAll('.fila-venta-dia').forEach(f => {
+        f.style.display = f.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
+    });
+    // Evitar que Enter envíe el formulario de fechas
+    buscador.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') e.preventDefault();
     });
   }
 
@@ -789,6 +775,14 @@ document.addEventListener('DOMContentLoaded', function() {
     btnPagarTodo.addEventListener('click', function() {
       const inp = document.getElementById('inputMontoCobro');
       if (inp && inp.max) inp.value = inp.max;
+    });
+  }
+
+  // ── IMPRIMIR TABLA ──
+  const btnImprimir = document.getElementById('btnImprimirVentasDia');
+  if (btnImprimir) {
+    btnImprimir.addEventListener('click', function () {
+      window.print();
     });
   }
 
