@@ -1,0 +1,21 @@
+﻿from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+def _es_admin(request):
+    u = request.user
+    return u.is_authenticated and (
+        getattr(u, 'rol', '') == 'admin'
+        or getattr(u, 'is_admin', False)
+        or getattr(u, 'is_superuser', False)
+    )
+
+
+@login_required
+def index(request):
+    return render(request, 'configuracion/configuracion.html', {
+        'es_admin_empresa': _es_admin(request),
+        'breadcrumb_items': [
+            {'nombre': 'Configuracion', 'url': None},
+        ],
+    })

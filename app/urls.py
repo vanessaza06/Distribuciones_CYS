@@ -16,6 +16,7 @@ from app.views.reportes import views as rep_views
 from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
 from app.views.ayuda.chatbot import chatbot_responder
+from app.views.configuracion import views as config_views
 
 
 
@@ -234,4 +235,9 @@ path(
     path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
 
 
+    # CONFIGURACION
+    path('configuracion/', config_views.index, name='configuracion_index'),
+
+
+    path('configuracion/tema-sistema/', config_views.guardar_tema_sistema, name='guardar_tema_sistema'),
 ]       
