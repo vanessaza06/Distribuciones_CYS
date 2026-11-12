@@ -7,9 +7,9 @@
 {% block page_title %}Punto de Venta{% endblock %}
  
 {% block extra_css %}
-
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_exportar.css' %}">
 {% endblock %}
  
 {% block content %}
@@ -403,7 +403,7 @@
   <!-- ══════════════════════════════════════
        HISTORIAL DE VENTAS
   ══════════════════════════════════════ -->
-  <section class="mt-4 cys-pos-card">
+  <section class="mt-4 cys-pos-card" id="seccionHistorial">
     <div class="cys-pos-card-header">
       <div class="cys-pos-card-title">
         <i class="bi bi-clock-history me-1"></i>Historial de Ventas Recientes
@@ -433,19 +433,30 @@
                  placeholder="Buscar cliente, ítem..." style="padding-left:36px !important;">
         </div>
 
-        <a href="{% url 'exportar_ventas_excel' %}"
-           id="btnExportExcelHistorial"
-           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
-           style="background:linear-gradient(135deg, #107c41, #1f9a55); border:none; border-radius:8px; padding:.4rem .85rem;">
-          <i class="bi bi-file-earmark-excel-fill"></i> Excel
-        </a>
+        <!-- Botón único "Exportar" con menú desplegable -->
+        <div class="cys-export-dropdown" id="exportDropdown">
+          <button type="button" class="cys-export-btn" id="btnExportar"
+                  aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-box-arrow-up"></i>
+            <span>Exportar</span>
+            <i class="bi bi-chevron-down cys-export-chevron"></i>
+          </button>
 
-        <a href="{% url 'exportar_ventas_pdf' %}"
-           id="btnExportPdfHistorial"
-           class="btn btn-sm fw-bold text-white d-flex align-items-center gap-1"
-           style="background:linear-gradient(135deg, #d32f2f, #b71c1c); border:none; border-radius:8px; padding:.4rem .85rem;">
-          <i class="bi bi-file-earmark-pdf-fill"></i> PDF
-        </a>
+          <div class="cys-export-menu" id="menuExportar" role="menu">
+            <a href="{% url 'exportar_ventas_excel' %}" id="btnExportExcelHistorial"
+               class="cys-export-item cys-export-item--excel" role="menuitem">
+              <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{% url 'exportar_ventas_pdf' %}" id="btnExportPdfHistorial"
+               class="cys-export-item cys-export-item--pdf" role="menuitem">
+              <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
+            <button type="button" id="btnImprimirHistorial"
+                    class="cys-export-item cys-export-item--print" role="menuitem">
+              <i class="bi bi-printer"></i> Imprimir
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1850,6 +1861,7 @@ function cambiarCantidad(idx, delta) {
     if (q) params.set('q', q);
     const qStr = params.toString() ? ('?' + params.toString()) : '';
 
+    // Los enlaces Excel / PDF del menú "Exportar" respetan los filtros activos
     const btnExcel = document.getElementById('btnExportExcelHistorial');
     const btnPdf   = document.getElementById('btnExportPdfHistorial');
     if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + qStr;
@@ -1915,6 +1927,51 @@ function cambiarCantidad(idx, delta) {
 
   // Inicializar restricciones al cargar
   validarYEnlazarFechas();
+
+  // ══ MENÚ DESPLEGABLE "EXPORTAR" (Excel / PDF / Imprimir) ══
+  (function initMenuExportar() {
+    const btn  = document.getElementById('btnExportar');
+    const menu = document.getElementById('menuExportar');
+    if (!btn || !menu) return;
+
+    function cerrarMenu() {
+      menu.classList.remove('show');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const abierto = menu.classList.toggle('show');
+      btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    });
+
+    // Cerrar al hacer clic fuera o con Escape
+    document.addEventListener('click', function(e) {
+      if (!menu.contains(e.target) && e.target !== btn) cerrarMenu();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarMenu();
+    });
+
+    // Excel y PDF son enlaces normales (descargan con los filtros activos); solo cerramos el menú
+    ['btnExportExcelHistorial', 'btnExportPdfHistorial'].forEach(function(id) {
+      const a = document.getElementById(id);
+      if (a) a.addEventListener('click', function() { setTimeout(cerrarMenu, 50); });
+    });
+
+    // Imprimir: solo el historial de ventas (lo visible según los filtros)
+    const btnPrint = document.getElementById('btnImprimirHistorial');
+    if (btnPrint) {
+      btnPrint.addEventListener('click', function() {
+        cerrarMenu();
+        document.body.classList.add('imprimiendo-historial');
+        setTimeout(function() { window.print(); }, 100);
+      });
+    }
+    window.addEventListener('afterprint', function() {
+      document.body.classList.remove('imprimiendo-historial');
+    });
+  })();
 
   // ══ MODAL DE COBRO DE SALDO PENDIENTE (CAMBIAR A PAGADA) ══
   document.querySelectorAll('.btn-abrir-cobro').forEach(btn => {

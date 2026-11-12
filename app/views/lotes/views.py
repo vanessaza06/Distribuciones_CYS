@@ -1,7 +1,11 @@
+
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
+import io
 import json
+import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldDoesNotExist
@@ -12,6 +16,20 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
+
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
+from openpyxl.drawing.xdr import XDRPositiveSize2D
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.units import pixels_to_EMU
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import Producto, Lote, Bodega, PresentacionProducto
 from app.forms import LoteForm
@@ -225,6 +243,26 @@ ENCABEZADOS_EXPORT = [
     'Cant. inicial', 'Stock actual', 'Costo unitario', 'Costo total', 'Estado',
 ]
 
+# Identidad visual (igual que Marcas)
+XL_NAVY = "061B3A"
+XL_GOLD = "E8A317"
+XL_ZEBRA = "EDF0F5"
+XL_BORDE = "AEB9CC"
+XL_ROJO = "9B1C1C"
+XL_NARANJA = "B45309"
+XL_GRIS = "6B7280"
+XL_FUENTE = "Calibri"
+
+LOGO_ARCHIVO = "logo.20.png"
+_LOGO_CACHE = {}
+
+COLOR_ESTADO = {
+    'Vigente': XL_NAVY,
+    'Por vencer': XL_NARANJA,
+    'Vencido': XL_ROJO,
+    'Agotado': XL_GRIS,
+}
+
 
 def _estado_lote(lote):
     if lote.stock_actual > 0 and lote.esta_vencido:
@@ -270,40 +308,228 @@ def _filas_lotes():
 
 
 def _nombre_archivo(extension):
-    return f'lotes_{timezone.localdate():%Y%m%d}.{extension}'
+    return f'lotes_{timezone.localtime():%Y%m%d_%H%M}.{extension}'
 
 
+def _resumen_lotes(filas):
+    cuenta = {'Vigente': 0, 'Por vencer': 0, 'Vencido': 0, 'Agotado': 0}
+    for f in filas:
+        cuenta[f[9]] = cuenta.get(f[9], 0) + 1
+    return len(filas), cuenta
+
+
+def _texto_pie_lotes(filas):
+    total, c = _resumen_lotes(filas)
+    return (
+        f"Total: {total} lotes   ·   Vigentes: {c['Vigente']}   ·   "
+        f"Por vencer: {c['Por vencer']}   ·   Vencidos: {c['Vencido']}   ·   "
+        f"Agotados: {c['Agotado']}"
+    )
+
+
+# ---------- Logo ----------
+def _ruta_logo():
+    if "ruta" in _LOGO_CACHE:
+        return _LOGO_CACHE["ruta"]
+
+    from django.contrib.staticfiles import finders
+
+    ruta = None
+    for candidato in (LOGO_ARCHIVO, f"img/{LOGO_ARCHIVO}", f"images/{LOGO_ARCHIVO}",
+                      f"imagenes/{LOGO_ARCHIVO}", f"img/logo/{LOGO_ARCHIVO}"):
+        try:
+            ruta = finders.find(candidato)
+        except Exception:
+            ruta = None
+        if ruta:
+            break
+
+    if not ruta:
+        base = getattr(settings, "BASE_DIR", ".")
+        carpetas = [str(d) for d in getattr(settings, "STATICFILES_DIRS", [])]
+        carpetas += [os.path.join(str(base), "static"), os.path.join(str(base), "app", "static")]
+        for carpeta in carpetas:
+            for raiz, _dirs, archivos in os.walk(carpeta):
+                if LOGO_ARCHIVO in archivos:
+                    ruta = os.path.join(raiz, LOGO_ARCHIVO)
+                    break
+            if ruta:
+                break
+
+    _LOGO_CACHE["ruta"] = ruta
+    return ruta
+
+
+def _logo_png(px):
+    """Logo redondo, redimensionado, con esquinas transparentes. Bytes PNG o None."""
+    clave = ("png", px)
+    if clave in _LOGO_CACHE:
+        return _LOGO_CACHE[clave]
+
+    datos = None
+    ruta = _ruta_logo()
+    if ruta:
+        try:
+            from PIL import Image, ImageDraw
+            img = Image.open(ruta).convert("RGBA")
+            mascara = Image.new("L", img.size, 0)
+            ImageDraw.Draw(mascara).ellipse((0, 0, img.size[0] - 1, img.size[1] - 1), fill=255)
+            img.putalpha(mascara)
+            img = img.resize((px, px), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            datos = buf.getvalue()
+        except Exception:
+            datos = None
+
+    _LOGO_CACHE[clave] = datos
+    return datos
+
+
+def _xl_fill(hex_):
+    return PatternFill("solid", start_color=hex_, end_color=hex_)
+
+
+def _poner_imagen(ws, datos_png, col, fila, ancho, alto, off_x=0, off_y=0):
+    img = XLImage(io.BytesIO(datos_png))
+    img.width, img.height = ancho, alto
+    marcador = AnchorMarker(col=col, row=fila,
+                            colOff=pixels_to_EMU(off_x), rowOff=pixels_to_EMU(off_y))
+    img.anchor = OneCellAnchor(
+        _from=marcador,
+        ext=XDRPositiveSize2D(pixels_to_EMU(ancho), pixels_to_EMU(alto)),
+    )
+    ws.add_image(img)
+
+
+def _barra_dorada(ancho, alto):
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    buf = io.BytesIO()
+    Image.new("RGB", (ancho, alto), "#" + XL_GOLD).save(buf, "PNG")
+    return buf.getvalue()
+
+
+# ---------- EXCEL ----------
 def _exportar_excel():
-    from openpyxl import Workbook
-    from openpyxl.styles import Alignment, Font, PatternFill
-    from openpyxl.utils import get_column_letter
+    filas = _filas_lotes()
+    encabezados = ENCABEZADOS_EXPORT
+    n = len(encabezados)
+    ultima = get_column_letter(n)
 
     wb = Workbook()
     ws = wb.active
-    ws.title = 'Lotes'
+    ws.title = "Lotes"
+    ws.sheet_properties.tabColor = XL_NAVY
+    ws.sheet_view.showGridLines = False
 
-    ws.append(ENCABEZADOS_EXPORT)
-    for celda in ws[1]:
-        celda.font = Font(bold=True, color='FFFFFF')
-        celda.fill = PatternFill('solid', fgColor='0D2A4F')
-        celda.alignment = Alignment(horizontal='center', vertical='center')
+    anchos = [14, 34, 24, 20, 16, 14, 14, 16, 16, 16]
+    for idx, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = ancho
 
-    for fila in _filas_lotes():
-        fila[7] = float(fila[7] or 0)
-        fila[8] = float(fila[8] or 0)
-        ws.append(fila)
+    # ---------- Banner ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
+        ws.row_dimensions[r].height = h
 
-    # Formato moneda y anchos de columna
-    for row in ws.iter_rows(min_row=2, min_col=8, max_col=9):
-        for celda in row:
-            celda.number_format = '"$"#,##0'
-    for i, titulo in enumerate(ENCABEZADOS_EXPORT, start=1):
-        maximo = max(
-            [len(str(titulo))] +
-            [len(str(c.value or '')) for c in ws[get_column_letter(i)][1:]]
-        )
-        ws.column_dimensions[get_column_letter(i)].width = min(maximo + 3, 40)
-    ws.freeze_panes = 'A2'
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    lado_oro = Side(style="medium", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
+
+    ws.merge_cells(f"C1:{ultima}2")
+    ws["C1"] = "Reporte de Lotes"
+    ws["C1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
+
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
+
+    # ---------- Encabezado de tabla ----------
+    fila_enc = 6
+    ws.row_dimensions[fila_enc].height = 34
+    blanco = Side(style="thin", color="FFFFFF")
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=14, bold=True, color="FFFFFF")
+        c.fill = _xl_fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = Border(left=blanco if i > 1 else None)
+
+    # ---------- Datos ----------
+    vertical = Side(style="thin", color=XL_BORDE)
+    for k, fila in enumerate(filas):
+        r = fila_enc + 1 + k
+        ws.row_dimensions[r].height = 26
+        bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
+        estado = fila[9]
+        ultima_fila = (k == len(filas) - 1)
+        for i, valor in enumerate(fila, start=1):
+            if i in (8, 9):
+                valor = float(valor or 0)
+            if i == 10:
+                valor = "●  " + valor
+            c = ws.cell(r, i, valor)
+            c.fill = _xl_fill(bg)
+            c.border = Border(
+                left=vertical,
+                right=vertical if i == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            c.font = Font(name=XL_FUENTE, size=13, color="1F2937", bold=(i == 2))
+            izquierda = i in (2, 3, 4)
+            c.alignment = Alignment(
+                horizontal="left" if izquierda else "center",
+                vertical="center",
+                indent=1 if izquierda else 0,
+            )
+            if i in (8, 9):
+                c.number_format = '"$"#,##0'
+        e = ws.cell(r, 10)
+        e.font = Font(name=XL_FUENTE, size=13, bold=True, color=COLOR_ESTADO.get(estado, XL_NAVY))
+
+    # ---------- Pie ----------
+    r = fila_enc + len(filas) + 1
+    ws.row_dimensions[r].height = 8
+    textos_pie = [
+        _texto_pie_lotes(filas),
+        f"Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
+    ]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = r + j
+        ws.row_dimensions[rr].height = 22
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+    # ---------- Extras ----------
+    if filas:
+        ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = f"{fila_enc}:{fila_enc}"
+    ws.print_options.horizontalCentered = True
 
     buffer = BytesIO()
     wb.save(buffer)
@@ -315,53 +541,168 @@ def _exportar_excel():
     return response
 
 
+# ---------- PDF ----------
+class _BannerPDF(Flowable):
+    """Banner: logo circular | divisor dorado | título | lema | barrita dorada."""
+
+    def __init__(self, ancho, titulo, logo_bytes=None):
+        super().__init__()
+        self.width = ancho
+        self.height = 96
+        self.titulo = titulo
+        self.logo_bytes = logo_bytes
+
+    def wrap(self, aw, ah):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        navy = colors.HexColor("#" + XL_NAVY)
+        oro = colors.HexColor("#" + XL_GOLD)
+
+        # Logo circular
+        diam = 84
+        x_logo, y_logo = 14, (self.height - diam) / 2
+        if self.logo_bytes:
+            c.drawImage(ImageReader(io.BytesIO(self.logo_bytes)), x_logo, y_logo,
+                        width=diam, height=diam, mask="auto")
+        else:
+            c.setFillColor(navy)
+            c.circle(x_logo + diam / 2, y_logo + diam / 2, diam / 2, stroke=0, fill=1)
+            c.setFillColor(colors.white)
+            c.setFont("Helvetica-Bold", 20)
+            c.drawCentredString(x_logo + diam / 2, y_logo + diam / 2 - 6, "CYS")
+
+        # Divisor dorado vertical
+        x_div = x_logo + diam + 26
+        c.setStrokeColor(oro)
+        c.setLineWidth(2.5)
+        c.line(x_div, 8, x_div, self.height - 8)
+
+        # Título
+        x_txt = x_div + 26
+        c.setFillColor(navy)
+        c.setFont("Helvetica-Bold", 34)
+        c.drawString(x_txt, self.height - 46, self.titulo)
+
+        # Lema en cursiva
+        c.setFont("Helvetica-Oblique", 15)
+        c.drawString(x_txt, self.height - 70, "Calidad que llega más lejos")
+
+        # Barrita dorada corta
+        c.setFillColor(oro)
+        c.roundRect(x_txt, 8, 72, 4.5, 2, stroke=0, fill=1)
+
+
 def _exportar_pdf():
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.units import cm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    filas = _filas_lotes()
+
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_texto = colors.HexColor("#1F2937")
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=landscape(A4),
-        leftMargin=1 * cm, rightMargin=1 * cm, topMargin=1 * cm, bottomMargin=1 * cm,
-        title='Reporte de Lotes',
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
+        title="Reporte de lotes — CYS Ltda",
     )
+
     estilos = getSampleStyleSheet()
-
-    datos = [ENCABEZADOS_EXPORT]
-    for f in _filas_lotes():
-        f = list(f)
-        f[7] = f'${(f[7] or 0):,.0f}'
-        f[8] = f'${(f[8] or 0):,.0f}'
-        datos.append(f)
-
-    tabla = Table(datos, repeatRows=1)
-    tabla.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0D2A4F')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('ALIGN', (5, 1), (8, -1), 'RIGHT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#EEF3FA')]),
-    ]))
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=9.5, leading=12, textColor=c_texto)
+    st_bold = ParagraphStyle("bold", parent=st_base, fontName="Helvetica-Bold",
+                             textColor=c_navy, leftIndent=6)
+    st_izq = ParagraphStyle("izq", parent=st_base, leftIndent=6)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_estado = ParagraphStyle("estado", parent=st_base, alignment=TA_CENTER,
+                               fontName="Helvetica-Bold")
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=10.5,
+                             textColor=colors.white, alignment=TA_CENTER, leading=13)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=10.5)
 
     elementos = [
-        Paragraph('Reporte de Lotes — CYS Ltda', estilos['Title']),
-        Paragraph(f'Generado el {timezone.localdate():%d/%m/%Y}', estilos['Normal']),
-        Spacer(1, 0.4 * cm),
-        tabla,
+        _BannerPDF(ancho_util, "Reporte de Lotes", _logo_png(300)),
+        Spacer(1, 14),
     ]
-    doc.build(elementos)
+
+    data = [[Paragraph(escape(h), st_head) for h in ENCABEZADOS_EXPORT]]
+    for f in filas:
+        color = "#" + COLOR_ESTADO.get(f[9], XL_NAVY)
+        estado_html = (
+            f'<font color="{color}"><font name="ZapfDingbats" size="8">l</font>'
+            f'&nbsp;&nbsp;{escape(f[9])}</font>'
+        )
+        data.append([
+            Paragraph(escape(str(f[0])), st_centro),
+            Paragraph(escape(str(f[1])), st_bold),
+            Paragraph(escape(str(f[2])), st_izq),
+            Paragraph(escape(str(f[3])), st_izq),
+            Paragraph(escape(str(f[4])), st_centro),
+            Paragraph(str(f[5]), st_centro),
+            Paragraph(str(f[6]), st_centro),
+            Paragraph(f'${(f[7] or 0):,.0f}', st_centro),
+            Paragraph(f'${(f[8] or 0):,.0f}', st_centro),
+            Paragraph(estado_html, st_estado),
+        ])
+
+    if not filas:
+        data.append([Paragraph("No hay lotes para mostrar.", st_centro)]
+                    + [""] * (len(ENCABEZADOS_EXPORT) - 1))
+
+    anchos = [60, 150, 105, 90, 75, 62, 62, 80, 80, 80]
+    escala = ancho_util / sum(anchos)
+    tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
+
+    estilo = [
+        ("BACKGROUND", (0, 0), (-1, 0), c_navy),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
+        ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BOX", (0, 0), (-1, -1), 1, c_navy),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+    ]
+    if not filas:
+        estilo.append(("SPAN", (0, 1), (-1, 1)))
+    tabla.setStyle(TableStyle(estilo))
+    elementos.append(tabla)
+
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(escape(_texto_pie_lotes(filas)).replace("   ", " &nbsp; "), st_tot),
+        Spacer(1, 2),
+        Paragraph("Generado el " + timezone.localtime().strftime("%d/%m/%Y %H:%M"), st_meta),
+    ]
+
+    def pie(canvas, documento):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
+        canvas.restoreState()
+
+    doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{_nombre_archivo("pdf")}"'
     return response
 
 
+# ---------- IMPRIMIR ----------
 def _exportar_imprimir():
     filas = _filas_lotes()
 
