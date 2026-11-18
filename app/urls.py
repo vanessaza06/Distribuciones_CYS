@@ -18,10 +18,6 @@ from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
 from app.views.respaldos import views as resp_views
 from app.views.ayuda.chatbot import chatbot_responder
-from app.views.configuracion import views as config_views
-
-
-
 
 
 urlpatterns = [
@@ -44,23 +40,23 @@ urlpatterns = [
     path("ventas/cobrar-saldo/<int:pk>/", ventas_views.cobrar_saldo_pendiente, name="cobrar_saldo_pendiente"),
     path("ventas/producto-stock/<int:pk>/", ventas_views.producto_stock_json, name="producto_stock_json"),
     path("ventas/producto/<int:pk>/stock/", ventas_views.producto_stock_json, name="producto_stock_json_alt"),
+    path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
+    path("ventas/exportar/excel/", ventas_views.exportar_ventas_excel, name="exportar_ventas_excel"),
+    path("ventas/exportar/pdf/", ventas_views.exportar_ventas_pdf, name="exportar_ventas_pdf"),
 
     # DEVOLUCIONES
     path("devoluciones/", dev_views.lista_devoluciones, name="lista_devoluciones"),
-    path("devoluciones/buscar/",dev_views.buscar_venta_devolucion,name="buscar_venta_devolucion",),
-    path("devoluciones/venta/<int:venta_id>/",dev_views.seleccionar_venta_devolucion,name="seleccionar_venta_devolucion", ),
-    path( "devoluciones/venta/<int:venta_id>/registrar/",dev_views.registrar_devolucion,name="registrar_devolucion",),
-    path( "devoluciones/detalle/<int:venta_id>/",dev_views.detalle_venta_devolucion,name="detalle_venta_devolucion",),
-    path("devoluciones/comprobante/<int:pk>/",dev_views.comprobante_devolucion,name="comprobante_devolucion",),
+    path("devoluciones/buscar/", dev_views.buscar_venta_devolucion, name="buscar_venta_devolucion"),
+    path("devoluciones/venta/<int:venta_id>/", dev_views.seleccionar_venta_devolucion, name="seleccionar_venta_devolucion"),
+    path("devoluciones/venta/<int:venta_id>/registrar/", dev_views.registrar_devolucion, name="registrar_devolucion"),
+    path("devoluciones/detalle/<int:venta_id>/", dev_views.detalle_venta_devolucion, name="detalle_venta_devolucion"),
+    path("devoluciones/comprobante/<int:pk>/", dev_views.comprobante_devolucion, name="comprobante_devolucion"),
     path("devoluciones/proveedor/<str:nit>/compras/", dev_views.compras_proveedor_json, name="compras_proveedor_json"),
     path("devoluciones/proveedor/<int:pk>/", dev_views.detalle_devolucion_proveedor, name="detalle_devolucion_proveedor"),
     path("devoluciones/proveedor/registrar/", dev_views.registrar_devolucion_proveedor, name="registrar_devolucion_proveedor"),
     path("devoluciones/proveedor/<int:pk>/estado/", dev_views.cambiar_estado_devolucion_proveedor, name="cambiar_estado_devolucion_proveedor"),
     path("devoluciones/ultima/", dev_views.ultima_devolucion, name="ultima_devolucion"),
-    path("devoluciones/<int:pk>/", dev_views.detalle_devolucion, name="detalle_devolucion",),
-    path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
-    path("ventas/exportar/excel/", ventas_views.exportar_ventas_excel, name="exportar_ventas_excel"),
-    path("ventas/exportar/pdf/", ventas_views.exportar_ventas_pdf, name="exportar_ventas_pdf"),
+    path("devoluciones/<int:pk>/", dev_views.detalle_devolucion, name="detalle_devolucion"),
 
     # CAJA
     path("caja/", ventas_views.caja, name="caja_direct"),
@@ -69,53 +65,36 @@ urlpatterns = [
     path("ventas/caja/cierre/", ventas_views.cierre_caja, name="cierre_caja"),
     path("ventas/caja/conteo/", ventas_views.registrar_conteo, name="registrar_conteo"),
 
-    
-
-
-        # CATEGORIAS
+    # CATEGORIAS
     path("categorias/", cat_views.categorias_lista, name="categorias_lista"),
     path("categorias/crear/", cat_views.categoria_crear, name="categoria_crear"),
-    path(
-        "categorias/editar/<int:pk>/",
-        cat_views.categoria_editar,
-        name="categoria_editar",
-    ),
-    path(
-        "categorias/toggle/<int:pk>/",
-        cat_views.categoria_toggle_activo,
-        name="categoria_toggle_activo",
-    ),
-    path(
-        "categorias/exportar/pdf/",
-        cat_views.categoria_exportar_pdf,
-        name="categoria_exportar_pdf",
-    ),
-    path(
-        "categorias/exportar/excel/",
-        cat_views.categoria_exportar_excel,
-        name="categoria_exportar_excel",
-    ),
+    path("categorias/editar/<int:pk>/", cat_views.categoria_editar, name="categoria_editar"),
+    path("categorias/toggle/<int:pk>/", cat_views.categoria_toggle_activo, name="categoria_toggle_activo"),
+    path("categorias/exportar/pdf/", cat_views.categoria_exportar_pdf, name="categoria_exportar_pdf"),
+    path("categorias/exportar/excel/", cat_views.categoria_exportar_excel, name="categoria_exportar_excel"),
+
     # PROVEEDORES
     path("proveedores/", prov_views.lista_proveedores, name="lista_proveedores"),
     path("proveedores/crear/", prov_views.crear_proveedor, name="crear_proveedor"),
-    path("proveedores/detalle/<str:id>/",prov_views.detalle_proveedor,name="detalle_proveedor",),
-    path("proveedores/editar/<str:id>/",prov_views.editar_proveedor,name="editar_proveedor",),
-    path("proveedores/eliminar/<str:id>/",prov_views.eliminar_proveedor,name="eliminar_proveedor",),
-    path( "proveedores/activar/<str:id>/", prov_views.activar_proveedor, name="activar_proveedor",),
-    path("proveedores/desactivar/<str:id>/",prov_views.desactivar_proveedor,name="desactivar_proveedor",),
-    path( "proveedores/sancionar/<str:id>/",prov_views.sancionar_proveedor, name="sancionar_proveedor",),
-    path("proveedores/levantar-sancion/<str:id>/",prov_views.levantar_sancion_proveedor, name="levantar_sancion_proveedor",),
+    path("proveedores/detalle/<str:id>/", prov_views.detalle_proveedor, name="detalle_proveedor"),
+    path("proveedores/editar/<str:id>/", prov_views.editar_proveedor, name="editar_proveedor"),
+    path("proveedores/eliminar/<str:id>/", prov_views.eliminar_proveedor, name="eliminar_proveedor"),
+    path("proveedores/activar/<str:id>/", prov_views.activar_proveedor, name="activar_proveedor"),
+    path("proveedores/desactivar/<str:id>/", prov_views.desactivar_proveedor, name="desactivar_proveedor"),
+    path("proveedores/sancionar/<str:id>/", prov_views.sancionar_proveedor, name="sancionar_proveedor"),
+    path("proveedores/levantar-sancion/<str:id>/", prov_views.levantar_sancion_proveedor, name="levantar_sancion_proveedor"),
+
     # Modales / AJAX Proveedores
-    path("proveedores/modal/detalle/<str:id>/",prov_views.detalle_proveedor_modal,name="detalle_proveedor_modal",),
-    path("proveedores/modal/desactivar/<str:id>/",prov_views.desactivar_proveedor_modal,name="desactivar_proveedor_modal",),
-    path("proveedores/modal/reactivar/<str:id>/",prov_views.reactivar_proveedor_modal,name="reactivar_proveedor_modal",),
-    path("proveedores/modal/sancionar/<str:id>/",prov_views.sancionar_proveedor_modal,name="sancionar_proveedor_modal",),
+    path("proveedores/modal/detalle/<str:id>/", prov_views.detalle_proveedor_modal, name="detalle_proveedor_modal"),
+    path("proveedores/modal/desactivar/<str:id>/", prov_views.desactivar_proveedor_modal, name="desactivar_proveedor_modal"),
+    path("proveedores/modal/reactivar/<str:id>/", prov_views.reactivar_proveedor_modal, name="reactivar_proveedor_modal"),
+    path("proveedores/modal/sancionar/<str:id>/", prov_views.sancionar_proveedor_modal, name="sancionar_proveedor_modal"),
 
     # MARCAS
     path("marcas/", mar_views.lista_marcas, name="lista_marcas"),  # type: ignore
     path("marcas/crear/", mar_views.crear_marca, name="crear_marca"),  # type: ignore
     path("marcas/editar/<str:codigo_marca>/", mar_views.editar_marca, name="editar_marca"),  # type: ignore
-    path('marcas/<int:codigo_marca>/cambiar-estado/', mar_views.cambiar_estado_marca, name='cambiar_estado_marca'),
+    path("marcas/<int:codigo_marca>/cambiar-estado/", mar_views.cambiar_estado_marca, name="cambiar_estado_marca"),
 
     # PRODUCTOS
     path("productos/", prod_views.lista_productos, name="lista_productos"),
@@ -123,128 +102,70 @@ urlpatterns = [
     path("crear-producto/", prod_views.crear_producto, name="crear_producto"),
     path("buscar/", prod_views.buscar_producto, name="buscar_producto"),
     path("producto/<int:pk>/", prod_views.producto_detalle, name="producto_detalle"),
-    path(
-        "producto/<int:pk>/editar/", prod_views.producto_editar, name="producto_editar"
-    ),
+    path("producto/<int:pk>/editar/", prod_views.producto_editar, name="producto_editar"),
     path("registro/", prod_views.producto_registro, name="producto_registro"),
     path("stock-status/", prod_views.stock_status, name="stock_status"),
-    path(
-        "producto/<int:pk>/toggle/",
-        prod_views.producto_toggle_activo,
-        name="producto_toggle_activo",
-    ),
+    path("producto/<int:pk>/toggle/", prod_views.producto_toggle_activo, name="producto_toggle_activo"),
 
-        # PRESENTACIONES
-path("presentaciones/", pres_views.presentacion_lista, name="presentacion_lista"),
-path(
-    "presentaciones/exportar/<str:formato>/",
-    pres_views.presentacion_exportar,
-    name="presentacion_exportar",
-),
-path(
-    "presentacion/<int:producto_pk>/crear/",
-    pres_views.presentacion_crear,
-    name="presentacion_crear",
-),
-path(
-    "presentacion/<int:pk>/editar/",
-    pres_views.presentacion_editar,
-    name="presentacion_editar",
-),
-path(
-    "presentacion/<int:pk>/toggle/",
-    pres_views.presentacion_toggle_activo,
-    name="presentacion_toggle_activo",
-),
-        # COMPRAS
+    # PRESENTACIONES
+    path("presentaciones/", pres_views.presentacion_lista, name="presentacion_lista"),
+    path("presentaciones/exportar/<str:formato>/", pres_views.presentacion_exportar, name="presentacion_exportar"),
+    path("presentacion/<int:producto_pk>/crear/", pres_views.presentacion_crear, name="presentacion_crear"),
+    path("presentacion/<int:pk>/editar/", pres_views.presentacion_editar, name="presentacion_editar"),
+    path("presentacion/<int:pk>/toggle/", pres_views.presentacion_toggle_activo, name="presentacion_toggle_activo"),
+
+    # COMPRAS
     path("compras/", compra_views.lista_compras, name="lista_compras"),
     path("compras/ultima/", compra_views.ultima_compra, name="ultima_compra"),
-    path("compras/<int:id>/", compra_views.detalle_compra, name="detalle_compra",),
-    path("compras/estado/",compra_views.cambiar_estado_compra, name="cambiar_estado_compra", ),
-    path("compras/estado/<int:id>/",compra_views.cambiar_estado_compra,name="cambiar_estado_compra_id",),
-    path("compras/pago/",compra_views.registrar_pago_compra,name="registrar_pago_compra",),
-    path("compras/pago/<int:id>/",compra_views.registrar_pago_compra,name="registrar_pago_compra_id",),
+    path("compras/<int:id>/", compra_views.detalle_compra, name="detalle_compra"),
+    path("compras/estado/", compra_views.cambiar_estado_compra, name="cambiar_estado_compra"),
+    path("compras/estado/<int:id>/", compra_views.cambiar_estado_compra, name="cambiar_estado_compra_id"),
+    path("compras/pago/", compra_views.registrar_pago_compra, name="registrar_pago_compra"),
+    path("compras/pago/<int:id>/", compra_views.registrar_pago_compra, name="registrar_pago_compra_id"),
 
-        # LOTES
+    # LOTES
     path("lotes/", lot_views.gestion_stock, name="gestion_stock"),
     path("lotes/lista/", lot_views.lote_list, name="lote_list"),
     path("lotes/crear/", lot_views.lote_create, name="lote_create"),
     path("lotes/exportar/<str:formato>/", lot_views.lote_exportar, name="lote_exportar"),
     path("lotes/<str:numero_lote>/", lot_views.lote_detail, name="lote_detail"),
     path("lotes/<str:numero_lote>/editar/", lot_views.lote_update, name="lote_update"),
-    path(
-        "lotes/<str:numero_lote>/ajustar-stock/",
-        lot_views.lote_ajustar_stock,
-        name="lote_ajustar_stock",
-    ),
-        # DETALLE PRODUCTO
-    path(
-        "detalle-producto/",
-        deta_views.detalle_producto_lista,
-        name="detalle_producto_lista",
-    ),
-    path(
-        "detalle-producto/exportar/<str:formato>/",
-        deta_views.detalle_producto_exportar,
-        name="detalle_producto_exportar",
-    ),
-    path(
-        "detalle-producto/crear/<int:producto_pk>/",
-        deta_views.detalle_producto_crear,
-        name="detalle_producto_crear",
-    ),
-    path(
-        "detalle-producto/editar/<int:pk>/",
-        deta_views.detalle_producto_editar,
-        name="detalle_producto_editar",
-    ),
-    path(
-        "detalle-producto/guardar-codigo/<int:pk>/",
-        deta_views.guardar_codigo,
-        name="guardar_codigo",
-    ),
-    path(
-        "detalle/<int:producto_pk>/crear-rapido/",
-        deta_views.detalle_producto_crear_rapido,
-        name="detalle_producto_crear_rapido",
-    ),
+    path("lotes/<str:numero_lote>/ajustar-stock/", lot_views.lote_ajustar_stock, name="lote_ajustar_stock"),
+
+    # DETALLE PRODUCTO
+    path("detalle-producto/", deta_views.detalle_producto_lista, name="detalle_producto_lista"),
+    path("detalle-producto/exportar/<str:formato>/", deta_views.detalle_producto_exportar, name="detalle_producto_exportar"),
+    path("detalle-producto/crear/<int:producto_pk>/", deta_views.detalle_producto_crear, name="detalle_producto_crear"),
+    path("detalle-producto/editar/<int:pk>/", deta_views.detalle_producto_editar, name="detalle_producto_editar"),
+    path("detalle-producto/guardar-codigo/<int:pk>/", deta_views.guardar_codigo, name="guardar_codigo"),
     path("detalle/<int:producto_pk>/crear-rapido/", deta_views.detalle_producto_crear_rapido, name="detalle_producto_crear_rapido"),
+
     # BODEGA
     path("bodega/", bod_views.bodega_home, name="bodega_home"),
     path("bodega/agenda/", bod_views.agenda_list, name="agenda_list"),
     path("bodega/agenda/nueva/", bod_views.agenda_create, name="agenda_create"),
     path("bodega/agenda/<int:codigo>/", bod_views.agenda_detail, name="agenda_detail"),
-    path(
-        "bodega/agenda/<int:codigo>/editar/",
-        bod_views.agenda_update,
-        name="agenda_update",
-    ),
-    path(
-        "bodega/agenda/<int:codigo>/completar/",
-        bod_views.agenda_completar,
-        name="agenda_completar",
-    ),
-    path(
-        "bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"
-    ),
+    path("bodega/agenda/<int:codigo>/editar/", bod_views.agenda_update, name="agenda_update"),
+    path("bodega/agenda/<int:codigo>/completar/", bod_views.agenda_completar, name="agenda_completar"),
+    path("bodega/ajustar-stock/<int:pk>/", bod_views.ajustar_stock, name="ajustar_stock"),
 
     # REPORTES
-    
     path("reportes/", rep_views.reportes, name="reportes"),
 
-
     # CONFIGURACION
+    
     path("configuracion/", config_views.index, name="configuracion_index"),
+    path("configuracion/actividad/", config_views.actividad, name="configuracion_actividad"),
     path("configuracion/empresa/", config_views.guardar_empresa, name="guardar_empresa"),
     path("configuracion/empresa/verificar/", config_views.verificar_clave_empresa, name="verificar_clave_empresa"),
     path("configuracion/empresa/bloquear/", config_views.bloquear_empresa, name="bloquear_empresa"),
     path("configuracion/impuestos/", config_views.guardar_impuestos, name="guardar_impuestos"),
-    path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),  # <-- NUEVA
+    path("configuracion/tema-sistema/", config_views.guardar_tema_sistema, name="guardar_tema_sistema"),
     path("configuracion/backup/", config_views.crear_backup, name="crear_backup"),
-
+    
     # AYUDA
     path("ayuda/", ayuda_views.index, name="ayuda_index"),
-    path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
+    path("ayuda/chatbot/", chatbot_responder, name="ayuda_chatbot"),
 
     # RESPALDOS (COPIA DE SEGURIDAD)
     path("respaldos/", resp_views.respaldos_index, name="respaldos_index"),
@@ -254,5 +175,4 @@ path(
     path("respaldos/<int:pk>/editar/", resp_views.respaldo_editar, name="respaldo_editar"),
     path("respaldos/<int:pk>/restaurar/", resp_views.respaldo_restaurar, name="respaldo_restaurar"),
     path("respaldos/<int:pk>/eliminar/", resp_views.respaldo_eliminar, name="respaldo_eliminar"),
-]       
-
+]
