@@ -165,7 +165,8 @@ urlpatterns = [
     
     # AYUDA
     path("ayuda/", ayuda_views.index, name="ayuda_index"),
-    path("ayuda/chatbot/", chatbot_responder, name="ayuda_chatbot"),
+    path('ayuda/chatbot/', chatbot_responder, name='ayuda_chatbot'),
+    path("manual/<str:tipo>/", ayuda_views.ver_manual, name="ver_manual"),
 
     # RESPALDOS (COPIA DE SEGURIDAD)
     path("respaldos/", resp_views.respaldos_index, name="respaldos_index"),
