@@ -11,6 +11,8 @@ from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from app.models import BackupRegistro
+
 
 
 def _obtener_binario(nombre):
@@ -163,7 +165,7 @@ def respaldo_crear(request):
 @login_required
 def respaldo_descargar(request, pk):
     """Descarga el archivo .sql del respaldo seleccionado."""
-    registro = BackupRegistro.get_or_404(pk)
+    registro = get_object_or_404(BackupRegistro, pk=pk)
     if not registro.ruta or not os.path.exists(registro.ruta):
         messages.error(
             request,
@@ -184,7 +186,7 @@ def respaldo_descargar(request, pk):
 @require_POST
 def respaldo_editar(request, pk):
     """Edita el nombre y la descripción de una copia de seguridad."""
-    registro = BackupRegistro.get_or_404(pk)
+    registro = get_object_or_404(BackupRegistro, pk=pk)
     nuevo_nombre = request.POST.get("nombre", "").strip()
     nueva_desc = request.POST.get("descripcion", "").strip()
 
@@ -218,7 +220,7 @@ def respaldo_editar(request, pk):
 @require_POST
 def respaldo_eliminar(request, pk):
     """Elimina la copia de seguridad de la base de datos y del disco."""
-    registro = BackupRegistro.get_or_404(pk)
+    registro = get_object_or_404(BackupRegistro, pk=pk)
     nombre = registro.nombre
 
     try:
@@ -236,7 +238,7 @@ def respaldo_eliminar(request, pk):
 @require_POST
 def respaldo_restaurar(request, pk):
     """Restaura la base de datos MySQL a partir de un archivo .sql de respaldo."""
-    registro = BackupRegistro.get_or_404(pk)
+    registro = get_object_or_404(BackupRegistro, pk=pk)
 
     if not registro.ruta or not os.path.exists(registro.ruta):
         messages.error(
