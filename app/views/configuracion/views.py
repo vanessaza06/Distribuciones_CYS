@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.html import escape
 
 from usuarios.models import RegistroActividad
+from app.models import BackupRegistro, ConfiguracionEmpresa
 
 
 # -- Helpers --------------------------------------------------
