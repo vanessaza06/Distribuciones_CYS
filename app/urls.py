@@ -18,6 +18,7 @@ from app.views.metodo_de_pago import views as mp_views
 from app.views.ayuda import views as ayuda_views
 from app.views.respaldos import views as resp_views
 from app.views.ayuda.chatbot import chatbot_responder
+from app.views.configuracion import views as config_views
 
 
 
