@@ -1,10 +1,3 @@
-/* ══════════════════════════════════════════════
-   CONFIGURACIÓN — CYS Ltda
-   static/css/configuracion/configuracion.css
-   Todo el color sale de las variables de tema (base.js).
-══════════════════════════════════════════════ */
-
-/* ── PÁGINA, ENCABEZADO Y MENÚ DE ACCESOS ── */
 .cfg-page { padding-bottom: 2rem; }
 
 .cfg-hero {
@@ -1081,158 +1074,20 @@ input:checked + .slider-sw::before { transform: translateX(18px); }
 .cfg-btn-lock:hover { color: var(--azul-claro) !important; border-color: var(--azul-claro) !important; }
 .cfg-btn-lock:active { transform: scale(.97); }
 
-/* ══════════════════════════════════════════════
-   DISTRIBUCIÓN HORIZONTAL COMPLETA
-══════════════════════════════════════════════ */
-.cfg-page { width: 100%; max-width: none; }
-
-/* Menú de accesos: botones repartidos en todo el ancho */
-.cfg-nav { width: 100%; }
-.cfg-nav__btn {
-  flex: 1 1 0;
-  justify-content: center;
-  min-width: max-content;
-}
-
-/* Secciones sueltas: ancho completo y alto según contenido */
-.cfg-group > .cfg-section { height: auto; width: 100%; }
-
-/* Temas: una sola fila que llena todo el ancho */
-.cfg-options--tema {
-  grid-template-columns: repeat(5, 1fr);
-}
-@media (max-width: 992px) {
-  .cfg-options--tema { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 576px) {
-  .cfg-options--tema { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* Opción activa con marca de verificación */
-.cfg-opt { position: relative; }
-.cfg-opt.activo::after {
-  content: "\2713";
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  width: 20px;
-  height: 20px;
+/* ── ACCESIBILIDAD: tarjeta "Movimiento y foco" ── */
+.cfg-a11y-card__body--top { align-items: stretch; }
+.cfg-a11y-mini {
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .7rem;
-  font-weight: 800;
-  color: #fff;
-  background: var(--azul-claro);
-  border-radius: 50%;
-}
-
-/* Tarjetas de perilla: contenido repartido a lo ancho */
-.cfg-knob-card__top { width: 100%; }
-.cfg-knob-card__hint { max-width: none; }
-
-/* Interruptores: llenan la fila por completo */
-.cfg-toggle-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-/* Acciones de cuenta: llenan la fila */
-.cfg-actions {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-/* Las secciones dentro de columnas de Bootstrap ocupan toda la columna */
-.row > [class*="col-"] > .cfg-section { height: 100%; }
-
-/* Pantallas anchas: el grupo de apariencia reparte mejor el espacio */
-@media (min-width: 1400px) {
-  .cfg-knob-card { padding: 1.1rem 1.6rem; }
-  .cfg-knob-card__top { justify-content: space-between; }
-}
-
-/* ══════════════════════════════════════════════
-   ESTADO DEL TEMA (sistema / tuyo)
-══════════════════════════════════════════════ */
-.cfg-tema-estado {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-}
-.cfg-estado-pill {
-  display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   gap: .4rem;
-  padding: .3rem .8rem;
-  font-size: .72rem;
-  color: var(--texto-muted);
-  background: var(--fondo-card2);
+}
+.cfg-a11y-mini .cfg-toggle-row {
+  padding: .5rem .65rem;
+  background: var(--fondo-card);
   border: 1px solid var(--azul-borde);
-  border-radius: 999px;
+  border-radius: 10px;
 }
-.cfg-estado-pill i { color: var(--azul-claro); }
-.cfg-estado-pill strong { color: var(--texto); font-weight: 700; }
-.cfg-estado-pill--tu {
-  border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent);
-  background: color-mix(in srgb, var(--azul-claro) 8%, transparent);
-}
-
-/* ══════════════════════════════════════════════
-   MODAL DE CONFIRMACIÓN DE TEMA
-══════════════════════════════════════════════ */
-.cfg-modal-content {
-  background: var(--fondo-card, #0a2240);
-  color: var(--texto);
-  border: 1px solid var(--azul-borde);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.cfg-modal-header,
-.cfg-modal-footer {
-  background: var(--fondo-card2, transparent);
-  border-color: var(--azul-borde);
-}
-.cfg-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: .5rem;
-  padding: .85rem 1rem;
-  border-top: 1px solid var(--azul-borde);
-}
-.cfg-modal-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .95rem;
-  font-weight: 700;
-  color: var(--texto);
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
-.cfg-modal-title i { color: var(--azul-claro); }
-.cfg-modal-body { background: var(--fondo-card, transparent); color: var(--texto); }
-
-.cfg-confirm-tema {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-.cfg-confirm-tema__preview {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  border: 1px solid var(--azul-borde);
-}
-.cfg-confirm-tema__lista {
-  margin: .5rem 0 0;
-  padding-left: 1.1rem;
-  font-size: .78rem;
-  color: var(--texto-muted);
-  line-height: 1.5;
-}
-.cfg-confirm-tema__lista strong { color: var(--texto); }
-
-@media (max-width: 576px) {
-  .cfg-confirm-tema { flex-direction: column; align-items: center; text-align: center; }
-  .cfg-modal-footer { flex-direction: column; }
-  .cfg-modal-footer .cys-btn { width: 100%; justify-content: center; }
-}
+.cfg-a11y-mini .cfg-toggle-row:last-of-type { border-bottom: 1px solid var(--azul-borde); }
+.cfg-a11y-mini .cfg-toggle-label { font-size: .78rem; }
+.cfg-a11y-mini .cfg-toggle-label span { font-size: .66rem; }  

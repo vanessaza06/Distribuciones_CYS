@@ -3,7 +3,47 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
-from app.config_sistema import TEMAS_VALIDOS, guardar_tema
+from usuarios.models import RegistroActividad
+from app.models import BackupRegistro, ConfiguracionEmpresa
+
+
+# -- Helpers --------------------------------------------------
+
+def _db_stats():
+    """Estadisticas basicas de la base de datos MySQL."""
+    stats = {'registros': 0, 'tablas': 0, 'tamaño': '-'}
+    try:
+        db_name = settings.DATABASES['default']['NAME']
+        with connection.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s",
+                [db_name]
+            )
+            stats['tablas'] = cur.fetchone()[0]
+
+            tables = connection.introspection.table_names()
+            total = 0
+            for t in tables:
+                try:
+                    cur.execute(f'SELECT COUNT(*) FROM `{t}`')
+                    total += cur.fetchone()[0]
+                except Exception:
+                    pass
+            stats['registros'] = total
+
+            cur.execute(
+                "SELECT SUM(data_length + index_length) FROM information_schema.tables "
+                "WHERE table_schema = %s",
+                [db_name]
+            )
+            size_bytes = cur.fetchone()[0] or 0
+            if size_bytes < 1024 * 1024:
+                stats['tamaño'] = f'{size_bytes / 1024:.1f} KB'
+            else:
+                stats['tamaño'] = f'{size_bytes / (1024 * 1024):.2f} MB'
+    except Exception:
+        pass
+    return stats
 
 
 def _es_admin(request):

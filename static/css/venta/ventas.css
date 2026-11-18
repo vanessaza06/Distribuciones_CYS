@@ -1822,3 +1822,153 @@ body,
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   border-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }
+/* ════════════════════════════════════════════════════════════════
+   VENTAS_EXPORTAR.CSS — Menú "Exportar" (Excel / PDF / Imprimir)
+   Mismo diseño que el menú Exportar de Marcas:
+   botón píldora + panel redondeado con opciones píldora.
+   ════════════════════════════════════════════════════════════════ */
+
+#seccionHistorial .cys-export-dropdown {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+/* ── Botón Exportar (igual a .cys-btn--export de Marcas) ── */
+#seccionHistorial .cys-export-dropdown .cys-export-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 46px !important;
+  box-sizing: border-box !important;
+  padding: 0 22px !important;
+  background: color-mix(in srgb, var(--azul-claro, #4da8da) 15%, transparent) !important;
+  border: 1px solid var(--azul-claro, #4da8da) !important;
+  border-radius: 999px !important;
+  color: var(--texto, #eef3fb) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-btn:hover,
+#seccionHistorial .cys-export-dropdown .cys-export-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro, #4da8da) 22%, transparent) !important;
+  color: var(--texto, #eef3fb) !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-btn > i:first-child {
+  color: var(--texto, #eef3fb) !important;
+  font-size: 16px !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-chevron {
+  color: var(--texto, #eef3fb) !important;
+  font-size: 11px !important;
+  transition: transform 0.15s ease !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-btn[aria-expanded="true"] .cys-export-chevron {
+  transform: rotate(180deg) !important;
+}
+
+/* ── Panel desplegable (igual a .cys-export__menu de Marcas) ── */
+#seccionHistorial .cys-export-dropdown .cys-export-menu {
+  display: none !important;
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  left: auto !important;
+  transform: none !important;
+  min-width: 100% !important;
+  width: max-content !important;
+  margin: 0 !important;
+  padding: 6px !important;
+  background-color: var(--fondo-card2, #12243c) !important;
+  border: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.2)) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+  z-index: 2000 !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-menu.show {
+  display: block !important;
+}
+
+/* ── Opciones (<a> y <button>), píldora como en Marcas ── */
+#seccionHistorial .cys-export-dropdown .cys-export-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 11px 16px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 999px !important;
+  color: var(--texto, #eef3fb) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-item:hover,
+#seccionHistorial .cys-export-dropdown .cys-export-item:focus-visible {
+  background: color-mix(in srgb, var(--azul-claro, #4da8da) 15%, transparent) !important;
+  color: var(--texto, #eef3fb) !important;
+  outline: none !important;
+}
+
+/* ── Iconos ── */
+#seccionHistorial .cys-export-dropdown .cys-export-item i {
+  font-size: 17px !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+#seccionHistorial .cys-export-dropdown .cys-export-item--excel i { color: var(--verde, #22c55e) !important; }
+#seccionHistorial .cys-export-dropdown .cys-export-item--pdf   i { color: var(--rojo, #ef4444) !important; }
+#seccionHistorial .cys-export-dropdown .cys-export-item--print i {
+  color: color-mix(in srgb, var(--azul-claro, #4da8da) 85%, var(--texto, #eef3fb)) !important;
+}
+
+/* ── Que el menú no se corte por contenedores padre ── */
+#seccionHistorial,
+#seccionHistorial .cys-filter-bar {
+  overflow: visible !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   IMPRESIÓN — solo el historial de ventas
+   ════════════════════════════════════════════════════════════════ */
+@media print {
+  body.imprimiendo-historial { background: #fff !important; }
+  body.imprimiendo-historial * { visibility: hidden !important; }
+  body.imprimiendo-historial #seccionHistorial,
+  body.imprimiendo-historial #seccionHistorial * {
+    visibility: visible !important;
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+  body.imprimiendo-historial #seccionHistorial {
+    position: absolute; left: 0; top: 0; width: 100%;
+    background: #fff !important; border: none !important;
+  }
+  body.imprimiendo-historial .cys-filter-bar,
+  body.imprimiendo-historial .cys-export-dropdown,
+  body.imprimiendo-historial #tablaHistorial th:last-child,
+  body.imprimiendo-historial #tablaHistorial td:last-child {
+    display: none !important;
+  }
+  body.imprimiendo-historial #tablaHistorial { width: 100%; border-collapse: collapse; }
+  body.imprimiendo-historial #tablaHistorial th,
+  body.imprimiendo-historial #tablaHistorial td {
+    border: 1px solid #999 !important;
+    background: #fff !important;
+    padding: 6px 8px;
+  }
+}

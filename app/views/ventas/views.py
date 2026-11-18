@@ -1,15 +1,19 @@
+import io
 import json
 import math
+import os
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
+from django.utils.html import escape
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
@@ -1145,271 +1149,652 @@ def comprobante_devolucion(request, pk):
     return render(request, 'ventas/comprobante_devolucion.html', {'devolucion': devolucion})
 
 
-# ════════════════════════════════════════
-# EXPORTACIÓN EXCEL Y PDF DE VENTAS
-# ════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════
+# EXPORTACIÓN EXCEL Y PDF — VENTAS y VENTAS DEL DÍA
+# (mismo diseño que Marcas)
+#
+# Funciones públicas (úsalas en urls.py):
+#   exportar_ventas_excel      /  exportar_ventas_pdf
+#   exportar_ventas_dia_excel  /  exportar_ventas_dia_pdf
+#
+# Las de "ventas" también aceptan ?origen=dia, por si tu botón de
+# Ventas del Día sigue apuntando a la URL de exportar_ventas_*.
+# ════════════════════════════════════════════════════════════════
 
-def _filtrar_ventas_export(request):
-    """Aplica rango de fechas y búsqueda (q) a las ventas a exportar."""
-    fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
-    fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+# ---------------------------------------------------------------
+# Identidad visual (idéntica a Marcas)
+# ---------------------------------------------------------------
+XL_NAVY = "061B3A"       # títulos, encabezado de tabla y texto
+XL_GOLD = "E8A317"       # divisor y barrita dorada
+XL_ZEBRA = "EDF0F5"      # fila alterna
+XL_BORDE = "AEB9CC"      # líneas verticales de la tabla
+XL_ROJO = "9B1C1C"       # saldo pendiente
+XL_FUENTE = "Calibri"
+
+LOGO_ARCHIVO = "logo.20.png"   # nombre del logo dentro de static
+_LOGO_CACHE = {}
+
+
+def _ruta_logo():
+    """Busca el logo en las carpetas static. Devuelve la ruta o None."""
+    if "ruta" in _LOGO_CACHE:
+        return _LOGO_CACHE["ruta"]
+
+    from django.contrib.staticfiles import finders
+
+    ruta = None
+    for candidato in (LOGO_ARCHIVO, f"img/{LOGO_ARCHIVO}", f"images/{LOGO_ARCHIVO}",
+                      f"imagenes/{LOGO_ARCHIVO}", f"img/logo/{LOGO_ARCHIVO}"):
+        try:
+            ruta = finders.find(candidato)
+        except Exception:
+            ruta = None
+        if ruta:
+            break
+
+    if not ruta:
+        base = getattr(settings, "BASE_DIR", ".")
+        carpetas = [str(d) for d in getattr(settings, "STATICFILES_DIRS", [])]
+        carpetas += [os.path.join(str(base), "static"), os.path.join(str(base), "app", "static")]
+        for carpeta in carpetas:
+            for raiz, _dirs, archivos in os.walk(carpeta):
+                if LOGO_ARCHIVO in archivos:
+                    ruta = os.path.join(raiz, LOGO_ARCHIVO)
+                    break
+            if ruta:
+                break
+
+    _LOGO_CACHE["ruta"] = ruta
+    return ruta
+
+
+def _logo_png(px):
+    """Logo redondo, redimensionado, con esquinas transparentes. Devuelve bytes PNG o None."""
+    clave = ("png", px)
+    if clave in _LOGO_CACHE:
+        return _LOGO_CACHE[clave]
+
+    datos = None
+    ruta = _ruta_logo()
+    if ruta:
+        try:
+            from PIL import Image, ImageDraw
+            img = Image.open(ruta).convert("RGBA")
+            mascara = Image.new("L", img.size, 0)
+            ImageDraw.Draw(mascara).ellipse((0, 0, img.size[0] - 1, img.size[1] - 1), fill=255)
+            img.putalpha(mascara)
+            img = img.resize((px, px), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            datos = buf.getvalue()
+        except Exception:
+            datos = None
+
+    _LOGO_CACHE[clave] = datos
+    return datos
+
+
+def _barra_dorada(ancho, alto):
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    buf = io.BytesIO()
+    Image.new("RGB", (ancho, alto), "#" + XL_GOLD).save(buf, "PNG")
+    return buf.getvalue()
+
+
+def _poner_imagen(ws, datos_png, col, fila, ancho, alto, off_x=0, off_y=0):
+    """Pega una imagen PNG (bytes) en la celda (col, fila) 0-indexada, con desplazamiento en px."""
+    from openpyxl.drawing.image import Image as XLImage
+    from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
+    from openpyxl.drawing.xdr import XDRPositiveSize2D
+    from openpyxl.utils.units import pixels_to_EMU
+
+    img = XLImage(io.BytesIO(datos_png))
+    img.width, img.height = ancho, alto
+    marcador = AnchorMarker(col=col, row=fila,
+                            colOff=pixels_to_EMU(off_x), rowOff=pixels_to_EMU(off_y))
+    img.anchor = OneCellAnchor(
+        _from=marcador,
+        ext=XDRPositiveSize2D(pixels_to_EMU(ancho), pixels_to_EMU(alto)),
+    )
+    ws.add_image(img)
+
+
+def _fmt_pesos(valor):
+    """$1.234.567 (formato colombiano)."""
+    try:
+        return f"${valor:,.0f}".replace(',', '.')
+    except Exception:
+        return "$0"
+
+
+def _sello():
+    return timezone.localtime().strftime('%Y%m%d_%H%M')
+
+
+# ---------------------------------------------------------------
+# Filtros compartidos (lo exportado = lo que se ve en pantalla)
+# ---------------------------------------------------------------
+def _modo_export(request):
+    """'dia' si viene ?origen=dia, de lo contrario 'ventas'."""
+    return 'dia' if request.GET.get('origen', '').strip().lower() == 'dia' else 'ventas'
+
+
+def _parse_fecha(txt):
+    try:
+        return datetime.strptime(txt, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _inicio_dia(d):
+    return timezone.make_aware(datetime.combine(d, datetime.min.time()))
+
+
+def _fin_dia(d):
+    return timezone.make_aware(datetime.combine(d, datetime.max.time()))
+
+
+def _filtrar_ventas_export(request, modo='ventas'):
+    """
+    modo 'ventas': todas las ventas, con rango de fechas (opcional) y búsqueda q.
+    modo 'dia'   : misma lógica que la pantalla Ventas del Día
+                   (sin fechas -> turno de caja abierta + ventas de hoy;
+                    con fechas  -> ese rango).
+    Usa rangos con make_aware (compatible con MySQL sin tablas de zonas horarias).
+    """
+    hoy = timezone.localdate()
+    fi_str = request.GET.get('fecha_inicio', '').strip()
+    ff_str = request.GET.get('fecha_fin', '').strip()
     q = request.GET.get('q', '').strip()
 
-    ventas_qs = Venta.objects.all().order_by('-fecha')
+    fi = _parse_fecha(fi_str)
+    ff = _parse_fecha(ff_str)
 
-    if fecha_inicio_str and fecha_fin_str:
-        try:
-            f_ini = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
-            f_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
-            if f_ini > f_fin:
-                f_fin = f_ini
-            ventas_qs = ventas_qs.filter(fecha__date__range=[f_ini, f_fin])
-        except ValueError:
-            pass
+    ventas_qs = Venta.objects.all()
+
+    if modo == 'dia':
+        if fi_str or ff_str:
+            fi = fi or hoy
+            ff = ff or hoy
+            if fi > ff:
+                ff = fi
+            ventas_qs = ventas_qs.filter(fecha__range=(_inicio_dia(fi), _fin_dia(ff)))
+        else:
+            rango = (_inicio_dia(hoy), _fin_dia(hoy))
+            caja_abierta = obtener_caja_abierta(hoy)
+            if caja_abierta:
+                ventas_qs = ventas_qs.filter(
+                    Q(caja=caja_abierta) | Q(fecha__range=rango)
+                ).distinct()
+            else:
+                ventas_qs = ventas_qs.filter(fecha__range=rango)
+    else:
+        if fi and ff and fi > ff:
+            ff = fi
+        if fi:
+            ventas_qs = ventas_qs.filter(fecha__gte=_inicio_dia(fi))
+        if ff:
+            ventas_qs = ventas_qs.filter(fecha__lte=_fin_dia(ff))
 
     if q:
-        ventas_qs = ventas_qs.filter(
-            Q(pk__icontains=q) |
+        filtro_q = (
             Q(cliente_nombre__icontains=q) |
             Q(vendedor__first_name__icontains=q) |
             Q(vendedor__username__icontains=q) |
             Q(metodo_pago__icontains=q) |
             Q(detalles__producto__nombre__icontains=q)
-        ).distinct()
+        )
+        if q.isdigit():
+            filtro_q |= Q(pk=int(q))
+        ventas_qs = ventas_qs.filter(filtro_q).distinct()
 
-    return ventas_qs
+    return ventas_qs.order_by('-fecha')
+
+
+def _texto_filtros_ventas(request, modo='ventas'):
+    partes = []
+    q = request.GET.get('q', '').strip()
+    fi = request.GET.get('fecha_inicio', '').strip()
+    ff = request.GET.get('fecha_fin', '').strip()
+
+    if q:
+        partes.append(f"Búsqueda: {q}")
+    if fi:
+        partes.append(f"Desde: {fi}")
+    if ff:
+        partes.append(f"Hasta: {ff}")
+
+    if not partes:
+        if modo == 'dia':
+            return f"Turno actual / Hoy {timezone.localdate():%d/%m/%Y}"
+        return "Sin filtros"
+    return " | ".join(partes)
+
+
+# Índices de cada fila de datos
+# 0 #venta | 1 fecha | 2 cliente | 3 vendedor | 4 producto | 5 cant
+# 6 precio | 7 subtotal | 8 método | 9 total venta | 10 saldo | 11 índice de venta
+def _filas_ventas(ventas_qs):
+    """
+    Devuelve (filas, total_general, cantidad_ventas, total_pendiente).
+    Cada venta suma UNA sola vez a los totales.
+    """
+    filas = []
+    total_general = Decimal('0')
+    total_pendiente = Decimal('0')
+    n_ventas = 0
+
+    consulta = ventas_qs.select_related('vendedor').prefetch_related(
+        'detalles__producto', 'detalles__presentacion'
+    )
+
+    for idx, v in enumerate(consulta):
+        n_ventas += 1
+        total_general += (v.total_venta or Decimal('0'))
+        total_pendiente += (v.saldo_pendiente or Decimal('0'))
+
+        cliente = v.cliente_nombre or "Consumidor Final"
+        if v.vendedor:
+            vendedor = (getattr(v.vendedor, 'nombre', None)
+                        or v.vendedor.get_full_name()
+                        or v.vendedor.username)
+        else:
+            vendedor = "Sistema"
+        fecha_str = timezone.localtime(v.fecha).strftime("%d/%m/%Y %H:%M") if v.fecha else "—"
+        metodo = (v.metodo_pago or 'Efectivo').capitalize()
+        total_v = float(v.total_venta or 0)
+        saldo_v = float(v.saldo_pendiente or 0)
+        detalles = list(v.detalles.all())
+
+        if detalles:
+            for det in detalles:
+                precio = float(det.precio_unitario or 0)
+                subt = float(det.subtotal_val or ((det.cantidad or 0) * (det.precio_unitario or 0)))
+                if det.producto:
+                    nombre = det.producto.nombre
+                    if det.presentacion:
+                        nombre = f"{nombre} ({det.presentacion.nombre})"
+                elif det.presentacion:
+                    nombre = det.presentacion.nombre
+                else:
+                    nombre = "Ítem"
+                filas.append([
+                    v.pk, fecha_str, cliente, vendedor, nombre,
+                    det.cantidad or 0, precio, subt, metodo, total_v, saldo_v, idx,
+                ])
+        else:
+            filas.append([v.pk, fecha_str, cliente, vendedor, "—", 0, 0, 0,
+                          metodo, total_v, saldo_v, idx])
+
+    return filas, total_general, n_ventas, total_pendiente
+
+
+_TITULOS = {
+    'ventas': ("Reporte de Ventas", "Reporte_Ventas", "Reporte de ventas — CYS Ltda"),
+    'dia':    ("Reporte de Ventas del Día", "Reporte_Ventas_Dia", "Reporte de ventas del día — CYS Ltda"),
+}
+
+
+# ---------------------------------------------------------------
+# EXCEL
+# ---------------------------------------------------------------
+def _excel_ventas(request, modo):
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
+    def fill(hex_):
+        return PatternFill("solid", start_color=hex_, end_color=hex_)
+
+    titulo, prefijo, _ = _TITULOS[modo]
+
+    ventas_qs = _filtrar_ventas_export(request, modo)
+    filas, total_general, n_ventas, total_pendiente = _filas_ventas(ventas_qs)
+    total_cobrado = max(Decimal('0'), total_general - total_pendiente)
+
+    encabezados = ["# Venta", "Fecha", "Cliente", "Vendedor", "Producto / Ítem",
+                   "Cant.", "Precio Uni.", "Subtotal", "Método de Pago",
+                   "Total Venta", "Saldo Pendiente"]
+    n = len(encabezados)
+    ultima = get_column_letter(n)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Ventas del Día" if modo == 'dia' else "Ventas"
+    ws.sheet_properties.tabColor = XL_NAVY
+    ws.sheet_view.showGridLines = False
+
+    anchos = [12, 19, 28, 18, 40, 9, 17, 17, 19, 18, 18]
+    for idx, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = ancho
+
+    # ---------- Banner (filas 1-3, fondo blanco) ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
+        ws.row_dimensions[r].height = h
+
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    # Divisor dorado vertical
+    lado_oro = Side(style="medium", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
+
+    # Título y lema
+    ws.merge_cells(f"C1:{ultima}2")
+    ws["C1"] = titulo
+    ws["C1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
+
+    # Barrita dorada corta bajo el lema
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
+
+    # ---------- Encabezado de tabla (fila 6) ----------
+    fila_enc = 6
+    ws.row_dimensions[fila_enc].height = 40
+    blanco = Side(style="thin", color="FFFFFF")
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=15, bold=True, color="FFFFFF")
+        c.fill = fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = Border(left=blanco if i > 1 else None)
+
+    # ---------- Datos ----------
+    vertical = Side(style="thin", color=XL_BORDE)
+    for k, fila in enumerate(filas):
+        r = fila_enc + 1 + k
+        ws.row_dimensions[r].height = 28
+        idx_venta = fila[11]
+        bg = "FFFFFF" if idx_venta % 2 == 0 else XL_ZEBRA   # cebra por venta
+        ultima_fila = (k == len(filas) - 1)
+
+        for i, valor in enumerate(fila[:11], start=1):
+            c = ws.cell(r, i, valor)
+            c.fill = fill(bg)
+            c.border = Border(
+                left=vertical,
+                right=vertical if i == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            color = "1F2937"
+            if i == 11 and (valor or 0) > 0:
+                color = XL_ROJO
+            c.font = Font(name=XL_FUENTE, size=13, color=color, bold=(i in (1, 3, 10, 11)))
+
+            if i in (3, 5):            # cliente, producto -> izquierda
+                c.alignment = Alignment(horizontal="left", vertical="center", indent=1, wrap_text=(i == 5))
+            elif i in (7, 8, 10, 11):  # dinero -> derecha
+                c.alignment = Alignment(horizontal="right", vertical="center", indent=1)
+                c.number_format = '$#,##0;-$#,##0;"—"' if i == 11 else '$#,##0'
+            else:
+                c.alignment = Alignment(horizontal="center", vertical="center")
+
+    # ---------- Pie ----------
+    r = fila_enc + len(filas) + 1
+    ws.row_dimensions[r].height = 8
+    textos_pie = [
+        (f"Total: {n_ventas} ventas   ·   Total vendido: {_fmt_pesos(total_general)}"
+         f"   ·   Cobrado: {_fmt_pesos(total_cobrado)}   ·   Pendiente: {_fmt_pesos(total_pendiente)}"),
+        f"{_texto_filtros_ventas(request, modo)}   ·   Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
+    ]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = r + j
+        ws.row_dimensions[rr].height = 22
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+    # ---------- Extras ----------
+    if filas:
+        ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = f"{fila_enc}:{fila_enc}"
+    ws.print_options.horizontalCentered = True
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+
+    resp = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = f'attachment; filename="{prefijo}_{_sello()}.xlsx"'
+    return resp
 
 
 @session_required
 def exportar_ventas_excel(request):
-    import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.utils import get_column_letter
-    from django.http import HttpResponse
+    return _excel_ventas(request, _modo_export(request))
 
-    ventas_qs = _filtrar_ventas_export(request)
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Reporte de Ventas"
+@session_required
+def exportar_ventas_dia_excel(request):
+    return _excel_ventas(request, 'dia')
 
-    header_fill = PatternFill(start_color="0F3B6C", end_color="0F3B6C", fill_type="solid")
-    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    title_font = Font(name="Calibri", size=16, bold=True, color="0F3B6C")
-    sub_font = Font(name="Calibri", size=10, italic=True, color="555555")
-    border_thin = Border(
-        left=Side(style='thin', color='DDDDDD'),
-        right=Side(style='thin', color='DDDDDD'),
-        top=Side(style='thin', color='DDDDDD'),
-        bottom=Side(style='thin', color='DDDDDD')
+
+# ---------------------------------------------------------------
+# PDF
+# ---------------------------------------------------------------
+def _crear_banner_pdf(ancho, logo_bytes, titulo):
+    """Banner: logo circular | divisor dorado | título | lema | barrita dorada."""
+    from reportlab.lib import colors
+    from reportlab.lib.utils import ImageReader
+    from reportlab.platypus import Flowable
+
+    class _BannerPDF(Flowable):
+        def __init__(self):
+            super().__init__()
+            self.width = ancho
+            self.height = 96
+
+        def wrap(self, aw, ah):
+            return self.width, self.height
+
+        def draw(self):
+            c = self.canv
+            navy = colors.HexColor("#" + XL_NAVY)
+            oro = colors.HexColor("#" + XL_GOLD)
+
+            diam = 84
+            x_logo, y_logo = 14, (self.height - diam) / 2
+            if logo_bytes:
+                c.drawImage(ImageReader(io.BytesIO(logo_bytes)), x_logo, y_logo,
+                            width=diam, height=diam, mask="auto")
+            else:
+                c.setFillColor(navy)
+                c.circle(x_logo + diam / 2, y_logo + diam / 2, diam / 2, stroke=0, fill=1)
+                c.setFillColor(colors.white)
+                c.setFont("Helvetica-Bold", 20)
+                c.drawCentredString(x_logo + diam / 2, y_logo + diam / 2 - 6, "CYS")
+
+            x_div = x_logo + diam + 26
+            c.setStrokeColor(oro)
+            c.setLineWidth(2.5)
+            c.line(x_div, 8, x_div, self.height - 8)
+
+            x_txt = x_div + 26
+            c.setFillColor(navy)
+            c.setFont("Helvetica-Bold", 34)
+            c.drawString(x_txt, self.height - 46, titulo)
+
+            c.setFont("Helvetica-Oblique", 15)
+            c.drawString(x_txt, self.height - 70, "Calidad que llega más lejos")
+
+            c.setFillColor(oro)
+            c.roundRect(x_txt, 8, 72, 4.5, 2, stroke=0, fill=1)
+
+    return _BannerPDF()
+
+
+def _pdf_ventas(request, modo):
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    titulo, prefijo, titulo_doc = _TITULOS[modo]
+
+    ventas_qs = _filtrar_ventas_export(request, modo)
+    filas, total_general, n_ventas, total_pendiente = _filas_ventas(ventas_qs)
+    total_cobrado = max(Decimal('0'), total_general - total_pendiente)
+
+    encabezados = ["#", "Fecha", "Cliente", "Producto / Ítem", "Cant.",
+                   "Precio Uni.", "Total Venta", "Método Pago", "Pendiente"]
+
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_texto = colors.HexColor("#1F2937")
+    c_rojo = colors.HexColor("#" + XL_ROJO)
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
+        title=titulo_doc,
     )
 
-    ws.merge_cells("A1:J1")
-    ws["A1"] = "CYS Ltda — Reporte Consolidado de Ventas"
-    ws["A1"].font = title_font
-    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    estilos = getSampleStyleSheet()
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=10, leading=12.5, textColor=c_texto)
+    st_bold = ParagraphStyle("bold", parent=st_base, fontName="Helvetica-Bold",
+                             textColor=c_navy, leftIndent=8)
+    st_izq = ParagraphStyle("izq", parent=st_base, leftIndent=8)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_centro_b = ParagraphStyle("centro_b", parent=st_centro, fontName="Helvetica-Bold",
+                                 textColor=c_navy)
+    st_der = ParagraphStyle("der", parent=st_base, alignment=TA_RIGHT, rightIndent=8)
+    st_der_b = ParagraphStyle("der_b", parent=st_der, fontName="Helvetica-Bold",
+                              textColor=c_navy)
+    st_der_rojo = ParagraphStyle("der_rojo", parent=st_der, fontName="Helvetica-Bold",
+                                 textColor=c_rojo)
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=11.5,
+                             textColor=colors.white, alignment=TA_CENTER, leading=14)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=10.5)
 
-    gen_date = timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
-    ws.merge_cells("A2:J2")
-    ws["A2"] = f"Fecha de generación: {gen_date} | Transacciones: {ventas_qs.count()}"
-    ws["A2"].font = sub_font
+    elementos = [
+        _crear_banner_pdf(ancho_util, _logo_png(300), titulo),
+        Spacer(1, 14),
+    ]
 
-    ws.append([])
+    data = [[Paragraph(h, st_head) for h in encabezados]]
+    zebra_filas = []   # filas de la tabla con fondo alterno (cebra por venta)
 
-    headers = ["# Venta", "Fecha", "Cliente", "Vendedor", "Producto / Ítem", "Cantidad", "Precio Uni.", "Subtotal", "Método de Pago", "Total Venta"]
-    ws.append(headers)
-    header_row_idx = 4
+    for k, f in enumerate(filas, start=1):
+        (v_pk, fecha_str, cliente, _vendedor, producto, cantidad,
+         precio, _subt, metodo, total_v, saldo_v, idx_venta) = f
+        data.append([
+            Paragraph(str(v_pk), st_centro_b),
+            Paragraph(fecha_str, st_centro),
+            Paragraph(escape(cliente), st_bold),
+            Paragraph(escape(producto), st_izq),
+            Paragraph(str(cantidad), st_centro),
+            Paragraph(_fmt_pesos(precio) if precio else "—", st_der),
+            Paragraph(_fmt_pesos(total_v), st_der_b),
+            Paragraph(escape(metodo), st_centro),
+            Paragraph(_fmt_pesos(saldo_v) if saldo_v > 0 else "—",
+                      st_der_rojo if saldo_v > 0 else st_der),
+        ])
+        if idx_venta % 2 == 1:
+            zebra_filas.append(k)
 
-    for col_idx, h in enumerate(headers, 1):
-        cell = ws.cell(row=header_row_idx, column=col_idx)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal="center", vertical="center")
+    if not filas:
+        data.append([Paragraph("No hay ventas para mostrar.", st_centro)]
+                    + [""] * (len(encabezados) - 1))
 
-    total_acreditado = Decimal('0')
+    anchos = [38, 88, 125, 185, 40, 78, 88, 80, 78]
+    escala = ancho_util / sum(anchos)
+    tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
 
-    for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
-        detalles = list(v.detalles.all())
-        cliente_nombre = v.cliente_nombre or "Consumidor Final"
-        vendedor_nombre = str(v.vendedor.username if v.vendedor else "Sistema")
-        fecha_str = timezone.localtime(v.fecha).strftime("%d/%m/%Y %H:%M")
+    estilo = [
+        # Encabezado azul marino
+        ("BACKGROUND", (0, 0), (-1, 0), c_navy),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        # Filas
+        ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+        ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        # Contorno azul marino con esquinas redondeadas
+        ("BOX", (0, 0), (-1, -1), 1, c_navy),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+    ]
+    for k in zebra_filas:
+        estilo.append(("BACKGROUND", (0, k), (-1, k), c_zebra))
+    if not filas:
+        estilo.append(("SPAN", (0, 1), (-1, 1)))
+    tabla.setStyle(TableStyle(estilo))
+    elementos.append(tabla)
 
-        if detalles:
-            for det in detalles:
-                ws.append([
-                    v.pk,
-                    fecha_str,
-                    cliente_nombre,
-                    vendedor_nombre,
-                    det.producto.nombre if det.producto else "Ítem",
-                    det.cantidad,
-                    float(det.precio_unitario),
-                    float(det.subtotal_val or (det.cantidad * det.precio_unitario)),
-                    (v.metodo_pago or 'Efectivo').capitalize(),
-                    float(v.total_venta)
-                ])
-        else:
-            ws.append([
-                v.pk,
-                fecha_str,
-                cliente_nombre,
-                vendedor_nombre,
-                "—",
-                0,
-                0,
-                0,
-                (v.metodo_pago or 'Efectivo').capitalize(),
-                float(v.total_venta)
-            ])
-        total_acreditado += v.total_venta
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(
+            f"Total: {n_ventas} ventas &nbsp;·&nbsp; Total vendido: {_fmt_pesos(total_general)}"
+            f" &nbsp;·&nbsp; Cobrado: {_fmt_pesos(total_cobrado)}"
+            f" &nbsp;·&nbsp; Pendiente: {_fmt_pesos(total_pendiente)}",
+            st_tot),
+        Spacer(1, 2),
+        Paragraph(
+            escape(_texto_filtros_ventas(request, modo)) + " &nbsp;·&nbsp; Generado el "
+            + timezone.localtime().strftime("%d/%m/%Y %H:%M"),
+            st_meta),
+    ]
 
-    for row in ws.iter_rows(min_row=5, max_row=ws.max_row, min_col=1, max_col=10):
-        for cell in row:
-            cell.border = border_thin
-            if cell.column in [7, 8, 10]:
-                cell.number_format = '$#,##0'
-            elif cell.column in [1, 6]:
-                cell.alignment = Alignment(horizontal="center")
+    def pie(canvas, documento):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
+        canvas.restoreState()
 
-    for col in ws.columns:
-        max_len = max(len(str(cell.value or '')) for cell in col[3:]) if len(col) > 3 else 12
-        col_letter = get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+    doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
 
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="Reporte_Ventas_{timezone.now().strftime("%Y%m%d_%H%M")}.xlsx"'
-    wb.save(response)
-    return response
+    resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{prefijo}_{_sello()}.pdf"'
+    return resp
 
 
 @session_required
 def exportar_ventas_pdf(request):
-    import io
-    from django.http import HttpResponse
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import letter, landscape
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    return _pdf_ventas(request, _modo_export(request))
 
-    ventas_qs = _filtrar_ventas_export(request)
 
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=landscape(letter),
-        rightMargin=30,
-        leftMargin=30,
-        topMargin=30,
-        bottomMargin=30
-    )
-
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'DocTitle', parent=styles['Heading1'],
-        fontName='Helvetica-Bold', fontSize=18,
-        textColor=colors.HexColor('#0F3B6C'), spaceAfter=4
-    )
-    sub_style = ParagraphStyle(
-        'DocSub', parent=styles['Normal'],
-        fontName='Helvetica', fontSize=10,
-        textColor=colors.HexColor('#555555'), spaceAfter=15
-    )
-    cell_style = ParagraphStyle(
-        'TableCell', parent=styles['Normal'],
-        fontName='Helvetica', fontSize=8.5,
-        textColor=colors.HexColor('#222222')
-    )
-    cell_bold = ParagraphStyle(
-        'TableCellBold', parent=styles['Normal'],
-        fontName='Helvetica-Bold', fontSize=8.5,
-        textColor=colors.HexColor('#0F3B6C')
-    )
-    cell_header = ParagraphStyle(
-        'TableHeader', parent=styles['Normal'],
-        fontName='Helvetica-Bold', fontSize=9,
-        textColor=colors.white, alignment=1
-    )
-
-    elements = []
-    elements.append(Paragraph("CYS Ltda — Reporte Consolidado de Ventas", title_style))
-    gen_date = timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
-    elements.append(Paragraph(f"Fecha de generación: {gen_date} | Total transacciones: {ventas_qs.count()}", sub_style))
-
-    data = [[
-        Paragraph("#", cell_header),
-        Paragraph("Fecha", cell_header),
-        Paragraph("Cliente", cell_header),
-        Paragraph("Producto / Ítem", cell_header),
-        Paragraph("Cant.", cell_header),
-        Paragraph("Precio Uni.", cell_header),
-        Paragraph("Total Venta", cell_header),
-        Paragraph("Método Pago", cell_header),
-    ]]
-
-    total_general = Decimal('0')
-
-    for v in ventas_qs.select_related('vendedor').prefetch_related('detalles__producto'):
-        detalles = list(v.detalles.all())
-        cliente_nombre = v.cliente_nombre or "Consumidor Final"
-        fecha_str = timezone.localtime(v.fecha).strftime("%d/%m/%Y %H:%M")
-        total_general += v.total_venta
-
-        if detalles:
-            for det in detalles:
-                data.append([
-                    Paragraph(str(v.pk), cell_style),
-                    Paragraph(fecha_str, cell_style),
-                    Paragraph(cliente_nombre, cell_style),
-                    Paragraph(det.producto.nombre if det.producto else "—", cell_style),
-                    Paragraph(str(det.cantidad), cell_style),
-                    Paragraph(f"${det.precio_unitario:,.0f}".replace(',', '.'), cell_style),
-                    Paragraph(f"${v.total_venta:,.0f}".replace(',', '.'), cell_bold),
-                    Paragraph((v.metodo_pago or 'Efectivo').capitalize(), cell_style),
-                ])
-        else:
-            data.append([
-                Paragraph(str(v.pk), cell_style),
-                Paragraph(fecha_str, cell_style),
-                Paragraph(cliente_nombre, cell_style),
-                Paragraph("—", cell_style),
-                Paragraph("0", cell_style),
-                Paragraph("—", cell_style),
-                Paragraph(f"${v.total_venta:,.0f}".replace(',', '.'), cell_bold),
-                Paragraph((v.metodo_pago or 'Efectivo').capitalize(), cell_style),
-            ])
-
-    data.append([
-        Paragraph("<b>TOTAL</b>", cell_bold),
-        Paragraph("", cell_style),
-        Paragraph("", cell_style),
-        Paragraph("", cell_style),
-        Paragraph("", cell_style),
-        Paragraph("", cell_style),
-        Paragraph(f"<b>${total_general:,.0f}</b>".replace(',', '.'), cell_bold),
-        Paragraph("", cell_style),
-    ])
-
-    col_widths = [35, 95, 130, 200, 45, 75, 85, 75]
-    table = Table(data, colWidths=col_widths, repeatRows=1)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0F3B6C')),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
-        ('TOPPADDING', (0, 0), (-1, 0), 6),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
-        ('BACKGROUND', (0, 1), (-1, -2), colors.HexColor('#FFFFFF')),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.HexColor('#FFFFFF'), colors.HexColor('#F8FAFC')]),
-        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#E2F1FF')),
-    ]))
-
-    elements.append(table)
-    doc.build(elements)
-
-    pdf = buffer.getvalue()
-    buffer.close()
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Reporte_Ventas_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
-    response.write(pdf)
-    return response
+@session_required
+def exportar_ventas_dia_pdf(request):
+    return _pdf_ventas(request, 'dia')
