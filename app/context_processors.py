@@ -1,7 +1,14 @@
 from django.db.models import Sum
 from app.models import Lote, Categoria
+from app.config_sistema import leer_config
 
 
+def config_sistema(request):
+    """Expone `config.tema_predeterminado` a base.html, sin base de datos."""
+    try:
+        return {'config': leer_config()}
+    except Exception:
+        return {'config': {'tema_predeterminado': 'oscuro'}}
 
 
 def aside_stats(request):
