@@ -36,6 +36,61 @@
   <div class="row g-3">
     <div class="col-12">
 
+      <!-- MANUALES PDF -->
+      <div class="ayd-card p-4 mb-3">
+        <div class="ayd-section-title mb-3">
+          <i class="bi bi-file-earmark-pdf-fill me-2"></i>Manuales del sistema
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="ayd-guia-card h-100 d-flex flex-column justify-content-between">
+              <div class="d-flex gap-3">
+                <div class="ayd-guia-icono">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+                <div>
+                  <div class="ayd-guia-titulo">Manual de Usuario</div>
+                  <div class="ayd-guia-contenido mb-2">Guía de uso del sistema para el día a día.</div>
+                </div>
+              </div>
+              <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-2">
+                <a href="{% url 'ver_manual' 'usuario' %}" target="_blank" class="btn ayd-btn-primary">
+                  <i class="bi bi-eye-fill me-1"></i> Ver PDF
+                </a>
+                <a href="{% url 'ver_manual' 'usuario' %}?descargar=1" class="btn ayd-btn-chat-duda">
+                  <i class="bi bi-download me-1"></i> Descargar
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {% if user.is_superuser or user.rol == "admin" %}
+          <div class="col-md-6">
+            <div class="ayd-guia-card h-100 d-flex flex-column justify-content-between">
+              <div class="d-flex gap-3">
+                <div class="ayd-guia-icono">
+                  <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                  <div class="ayd-guia-titulo">Manual del Administrador</div>
+                  <div class="ayd-guia-contenido mb-2">Módulos, reglas y configuración del sistema.</div>
+                </div>
+              </div>
+              <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-2">
+                <a href="{% url 'ver_manual' 'administrador' %}" target="_blank" class="btn ayd-btn-primary">
+                  <i class="bi bi-eye-fill me-1"></i> Ver PDF
+                </a>
+                <a href="{% url 'ver_manual' 'administrador' %}?descargar=1" class="btn ayd-btn-chat-duda">
+                  <i class="bi bi-download me-1"></i> Descargar
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
       <!-- GUÍAS RÁPIDAS -->
       <div class="ayd-card p-4 mb-3">
         <div class="ayd-section-title mb-3">

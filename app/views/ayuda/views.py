@@ -1,6 +1,42 @@
 from django import forms
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from pathlib import Path
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, Http404
+
+MANUALES = {
+    "usuario": "Manual_de_Usuario_CYS.pdf",
+    "administrador": "Manual_Administrador_CYS.pdf",
+}
+
+
+def _es_administrador(user):
+    return user.is_superuser or user.get_rol_display() == "Administrador"
+
+
+@login_required
+def ver_manual(request, tipo):
+    nombre = MANUALES.get(tipo)
+    if nombre is None:
+        raise Http404("Manual no encontrado")
+
+    if tipo == "administrador" and not _es_administrador(request.user):
+        raise PermissionDenied
+
+    ruta = Path(settings.BASE_DIR) / "ayuda" / "manuales" / nombre
+    if not ruta.exists():
+        raise Http404("El archivo no existe en el servidor")
+
+    descargar = request.GET.get("descargar") == "1"
+    return FileResponse(
+        open(ruta, "rb"),
+        content_type="application/pdf",
+        as_attachment=descargar,
+        filename=nombre,
+    )
 
 
 class SoporteForm(forms.Form):
