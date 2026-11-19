@@ -209,19 +209,20 @@ def nueva_venta(request):
     total_pagado = pago_efectivo + pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
     saldo_pendiente = Decimal('0')
 
-    if total_pagado == Decimal('0') and not observacion_pago:
-        # Pago rápido completo en efectivo por omisión
-        pago_efectivo = total_final
-        total_pagado = total_final
-        metodo_pago = 'efectivo'
-    elif total_pagado < total_final:
-        # Pago parcial / fiado con saldo pendiente
+    if total_pagado < total_final:
+        # Pago parcial o en $0 (saldo pendiente / fiado): requiere obligatoriamente motivo
         saldo_pendiente = total_final - total_pagado
         if not observacion_pago:
-            messages.error(
-                request,
-                f"El pago ingresado (${total_pagado:,.0f}) es menor al total (${total_final:,.0f}). Debe ingresar el motivo por el cual queda un saldo pendiente de ${saldo_pendiente:,.0f}.".replace(',', '.')
-            )
+            if total_pagado == Decimal('0'):
+                messages.error(
+                    request,
+                    f"No se puede registrar la venta sin pago. Ingrese el monto pagado o justifique en 'Motivo de Pago Pendiente' el saldo de ${total_final:,.0f}.".replace(',', '.')
+                )
+            else:
+                messages.error(
+                    request,
+                    f"El pago ingresado (${total_pagado:,.0f}) es menor al total (${total_final:,.0f}). Debe ingresar el motivo por el cual queda un saldo pendiente de ${saldo_pendiente:,.0f}.".replace(',', '.')
+                )
             return redirect('ventas')
 
         if pago_efectivo > 0:
@@ -238,13 +239,13 @@ def nueva_venta(request):
             metodo_pago = 'pendiente'
     else:
         metodo_pago = 'efectivo'
-        if pago_tarjeta > 0:
+        if pago_tarjeta > 0 and pago_efectivo == 0:
             metodo_pago = 'tarjeta'
-        elif pago_transferencia > 0:
+        elif pago_transferencia > 0 and pago_efectivo == 0:
             metodo_pago = 'transferencia'
-        elif pago_nequi > 0:
+        elif pago_nequi > 0 and pago_efectivo == 0:
             metodo_pago = 'nequi'
-        elif pago_daviplata > 0:
+        elif pago_daviplata > 0 and pago_efectivo == 0:
             metodo_pago = 'daviplata'
 
     with transaction.atomic():
@@ -906,6 +907,46 @@ def obtener_usuario_actual(request):
     return vendedor
 
 
+def obtener_usuario_caja(request):
+    """
+    Retorna la instancia de app.models.Usuario requerida por la FK 'documento_usuario' del modelo Caja.
+    Busca por identificación, documento, correo o toma/crea el primer registro disponible.
+    """
+    u_auth = obtener_usuario_actual(request)
+    ident = (
+        getattr(u_auth, 'identificacion', None)
+        or getattr(u_auth, 'documento', None)
+        or getattr(u_auth, 'username', None)
+        or (str(request.session.get('usuario_id')) if request.session.get('usuario_id') else None)
+    )
+    correo = getattr(u_auth, 'email', None) or getattr(u_auth, 'correo', None)
+
+    app_user = None
+    if ident:
+        app_user = Usuario.objects.filter(documento=ident).first()
+    if not app_user and correo:
+        app_user = Usuario.objects.filter(correo=correo).first()
+    if not app_user and ident:
+        app_user = Usuario.objects.filter(nombre__iexact=ident).first()
+    if not app_user:
+        app_user = Usuario.objects.first()
+
+    if not app_user:
+        doc_default = str(ident or '1')
+        app_user, _ = Usuario.objects.get_or_create(
+            documento=doc_default,
+            defaults={
+                'nombre': getattr(u_auth, 'first_name', '') or getattr(u_auth, 'username', 'Admin') or 'Admin',
+                'apellido': getattr(u_auth, 'last_name', '') or 'Sistema',
+                'correo': correo or 'admin@cys.com',
+                'tipo_identificacion': 'CC',
+                'rol': 'admin',
+                'estado': 'activo',
+            }
+        )
+    return app_user
+
+
 @csrf_exempt
 def apertura_caja(request):
     if request.method != 'POST':
@@ -949,9 +990,12 @@ def apertura_caja(request):
         return JsonResponse({'ok': False, 'error': 'El monto base contiene datos erróneos no numéricos.'}, status=400)
 
     vendedor = obtener_usuario_actual(request)
+    usuario_operador = obtener_usuario_caja(request)
     observacion_clean = (data.get('observacion', '') or '').replace('[CERRADO]', '').strip()
     if vendedor:
         denoms['operador'] = getattr(vendedor, 'nombre', None) or vendedor.get_full_name() or vendedor.username
+    elif usuario_operador:
+        denoms['operador'] = usuario_operador.nombre
 
     try:
         caja_existente = obtener_caja_abierta()
@@ -959,6 +1003,8 @@ def apertura_caja(request):
             caja_existente.monto_base = Decimal(str(monto_base))
             caja_existente.observacion = observacion_clean
             caja_existente.denominaciones = denoms
+            if not caja_existente.usuario and usuario_operador:
+                caja_existente.usuario = usuario_operador
             caja_existente.save()
             codigo_caja = caja_existente.codigo_caja
         else:
@@ -970,6 +1016,7 @@ def apertura_caja(request):
                 total_retirado=Decimal('0'),
                 observacion=observacion_clean,
                 denominaciones=denoms,
+                usuario=usuario_operador,
             )
             codigo_caja = nueva_caja.codigo_caja
         return JsonResponse({'ok': True, 'monto_base': monto_base, 'codigo_caja': codigo_caja})
@@ -1030,6 +1077,8 @@ def cierre_caja(request):
         denoms['total_retirado'] = total_retirado
         denoms['total_contado'] = total_contado
         caja_reg.denominaciones = denoms
+        if not caja_reg.usuario:
+            caja_reg.usuario = obtener_usuario_caja(request)
         caja_reg.save()
 
         return JsonResponse({'ok': True})

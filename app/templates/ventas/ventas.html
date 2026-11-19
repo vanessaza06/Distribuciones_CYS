@@ -316,11 +316,18 @@
                 <span style="font-weight:700; color:#94a3b8; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em;">
                   <i class="bi bi-wallet2 me-1" style="color:#38bdf8;"></i> Formas de Pago
                 </span>
-                <button type="button" id="btnPagoExacto" class="btn btn-sm py-1 px-2"
-                        title="Rellenar total en efectivo automáticamente"
-                        style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.28); color:#38bdf8; font-size:0.72rem; font-weight:700; border-radius:6px;">
-                  <i class="bi bi-cash-stack me-1"></i>Pago Exacto
-                </button>
+                <div class="d-flex gap-1">
+                  <button type="button" id="btnPagoPendiente" class="btn btn-sm py-1 px-2"
+                          title="Dejar como saldo pendiente / fiado (requiere justificar el motivo)"
+                          style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; font-size:0.72rem; font-weight:700; border-radius:6px;">
+                    <i class="bi bi-clock-history me-1"></i>Pago Pendiente
+                  </button>
+                  <button type="button" id="btnPagoExacto" class="btn btn-sm py-1 px-2"
+                          title="Rellenar total en efectivo automáticamente"
+                          style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.28); color:#38bdf8; font-size:0.72rem; font-weight:700; border-radius:6px;">
+                    <i class="bi bi-cash-stack me-1"></i>Pago Exacto
+                  </button>
+                </div>
               </div>
               <div class="row g-2 mb-2">
                 <div class="col-6">
@@ -1572,7 +1579,30 @@ function cambiarCantidad(idx, delta) {
     });
   }
 
-  // ══ BOTÓN PAGO EXACTO EN EFECTIVO ══
+  // ══ FUNCIONES DE CONTROL DE BLOQUEO DE PAGOS ══
+  function bloquearOtrasCasillasPago(bloquear) {
+    const inpEfec = document.getElementById('inputPagoEfectivo');
+    document.querySelectorAll('.pago-input').forEach(i => {
+      if (i !== inpEfec) {
+        if (bloquear) {
+          i.value = 0;
+          i.readOnly = true;
+          i.style.opacity = '0.35';
+          i.style.pointerEvents = 'none';
+          i.style.background = 'rgba(255,255,255,0.03)';
+          i.setAttribute('tabindex', '-1');
+        } else {
+          i.readOnly = false;
+          i.style.opacity = '';
+          i.style.pointerEvents = '';
+          i.style.background = '';
+          i.removeAttribute('tabindex');
+        }
+      }
+    });
+  }
+
+  // ══ BOTONES DE ACCIÓN RÁPIDA DE PAGO ══
   const btnExacto = document.getElementById('btnPagoExacto');
   if (btnExacto) {
     btnExacto.addEventListener('click', function() {
@@ -1585,13 +1615,57 @@ function cambiarCantidad(idx, delta) {
 
       const inpEfec = document.getElementById('inputPagoEfectivo');
       if (inpEfec) {
+        // Si ya estaba activo, permitir desactivarlo con otro clic
+        if (inpEfec.getAttribute('data-exacto') === 'true') {
+          inpEfec.value = 0;
+          inpEfec.removeAttribute('data-exacto');
+          bloquearOtrasCasillasPago(false);
+          actualizarPagado();
+          mostrarToast('Pago exacto cancelado. Casillas desbloqueadas.', 'info');
+          return;
+        }
+
         inpEfec.value = Math.round(totalFinal);
-        document.querySelectorAll('.pago-input').forEach(i => {
-          if (i !== inpEfec) i.value = 0;
-        });
+        inpEfec.setAttribute('data-exacto', 'true');
+        bloquearOtrasCasillasPago(true);
         actualizarPagado();
-        mostrarToast('Pago exacto en efectivo establecido: $' + Math.round(totalFinal).toLocaleString('es-CO'), 'success');
+        mostrarToast('Pago exacto establecido. Las demás casillas han sido bloqueadas.', 'success');
       }
+    });
+  }
+
+  const inpEfec = document.getElementById('inputPagoEfectivo');
+  if (inpEfec) {
+    inpEfec.addEventListener('input', function() {
+      // Si el cajero borra o modifica el valor del efectivo, desbloquear las demás casillas
+      if (this.getAttribute('data-exacto') === 'true') {
+        let subtotal = 0;
+        carrito.forEach(item => subtotal += item.precio * item.cantidad);
+        const descInp = document.getElementById('inputDescuento');
+        let descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
+        const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
+        if (parseFloat(this.value || 0) !== Math.round(totalFinal)) {
+          this.removeAttribute('data-exacto');
+          bloquearOtrasCasillasPago(false);
+        }
+      }
+    });
+  }
+
+  const btnPendiente = document.getElementById('btnPagoPendiente');
+  if (btnPendiente) {
+    btnPendiente.addEventListener('click', function() {
+      const inpEfec = document.getElementById('inputPagoEfectivo');
+      if (inpEfec) inpEfec.removeAttribute('data-exacto');
+      bloquearOtrasCasillasPago(false);
+      document.querySelectorAll('.pago-input').forEach(i => i.value = 0);
+      actualizarPagado();
+      const obsInp = document.getElementById('inputObservacionPago');
+      if (obsInp) {
+        obsInp.focus();
+        obsInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      mostrarToast('Opción Pago Pendiente: ingresa el motivo/justificación para poder guardar la venta.', 'info');
     });
   }
 
@@ -1620,6 +1694,7 @@ function cambiarCantidad(idx, delta) {
     if (carrito.length > 0) {
       const diff = pagado - totalFinal;
       if (pagado > 0 && diff >= 0) {
+        // Pagado por completo o con vueltos
         if (indCambio) {
           indCambio.style.display = 'flex';
           indCambio.className = 'cys-change-indicator cys-change-indicator--ok mt-2';
@@ -1627,12 +1702,13 @@ function cambiarCantidad(idx, delta) {
           mtoCambio.textContent = '$' + Math.round(diff).toLocaleString('es-CO');
         }
         if (secObs) secObs.style.display = 'none';
-      } else if (pagado > 0 && diff < 0) {
+      } else if (diff < 0) {
+        // Queda debiendo o no ha ingresado pago (requiere motivo)
         const faltante = Math.abs(diff);
         if (indCambio) {
           indCambio.style.display = 'flex';
           indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
-          lblCambio.textContent = 'Pendiente por cobrar (Deuda)';
+          lblCambio.textContent = pagado === 0 ? 'Sin Pago Ingresado (Deuda total)' : 'Pendiente por cobrar (Deuda)';
           mtoCambio.textContent = '$' + Math.round(faltante).toLocaleString('es-CO');
         }
         if (secObs) {
@@ -1675,15 +1751,22 @@ function cambiarCantidad(idx, delta) {
       document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
       const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
 
-      // Si pagó menos y queda debiendo, requerir motivo
-      if (pagado > 0 && pagado < totalFinal) {
+      // Si no pagó el total completo (incluye si pagó $0 o saldo parcial), es obligatorio el motivo de saldo pendiente
+      if (pagado < totalFinal) {
         const obsInp = document.getElementById('inputObservacionPago');
-        if (!obsInp || obsInp.value.trim() === '') {
+        const obsTexto = obsInp ? obsInp.value.trim() : '';
+        if (!obsTexto) {
           e.preventDefault();
-          mostrarToast('Debes ingresar el motivo por el cual queda un saldo pendiente.', 'warning');
+          if (pagado === 0) {
+            mostrarToast('No se puede cerrar la venta sin pago. Ingresa el dinero recibido o el motivo en Pago Pendiente.', 'warning');
+          } else {
+            mostrarToast('El pago ingresado es menor al total. Debes ingresar el motivo por el cual queda un saldo pendiente.', 'warning');
+          }
           if (obsInp) {
             obsInp.focus();
             obsInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            obsInp.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.5)';
+            setTimeout(() => { if (obsInp) obsInp.style.boxShadow = ''; }, 3000);
           }
           return false;
         }
@@ -1697,6 +1780,9 @@ function cambiarCantidad(idx, delta) {
     btnCanc.addEventListener('click', function() {
       if (carrito.length > 0 && !confirm('¿Deseas cancelar y vaciar la orden de venta actual?')) return;
       carrito.length = 0;
+      const inpEfec = document.getElementById('inputPagoEfectivo');
+      if (inpEfec) inpEfec.removeAttribute('data-exacto');
+      bloquearOtrasCasillasPago(false);
       const descInp = document.getElementById('inputDescuento');
       if (descInp) descInp.value = 0;
       document.querySelectorAll('.pago-input').forEach(i => i.value = 0);
