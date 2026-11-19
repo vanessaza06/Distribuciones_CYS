@@ -2851,3 +2851,214 @@ table.dataTable {
     margin: 0 !important;
   }
 }
+/* ══════════════════════════════════════════
+   EXPORTAR (Historial de ventas) — mismo diseño que Categorías
+   Azul por defecto, rojo en el tema rojo.
+   ══════════════════════════════════════════ */
+html body .cys-hv-btn-exportar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .5rem !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 0 1.15rem !important;
+  border-radius: 999px !important;
+  font-size: .9rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
+  color: var(--texto) !important;
+  transition: background .15s !important;
+}
+html body .cys-hv-btn-exportar:hover,
+html body .cys-hv-btn-exportar:focus,
+html body .cys-hv-btn-exportar:active,
+html body .cys-hv-btn-exportar.show {
+  background: color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ── Tema ROJO ── */
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-hv-btn-exportar {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  border: 1px solid var(--rojo, #d9534f) !important;
+}
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-hv-btn-exportar:is(:hover, :focus, :active, .show) {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  border-color: var(--rojo, #d9534f) !important;
+}
+
+/* ── Menú desplegable ── */
+html body .cys-hv-dropdown {
+  background: var(--fondo-card2, var(--fondo-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+  border-radius: 16px !important;
+  padding: .4rem !important;
+  margin-top: .4rem !important;
+  min-width: 100% !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .10) !important;
+  z-index: 1030;
+}
+html body .cys-hv-dropdown .dropdown-item,
+html body .cys-hv-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .7rem !important;
+  color: var(--texto) !important;
+  background: transparent !important;
+  font-weight: 500 !important;
+  font-size: .9rem !important;
+  border-radius: 10px !important;
+  padding: .6rem .8rem !important;
+  white-space: nowrap !important;
+}
+html body .cys-hv-dropdown .dropdown-item:hover,
+html body .cys-hv-dropdown .dropdown-item:focus,
+html body .cys-hv-dropdown-item:hover {
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  color: var(--texto) !important;
+}
+html body .cys-hv-dropdown .dropdown-item i { font-size: 1.1rem; }
+
+/* ── Móvil: botón a todo el ancho ── */
+@media (max-width: 768px) {
+  html body .cys-hv-btn-exportar {
+    width: 100% !important;
+  }
+}
+/* ══════════════════════════════════════════
+   FLECHAS DATATABLES — Historial de ventas
+   ══════════════════════════════════════════ */
+html body #reportes-table thead th div.dt-column-header {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+html body #reportes-table thead th div.dt-column-header .dt-column-title {
+  flex: 0 1 auto !important;
+}
+html body #reportes-table thead th .dt-column-order {
+  position: relative !important;
+  display: inline-block !important;
+  width: 12px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+  cursor: pointer;
+}
+html body #reportes-table thead th .dt-column-order::before,
+html body #reportes-table thead th .dt-column-order::after {
+  color: var(--azul-claro) !important;
+  opacity: 0.4 !important;
+  font-size: 0.7em !important;
+}
+html body #reportes-table thead th.dt-ordering-asc .dt-column-order::before,
+html body #reportes-table thead th.dt-ordering-desc .dt-column-order::after {
+  opacity: 1 !important;
+}
+html body #reportes-table thead th {
+  cursor: pointer;
+}
+/* ── Reportes: sin flechas visibles, el clic sigue ordenando ── */
+html body #reportes-table thead th .dt-column-order {
+  display: none !important;
+}
+html body #reportes-table thead th {
+  cursor: pointer;
+}
+/* ── Encabezado de tablas Reportes: igual al de Presentaciones ── */
+html body #reportes-table thead th,
+html body .cys-inv-table thead th,
+html body #tabla-modal-stock thead th,
+html body #tabla-modal-proveedores thead th {
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+  color: var(--azul-claro) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  white-space: nowrap;
+}
+/* ── Pie de tabla Reportes: texto + botones ovalados ── */
+html body .cys-hv-table-footer .dt-info,
+html body .cys-hv-table-footer .dataTables_info {
+  color: var(--texto-muted) !important;
+  font-size: 1rem !important;
+}
+html body .cys-hv-table-footer .page-link,
+html body .cys-hv-pagination-wrap .page-link,
+html body .pagination .page-link {
+  min-width: 48px !important;
+  width: auto !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--texto-muted) !important;
+  font-size: .9rem !important;
+  padding: 0 14px !important;
+}
+html body .cys-hv-table-footer .page-link:hover,
+html body .pagination .page-link:hover {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+}
+html body .cys-hv-table-footer .active .page-link,
+html body .pagination .active .page-link {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  font-weight: 700 !important;
+}
+html body .cys-hv-table-footer .disabled .page-link,
+html body .pagination .disabled .page-link {
+  background: transparent !important;
+  color: var(--texto-muted) !important;
+  opacity: .5 !important;
+}
+/* ── Pie de tabla Reportes: centrado ── */
+html body .cys-hv-table-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  text-align: center !important;
+}
+html body .cys-hv-table-footer .dt-info,
+html body .cys-hv-table-footer .dataTables_info {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  text-align: center !important;
+}
+html body .cys-hv-table-footer .dt-paging,
+html body .cys-hv-table-footer .dataTables_paginate {
+  display: flex !important;
+  justify-content: center !important;
+}
+html body .cys-hv-table-footer .pagination {
+  justify-content: center !important;
+  margin: 0 !important;
+}
