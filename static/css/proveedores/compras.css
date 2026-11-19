@@ -73,7 +73,7 @@
 }
 
 .card-header-top i {
-  color: var(--cp-dorado) !important;
+  color:var(--cp-dorado) !important;
 }
 
 .card-body {
@@ -1179,29 +1179,86 @@ textarea:focus {
 }
 
 /* Botón Nueva Compra redondo con texto */
+/* Idéntico a .btn-nuevo-prov (proveedores.css) */
 .btn-nueva-compra {
   background: var(--azul-claro);
+  color: var(--fondo);
   border: none;
-  color: var(--azul-oscuro);
-  padding: 0.6rem 1.5rem;
   border-radius: 50px;
+  padding: 10px 28px;
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s ease, transform 0.1s ease;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
   white-space: nowrap;
 }
 
 .btn-nueva-compra:hover {
-  background: color-mix(in srgb, var(--azul-claro) 85%, black);
+  background: color-mix(in srgb, var(--azul-claro) 80%, black);
+  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.5);
   transform: translateY(-2px);
 }
 
 .btn-nueva-compra:active {
   transform: translateY(0);
+}
+
+/* ── COLOR DE CADA ICONO DEL ENCABEZADO "HISTORIAL DE COMPRAS" ──
+   Cada icono tiene su propia regla: cambia el color de uno sin afectar a los demás. */
+.gradient-header .ico-historial     { color: var(--azul-claro) !important; }
+.gradient-header .ico-exportar      { color: var(--texto) !important; }
+.gradient-header .ico-nueva-compra  { color: var(--fondo) !important; }
+.gradient-header .ico-chevron       { color: var(--texto) !important; }
+
+/* Iconos del menú Exportar (uno por opción) */
+#cys-dt-export-compras-historial .dropdown-menu .ico-pdf      { color: #dc3545 !important; }
+#cys-dt-export-compras-historial .dropdown-menu .ico-excel    { color: #198754 !important; }
+#cys-dt-export-compras-historial .dropdown-menu .ico-imprimir { color: #0d6efd !important; }
+
+/* Botón Exportar del historial — copia exacta del de Proveedores (base.css),
+   con ID para que ninguna otra regla de esta página lo pise */
+#cys-dt-export-compras-historial .cat-btn-exportar {
+  background: color-mix(in srgb, var(--azul-claro, #4DA8DA) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro, #4DA8DA) 45%, transparent) !important;
+  color: var(--texto, #e2e8f0) !important;
+  border-radius: 999px !important;
+  padding: .42rem 1.15rem !important;
+  font-size: .9rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .4rem !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+#cys-dt-export-compras-historial .cat-btn-exportar:hover,
+#cys-dt-export-compras-historial .cat-btn-exportar:focus,
+#cys-dt-export-compras-historial .cat-btn-exportar.show {
+  background: color-mix(in srgb, var(--azul-claro, #4DA8DA) 22%, transparent) !important;
+  border-color: var(--azul-claro, #4DA8DA) !important;
+  box-shadow: 0 0 10px var(--azul-glow, rgba(77,168,218,.18)) !important;
+}
+html[data-tema="claro"] #cys-dt-export-compras-historial .cat-btn-exportar,
+html.cys-a11y-modo-claro #cys-dt-export-compras-historial .cat-btn-exportar {
+  background: #fde8e5 !important;
+  border: 1px solid #b83a2d !important;
+  color: #1e293b !important;
+}
+html[data-tema="claro"] #cys-dt-export-compras-historial .cat-btn-exportar:hover,
+html[data-tema="claro"] #cys-dt-export-compras-historial .cat-btn-exportar:focus,
+html[data-tema="claro"] #cys-dt-export-compras-historial .cat-btn-exportar.show,
+html.cys-a11y-modo-claro #cys-dt-export-compras-historial .cat-btn-exportar:hover,
+html.cys-a11y-modo-claro #cys-dt-export-compras-historial .cat-btn-exportar:focus,
+html.cys-a11y-modo-claro #cys-dt-export-compras-historial .cat-btn-exportar.show {
+  background: #f9d5d1 !important;
+  border-color: #a93226 !important;
+  box-shadow: 0 2px 8px rgba(184, 58, 45, 0.16) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────

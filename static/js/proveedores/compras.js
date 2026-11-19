@@ -116,17 +116,19 @@ function initTabla() {
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
   jQuery(tabla).DataTable({
     paging: true,
-    searching: false,
+    searching: true,
     info: true,
     lengthChange: false,
     pageLength: 10,
     ordering: true,
     order: [],
-    columnDefs: [{ orderable: false, targets: [0, 8] }],
+    columnDefs: [{ orderable: false, targets: [0, 8], searchable: false }],
     language: {
       info: 'Mostrando _START_ a _END_ de _TOTAL_ compras',
       infoEmpty: 'Mostrando 0 a 0 de 0 compras',
+      infoFiltered: '(filtrado de _MAX_)',
       emptyTable: 'Sin compras registradas aún.',
+      zeroRecords: 'Sin resultados para tu búsqueda.',
       paginate: { first: '«', previous: '‹', next: '›', last: '»' }
     },
     layout: {
@@ -136,6 +138,57 @@ function initTabla() {
       bottomEnd: 'paging'
     }
   });
+
+
+  if (typeof window.cysCrearDropdownExportar === 'function') {
+    window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
+  }
+
+  // Buscador del historial conectado a DataTables
+  var buscarCompras = byId('buscarCompras');
+  if (buscarCompras) {
+    buscarCompras.addEventListener('input', function () {
+      dt.search(this.value.trim()).draw();
+    });
+  }
+
+  // Imprimir: abre una ventana con el historial (filas filtradas) y lanza la impresión
+  var btnImprimir = document.querySelector('#cys-dt-export-compras-historial [data-cys-export="imprimir"]');
+  if (btnImprimir && !btnImprimir.dataset.cysPrintBound) {
+    btnImprimir.dataset.cysPrintBound = 'true';
+    btnImprimir.addEventListener('click', function (e) {
+      e.preventDefault();
+      var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+      };
+      var cols = [0, 1, 2, 3, 4, 5, 6, 7];
+      var ths = tabla.querySelectorAll('thead th');
+      var head = cols.map(function (i) {
+        return '<th>' + esc(ths[i] ? ths[i].textContent.trim() : '') + '</th>';
+      }).join('');
+      var body = '';
+      dt.rows({ search: 'applied' }).nodes().to$().each(function () {
+        var tds = this.querySelectorAll('td');
+        body += '<tr>' + cols.map(function (i) {
+          return '<td>' + esc(tds[i] ? tds[i].textContent.replace(/\s+/g, ' ').trim() : '') + '</td>';
+        }).join('') + '</tr>';
+      });
+      var w = window.open('', '_blank');
+      if (!w) return;
+      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Historial de Compras</title>' +
+        '<style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px}h2{margin:0 0 12px}' +
+        'table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:5px 7px;text-align:left}' +
+        'th{background:#011936;color:#CF9C48}</style></head><body>' +
+        '<h2>Distribuciones CYS Ltda - Historial de Compras</h2>' +
+        '<table><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></body></html>');
+      w.document.close();
+      w.focus();
+      w.print();
+    });
+  }
+
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -794,18 +847,31 @@ function initModalPago() {
 // ── Búsqueda de proveedores en el directorio ───────────────────
 function initBusquedaProveedores() {
   const input = byId('buscarProveedor');
-  if (!input) return;
-  const sinResultados = byId('sinResultados');
+  const tabla = byId('tablaSeleccionProveedor');
+  if (!input || !tabla || !window.jQuery || !jQuery.fn.DataTable) return;
+  if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
+  const dt = jQuery(tabla).DataTable({
+    paging: true,
+    pageLength: 5,
+    lengthChange: false,
+    searching: true,
+    info: true,
+    ordering: true,
+    order: [[0, 'asc']],
+    columnDefs: [{ orderable: false, targets: [5] }],
+    language: {
+      info: 'Mostrando _START_ a _END_ de _TOTAL_ proveedores',
+      infoEmpty: 'Mostrando 0 a 0 de 0 proveedores',
+      infoFiltered: '(filtrado de _MAX_)',
+      emptyTable: 'No hay proveedores registrados.',
+      zeroRecords: 'No se encontraron proveedores',
+      paginate: { first: '«', previous: '‹', next: '›', last: '»' }
+    },
+    layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' }
+  });
+  // El buscador existente del modal filtra la tabla (nombre, NIT, tipo, teléfono, correo)
   input.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
-    let visibles = 0;
-    document.querySelectorAll('.fila-proveedor').forEach((fila) => {
-      const d = fila.dataset;
-      const coincide = [d.nombre, d.nit, d.telefono].some((v) => (v || '').includes(q));
-      fila.style.display = coincide ? '' : 'none';
-      if (coincide) visibles++;
-    });
-    if (sinResultados) sinResultados.style.display = visibles === 0 && q !== '' ? 'block' : 'none';
+    dt.search(this.value.trim()).draw();
   });
 }
 

@@ -229,3 +229,47 @@
   min-height: 150px;     /* respaldo: altura mínima igual para todas */
   box-sizing: border-box;
 }
+/* ── Botón Filtros: chevron que gira + contador de filtros activos ── */
+.lotes-filtro-chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+[aria-expanded="true"] > .lotes-filtro-chevron {
+  transform: rotate(180deg);
+}
+.lotes-filtros-contador {
+  background: var(--rojo);
+  color: #fff;
+  font-size: 0.65rem;
+}
+
+/* ── Panel desplegable de filtros ── */
+.lotes-filtros-panel {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+.lotes-filtro-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-muted);
+}
+.lotes-filtro-input {
+  background-color: var(--fondo-card);
+  border: 1px solid var(--azul-borde);
+  color: var(--texto);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+.lotes-filtro-input:focus {
+  background-color: var(--fondo-card);
+  color: var(--texto);
+  border-color: var(--azul-claro);
+  box-shadow: none;
+}

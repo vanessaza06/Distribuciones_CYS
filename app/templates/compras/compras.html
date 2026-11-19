@@ -5,8 +5,13 @@
 {% block page_title %}Compras{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
+
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261119a">
+
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261119d">
+
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
 
@@ -157,7 +162,7 @@
             <!-- Parte izquierda (solo información) -->
             <div class="d-flex align-items-center gap-3">
               <div class="icon-bg-primary">
-                <i class="bi bi-clock-history icon-primary"></i>
+                <i class="bi bi-clock-history icon-primary ico-historial"></i>
               </div>
               <div>
                 <h5 class="mb-0 fw-bold">Historial de Compras</h5>
@@ -179,7 +184,7 @@
               <div id="cys-export-compras" class="d-inline-flex align-items-center gap-2">
                 <div class="dropdown d-inline-block">
                   <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar compras">
-                    <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                    <i class="bi bi-box-arrow-up me-2 ico-exportar"></i>Exportar
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                     <li>
@@ -195,15 +200,39 @@
                     <li>
                       <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="imprimir">
                         <i class="bi bi-printer text-primary me-2"></i>Imprimir
+
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                        <i class="bi bi-file-earmark-pdf ico-pdf me-2"></i>Exportar PDF
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                        <i class="bi bi-file-earmark-excel ico-excel me-2"></i>Exportar Excel
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="imprimir">
+                        <i class="bi bi-printer ico-imprimir me-2"></i>Imprimir
+
                       </button>
                     </li>
                   </ul>
                 </div>
               </div>
 
+
+
+              <button type="button"
+                      class="btn-nueva-compra"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalNuevaCompra"
+                      title="Nueva compra">
+                <i class="bi bi-plus-circle ico-nueva-compra"></i> Nueva compra
+              </button>
+
               <span class="badge badge-cyan" title="Total de compras registradas para este proveedor">{{ compras_count|default:0 }}</span>
               <!-- Solo el chevron controla el collapse -->
-              <i class="bi bi-chevron-down" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
+              <i class="bi bi-chevron-down ico-chevron" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
                  title="Mostrar u ocultar historial de compras"
                  data-bs-toggle="collapse"
                  data-bs-target="#collapseHistorial"
@@ -215,6 +244,14 @@
 
         <!-- Contenido desplegable -->
         <div class="collapse show" id="collapseHistorial">
+          {% if compras %}
+          <div class="px-3 pt-3">
+            <div class="dev-search-wrapper">
+              <i class="dev-search-icon bi bi-search"></i>
+              <input type="text" id="buscarCompras" class="form-control dev-search-input" placeholder="Buscar por producto, pago, estado o fecha..." title="Filtra el historial de compras mientras escribes">
+            </div>
+          </div>
+          {% endif %}
           <div class="table-responsive table-scroll">
             {% if compras %}
             <table id="tablaHistorialCompras" class="table table-sm align-middle mb-0">
@@ -682,54 +719,43 @@
           <input type="text" id="buscarProveedor" class="form-control dev-search-input" placeholder="Buscar por nombre, NIT o teléfono..." title="Filtra la lista de proveedores mientras escribes">
         </div>
 
-        <div id="tablaProveedores" class="table-scroll cmp-prov-scroll">
-          {% if todos_proveedores %}
-            {% for prov in todos_proveedores %}
-            <a href="?proveedor={{ prov.pk }}" class="card card-inner fila-proveedor mb-2 p-3 text-decoration-none transition-all cmp-prov-card {% if proveedor and prov.pk == proveedor.pk %}border-warning bg-opacity-25 bg-warning{% endif %}" 
-               data-nombre="{{ prov.nombre_empresa|lower }}" 
-               data-nit="{{ prov.pk|lower }}" 
-               data-telefono="{{ prov.telefono|lower|default:'' }}" 
-               data-id="{{ prov.pk }}" 
-               data-proveedor-name="{{ prov.nombre_empresa }}"
-               title="Ver historial de compras de {{ prov.nombre_empresa }}">
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="icon-bg-primary d-flex align-items-center justify-content-center cmp-prov-icon">
-                    <i class="bi bi-truck"></i>
-                  </div>
-                  <div>
-                    <div class="d-flex align-items-center gap-2">
-                      <h6 class="mb-0 fw-bold text-white">{{ prov.nombre_empresa }}</h6>
-                      <span class="badge cmp-prov-badge-nit">NIT: {{ prov.pk }}</span>
-                    </div>
-                    <div class="d-flex flex-wrap gap-3 mt-1 small text-muted">
-                      {% if prov.tipo_proveedor %}
-                        <span class="cmp-prov-tipo"><i class="bi bi-tag me-1"></i>{{ prov.get_tipo_proveedor_display }}</span>
-                      {% endif %}
-                      {% if prov.telefono %}
-                        <span><i class="bi bi-telephone me-1"></i>{{ prov.telefono }}</span>
-                      {% endif %}
-                      {% if prov.correo %}
-                        <span><i class="bi bi-envelope me-1"></i>{{ prov.correo }}</span>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-                <div>
+        <div id="tablaProveedores" class="table-responsive cmp-prov-scroll">
+          <table id="tablaSeleccionProveedor" class="table table-sm align-middle mb-0 w-100">
+            <thead>
+              <tr>
+                <th>Proveedor</th>
+                <th>NIT</th>
+                <th>Tipo</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th class="text-end">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for prov in todos_proveedores %}
+              <tr class="fila-proveedor" data-id="{{ prov.pk }}" data-proveedor-name="{{ prov.nombre_empresa }}">
+                <td>
+                  <a href="?proveedor={{ prov.pk }}" class="fw-bold text-decoration-none" title="Ver historial de compras de {{ prov.nombre_empresa }}">
+                    <i class="bi bi-truck me-2"></i>{{ prov.nombre_empresa }}
+                  </a>
+                </td>
+                <td>{{ prov.pk }}</td>
+                <td>{% if prov.tipo_proveedor %}{{ prov.get_tipo_proveedor_display }}{% endif %}</td>
+                <td>{{ prov.telefono|default:"" }}</td>
+                <td>{{ prov.correo|default:"" }}</td>
+                <td class="text-end">
                   {% if proveedor and prov.pk == proveedor.pk %}
-                    <span class="badge bg-success px-3 py-2 d-flex align-items-center gap-1 shadow-sm">
-                      <i class="bi bi-check-circle-fill"></i> Activo
-                    </span>
+                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>
                   {% else %}
-                    <span class="btn btn-sm btn-outline-warning px-3 py-1 fw-semibold cmp-prov-btn-select">
+                    <a href="?proveedor={{ prov.pk }}" class="btn btn-sm btn-outline-warning px-3 py-1 fw-semibold cmp-prov-btn-select">
                       Elegir <i class="bi bi-chevron-right ms-1"></i>
-                    </span>
+                    </a>
                   {% endif %}
-                </div>
-              </div>
-            </a>
-            {% endfor %}
-          {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
 
         <div id="sinResultados" class="text-center py-4 hidden-element">
@@ -928,5 +954,12 @@
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
+
 <script src="{% static 'js/proveedores/compras.js' %}?v=20261119a"></script>
 {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/proveedores/compras.js' %}?v=20261119c"></script>
+{% endblock %}
+
+
