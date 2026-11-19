@@ -202,3 +202,49 @@
 .exp-ico-excel { color: #22c55e; }
 .exp-ico-pdf   { color: #ef4444; }
 .exp-ico-print { color: #4DA8DA; }
+/* ── Presentaciones: botón Filtros (el chevron gira al abrir) ── */
+.pres-filtro-chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+[aria-expanded="true"] > .pres-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Presentaciones: panel desplegable de filtros ── */
+.pres-filtros-panel {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+
+/* ── Presentaciones: pie de la tabla (selector + info + paginación) ── */
+.pres-dt-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  color: var(--texto-muted);
+  font-size: 0.82rem;
+}
+
+/* ── Buscador: que el input use todo el ancho disponible ──
+   (en tu captura se veía muy angosto) */
+/* ── Presentaciones: que el buscador use todo el ancho disponible ── */
+.search-box .pres-buscador-wrap {
+  flex: 1 1 320px !important;   /* crece, pero nunca baja de 320px */
+  min-width: 0;
+  max-width: none !important;
+  width: auto !important;
+}
+
+.search-box .pres-buscador-wrap .pres-search-input {
+  flex: 1 1 auto !important;    /* el input ocupa todo lo que sobra junto a la lupa */
+  width: 100% !important;
+  min-width: 0;
+  max-width: none !important;
+}
