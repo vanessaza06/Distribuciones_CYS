@@ -344,18 +344,69 @@
 .dev-table .dropdown > .btn-link { color: var(--dev-cyan); font-size: 1.15rem; }
 
 /* ── Detalle de devolución a proveedor ── */
-.dpv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1rem 0; }
-.dpv-box { padding: 1rem 1.1rem; border: 1px solid var(--dev-line); border-radius: 10px; background: var(--dev-surface); }
-.dpv-box span { display: block; color: var(--dev-text); opacity: .65; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
-.dpv-box strong { display: block; margin-top: .25rem; color: var(--dev-text); font-size: 1.05rem; }
-.dpv-box small { color: var(--dev-text); opacity: .6; }
-.dpv-confirm { margin: 1rem 0; padding: 1.25rem; border-radius: 12px; border: 1px solid var(--dev-line); background: var(--dev-hover); }
-.dpv-confirm h3 { margin: 0 0 .35rem; font-size: 1.1rem; color: var(--dev-text); }
-.dpv-confirm p { margin: 0 0 1rem; color: var(--dev-text); opacity: .8; }
-.dpv-confirm--ok { border-color: rgba(34, 160, 90, .6); }
-.dpv-confirm--no { border-color: rgba(239, 68, 68, .55); }
-.dpv-confirm--apply { border-color: rgba(207, 156, 72, .65); }
-.dpv-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+.dpv-hero { display:flex; justify-content:space-between; align-items:stretch; gap:1.5rem; flex-wrap:wrap; padding:1.5rem 1.7rem; margin-bottom:1.1rem; border:1px solid var(--dev-line); border-left:5px solid var(--dev-gold); border-radius:14px; background:linear-gradient(105deg, color-mix(in srgb, var(--dev-card) 90%, var(--dev-gold) 10%), var(--dev-card)); }
+.dpv-hero--pendiente { border-left-color:#eab308; } .dpv-hero--aprobada { border-left-color:#3b82f6; }
+.dpv-hero--aplicada { border-left-color:#22c55e; } .dpv-hero--rechazada { border-left-color:#ef4444; }
+.dpv-back { display:inline-flex; align-items:center; gap:.4rem; margin-bottom:.7rem; color:var(--dev-muted); font-size:.8rem; font-weight:600; text-decoration:none; }
+.dpv-back:hover { color:var(--dev-text); }
+.dpv-hero__title { display:flex; align-items:center; gap:.9rem; flex-wrap:wrap; }
+.dpv-hero__title h2 { margin:0; font-size:2rem; font-weight:800; letter-spacing:.02em; color:var(--dev-text); }
+.dpv-hero__sub { margin:.55rem 0 0; color:var(--dev-muted); font-size:.88rem; }
+.dpv-hero__total { display:flex; flex-direction:column; justify-content:center; align-items:flex-end; text-align:right; padding:.9rem 1.3rem; border-radius:12px; background:var(--dev-surface); border:1px solid var(--dev-line); min-width:220px; }
+.dpv-hero__total span { font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--dev-muted); }
+.dpv-hero__total strong { font-size:2rem; line-height:1.15; font-weight:800; color:var(--dev-gold-text); }
+.dpv-hero__total small { color:var(--dev-muted); }
+
+.dpv-steps { list-style:none; display:flex; padding:1rem 1.2rem; margin:0 0 1.1rem; border:1px solid var(--dev-line); border-radius:14px; background:var(--dev-card); }
+.dpv-steps li { flex:1; display:flex; align-items:center; gap:.7rem; position:relative; color:var(--dev-muted); min-width:0; }
+.dpv-steps li:not(:last-child)::after { content:""; flex:1; height:2px; margin:0 .8rem; background:var(--dev-line); border-radius:2px; }
+.dpv-steps li > span { flex:0 0 38px; height:38px; display:grid; place-items:center; border-radius:50%; border:2px solid var(--dev-line); background:var(--dev-surface); }
+.dpv-steps li div { display:flex; flex-direction:column; line-height:1.2; }
+.dpv-steps li strong { font-size:.85rem; color:var(--dev-muted); }
+.dpv-steps li small { font-size:.7rem; color:var(--dev-muted); opacity:.8; }
+.dpv-steps li.is-done > span { background:rgba(34,197,94,.16); border-color:rgba(34,197,94,.6); }
+.dpv-steps li.is-done:not(:last-child)::after { background:rgba(34,197,94,.6); }
+.dpv-steps li.is-done strong, .dpv-steps li.is-current strong { color:var(--dev-text); }
+.dpv-steps li.is-current > span { border-color:var(--dev-gold); background:rgba(207,156,72,.18); box-shadow:0 0 0 4px rgba(207,156,72,.15); }
+.dpv-steps li.is-bad > span { border-color:#ef4444; background:rgba(239,68,68,.16); box-shadow:0 0 0 4px rgba(239,68,68,.12); }
+
+.dpv-confirm { display:flex; gap:1rem; align-items:flex-start; margin:0 0 1.1rem; padding:1.25rem 1.4rem; border-radius:14px; border:1px solid var(--dev-line); background:var(--dev-hover); }
+.dpv-confirm__icon { flex:0 0 46px; height:46px; display:grid; place-items:center; border-radius:12px; font-size:1.4rem; background:var(--dev-surface); }
+.dpv-confirm h3 { margin:0 0 .3rem; font-size:1.1rem; color:var(--dev-text); }
+.dpv-confirm p { margin:0 0 1rem; color:var(--dev-text); opacity:.8; }
+.dpv-confirm--ok { border-color:rgba(34,160,90,.6); }
+.dpv-confirm--no { border-color:rgba(239,68,68,.55); }
+.dpv-confirm--apply { border-color:rgba(207,156,72,.65); }
+
+.dpv-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:1.1rem; align-items:start; }
+.dpv-main, .dpv-side { display:flex; flex-direction:column; gap:1.1rem; min-width:0; }
+.dpv-panel { padding:1.25rem 1.35rem; }
+.dpv-panel__title { display:flex; align-items:center; gap:.55rem; margin:0 0 1rem; font-size:.78rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--dev-text); }
+.dpv-qty { display:inline-block; min-width:2.2rem; padding:.2rem .6rem; border-radius:999px; font-weight:800; background:var(--dev-surface); border:1px solid var(--dev-line); }
+.dpv-panel tfoot td { font-weight:800; border-top:2px solid var(--dev-line); background:var(--dev-head); color:var(--dev-text); }
+.dpv-note { margin:0; padding:.9rem 1rem; border-radius:10px; background:var(--dev-surface); border:1px solid var(--dev-line); color:var(--dev-text); line-height:1.5; }
+.dpv-note--empty { color:var(--dev-muted); font-style:italic; }
+.dpv-inv { display:flex; align-items:baseline; gap:.6rem; }
+.dpv-inv strong { font-size:1.9rem; font-weight:800; color:var(--dev-gold-text); }
+.dpv-inv span, .dpv-hint { color:var(--dev-muted); }
+.dpv-info { margin:0; display:flex; flex-direction:column; }
+.dpv-info > div { padding:.8rem 0; border-bottom:1px solid var(--dev-line); }
+.dpv-info > div:first-child { padding-top:0; } .dpv-info > div:last-child { border-bottom:0; padding-bottom:0; }
+.dpv-info dt { font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--dev-muted); margin-bottom:.2rem; }
+.dpv-info dd { margin:0; font-weight:700; color:var(--dev-text); }
+.dpv-info dd small { display:block; font-weight:500; color:var(--dev-muted); margin-top:.1rem; }
+.dpv-actions { display:flex; flex-direction:column; gap:.6rem; }
+.dpv-actions .dev-act, .dpv-actions .dev-btn { width:100%; justify-content:center; padding:.6rem .9rem; text-decoration:none; }
+
+@media (max-width: 992px) {
+  .dpv-layout { grid-template-columns:1fr; }
+  .dpv-steps { flex-wrap:wrap; gap:.8rem; } .dpv-steps li:not(:last-child)::after { display:none; } .dpv-steps li { flex:1 1 45%; }
+  .dpv-hero__total { align-items:flex-start; text-align:left; width:100%; }
+}
+@media print {
+  .dpv-actions, .dpv-back, .dpv-confirm form { display:none !important; }
+  .dev-card:hover, .dev-table-wrap:hover { box-shadow:none !important; }
+}
 
 /* ================================================================
    FIX TEMA CLARO: texto de tablas (producto / disponible / valor)
@@ -408,3 +459,14 @@
   opacity: 1;
   cursor: not-allowed;
 }
+/* ── Etiquetas de estado (devoluciones a proveedor) ── */
+.badge-estado {
+  display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap;
+  padding: .28rem .7rem; border-radius: 999px; font-size: .74rem; font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge-pendiente { color: #b45309; background: rgba(234, 179, 8, .16); border-color: rgba(234, 179, 8, .5); }
+.badge-aprobada  { color: #1d4ed8; background: rgba(59, 130, 246, .14); border-color: rgba(59, 130, 246, .45); }
+.badge-aplicada  { color: #15803d; background: rgba(34, 197, 94, .15); border-color: rgba(34, 197, 94, .5); }
+.badge-rechazada { color: #b91c1c; background: rgba(239, 68, 68, .13); border-color: rgba(239, 68, 68, .45); }
+.dev-table .dropdown-menu { z-index: 1055; }

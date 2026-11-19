@@ -6,7 +6,7 @@
 {% block nav_devoluciones %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261016h">
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261118c">
 <link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
@@ -191,9 +191,9 @@
           <div class="d-flex align-items-center gap-2">
             <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2">
               <div class="dropdown d-inline-block">
-                <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar el historial a PDF o Excel"><button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar el historial a PDF o Excel">
                   <i class="bi bi-box-arrow-up me-2"></i>Exportar
-                </button></span>
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                   <li>
                     <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
@@ -254,11 +254,22 @@
                 <td><span class="badge badge-motivo">{{ dp.get_motivo_display }}</span></td>
                 <td>{{ dp.get_tipo_resolucion_display }}</td>
                 <td class="text-end dev-money">${{ dp.total_devuelto|floatformat:0 }}</td>
+                <td class="text-center" data-order="{{ dp.estado }}">
+                  {% if dp.estado == 'pendiente' %}
+                    <span class="badge-estado badge-pendiente"><i class="bi bi-clock-history"></i> Pendiente</span>
+                  {% elif dp.estado == 'aprobada' %}
+                    <span class="badge-estado badge-aprobada"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
+                  {% elif dp.estado == 'aplicada' %}
+                    <span class="badge-estado badge-aplicada"><i class="bi bi-check-all"></i> Aplicada</span>
+                  {% else %}
+                    <span class="badge-estado badge-rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
+                  {% endif %}
+                </td>
                 <td class="text-center">
                   <div class="dropdown">
-                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Acciones"><button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" aria-label="Acciones de {{ dp.numero }}" title="Acciones">
                       <i class="bi bi-three-dots-vertical"></i>
-                    </button></span>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end dev-menu">
                       <li>
                         <a class="dropdown-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir el detalle de la devolución" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}">
@@ -403,9 +414,9 @@
           <div class="d-flex justify-content-end align-items-center mb-2 px-2 pt-2">
             <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2">
               <div class="dropdown d-inline-block">
-                <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar el historial a PDF o Excel"><button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar el historial a PDF o Excel">
                   <i class="bi bi-box-arrow-up me-2"></i>Exportar
-                </button></span>
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                   <li>
                     <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
@@ -443,6 +454,6 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261016i"></script>
+<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261118b"></script>
 {% endblock %}
 
