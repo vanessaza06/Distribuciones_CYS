@@ -70,26 +70,67 @@
   <h3 class="fw-bold m-0 lotes-seccion-titulo">Stock por Lote</h3>
 </div>
 
-<!-- Buscador -->
-<div class="d-flex flex-wrap gap-2 mb-3">
+<!-- Buscador + botón de filtros -->
+<div class="d-flex flex-wrap gap-2 mb-2">
   <div class="d-flex align-items-center buscar-lote-grupo" id="buscarLote-grupo">
-  <span class="lotes-search-prefix">
-    <i class="bi bi-search"></i>
-  </span>
-  <input type="text" id="buscarLote" class="form-control lotes-search-input"
-         placeholder="Buscar producto, lote…">
+    <span class="lotes-search-prefix">
+      <i class="bi bi-search"></i>
+    </span>
+    <input type="text" id="buscarLote" class="form-control lotes-search-input"
+           placeholder="Buscar producto, lote…" autocomplete="off">
+  </div>
+
+  <button class="btn btn-sm px-3 lotes-filtro-btn d-inline-flex align-items-center gap-2" type="button"
+          data-bs-toggle="collapse" data-bs-target="#filtrosLotes"
+          aria-expanded="false" aria-controls="filtrosLotes" title="Filtrar lotes">
+    <i class="bi bi-funnel"></i>
+    <span>Filtros</span>
+    <span class="badge rounded-pill lotes-filtros-contador d-none" id="filtrosLotesContador">0</span>
+    <i class="bi bi-chevron-down lotes-filtro-chevron"></i>
+  </button>
 </div>
-  <div class="dropdown" id="filtroEstado-wrap">
-    <button class="btn btn-sm dropdown-toggle px-3 lotes-filtro-btn" type="button"
-          id="filtroEstado-btn" data-bs-toggle="dropdown">
-      <span id="filtroEstado-label">Todos</span>
-    </button>
-    <ul class="dropdown-menu lotes-filtro-menu">
-      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="todos">Todos</a></li>
-      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="ok">En orden</a></li>
-      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="por_vencer">Por vencer</a></li>
-      <li><a class="dropdown-item filtro-estado-item" href="#" data-estado="vencido">Vencido</a></li>
-    </ul>
+
+<!-- ═══ PANEL DE FILTROS (se despliega debajo de la barra) ═══ -->
+<div class="collapse" id="filtrosLotes">
+  <div class="lotes-filtros-panel">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="lotes-filtro-label" for="filtroLoteProducto">Producto</label>
+        <select id="filtroLoteProducto" class="form-select lotes-filtro-input">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="lotes-filtro-label" for="filtroLoteEstado">Estado</label>
+        <select id="filtroLoteEstado" class="form-select lotes-filtro-input">
+          <option value="">Todos</option>
+          <option value="ok">En orden</option>
+          <option value="por_vencer">Por vencer</option>
+          <option value="vencido">Vencido</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="lotes-filtro-label" for="filtroLoteStockMin">Stock mín.</label>
+        <input type="number" id="filtroLoteStockMin" class="form-control lotes-filtro-input" min="0" placeholder="0">
+      </div>
+      <div class="col-md-2">
+        <label class="lotes-filtro-label" for="filtroLoteStockMax">Stock máx.</label>
+        <input type="number" id="filtroLoteStockMax" class="form-control lotes-filtro-input" min="0" placeholder="Sin límite">
+      </div>
+      <div class="col-md-4">
+        <label class="lotes-filtro-label" for="filtroLoteVenceDesde">Vence desde</label>
+        <input type="date" id="filtroLoteVenceDesde" class="form-control lotes-filtro-input">
+      </div>
+      <div class="col-md-4">
+        <label class="lotes-filtro-label" for="filtroLoteVenceHasta">Vence hasta</label>
+        <input type="date" id="filtroLoteVenceHasta" class="form-control lotes-filtro-input">
+      </div>
+      <div class="col-md-4">
+        <button type="button" id="filtroLoteLimpiar" class="btn-accion-ghost w-100 justify-content-center">
+          <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -111,7 +152,10 @@
       {% for lote in lotes_activos %}
       <tr class="lote-row"
           data-nombre="{{ lote.presentacion.producto.nombre|lower }}"
+          data-producto="{{ lote.presentacion.producto.nombre }}"
           data-lote="{{ lote.numero_lote|lower }}"
+          data-stock="{{ lote.stock_actual|unlocalize }}"
+          data-vence="{% if lote.fecha_vencimiento %}{{ lote.fecha_vencimiento|date:'Y-m-d' }}{% endif %}"
           data-estado="{% if lote.esta_vencido %}vencido{% elif lote.proximo_a_vencer %}por_vencer{% else %}ok{% endif %}">
 
         <td class="ps-3">
@@ -125,12 +169,12 @@
           </span>
         </td>
 
-        <td class="text-center">
+        <td class="text-center" data-order="{{ lote.stock_actual|unlocalize }}">
           <span class="fw-bold lote-stock-valor">{{ lote.stock_actual }}</span>
           <small class="lote-stock-unidad"> uds</small>
         </td>
 
-        <td>
+        <td data-order="{% if lote.fecha_vencimiento %}{{ lote.fecha_vencimiento|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}">
           {% if lote.fecha_vencimiento %}
             <span class="{% if lote.esta_vencido %}lote-fecha--vencido{% elif lote.proximo_a_vencer %}lote-fecha--por-vencer{% else %}lote-fecha--ok{% endif %}">
               {{ lote.fecha_vencimiento|date:"d/m/Y" }}
@@ -162,7 +206,7 @@
           {% endif %}
         </td>
 
-        <td class="text-center">
+        <td class="text-center" data-order="{% if lote.costo_unitario %}{{ lote.costo_unitario|unlocalize }}{% else %}0{% endif %}">
           {% if lote.costo_unitario %}
             <span class="fw-semibold lote-costo-valor">
               ${{ lote.costo_unitario|floatformat:0 }}
@@ -172,7 +216,7 @@
           {% endif %}
         </td>
 
-        <td class="text-center">
+        <td class="text-center" data-order="{% if lote.costo_unitario %}{% widthratio lote.stock_actual 1 lote.costo_unitario %}{% else %}0{% endif %}">
           {% if lote.costo_unitario %}
             <span class="lote-valor-total">
               ${% widthratio lote.stock_actual 1 lote.costo_unitario %}
@@ -191,13 +235,9 @@
           </button>
         </td>
       </tr>
-      {% endfor %} </tbody>
+      {% endfor %}
+    </tbody>
   </table>
-</div>
-
-<div id="sinResultadosLotes" class="text-center py-5 d-none lotes-sin-resultados">
-  <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
-  Sin resultados para tu búsqueda.
 </div>
 
 <!-- MODALES EDITAR LOTE -->

@@ -1064,3 +1064,25 @@ html, body {
   #seccionListaCategorias * { color: #000 !important; background: transparent !important; }
   #seccionListaCategorias .list-group-item { border-bottom: 1px solid #999 !important; }
 }
+/* ── Botón de filtro junto a la lupa ── */
+.bp-btn-filtro {
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.bp-filtro-chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+.bp-btn-filtro[aria-expanded="true"] .bp-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Panel desplegable de filtros ── */
+.bp-filtros-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}

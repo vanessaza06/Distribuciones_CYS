@@ -247,21 +247,104 @@ window.addEventListener('load', function () {
     box.innerHTML = '<i class="bi ' + regla.icono + '"></i>';
   });
 })();
+
+// ── DATATABLE DE "REGISTRAR CÓDIGOS" (paginación + buscador + filtros) ──
 $(document).ready(function () {
   const dt = $('#tabla-codigos').DataTable({
-    paging: false,
+    paging: true,
+    pageLength: 10,
+    lengthMenu: [5, 10, 25, 50],
     searching: true,
-    info: false,
+    info: true,
     ordering: true,
+    order: [[1, 'asc']],                       // por Producto (la columna 0 es solo el #)
+    autoWidth: false,
     responsive: true,
-    columnDefs: [{ orderable: false, targets: [0] }],
-    language: { emptyTable: "No hay productos registrados.", zeroRecords: "No se encontraron productos." },
-    dom: 'rt'
+    columnDefs: [{ orderable: false, searchable: false, targets: [0] }],
+    language: {
+      emptyTable:   'No hay productos registrados.',
+      zeroRecords:  'No se encontraron productos.',
+      info:         'Mostrando _START_ a _END_ de _TOTAL_ productos',
+      infoEmpty:    'Mostrando 0 a 0 de 0 productos',
+      infoFiltered: '(filtrado de _MAX_ productos)',
+      lengthMenu:   'Mostrar _MENU_',
+      paginate: { first: 'Primero', last: 'Último', next: 'Siguiente', previous: 'Anterior' }
+    },
+    // r=procesando, t=tabla, l=selector de cantidad, i=info, p=paginación (sin buscador nativo)
+    dom: 'rt<"gp-dt-footer"lip>'
   });
   window.tablaCodigosDT = dt;
 
   const $buscador = $('#buscadorCodigos');
 
+  // ── Renumerar la columna # según el orden y filtro actuales ──
+  function renumerar() {
+    dt.column(0, { search: 'applied', order: 'applied' })
+      .nodes()
+      .each(function (celda, i) { celda.textContent = i + 1; });
+  }
+  dt.on('draw.dt', renumerar);
+  renumerar();
+
+  // ── Filtros Categoría y Estado (comparan el texto real de la celda) ──
+  const filtrosCod = { categoria: '', estado: '' };
+
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    if (settings.nTable.id !== 'tabla-codigos') return true;   // solo esta tabla
+    const tr = settings.aoData[dataIndex].nTr;
+    if (!tr) return true;
+
+    if (filtrosCod.categoria &&
+        tr.cells[2].textContent.trim() !== filtrosCod.categoria) return false;
+
+    if (filtrosCod.estado &&
+        tr.cells[3].textContent.indexOf(filtrosCod.estado) === -1) return false;
+
+    return true;
+  });
+
+  // Llenar el select de categorías con las que existen en la tabla
+  const selCat = document.getElementById('filtroCodCategoria');
+  if (selCat) {
+    const nombres = [];
+    dt.rows().nodes().each(function (tr) {
+      const nombre = tr.cells[2].textContent.trim();
+      if (nombre && nombres.indexOf(nombre) === -1) nombres.push(nombre);
+    });
+    nombres.sort(function (a, b) { return a.localeCompare(b, 'es'); });
+    nombres.forEach(function (nombre) {
+      const opt = document.createElement('option');
+      opt.value = nombre;
+      opt.textContent = nombre;
+      selCat.appendChild(opt);
+    });
+    selCat.addEventListener('change', function () {
+      filtrosCod.categoria = selCat.value;
+      dt.draw();
+    });
+  }
+
+  const selEstado = document.getElementById('filtroCodEstado');
+  if (selEstado) {
+    selEstado.addEventListener('change', function () {
+      filtrosCod.estado = selEstado.value;
+      dt.draw();
+    });
+  }
+
+  const btnLimpiar = document.getElementById('filtroCodLimpiar');
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', function () {
+      filtrosCod.categoria = '';
+      filtrosCod.estado = '';
+      if (selCat) selCat.value = '';
+      if (selEstado) selEstado.value = '';
+      $buscador.val('');
+      dt.search('').draw();
+    });
+  }
+
+  // ── Buscador global ──
   $buscador.on('input', function () {
     dt.search(this.value).draw();
   });
@@ -290,9 +373,19 @@ $(document).ready(function () {
   const camVideo   = document.getElementById('scan-video');
   const camEstado  = document.getElementById('scan-camara-estado');
 
+  // Quita la marca "activa" de TODAS las filas, incluso las de otras páginas
+  // (con paginación, esas filas ya no están en el DOM y querySelectorAll no las ve)
+  function limpiarFilaActiva() {
+    if (window.tablaCodigosDT) {
+      window.tablaCodigosDT.rows().nodes().to$().removeClass('scan-row--active');
+    } else {
+      document.querySelectorAll('.scan-row').forEach(f => f.classList.remove('scan-row--active'));
+    }
+  }
+
   function resetUI() {
     filaActiva = null;
-    document.querySelectorAll('.scan-row').forEach(f => f.classList.remove('scan-row--active'));
+    limpiarFilaActiva();
     scanNombre.textContent = '— Haz clic en una fila para seleccionar —';
     scanInput.value        = '';
     scanInput.disabled     = true;
@@ -442,7 +535,7 @@ function guardarCodigo(fila, codigo) {
 document.getElementById('tabla-codigos').addEventListener('click', function (e) {
   const fila = e.target.closest('.scan-row');
   if (!fila) return;
-  document.querySelectorAll('.scan-row').forEach(f => f.classList.remove('scan-row--active'));
+  limpiarFilaActiva();
   filaActiva = fila;
   fila.classList.add('scan-row--active');
   scanNombre.textContent = fila.dataset.nombre;
