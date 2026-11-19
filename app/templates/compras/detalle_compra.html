@@ -8,9 +8,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}?v=20261023c">
-<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261023c">
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261119c">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/detalle_compra.css' %}?v=20261023c">
+<link rel="stylesheet" href="{% static 'css/proveedores/detalle_compra.css' %}?v=20261119c">
 {% endblock %}
 
 {% block content %}
@@ -124,13 +124,13 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                 <li>
-                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
-                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                    <i class="bi bi-file-earmark-excel text-success me-2"></i>Excel
                   </button>
                 </li>
                 <li>
-                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
-                    <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                  <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF
                   </button>
                 </li>
               </ul>

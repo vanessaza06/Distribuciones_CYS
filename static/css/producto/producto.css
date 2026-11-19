@@ -977,9 +977,7 @@ html, body {
 
 /* ══════════════════════════════════════════
    MENÚ EXPORTAR (Excel / PDF / Imprimir)
-   Botón rojo suave + menú del mismo ancho del botón.
-   Acotado a .exp-wrap + !important para ganar a los estilos globales
-   de .dropdown-toggle / .dropdown-menu / .dropdown-item.
+   Por defecto AZUL. Rojo solo en el tema rojo (más abajo).
    ══════════════════════════════════════════ */
 .exp-wrap .exp-btn {
   display: inline-flex;
@@ -987,8 +985,8 @@ html, body {
   justify-content: center;
   gap: .5rem;
   height: 40px;
-  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
-  border: 1px solid var(--rojo, #d9534f) !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
   color: var(--texto) !important;
   font-weight: 500;
   font-size: .9rem;
@@ -1005,8 +1003,8 @@ html, body {
 .exp-wrap .exp-btn:focus,
 .exp-wrap .exp-btn:active,
 .exp-wrap .exp-btn.show {
-  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
-  border-color: var(--rojo, #d9534f) !important;
+  background: color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  border-color: var(--azul-claro) !important;
   color: var(--texto) !important;
   box-shadow: none !important;
   outline: none;
@@ -1017,6 +1015,25 @@ html, body {
 }
 .exp-wrap .exp-btn.show .exp-chevron { transform: rotate(180deg); }
 
+/* ── Tema ROJO ── */
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) .exp-wrap .exp-btn {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  border: 1px solid var(--rojo, #d9534f) !important;
+}
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) .exp-wrap .exp-btn:is(:hover, :focus, :active, .show) {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  border-color: var(--rojo, #d9534f) !important;
+}
+
+/* ── Menú desplegable ── */
 .exp-wrap .exp-menu {
   background: var(--fondo-card2, var(--fondo-card)) !important;
   border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
@@ -1050,6 +1067,7 @@ html, body {
 .exp-wrap .exp-ico-excel { color: #1f9a55 !important; }
 .exp-wrap .exp-ico-pdf   { color: #c62828 !important; }
 .exp-wrap .exp-ico-print { color: #3b82c4 !important; }
+
 /* ══ Imprimir: solo el listado de categorías ══ */
 @media print {
   body * { visibility: hidden !important; }

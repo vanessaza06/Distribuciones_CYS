@@ -1742,3 +1742,203 @@ a.cys-btn--primary,
     justify-content: center !important;
   }
 }
+/* ══════════════════════════════════════════
+   EXPORTAR (Marcas): mismo diseño que Categorías / Reportes
+   Azul por defecto, rojo en el tema rojo.
+   ══════════════════════════════════════════ */
+html body .cys-marcas-page .cys-btn.cys-btn--export,
+html body .cys-marcas-page #cysExportTrigger {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .5rem !important;
+  height: 46px !important;
+  padding: 0 1.15rem !important;
+  border-radius: 999px !important;
+  font-size: .9rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
+  color: var(--texto) !important;
+  transition: background .15s !important;
+}
+html body .cys-marcas-page .cys-btn.cys-btn--export:hover,
+html body .cys-marcas-page .cys-btn.cys-btn--export:focus,
+html body .cys-marcas-page .cys-btn.cys-btn--export:active,
+html body .cys-marcas-page .cys-export--open .cys-btn--export {
+  background: color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  background-color: color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ── Tema ROJO ── */
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-marcas-page .cys-btn.cys-btn--export {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  background-color: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  border: 1px solid var(--rojo, #d9534f) !important;
+}
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-marcas-page .cys-btn.cys-btn--export:is(:hover, :focus, :active),
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-marcas-page .cys-export--open .cys-btn--export {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  background-color: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  border-color: var(--rojo, #d9534f) !important;
+}
+
+/* ── Menú desplegable ── */
+html body .cys-marcas-page .cys-export__menu {
+  background-color: var(--fondo-card2, var(--fondo-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+  border-radius: 16px !important;
+  padding: .4rem !important;
+  margin-top: .4rem !important;
+  min-width: 100% !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .10) !important;
+}
+html body .cys-marcas-page .cys-export__menu li {
+  display: flex !important;
+  align-items: center !important;
+  gap: .7rem !important;
+  padding: .6rem .8rem !important;
+  font-size: .9rem !important;
+  font-weight: 500 !important;
+  color: var(--texto) !important;
+  background: transparent !important;
+  border-radius: 10px !important;
+  white-space: nowrap !important;
+}
+html body .cys-marcas-page .cys-export__menu li + li { margin-top: .1rem; }
+html body .cys-marcas-page .cys-export__menu li:hover {
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  color: var(--texto) !important;
+}
+html body .cys-marcas-page .cys-export__menu li i { font-size: 1.1rem !important; }
+/* ══════════════════════════════════════════
+   FLECHAS DE ORDEN (Marcas): mismo look que DataTables en Reportes
+   ══════════════════════════════════════════ */
+html body .cys-table thead th.cys-sortable {
+  position: relative !important;
+  padding-right: 32px !important;
+  cursor: pointer;
+}
+
+html body .cys-table thead th.cys-sortable::before,
+html body .cys-table thead th.cys-sortable::after {
+  position: absolute !important;
+  right: 14px !important;
+  margin: 0 !important;
+  font-size: .7em !important;
+  line-height: 1 !important;
+  color: var(--azul-claro) !important;
+  opacity: .4 !important;
+}
+
+html body .cys-table thead th.cys-sortable::before {
+  content: "▲" !important;
+  top: calc(50% - 9px) !important;
+}
+
+html body .cys-table thead th.cys-sortable::after {
+  content: "▼" !important;
+  top: calc(50% + 1px) !important;
+}
+
+/* Flecha activa */
+html body .cys-table thead th.cys-sortable.cys-sort-asc::before,
+html body .cys-table thead th.cys-sortable.cys-sort-desc::after {
+  opacity: 1 !important;
+  color: var(--azul-claro) !important;
+}
+
+/* Quitar el color ámbar viejo de la flecha inactiva */
+html body .cys-table thead th.cys-sortable.cys-sort-asc::after,
+html body .cys-table thead th.cys-sortable.cys-sort-desc::before {
+  opacity: .4 !important;
+}
+/* ── Marcas: sin flechas visibles, el clic sigue ordenando ── */
+html body .cys-table thead th.cys-sortable::before,
+html body .cys-table thead th.cys-sortable::after {
+  content: none !important;
+  display: none !important;
+}
+html body .cys-table thead th.cys-sortable {
+  padding-right: 20px !important;
+  cursor: pointer;
+}
+/* ── Encabezado de tabla Marcas: igual al de Presentaciones ── */
+html body .cys-table-card .cys-table thead th {
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+  color: var(--azul-claro) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  white-space: nowrap;
+}
+/* ── Pie de tabla Marcas: texto + botones ovalados ── */
+html body .cys-table-footer .cys-table-count {
+  color: var(--texto-muted) !important;
+  font-size: 1rem !important;
+}
+html body .cys-table-footer .cys-page-btn,
+html body .cys-table-footer .cys-page-numbers a,
+html body .cys-table-footer .cys-page-numbers button {
+  width: 48px !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--texto-muted) !important;
+  font-size: .9rem !important;
+}
+html body .cys-table-footer .cys-page-btn:hover:not(:disabled),
+html body .cys-table-footer .cys-page-numbers a:hover,
+html body .cys-table-footer .cys-page-numbers button:hover {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+}
+html body .cys-table-footer .cys-page-numbers .cys-page-numbers__active {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  font-weight: 700 !important;
+}
+html body .cys-table-footer .cys-page-btn:disabled {
+  opacity: .5 !important;
+}
+/* ── Pie de tabla Marcas: centrado ── */
+html body .cys-table-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  text-align: center !important;
+}
+html body .cys-table-footer .cys-table-count {
+  margin: 0 !important;
+}
+html body .cys-table-footer .cys-pagination {
+  justify-content: center !important;
+}

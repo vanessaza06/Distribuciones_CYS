@@ -1,13 +1,34 @@
+import base64
+import io
+import os
 from decimal import Decimal, InvalidOperation
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 from django.db.models import F, Sum, Q
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.html import escape
+
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
+from openpyxl.drawing.xdr import XDRPositiveSize2D
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.units import pixels_to_EMU
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.validators import entero_estricto, limpiar_texto, validar_texto_libre
 from app.models import (
@@ -61,13 +82,689 @@ def _pendiente_detalle(venta, detalle):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# IDENTIDAD VISUAL PARA EXPORTES (mismo diseño que el reporte de Marcas)
+# ═══════════════════════════════════════════════════════════════════════════════
+NAVY = "0B1B30"
+GOLD = "C48F3C"
+CREAM = "F0E7DA"
+ZEBRA = "FAF5EA"
+BORDE = "E3D3B5"
+VERDE = "1E8449"
+ROJO = "B03A2E"
+
+XL_NAVY = "061B3A"
+XL_GOLD = "E8A317"
+XL_ZEBRA = "EDF0F5"
+XL_BORDE = "AEB9CC"
+XL_ROJO = "9B1C1C"
+XL_FUENTE = "Calibri"
+
+LOGO_ARCHIVO = "logo.20.png"
+_LOGO_CACHE = {}
+
+
+def _ruta_logo():
+    """Busca el logo en las carpetas static. Devuelve la ruta o None."""
+    if "ruta" in _LOGO_CACHE:
+        return _LOGO_CACHE["ruta"]
+
+    from django.contrib.staticfiles import finders
+
+    ruta = None
+    for candidato in (LOGO_ARCHIVO, f"img/{LOGO_ARCHIVO}", f"images/{LOGO_ARCHIVO}",
+                      f"imagenes/{LOGO_ARCHIVO}", f"img/logo/{LOGO_ARCHIVO}"):
+        try:
+            ruta = finders.find(candidato)
+        except Exception:
+            ruta = None
+        if ruta:
+            break
+
+    if not ruta:
+        base = getattr(settings, "BASE_DIR", ".")
+        carpetas = [str(d) for d in getattr(settings, "STATICFILES_DIRS", [])]
+        carpetas += [os.path.join(str(base), "static"), os.path.join(str(base), "app", "static")]
+        for carpeta in carpetas:
+            for raiz, _dirs, archivos in os.walk(carpeta):
+                if LOGO_ARCHIVO in archivos:
+                    ruta = os.path.join(raiz, LOGO_ARCHIVO)
+                    break
+            if ruta:
+                break
+
+    _LOGO_CACHE["ruta"] = ruta
+    return ruta
+
+
+def _logo_png(px):
+    """Logo redondo, redimensionado, con esquinas transparentes. Bytes PNG o None."""
+    clave = ("png", px)
+    if clave in _LOGO_CACHE:
+        return _LOGO_CACHE[clave]
+
+    datos = None
+    ruta = _ruta_logo()
+    if ruta:
+        try:
+            from PIL import Image, ImageDraw
+            img = Image.open(ruta).convert("RGBA")
+            mascara = Image.new("L", img.size, 0)
+            ImageDraw.Draw(mascara).ellipse((0, 0, img.size[0] - 1, img.size[1] - 1), fill=255)
+            img.putalpha(mascara)
+            img = img.resize((px, px), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            datos = buf.getvalue()
+        except Exception:
+            datos = None
+
+    _LOGO_CACHE[clave] = datos
+    return datos
+
+
+def _sello():
+    return timezone.localtime().strftime('%Y%m%d_%H%M')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DATOS DE EXPORTACIÓN (clientes / proveedores) — un solo filtro para todo
+# ═══════════════════════════════════════════════════════════════════════════════
+ESTADOS_OK = ('completada', 'aprobada', 'aplicada')
+
+
+def _fecha_txt(valor):
+    if not valor:
+        return "—"
+    try:
+        if timezone.is_aware(valor):
+            valor = timezone.localtime(valor)
+    except Exception:
+        pass
+    return valor.strftime("%d/%m/%Y %H:%M")
+
+
+def _estado_txt(estado):
+    return (estado or "—").replace("_", " ").capitalize()
+
+
+def _filtros_export(request):
+    return {
+        'q': request.GET.get('q', '').strip(),
+        'estado': request.GET.get('estado', 'todos').strip(),
+        'desde': request.GET.get('desde', '').strip(),
+        'hasta': request.GET.get('hasta', '').strip(),
+    }
+
+
+def _aplicar_fechas(qs, filtros, campo='fecha'):
+    f_desde = parse_date(filtros['desde']) if filtros['desde'] else None
+    f_hasta = parse_date(filtros['hasta']) if filtros['hasta'] else None
+    if f_desde:
+        qs = qs.filter(**{f'{campo}__date__gte': f_desde})
+    if f_hasta:
+        qs = qs.filter(**{f'{campo}__date__lte': f_hasta})
+    return qs
+
+
+def _datos_cliente(request):
+    filtros = _filtros_export(request)
+    qs = Devolucion.objects.select_related('venta', 'usuario').order_by('-fecha')
+
+    q = filtros['q']
+    if q:
+        cond = (Q(venta__cliente_nombre__icontains=q) |
+                Q(usuario__nombre__icontains=q) |
+                Q(motivo__icontains=q))
+        if q.lstrip('#').isdigit():
+            cond |= Q(venta__pk=int(q.lstrip('#')))
+        qs = qs.filter(cond)
+    if filtros['estado'] and filtros['estado'] != 'todos':
+        qs = qs.filter(estado=filtros['estado'])
+    qs = _aplicar_fechas(qs, filtros)
+
+    motivos = dict(MOTIVO_CHOICES)
+    tipos = dict(TIPO_DEVOLUCION_CHOICES)
+    filas = []
+    for d in qs:
+        venta = d.venta
+        cliente = (getattr(venta, 'cliente_nombre', '') or '').strip() or 'General'
+        filas.append([
+            d.codigo_devolucion,
+            f"#{venta.pk}" if venta else "—",
+            _fecha_txt(d.fecha),
+            cliente,
+            motivos.get(d.motivo, d.motivo or "—"),
+            tipos.get(d.tipo_devolucion, d.tipo_devolucion or "—"),
+            float(d.total_devuelto or 0),
+            _estado_txt(d.estado),
+        ])
+    return {
+        'titulo': 'Reporte de Devoluciones de Clientes',
+        'archivo': 'devoluciones_clientes',
+        'unidad': 'devoluciones',
+        'encabezados': ['#', 'Venta', 'Fecha', 'Cliente', 'Motivo', 'Solución', 'Total devuelto', 'Estado'],
+        'anchos_xl': [10, 12, 20, 28, 38, 32, 20, 16],
+        'anchos_pdf': [40, 50, 85, 120, 170, 150, 85, 75],
+        'izquierda': (3, 4, 5),
+        'negrita': 3,
+        'idx_moneda': 6,
+        'idx_estado': 7,
+        'filas': filas,
+        'filtros': filtros,
+    }
+
+
+def _datos_proveedor(request):
+    filtros = _filtros_export(request)
+    qs = DevolucionProveedores.objects.select_related('proveedor').order_by('-fecha')
+
+    q = filtros['q']
+    if q:
+        qs = qs.filter(
+            Q(proveedor__nombre_empresa__icontains=q) |
+            Q(observaciones__icontains=q) |
+            Q(motivo__icontains=q)
+        )
+    if filtros['estado'] and filtros['estado'] != 'todos':
+        qs = qs.filter(estado=filtros['estado'])
+    qs = _aplicar_fechas(qs, filtros)
+
+    motivos = dict(DevolucionProveedores.MOTIVO_CHOICES)
+    filas = []
+    for d in qs:
+        extra = d.datos_extra or {}
+        filas.append([
+            d.numero,
+            d.proveedor.nombre_empresa if d.proveedor else "—",
+            _fecha_txt(d.fecha),
+            extra.get('producto_nombre') or "—",
+            int(extra.get('cantidad') or 0),
+            motivos.get(d.motivo, d.motivo or "—"),
+            float(d.total_devuelto or 0),
+            _estado_txt(d.estado),
+        ])
+    return {
+        'titulo': 'Reporte de Devoluciones a Proveedores',
+        'archivo': 'devoluciones_proveedores',
+        'unidad': 'devoluciones',
+        'encabezados': ['N°', 'Proveedor', 'Fecha', 'Producto', 'Cantidad', 'Motivo', 'Total devuelto', 'Estado'],
+        'anchos_xl': [16, 32, 20, 32, 12, 32, 20, 16],
+        'anchos_pdf': [60, 125, 85, 130, 55, 120, 85, 75],
+        'izquierda': (1, 3, 5),
+        'negrita': 1,
+        'idx_moneda': 6,
+        'idx_estado': 7,
+        'filas': filas,
+        'filtros': filtros,
+    }
+
+
+def _datos_export(request):
+    if request.GET.get('tab', 'cliente') == 'proveedor':
+        return _datos_proveedor(request)
+    return _datos_cliente(request)
+
+
+def _texto_filtros(f):
+    partes = []
+    if f["q"]:
+        partes.append(f"Búsqueda: {f['q']}")
+    if f["estado"] and f["estado"] != "todos":
+        partes.append(f"Estado: {_estado_txt(f['estado'])}")
+    if f["desde"]:
+        partes.append(f"Desde: {f['desde']}")
+    if f["hasta"]:
+        partes.append(f"Hasta: {f['hasta']}")
+    return " | ".join(partes) if partes else "Sin filtros"
+
+
+def _resumen(datos):
+    filas = datos['filas']
+    im, ie = datos['idx_moneda'], datos['idx_estado']
+    monto = sum(f[im] for f in filas if f[ie].lower() != 'rechazada')
+    ok = sum(1 for f in filas if f[ie].lower() in ESTADOS_OK)
+    rech = sum(1 for f in filas if f[ie].lower() == 'rechazada')
+    return len(filas), ok, rech, monto
+
+
+def _moneda(v):
+    return f"${v:,.0f}"
+
+
+def _texto_resumen(datos):
+    total, ok, rech, monto = _resumen(datos)
+    return (f"Total: {total} devoluciones   ·   Completadas/Aplicadas: {ok}   ·   "
+            f"Rechazadas: {rech}   ·   Monto devuelto: {_moneda(monto)}")
+
+
+def _valor_celda(datos, i, valor):
+    return _moneda(valor) if i == datos['idx_moneda'] else valor
+
+
+def _es_rojo(estado):
+    return estado.lower() == 'rechazada'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXCEL
+# ═══════════════════════════════════════════════════════════════════════════════
+def _xl_fill(hex_):
+    return PatternFill("solid", start_color=hex_, end_color=hex_)
+
+
+def _poner_imagen(ws, datos_png, col, fila, ancho, alto, off_x=0, off_y=0):
+    img = XLImage(io.BytesIO(datos_png))
+    img.width, img.height = ancho, alto
+    marcador = AnchorMarker(col=col, row=fila,
+                            colOff=pixels_to_EMU(off_x), rowOff=pixels_to_EMU(off_y))
+    img.anchor = OneCellAnchor(
+        _from=marcador,
+        ext=XDRPositiveSize2D(pixels_to_EMU(ancho), pixels_to_EMU(alto)),
+    )
+    ws.add_image(img)
+
+
+def _barra_dorada(ancho, alto):
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    buf = io.BytesIO()
+    Image.new("RGB", (ancho, alto), "#" + XL_GOLD).save(buf, "PNG")
+    return buf.getvalue()
+
+
+def exportar_devoluciones_excel(request):
+    datos = _datos_export(request)
+    filas = datos['filas']
+    encabezados = datos['encabezados']
+    n = len(encabezados)
+    ultima = get_column_letter(n)
+    im, ie = datos['idx_moneda'], datos['idx_estado']
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Devoluciones"
+    ws.sheet_properties.tabColor = XL_NAVY
+    ws.sheet_view.showGridLines = False
+
+    anchos = datos['anchos_xl']
+    for idx, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = ancho
+
+    # ---------- Banner ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
+        ws.row_dimensions[r].height = h
+
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    lado_oro = Side(style="medium", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
+
+    ws.merge_cells(f"C1:{ultima}2")
+    ws["C1"] = datos['titulo']
+    ws["C1"].font = Font(name=XL_FUENTE, size=28, bold=True, color=XL_NAVY)
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
+
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
+
+    # ---------- Encabezado de tabla ----------
+    fila_enc = 6
+    ws.row_dimensions[fila_enc].height = 34
+    blanco = Side(style="thin", color="FFFFFF")
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=15, bold=True, color="FFFFFF")
+        c.fill = _xl_fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center")
+        c.border = Border(left=blanco if i > 1 else None)
+
+    # ---------- Datos ----------
+    vertical = Side(style="thin", color=XL_BORDE)
+    izquierda_idx = datos['izquierda']
+    for k, fila in enumerate(filas):
+        r = fila_enc + 1 + k
+        ws.row_dimensions[r].height = 26
+        bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
+        ultima_fila = (k == len(filas) - 1)
+        for i, valor in enumerate(fila):
+            col = i + 1
+            if i == ie:
+                valor = "●  " + valor
+            c = ws.cell(r, col, valor)
+            c.fill = _xl_fill(bg)
+            c.border = Border(
+                left=vertical,
+                right=vertical if col == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            c.font = Font(name=XL_FUENTE, size=13, color="1F2937", bold=(i == datos['negrita']))
+            izq = i in izquierda_idx
+            c.alignment = Alignment(
+                horizontal="left" if izq else "center",
+                vertical="center",
+                indent=1 if izq else 0,
+                wrap_text=izq,
+            )
+            if i == im:
+                c.number_format = '"$"#,##0'
+        e = ws.cell(r, ie + 1)
+        e.font = Font(name=XL_FUENTE, size=13, bold=True,
+                      color=XL_ROJO if _es_rojo(fila[ie]) else XL_NAVY)
+
+    # ---------- Pie ----------
+    r = fila_enc + len(filas) + 1
+    ws.row_dimensions[r].height = 8
+    textos_pie = [
+        _texto_resumen(datos),
+        f"{_texto_filtros(datos['filtros'])}   ·   Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
+    ]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = r + j
+        ws.row_dimensions[rr].height = 22
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+    if filas:
+        ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = f"{fila_enc}:{fila_enc}"
+    ws.print_options.horizontalCentered = True
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+
+    resp = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = f'attachment; filename="{datos["archivo"]}_{_sello()}.xlsx"'
+    return resp
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PDF
+# ═══════════════════════════════════════════════════════════════════════════════
+class _BannerPDF(Flowable):
+    """Banner: logo circular | divisor dorado | título | lema | barrita dorada."""
+
+    def __init__(self, ancho, titulo, logo_bytes=None):
+        super().__init__()
+        self.width = ancho
+        self.height = 96
+        self.titulo = titulo
+        self.logo_bytes = logo_bytes
+
+    def wrap(self, aw, ah):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        navy = colors.HexColor("#" + XL_NAVY)
+        oro = colors.HexColor("#" + XL_GOLD)
+
+        diam = 84
+        x_logo, y_logo = 14, (self.height - diam) / 2
+        if self.logo_bytes:
+            c.drawImage(ImageReader(io.BytesIO(self.logo_bytes)), x_logo, y_logo,
+                        width=diam, height=diam, mask="auto")
+        else:
+            c.setFillColor(navy)
+            c.circle(x_logo + diam / 2, y_logo + diam / 2, diam / 2, stroke=0, fill=1)
+            c.setFillColor(colors.white)
+            c.setFont("Helvetica-Bold", 20)
+            c.drawCentredString(x_logo + diam / 2, y_logo + diam / 2 - 6, "CYS")
+
+        x_div = x_logo + diam + 26
+        c.setStrokeColor(oro)
+        c.setLineWidth(2.5)
+        c.line(x_div, 8, x_div, self.height - 8)
+
+        x_txt = x_div + 26
+        c.setFillColor(navy)
+        c.setFont("Helvetica-Bold", 28)
+        c.drawString(x_txt, self.height - 46, self.titulo)
+
+        c.setFont("Helvetica-Oblique", 15)
+        c.drawString(x_txt, self.height - 70, "Calidad que llega más lejos")
+
+        c.setFillColor(oro)
+        c.roundRect(x_txt, 8, 72, 4.5, 2, stroke=0, fill=1)
+
+
+def exportar_devoluciones_pdf(request):
+    datos = _datos_export(request)
+    filas = datos['filas']
+    encabezados = datos['encabezados']
+    im, ie = datos['idx_moneda'], datos['idx_estado']
+    izquierda_idx = datos['izquierda']
+
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_rojo = "#" + XL_ROJO
+    c_texto = colors.HexColor("#1F2937")
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
+        title=f"{datos['titulo']} — CYS Ltda",
+    )
+
+    estilos = getSampleStyleSheet()
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=9.5, leading=12, textColor=c_texto)
+    st_bold = ParagraphStyle("bold", parent=st_base, fontName="Helvetica-Bold",
+                             textColor=c_navy, leftIndent=6)
+    st_izq = ParagraphStyle("izq", parent=st_base, leftIndent=6)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_estado = ParagraphStyle("estado", parent=st_base, alignment=TA_CENTER,
+                               fontName="Helvetica-Bold")
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=11,
+                             textColor=colors.white, alignment=TA_CENTER, leading=14)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=10.5)
+
+    elementos = [
+        _BannerPDF(ancho_util, datos['titulo'], _logo_png(300)),
+        Spacer(1, 14),
+    ]
+
+    data = [[Paragraph(h, st_head) for h in encabezados]]
+    for f in filas:
+        fila = []
+        for i, valor in enumerate(f):
+            if i == ie:
+                color = c_rojo if _es_rojo(valor) else "#" + XL_NAVY
+                html = (f'<font color="{color}"><font name="ZapfDingbats" size="8">l</font>'
+                        f'&nbsp;&nbsp;{escape(valor)}</font>')
+                fila.append(Paragraph(html, st_estado))
+            else:
+                txt = escape(str(_valor_celda(datos, i, valor)))
+                if i == datos['negrita']:
+                    fila.append(Paragraph(txt, st_bold))
+                elif i in izquierda_idx:
+                    fila.append(Paragraph(txt, st_izq))
+                else:
+                    fila.append(Paragraph(txt, st_centro))
+        data.append(fila)
+
+    if not filas:
+        data.append([Paragraph("No hay devoluciones para mostrar.", st_centro)]
+                    + [""] * (len(encabezados) - 1))
+
+    anchos = datos['anchos_pdf']
+    escala = ancho_util / sum(anchos)
+    tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
+
+    estilo = [
+        ("BACKGROUND", (0, 0), (-1, 0), c_navy),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
+        ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BOX", (0, 0), (-1, -1), 1, c_navy),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+    ]
+    if not filas:
+        estilo.append(("SPAN", (0, 1), (-1, 1)))
+    tabla.setStyle(TableStyle(estilo))
+    elementos.append(tabla)
+
+    total, ok, rech, monto = _resumen(datos)
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(
+            f"Total: {total} devoluciones &nbsp;·&nbsp; Completadas/Aplicadas: {ok} "
+            f"&nbsp;·&nbsp; Rechazadas: {rech} &nbsp;·&nbsp; Monto devuelto: {_moneda(monto)}",
+            st_tot),
+        Spacer(1, 2),
+        Paragraph(
+            escape(_texto_filtros(datos['filtros'])) + " &nbsp;·&nbsp; Generado el "
+            + timezone.localtime().strftime("%d/%m/%Y %H:%M"),
+            st_meta),
+    ]
+
+    def pie(canvas, documento):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
+        canvas.restoreState()
+
+    doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
+
+    resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{datos["archivo"]}_{_sello()}.pdf"'
+    return resp
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPRIMIR
+# ═══════════════════════════════════════════════════════════════════════════════
+def exportar_devoluciones_imprimir(request):
+    datos = _datos_export(request)
+    filas = datos['filas']
+    encab = datos['encabezados']
+    im, ie = datos['idx_moneda'], datos['idx_estado']
+    izquierda_idx = datos['izquierda']
+    total, ok, rech, monto = _resumen(datos)
+
+    def fila_html(f):
+        celdas = []
+        for i, valor in enumerate(f):
+            txt = escape(str(_valor_celda(datos, i, valor)))
+            if i == ie:
+                clase = "no" if _es_rojo(valor) else "ok"
+                celdas.append(f"<td class='c {clase}'>{txt}</td>")
+            elif i == datos['negrita']:
+                celdas.append(f"<td class='marca'>{txt}</td>")
+            elif i in izquierda_idx:
+                celdas.append(f"<td>{txt}</td>")
+            else:
+                celdas.append(f"<td class='c'>{txt}</td>")
+        return "<tr>" + "".join(celdas) + "</tr>"
+
+    filas_html = "".join(fila_html(f) for f in filas) or \
+        f"<tr><td colspan='{len(encab)}' class='c'>No hay devoluciones para mostrar.</td></tr>"
+    encabezados = "".join(f"<th>{escape(h)}</th>" for h in encab)
+
+    logo = _logo_png(300)
+    logo_html = ""
+    if logo:
+        logo_html = f"<img class='logo' src='data:image/png;base64,{base64.b64encode(logo).decode()}' alt='CYS Ltda'>"
+
+    html = f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>{escape(datos['titulo'])} — CYS Ltda</title>
+<style>
+  @page {{ margin: 14mm; }}
+  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+  body {{ font-family: Arial, sans-serif; margin: 0; color: #1f2937; }}
+  .banner {{ background: #{NAVY}; border-bottom: 4px solid #{GOLD}; padding: 14px 20px;
+            display: flex; align-items: center; gap: 18px; border-radius: 6px 6px 0 0; }}
+  .logo {{ width: 70px; height: 70px; }}
+  .banner h1 {{ margin: 0; font: bold 24px Georgia, 'Times New Roman', serif; color: #{GOLD}; letter-spacing: 1px; }}
+  .banner p {{ margin: 3px 0 0; font-size: 14px; color: #{CREAM}; }}
+  .meta {{ font-size: 11px; color: #6b6b6b; margin: 10px 2px 12px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
+  th {{ background: #{NAVY}; color: #{GOLD}; padding: 9px 10px; border-bottom: 3px solid #{GOLD}; text-align: center; }}
+  td {{ padding: 8px 10px; border: 1px solid #{BORDE}; }}
+  td.c {{ text-align: center; }}
+  td.marca {{ font-weight: bold; color: #{NAVY}; }}
+  td.ok {{ color: #{VERDE}; font-weight: bold; }}
+  td.no {{ color: #{ROJO}; font-weight: bold; }}
+  tr:nth-child(even) td {{ background: #{ZEBRA}; }}
+  .total {{ margin-top: 8px; background: #{CREAM}; border-top: 3px solid #{GOLD}; padding: 9px 14px;
+           text-align: right; font-weight: bold; color: #{NAVY}; font-size: 13px; }}
+  .pie {{ margin-top: 14px; font-size: 10px; color: #888; text-align: center; }}
+</style></head>
+<body>
+  <div class="banner">
+    {logo_html}
+    <div><h1>CYS LTDA · DISTRIBUCIONES</h1><p>{escape(datos['titulo'])}</p></div>
+  </div>
+  <div class="meta">{escape(_texto_filtros(datos['filtros']))} &nbsp;·&nbsp; Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}</div>
+  <table><thead><tr>{encabezados}</tr></thead><tbody>{filas_html}</tbody></table>
+  <div class="total">Total: {total} devoluciones &nbsp;·&nbsp; Completadas/Aplicadas: {ok} &nbsp;·&nbsp; Rechazadas: {rech} &nbsp;·&nbsp; Monto devuelto: {_moneda(monto)}</div>
+  <div class="pie">CYS Ltda · Distribuciones</div>
+  <script>window.onload = function () {{ window.print(); }};</script>
+</body></html>"""
+    return HttpResponse(html)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MÓDULO DEVOLUCIONES DE CLIENTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def lista_devoluciones(request):
-    """Punto de entrada principal para devoluciones."""
+    """Punto de entrada principal para devoluciones.
+    También atiende ?export=excel|pdf|imprimir (&tab=cliente|proveedor)."""
     try:
+        # ---- Exportación: se llama a esta misma URL con ?export=... ----
+        tipo_export = request.GET.get('export')
+        if tipo_export == 'excel':
+            return exportar_devoluciones_excel(request)
+        if tipo_export == 'pdf':
+            return exportar_devoluciones_pdf(request)
+        if tipo_export == 'imprimir':
+            return exportar_devoluciones_imprimir(request)
+
         if request.GET.get('nuevo'):
             request.session['dev_paso'] = 1
             for key in list(request.session.keys()):
@@ -421,7 +1118,7 @@ def devoluciones_flujo(request):
                 hoy = timezone.now().date()
                 for det_item in detalles_venta:
                     cant_a_devolver = detalles_dict.get(det_item.pk, det_item.cantidad)
-                    
+
                     DetalleDevolucion.objects.create(
                         devolucion=devolucion,
                         producto=det_item.producto,
