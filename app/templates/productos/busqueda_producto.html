@@ -3,9 +3,20 @@
 
 <div class="card prod-card mb-4" id="bp-container" data-buscar-url="{{ BP_URL }}">
   <div class="card-body">
+
     <div class="input-group position-relative">
       <input class="form-control prod-input" id="bp-input" autocomplete="off"
              placeholder="Buscar producto por nombre o código…">
+
+      <!-- Botón que despliega/oculta los filtros -->
+      <button class="btn prod-btn-outline bp-btn-filtro" type="button" id="bp-btn-filtro"
+              data-bs-toggle="collapse" data-bs-target="#bp-filtros"
+              aria-expanded="false" aria-controls="bp-filtros"
+              title="Filtrar productos">
+        <i class="bi bi-funnel"></i>
+        <i class="bi bi-chevron-down bp-filtro-chevron ms-1"></i>
+      </button>
+
       <button class="btn prod-btn-primary" id="bp-btn" onclick="bpBuscarDetalle(document.getElementById('bp-input').value.trim())">
         <i class="bi bi-search"></i>
       </button>
@@ -13,6 +24,43 @@
       <!-- Dropdown de sugerencias (Bootstrap 5) -->
       <ul class="dropdown-menu w-100 bp-sugerencias-dropdown" id="bp-sugerencias"></ul>
     </div>
+
+    <!-- ═══ PANEL DE FILTROS (se despliega debajo de la barra) ═══ -->
+    <div class="collapse" id="bp-filtros">
+      <div class="bp-filtros-panel">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label prod-label" for="bp-f-nombre">Nombre</label>
+            <input type="text" id="bp-f-nombre" class="form-control prod-input"
+                   placeholder="Filtrar por nombre…"
+                   data-dt-tabla="#tablaProductosCat" data-dt-col="1">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label prod-label" for="bp-f-codigo">Código</label>
+            <input type="text" id="bp-f-codigo" class="form-control prod-input"
+                   placeholder="Filtrar por código…"
+                   data-dt-tabla="#tablaProductosCat" data-dt-col="2">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label prod-label" for="bp-f-presentacion">Presentación</label>
+            <input type="text" id="bp-f-presentacion" class="form-control prod-input"
+                   placeholder="Ej: Caja, Six pack…"
+                   data-dt-tabla="#tablaProductosCat" data-dt-col="3">
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn prod-btn-outline w-100"
+                    data-dt-limpiar="#tablaProductosCat">
+              <i class="bi bi-x-circle me-1"></i> Limpiar
+            </button>
+          </div>
+        </div>
+        <p class="prod-label small mb-0 mt-2">
+          <i class="bi bi-info-circle me-1"></i>
+          Estos filtros se aplican a la tabla de productos de la categoría seleccionada.
+        </p>
+      </div>
+    </div>
+
     <div id="bp-resultado" class="mt-3"></div>
   </div>
 </div>

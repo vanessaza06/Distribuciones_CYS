@@ -1474,10 +1474,7 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
-{# Estos dos scripts no se usan en la página de reportes y retrasan la carga.
-   Si algo dejara de funcionar, quita los comentarios. #}
-{# <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script> #}
-{# <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script> #}
+
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/reportes/reportes.js' %}"></script>
 

@@ -7,7 +7,11 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
+
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261119a">
+
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261119d">
+
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
 
@@ -168,14 +172,35 @@
 
             <!-- Parte derecha (botón + y chevron) -->
             <div class="d-flex align-items-center gap-2">
-              <!-- Botones Exportar DataTables (Excel y PDF) -->
-              <div id="cys-dt-export-compras-historial" class="d-inline-flex align-items-center gap-2">
+              <button type="button"
+                      class="btn-nueva-compra"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalNuevaCompra"
+                      title="Nueva compra">
+                <i class="bi bi-plus-circle me-2"></i>Nueva compra
+              </button>
+
+              <!-- Exportar (Excel / PDF / Imprimir) — lo atiende views.py con ?export=... -->
+              <div id="cys-export-compras" class="d-inline-flex align-items-center gap-2">
                 <div class="dropdown d-inline-block">
                   <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar compras">
                     <i class="bi bi-box-arrow-up me-2 ico-exportar"></i>Exportar
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                     <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="excel">
+                        <i class="bi bi-file-earmark-excel text-success me-2"></i>Excel
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="pdf">
+                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="imprimir">
+                        <i class="bi bi-printer text-primary me-2"></i>Imprimir
+
                       <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
                         <i class="bi bi-file-earmark-pdf ico-pdf me-2"></i>Exportar PDF
                       </button>
@@ -188,11 +213,15 @@
                     <li>
                       <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="imprimir">
                         <i class="bi bi-printer ico-imprimir me-2"></i>Imprimir
+
                       </button>
                     </li>
                   </ul>
                 </div>
               </div>
+
+
+
               <button type="button"
                       class="btn-nueva-compra"
                       data-bs-toggle="modal"
@@ -200,6 +229,7 @@
                       title="Nueva compra">
                 <i class="bi bi-plus-circle ico-nueva-compra"></i> Nueva compra
               </button>
+
               <span class="badge badge-cyan" title="Total de compras registradas para este proveedor">{{ compras_count|default:0 }}</span>
               <!-- Solo el chevron controla el collapse -->
               <i class="bi bi-chevron-down ico-chevron" role="button" tabindex="0" aria-label="Mostrar u ocultar historial de compras"
@@ -924,6 +954,12 @@
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
+
+<script src="{% static 'js/proveedores/compras.js' %}?v=20261119a"></script>
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/proveedores/compras.js' %}?v=20261119c"></script>
 {% endblock %}
+
 
