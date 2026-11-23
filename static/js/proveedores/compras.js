@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════
-// COMPRAS: modal de nueva compra, modal de pago, búsqueda de proveedores y gráficos
+// COMPRAS: modal de nueva compra, modal de pago, búsqueda de proveedores,
+// exportación (Excel / PDF / Imprimir desde el servidor) y gráficos
 // ════════════════════════════════════════════════════════════════
 
 (function () {
@@ -17,6 +18,7 @@ function init() {
   initBusquedaProveedores();
   initAccesibilidad();
   initTabla();
+  initExportar();
   initializeCharts();
 
   const params = new URLSearchParams(window.location.search);
@@ -67,96 +69,44 @@ function leerDatos() {
   }
 }
 
-// Asegurar disponibilidad del helper de exportación unificado
-if (typeof window.cysCrearDropdownExportar !== 'function') {
-  window.cysCrearDropdownExportar = function(dt, containerOrId) {
-    if (!dt) return;
-    var container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
-    if (!container) return;
+// ── Exportar: Excel / PDF / Imprimir ───────────────────────────
+// Llama a la misma URL de la página con ?export=excel|pdf|imprimir.
+// views.py aplica el mismo filtro (proveedor, q, estado, desde, hasta)
+// que usa el listado, así que lo exportado coincide con lo que ves.
+function initExportar() {
+  const contenedor = byId('cys-export-compras');
+  if (!contenedor) return;
 
-    var api = (typeof dt.button === 'function') ? dt : (window.jQuery && jQuery.fn && jQuery.fn.dataTable ? jQuery(dt).DataTable() : null);
-    if (!api || typeof api.button !== 'function') return;
+  contenedor.querySelectorAll('[data-export]').forEach((btn) => {
+    if (btn.dataset.exportBound) return;
+    btn.dataset.exportBound = 'true';
 
-    if (!api._buttons || (typeof api.buttons === 'function' && api.buttons().count() === 0)) {
-      var initOptions = (typeof api.init === 'function') ? api.init() : null;
-      if (initOptions && initOptions.buttons && window.DataTable && window.DataTable.Buttons) {
-        try { new window.DataTable.Buttons(api, initOptions.buttons); } catch (e) {}
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tipo = btn.dataset.export;
+
+      // Parte de los parámetros actuales (proveedor, filtros...)
+      const params = new URLSearchParams(window.location.search);
+      params.delete('modal');
+      params.delete('page');
+
+      // Si el proveedor no está en la URL, toma el del selector del modal
+      if (!params.get('proveedor')) {
+        const sel = byId('proveedorSeleccionado');
+        if (sel && sel.value) params.set('proveedor', sel.value);
       }
-    }
 
-    try {
-      if (typeof api.buttons === 'function') {
-        var dtBtns = api.buttons().container();
-        if (dtBtns && dtBtns.length) {
-          dtBtns.remove();
-        }
+      params.set('export', tipo);
+      const url = window.location.pathname + '?' + params.toString();
+
+      if (tipo === 'imprimir') {
+        window.open(url, '_blank');
+      } else {
+        // Es una descarga (Content-Disposition: attachment): la página no se recarga
+        window.location.href = url;
       }
-      var extraBtns = container.querySelectorAll('.dt-buttons, .cys-dt-btn-excel, .cys-dt-btn-pdf');
-      extraBtns.forEach(function(el) { el.remove(); });
-    } catch (eBtns) {}
-
-    var btnPdf = container.querySelector('[data-cys-export="pdf"]');
-    var btnExcel = container.querySelector('[data-cys-export="excel"]');
-
-    function dispararExport(tipo) {
-      var isPdf = (tipo === 'pdf');
-      var primaryClass = isPdf ? '.cys-dt-btn-pdf' : '.cys-dt-btn-excel';
-      var fallbackClass = isPdf ? '.buttons-pdf' : '.buttons-excel';
-
-      try {
-        var b = api.button(primaryClass);
-        if (b && b.length) { b.trigger(); return; }
-      } catch (e1) {}
-
-      try {
-        var b2 = api.button(fallbackClass);
-        if (b2 && b2.length) { b2.trigger(); return; }
-      } catch (e2) {}
-
-      try {
-        if (typeof api.buttons === 'function') {
-          var btns = api.buttons();
-          var count = (typeof btns.count === 'function') ? btns.count() : (btns.length || 0);
-          for (var i = 0; i < count; i++) {
-            var singleBtn = api.button(i);
-            var node = singleBtn.node();
-            if (node) {
-              var cls = (node.className || '').toLowerCase();
-              var txt = (node.textContent || '').toLowerCase();
-              if (isPdf && (cls.indexOf('pdf') !== -1 || txt.indexOf('pdf') !== -1)) {
-                singleBtn.trigger(); return;
-              }
-              if (!isPdf && (cls.indexOf('excel') !== -1 || txt.indexOf('excel') !== -1)) {
-                singleBtn.trigger(); return;
-              }
-            }
-          }
-          if (count >= 2) {
-            api.button(isPdf ? 1 : 0).trigger();
-            return;
-          }
-        }
-      } catch (e3) {
-        console.error('Error al exportar ' + tipo, e3);
-      }
-    }
-
-    if (btnPdf && !btnPdf.dataset.cysExportBound) {
-      btnPdf.dataset.cysExportBound = 'true';
-      btnPdf.addEventListener('click', function(e) {
-        e.preventDefault();
-        dispararExport('pdf');
-      });
-    }
-
-    if (btnExcel && !btnExcel.dataset.cysExportBound) {
-      btnExcel.dataset.cysExportBound = 'true';
-      btnExcel.addEventListener('click', function(e) {
-        e.preventDefault();
-        dispararExport('excel');
-      });
-    }
-  };
+    });
+  });
 }
 
 // ── Tabla del historial (DataTables) ───────────────────────────
@@ -164,7 +114,7 @@ function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
-  const dt = jQuery(tabla).DataTable({
+  jQuery(tabla).DataTable({
     paging: true,
     searching: true,
     info: true,
@@ -186,42 +136,9 @@ function initTabla() {
       topEnd: null,
       bottomStart: 'info',
       bottomEnd: 'paging'
-    },
-    buttons: [
-      {
-        extend: 'excelHtml5',
-        text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
-        className: 'cys-dt-btn-excel',
-        title: 'Distribuciones CYS Ltda - Historial de Compras',
-        filename: 'Compras_CYS',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        }
-      },
-      {
-        extend: 'pdfHtml5',
-        text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
-        className: 'cys-dt-btn-pdf',
-        title: 'Distribuciones CYS Ltda - Historial de Compras',
-        filename: 'Compras_CYS',
-        orientation: 'landscape',
-        pageSize: 'A4',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        },
-        customize: function (doc) {
-          doc.defaultStyle.fontSize = 9;
-          if (doc.styles && doc.styles.tableHeader) {
-            doc.styles.tableHeader.fontSize = 10;
-            doc.styles.tableHeader.bold = true;
-            doc.styles.tableHeader.fillColor = '#011936';
-            doc.styles.tableHeader.color = '#CF9C48';
-            doc.styles.tableHeader.alignment = 'center';
-          }
-        }
-      }
-    ]
+    }
   });
+
 
   if (typeof window.cysCrearDropdownExportar === 'function') {
     window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
@@ -298,6 +215,7 @@ function initTabla() {
       w.print();
     });
   }
+
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -590,9 +508,9 @@ function initNuevaCompra() {
       if (btnLimpiar && !hiddenProducto.value) btnLimpiar.classList.add('d-none');
       if (contador) {
         contador.textContent = `${totalProds} disponibles`;
-        contador.className = 'badge';
-        contador.style.background = 'rgba(77, 168, 218, 0.15)';
-        contador.style.color = '#4DA8DA';
+        contador.className = 'badge cmp-badge-contador';
+        contador.style.background = '';
+        contador.style.color = '';
       }
       return;
     }
@@ -1161,4 +1079,3 @@ if (document.body) {
 }
 
 })();
-

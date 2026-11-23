@@ -3234,3 +3234,228 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   background: rgba(0, 0, 0, 0.3);
   font-size: 0.8rem;
 }
+/* ── Botón Exportar con menú desplegable ── */
+.cmp-export-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem 1.1rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  color: var(--texto) !important;
+  font-weight: 600 !important;
+  white-space: nowrap;
+}
+.cmp-export-btn::after { display: none !important; } /* quita la flecha por defecto de Bootstrap */
+.cmp-export-btn:hover,
+.cmp-export-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  transform: none !important;
+}
+.cmp-export-btn .bi-box-arrow-up { color: var(--azul-claro); font-size: 1.05rem; }
+.cmp-export-chevron { font-size: .8rem; transition: transform .2s ease; }
+.cmp-export-btn[aria-expanded="true"] .cmp-export-chevron { transform: rotate(180deg); }
+
+.cmp-export-menu {
+  min-width: 190px !important;
+  margin-top: .5rem !important;
+  padding: .5rem !important;
+  border-radius: 14px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+}
+.cmp-export-item {
+  display: flex !important;
+  align-items: center;
+  gap: .85rem;
+  padding: .7rem .9rem !important;
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--texto) !important;
+}
+.cmp-export-item i { font-size: 1.25rem; width: 24px; text-align: center; }
+.cmp-export-item:hover { background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important; }
+
+/* Colores de cada icono */
+.cmp-export-item .ico-excel { color: #2ecc71 !important; }
+.cmp-export-item .ico-pdf   { color: #e74c3c !important; }
+.cmp-export-item .ico-print { color: var(--azul-claro) !important; }
+/* ════════════════════════════════════════════════════════════════
+   BOTÓN EXPORTAR + MENÚ DESPLEGABLE (Excel / PDF / Imprimir)
+   Apunta a las clases que ya existen en compras.html
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Botón "Exportar" (píldora con borde azul + chevron) ── */
+#cys-export-compras .cat-btn-exportar {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .55rem !important;
+  padding: .5rem 1.15rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  color: var(--texto) !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background .2s ease, border-color .2s ease !important;
+}
+
+/* Icono de subir: color azul del tema (antes salía dorado) */
+#cys-export-compras .cat-btn-exportar i {
+  color: var(--azul-claro) !important;
+  font-size: 1.05rem;
+  margin: 0 !important;
+}
+
+/* Quita la flecha (caret) nativa de Bootstrap y pone un chevron propio */
+#cys-export-compras .cat-btn-exportar.dropdown-toggle::after {
+  content: "\f282";                       /* bi-chevron-down */
+  font-family: "bootstrap-icons" !important;
+  display: inline-block;
+  margin: 0 0 0 .1rem;
+  vertical-align: middle;
+  border: 0 !important;
+  font-size: .8rem;
+  font-weight: 700 !important;
+  line-height: 1;
+  color: var(--texto);
+  transition: transform .2s ease;
+}
+
+/* Chevron hacia arriba cuando el menú está abierto */
+#cys-export-compras .cat-btn-exportar[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+#cys-export-compras .cat-btn-exportar:hover,
+#cys-export-compras .cat-btn-exportar:focus,
+#cys-export-compras .cat-btn-exportar[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  transform: none !important;
+}
+
+/* ── Panel del menú ── */
+#cys-export-compras .cat-dropdown-export {
+  min-width: 190px !important;
+  margin-top: .5rem !important;
+  padding: .5rem !important;
+  border-radius: 16px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+}
+
+/* ── Opciones ── */
+#cys-export-compras .cat-dropdown-export .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .85rem;
+  width: 100%;
+  padding: .7rem .9rem !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--texto) !important;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+#cys-export-compras .cat-dropdown-export .dropdown-item:hover,
+#cys-export-compras .cat-dropdown-export .dropdown-item:focus {
+  background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+/* Iconos más grandes, alineados y con su color */
+#cys-export-compras .cat-dropdown-export .dropdown-item i {
+  width: 26px;
+  margin: 0 !important;
+  font-size: 1.35rem;
+  line-height: 1;
+  text-align: center;
+}
+#cys-export-compras .cat-dropdown-export .bi-file-earmark-excel { color: #2ecc71 !important; }  /* Excel  */
+#cys-export-compras .cat-dropdown-export .bi-file-earmark-pdf   { color: #e74c3c !important; }  /* PDF    */
+#cys-export-compras .cat-dropdown-export .bi-printer            { color: var(--azul-claro) !important; } /* Imprimir */
+
+/* Móvil: que el menú no herede el ancho/scroll de los menús de la tabla */
+@media (max-width: 480px) {
+  #cys-export-compras .cat-dropdown-export {
+    width: auto !important;
+    min-width: 180px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+/* ════════════════════════════════════════════════════════════════
+   Menú Excel / PDF / Imprimir = MISMO ANCHO que el botón Exportar
+   ════════════════════════════════════════════════════════════════ */
+
+/* El contenedor se ajusta al ancho del botón; el menú se mide contra él */
+#cys-export-compras .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Ancho mínimo del botón para que quepa "Imprimir" cómodamente */
+#cys-export-compras .cat-btn-exportar {
+  min-width: 160px !important;
+  justify-content: center !important;
+}
+
+/* Menú: exactamente el ancho del botón */
+#cys-export-compras .cat-dropdown-export {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: .5rem !important;
+  padding: .4rem !important;
+  border-radius: 16px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Opciones: compactas para que quepan en ese ancho */
+#cys-export-compras .cat-dropdown-export .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .7rem !important;
+  width: 100% !important;
+  padding: .6rem .75rem !important;
+  white-space: nowrap !important;
+}
+
+#cys-export-compras .cat-dropdown-export .dropdown-item i {
+  width: 22px !important;
+  font-size: 1.25rem !important;
+  flex-shrink: 0;
+}
+
+/* Móvil: mismo criterio (anula la regla global de 240px) */
+@media (max-width: 480px) {
+  #cys-export-compras .cat-btn-exportar {
+    min-width: 140px !important;
+  }
+  #cys-export-compras .cat-dropdown-export {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}

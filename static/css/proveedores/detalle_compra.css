@@ -193,3 +193,144 @@ html[data-tema="claro"] .estado-activo {
   color: #16a34a !important;
   border: 1px solid #bbf2cc !important;
 }
+/* ════════════════════════════════════════════════════════════════
+   BOTÓN EXPORTAR + MENÚ (mismo diseño que Compras)
+   ════════════════════════════════════════════════════════════════ */
+
+#cys-dt-export-compra .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Botón: píldora con borde azul + chevron ── */
+#cys-dt-export-compra .cat-btn-exportar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .55rem !important;
+  min-width: 160px !important;
+  padding: .5rem 1.15rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  color: var(--texto) !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background .2s ease, border-color .2s ease !important;
+}
+
+#cys-dt-export-compra .cat-btn-exportar i {
+  color: var(--azul-claro) !important;
+  font-size: 1.05rem;
+  margin: 0 !important;
+}
+
+#cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after {
+  content: "\f282";                 /* bi-chevron-down */
+  font-family: "bootstrap-icons" !important;
+  display: inline-block;
+  border: 0 !important;
+  margin: 0 0 0 .1rem;
+  font-size: .8rem;
+  font-weight: 700 !important;
+  line-height: 1;
+  color: var(--texto);
+  transition: transform .2s ease;
+}
+#cys-dt-export-compra .cat-btn-exportar[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+#cys-dt-export-compra .cat-btn-exportar:hover,
+#cys-dt-export-compra .cat-btn-exportar:focus,
+#cys-dt-export-compra .cat-btn-exportar[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  transform: none !important;
+}
+
+/* ── Menú: mismo ancho que el botón ── */
+#cys-dt-export-compra .cat-dropdown-export {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: .5rem !important;
+  padding: .4rem !important;
+  border-radius: 16px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+#cys-dt-export-compra .cat-dropdown-export .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .7rem !important;
+  width: 100% !important;
+  padding: .6rem .75rem !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--texto) !important;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap !important;
+}
+#cys-dt-export-compra .cat-dropdown-export .dropdown-item:hover,
+#cys-dt-export-compra .cat-dropdown-export .dropdown-item:focus {
+  background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+#cys-dt-export-compra .cat-dropdown-export .dropdown-item i {
+  width: 22px !important;
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  line-height: 1;
+  text-align: center;
+  flex-shrink: 0;
+}
+#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-excel { color: #2ecc71 !important; }
+#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-pdf   { color: #e74c3c !important; }
+
+/* ── Modo claro ── */
+html.cys-a11y-modo-claro #cys-dt-export-compra .cat-btn-exportar,
+html[data-tema="claro"] #cys-dt-export-compra .cat-btn-exportar {
+  background: #f3f7fc !important;
+  border-color: #b9cbe3 !important;
+  color: #1f2937 !important;
+}
+html.cys-a11y-modo-claro #cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after,
+html[data-tema="claro"] #cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after {
+  color: #1f2937;
+}
+html.cys-a11y-modo-claro #cys-dt-export-compra .cat-dropdown-export,
+html[data-tema="claro"] #cys-dt-export-compra .cat-dropdown-export {
+  background-color: #ffffff !important;
+  border-color: #d5deeb !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .12) !important;
+}
+html.cys-a11y-modo-claro #cys-dt-export-compra .cat-dropdown-export .dropdown-item,
+html[data-tema="claro"] #cys-dt-export-compra .cat-dropdown-export .dropdown-item {
+  color: #1f2937 !important;
+}
+
+/* ── Móvil: anula la regla global de .dropdown-menu a 240px ── */
+@media (max-width: 480px) {
+  #cys-dt-export-compra .cat-btn-exportar { min-width: 140px !important; }
+  #cys-dt-export-compra .cat-dropdown-export {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}

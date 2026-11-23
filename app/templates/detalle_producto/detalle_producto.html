@@ -19,19 +19,19 @@
     <!-- ══ COLUMNA IZQUIERDA: ESTADÍSTICAS ══ -->
     <div class="gp-columna-izq">
 
-      <div class="inv-quick-card qc-borde-purpura" data-bs-toggle="modal" data-bs-target="#modalRegistrarCodigos" role="button">
+      <div class="inv-quick-card qc-borde-rojo" data-bs-toggle="modal" data-bs-target="#modalRegistrarCodigos" role="button">
         <div class="d-flex justify-content-between align-items-start w-100 mb-2">
-          <div class="rounded-3 p-2 qc-icono-bg-purpura">
-            <i class="bi bi-upc-scan fs-4 qc-icono-color-purpura"></i>
+          <div class="rounded-3 p-2 qc-icono-bg-rojo">
+            <i class="bi bi-upc-scan fs-4 qc-icono-color-rojo"></i>
           </div>
-          <span class="badge rounded-pill qc-badge-purpura">CÓDIGOS</span>
+          <span class="badge rounded-pill qc-badge-rojo">CÓDIGOS</span>
         </div>
-        <div class="fw-bold mt-1 qc-valor-purpura">{{ sin_codigo }}</div>
+        <div class="fw-bold mt-1 qc-valor-rojo">{{ sin_codigo }}</div>
         <div class="fw-semibold mt-1 qc-titulo">Registrar Códigos</div>
         <div class="text-muted small mt-1 qc-desc">Asignar códigos de barras</div>
-        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-purpura">
-          <span class="qc-footer-texto-purpura">Sin código: {{ sin_codigo }}</span>
-          <i class="bi bi-arrow-right qc-footer-texto-purpura"></i>
+        <div class="mt-2 pt-2 w-100 d-flex align-items-center gap-1 qc-footer-borde-rojo">
+          <span class="qc-footer-texto-rojo">Sin código: {{ sin_codigo }}</span>
+          <i class="bi bi-arrow-right qc-footer-texto-rojo"></i>
         </div>
       </div>
 
@@ -409,10 +409,46 @@
           <div id="scan-camara-estado" class="text-muted small mt-2">Apunta la cámara al código de barras…</div>
         </div>
 
-        <div class="gp-search-wrap mb-3">
-          <i class="bi bi-search gp-search-icon"></i>
-          <input type="text" id="buscadorCodigos" class="gp-search-input"
-            placeholder="Buscar por producto, categoría o código…" autocomplete="off">
+                <!-- Buscador + botón de filtros -->
+        <div class="d-flex gap-2 align-items-center mb-2">
+          <div class="gp-search-wrap flex-grow-1">
+            <i class="bi bi-search gp-search-icon"></i>
+            <input type="text" id="buscadorCodigos" class="gp-search-input"
+              placeholder="Buscar por producto, categoría o código…" autocomplete="off">
+          </div>
+          <button type="button" class="btn rounded-pill px-3 btn-outline-azul d-inline-flex align-items-center gap-1 flex-shrink-0"
+                  data-bs-toggle="collapse" data-bs-target="#filtrosCodigos"
+                  aria-expanded="false" aria-controls="filtrosCodigos" title="Filtrar">
+            <i class="bi bi-funnel"></i><span>Filtros</span>
+            <i class="bi bi-chevron-down gp-filtro-chevron"></i>
+          </button>
+        </div>
+
+        <!-- Panel desplegable de filtros -->
+        <div class="collapse" id="filtrosCodigos">
+          <div class="gp-filtros-panel mb-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-5">
+                <label class="scan-campo-label" for="filtroCodCategoria">Categoría</label>
+                <select id="filtroCodCategoria" class="form-select inv-input">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="scan-campo-label" for="filtroCodEstado">Estado</label>
+                <select id="filtroCodEstado" class="form-select inv-input">
+                  <option value="">Todos</option>
+                  <option value="Registrado">Registrado</option>
+                  <option value="Sin código">Sin código</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <button type="button" id="filtroCodLimpiar" class="btn rounded-pill px-3 btn-outline-azul w-100">
+                  <i class="bi bi-x-circle me-1"></i>Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="table-responsive">
