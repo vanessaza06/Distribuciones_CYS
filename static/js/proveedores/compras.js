@@ -227,6 +227,33 @@ function initTabla() {
     window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
   }
 
+  // Filtros por fecha, estado y pago (se suman al buscador)
+  var fDesde = byId('filtroComprasDesde'), fHasta = byId('filtroComprasHasta');
+  var fEstado = byId('filtroComprasEstado'), fPago = byId('filtroComprasPago');
+  jQuery.fn.dataTable.ext.search.push(function (settings, data, idx) {
+    if (settings.nTable !== tabla) return true;
+    var tr = settings.aoData[idx] && settings.aoData[idx].nTr;
+    if (!tr) return true;
+    var f = tr.dataset.fecha || '';
+    if (fDesde && fDesde.value && f < fDesde.value) return false;
+    if (fHasta && fHasta.value && f > fHasta.value) return false;
+    if (fEstado && fEstado.value && tr.dataset.estado !== fEstado.value) return false;
+    if (fPago && fPago.value && tr.dataset.pago !== fPago.value) return false;
+    return true;
+  });
+  [fDesde, fHasta, fEstado, fPago].forEach(function (el) {
+    if (el) el.addEventListener('change', function () { dt.draw(); });
+  });
+  var btnLimpiar = byId('btnLimpiarFiltrosCompras');
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', function () {
+      [fDesde, fHasta, fEstado, fPago].forEach(function (el) { if (el) el.value = ''; });
+      var b = byId('buscarCompras');
+      if (b) b.value = '';
+      dt.search('').draw();
+    });
+  }
+
   // Buscador del historial conectado a DataTables
   var buscarCompras = byId('buscarCompras');
   if (buscarCompras) {

@@ -220,6 +220,38 @@
               <i class="dev-search-icon bi bi-search"></i>
               <input type="text" id="buscarCompras" class="form-control dev-search-input" placeholder="Buscar por producto, pago, estado o fecha..." title="Filtra el historial de compras mientras escribes">
             </div>
+            <div class="d-flex flex-wrap align-items-end gap-2 mt-2" id="filtrosCompras">
+              <div>
+                <label for="filtroComprasDesde" class="form-label small mb-1">Desde</label>
+                <input type="date" id="filtroComprasDesde" class="form-control form-control-sm" title="Compras desde esta fecha">
+              </div>
+              <div>
+                <label for="filtroComprasHasta" class="form-label small mb-1">Hasta</label>
+                <input type="date" id="filtroComprasHasta" class="form-control form-control-sm" title="Compras hasta esta fecha">
+              </div>
+              <div>
+                <label for="filtroComprasEstado" class="form-label small mb-1">Estado</label>
+                <select id="filtroComprasEstado" class="form-select form-select-sm">
+                  <option value="">Todos</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="confirmada">Confirmada</option>
+                  <option value="recibida">Recibida</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
+              <div>
+                <label for="filtroComprasPago" class="form-label small mb-1">Pago</label>
+                <select id="filtroComprasPago" class="form-select form-select-sm">
+                  <option value="">Todos</option>
+                  <option value="pagada">Pagada</option>
+                  <option value="parcial">Parcial</option>
+                  <option value="pendiente">Pendiente</option>
+                </select>
+              </div>
+              <button type="button" id="btnLimpiarFiltrosCompras" class="btn btn-sm btn-outline-secondary" title="Quitar todos los filtros">
+                <i class="bi bi-x-circle me-1"></i>Limpiar
+              </button>
+            </div>
           </div>
           {% endif %}
           <div class="table-responsive table-scroll">
@@ -240,7 +272,7 @@
               </thead>
               <tbody>
                 {% for compra in compras %}
-                  <tr>
+                  <tr data-fecha="{{ compra.fecha_registro|date:'Y-m-d' }}" data-estado="{{ compra.estado }}" data-pago="{{ compra.estado_pago }}">
                     <td class="text-center small text-muted">{{ forloop.counter }}</td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
@@ -924,6 +956,6 @@
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/compras.js' %}?v=20261119c"></script>
+<script src="{% static 'js/proveedores/compras.js' %}?v=20261119d"></script>
 {% endblock %}
 
