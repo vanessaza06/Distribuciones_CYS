@@ -149,8 +149,8 @@
           <tr class="cys-tr fila-proveedor" data-empresa="{{ p.nombre_empresa|lower }}" data-estado="{{ p.estado }}" data-tipo="{{ p.tipo_proveedor }}">
             <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
             <td class="cys-td cys-td--bold" data-label="Empresa">
-              {{ p.nombre_empresa }}<br>
-              <span class="text-sm text-muted fw-400">{{ p.email }}</span>
+              {{ p.nombre_empresa }}
+              {% if p.email %}<br><span class="text-sm text-muted fw-400">{{ p.email }}</span>{% endif %}
             </td>
             <td class="cys-td" data-label="NIT">
               <span class="fw-bold text-monospace">{{ p.nit|default:"—" }}</span>
@@ -290,8 +290,8 @@
 
             <!-- Correo -->
             <div class="col-12 col-md-6">
-              <label for="id_email" class="form-label prod-label">Correo <span class="text-danger">*</span></label>
-              <input type="email" name="email" id="id_email" class="form-control prod-input" placeholder="contacto@empresa.com" required>
+              <label for="id_email" class="form-label prod-label">Correo <span class="text-muted text-sm fw-normal">(Opcional)</span></label>
+              <input type="email" name="email" id="id_email" class="form-control prod-input" placeholder="contacto@empresa.com">
               <div class="invalid-feedback" id="error-email"></div>
             </div>
 

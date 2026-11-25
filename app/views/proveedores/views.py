@@ -59,11 +59,9 @@ def validar_datos_proveedor(post, *, editando=False, nit_actual=None):
         errores['nombre_empresa'] = "El nombre solo admite letras, números, espacios y . , & ' ( ) - /"
     datos['nombre_empresa'] = nombre
 
-    # Correo
+    # Correo (opcional)
     correo = _limpiar(post.get('email') or post.get('correo')).lower()
-    if not correo:
-        errores['email'] = 'El correo electrónico es obligatorio.'
-    else:
+    if correo:
         try:
             if len(correo) > 254 or ' ' in correo:
                 raise DjangoValError('largo')

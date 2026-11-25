@@ -172,14 +172,6 @@
 
             <!-- Parte derecha (botón + y chevron) -->
             <div class="d-flex align-items-center gap-2">
-              <button type="button"
-                      class="btn-nueva-compra"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalNuevaCompra"
-                      title="Nueva compra">
-                <i class="bi bi-plus-circle me-2"></i>Nueva compra
-              </button>
-
               <!-- Exportar (Excel / PDF / Imprimir) — lo atiende views.py con ?export=... -->
               <div id="cys-export-compras" class="d-inline-flex align-items-center gap-2">
                 <div class="dropdown d-inline-block">
@@ -188,39 +180,23 @@
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
                     <li>
-                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="excel">
-                        <i class="bi bi-file-earmark-excel text-success me-2"></i>Excel
-                      </button>
-                    </li>
-                    <li>
                       <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="pdf">
-                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="imprimir">
-                        <i class="bi bi-printer text-primary me-2"></i>Imprimir
-
-                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
                         <i class="bi bi-file-earmark-pdf ico-pdf me-2"></i>Exportar PDF
                       </button>
                     </li>
                     <li>
-                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="excel">
                         <i class="bi bi-file-earmark-excel ico-excel me-2"></i>Exportar Excel
                       </button>
                     </li>
                     <li>
-                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="imprimir">
+                      <button class="dropdown-item d-flex align-items-center py-2" type="button" data-export="imprimir">
                         <i class="bi bi-printer ico-imprimir me-2"></i>Imprimir
-
                       </button>
                     </li>
                   </ul>
                 </div>
               </div>
-
-
 
               <button type="button"
                       class="btn-nueva-compra"
@@ -244,45 +220,40 @@
 
         <!-- Contenido desplegable -->
         <div class="collapse show" id="collapseHistorial">
-          {% if compras %}
-          <div class="px-3 pt-3">
+          {% if proveedor %}
+          <form method="get" class="px-3 pt-3" id="filtrosCompras">
+            <input type="hidden" name="proveedor" value="{{ proveedor.pk }}">
             <div class="dev-search-wrapper">
               <i class="dev-search-icon bi bi-search"></i>
-              <input type="text" id="buscarCompras" class="form-control dev-search-input" placeholder="Buscar por producto, pago, estado o fecha..." title="Filtra el historial de compras mientras escribes">
+              <input type="text" name="q" value="{{ request.GET.q }}" class="form-control dev-search-input" placeholder="Buscar por producto, usuario o # de compra..." title="Busca en el historial de compras">
             </div>
-            <div class="d-flex flex-wrap align-items-end gap-2 mt-2" id="filtrosCompras">
+            <div class="d-flex flex-wrap align-items-end gap-2 mt-2">
               <div>
                 <label for="filtroComprasDesde" class="form-label small mb-1">Desde</label>
-                <input type="date" id="filtroComprasDesde" class="form-control form-control-sm" title="Compras desde esta fecha">
+                <input type="date" id="filtroComprasDesde" name="desde" value="{{ request.GET.desde }}" class="form-control form-control-sm" title="Compras desde esta fecha">
               </div>
               <div>
                 <label for="filtroComprasHasta" class="form-label small mb-1">Hasta</label>
-                <input type="date" id="filtroComprasHasta" class="form-control form-control-sm" title="Compras hasta esta fecha">
+                <input type="date" id="filtroComprasHasta" name="hasta" value="{{ request.GET.hasta }}" class="form-control form-control-sm" title="Compras hasta esta fecha">
               </div>
               <div>
                 <label for="filtroComprasEstado" class="form-label small mb-1">Estado</label>
-                <select id="filtroComprasEstado" class="form-select form-select-sm">
-                  <option value="">Todos</option>
-                  <option value="pendiente">Pendiente</option>
-                  <option value="confirmada">Confirmada</option>
-                  <option value="recibida">Recibida</option>
-                  <option value="cancelada">Cancelada</option>
+                <select id="filtroComprasEstado" name="estado" class="form-select form-select-sm">
+                  <option value="todos">Todos</option>
+                  <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                  <option value="confirmada" {% if request.GET.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+                  <option value="recibida" {% if request.GET.estado == 'recibida' %}selected{% endif %}>Recibida</option>
+                  <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
                 </select>
               </div>
-              <div>
-                <label for="filtroComprasPago" class="form-label small mb-1">Pago</label>
-                <select id="filtroComprasPago" class="form-select form-select-sm">
-                  <option value="">Todos</option>
-                  <option value="pagada">Pagada</option>
-                  <option value="parcial">Parcial</option>
-                  <option value="pendiente">Pendiente</option>
-                </select>
-              </div>
-              <button type="button" id="btnLimpiarFiltrosCompras" class="btn btn-sm btn-outline-secondary" title="Quitar todos los filtros">
-                <i class="bi bi-x-circle me-1"></i>Limpiar
+              <button type="submit" class="btn btn-sm btn-primary fw-bold" title="Aplicar filtros">
+                <i class="bi bi-funnel me-1"></i>Filtrar
               </button>
+              <a href="?proveedor={{ proveedor.pk }}" class="btn btn-sm btn-outline-secondary" title="Quitar todos los filtros">
+                <i class="bi bi-x-circle me-1"></i>Limpiar
+              </a>
             </div>
-          </div>
+          </form>
           {% endif %}
           <div class="table-responsive table-scroll">
             {% if compras %}
