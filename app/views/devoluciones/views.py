@@ -24,7 +24,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.units import pixels_to_EMU
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.utils import ImageReader
@@ -328,7 +328,7 @@ def _resumen(datos):
 
 
 def _moneda(v):
-    return f"${v:,.0f}"
+    return f"${float(v or 0):,.0f}"
 
 
 def _texto_resumen(datos):
@@ -748,6 +748,537 @@ def exportar_devoluciones_imprimir(request):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# EXPORTES DE DETALLE (una venta / una devolución / una devolución a proveedor)
+# Mismo diseño que los reportes de listado, pero con un bloque de datos
+# de cabecera arriba y la tabla de productos debajo.
+#
+# spec = {
+#   'titulo', 'archivo', 'hoja',
+#   'info': [(etiqueta, valor), ...],
+#   'encabezados', 'filas', 'anchos_xl', 'anchos_pdf',
+#   'izquierda': (idx, ...), 'negrita': idx, 'monedas': (idx, ...),
+#   'resumen': "texto de totales", 'vacio': "texto si no hay filas"
+# }
+# ═══════════════════════════════════════════════════════════════════════════════
+def _attr_txt(obj, *attrs, default="—"):
+    """Primer atributo con valor de obj; si no hay, str(obj)."""
+    if obj is None:
+        return default
+    for a in attrs:
+        v = getattr(obj, a, None)
+        if v:
+            return str(v)
+    s = str(obj)
+    return s if s else default
+
+
+def _excel_detalle(spec):
+    filas = spec['filas']
+    encabezados = spec['encabezados']
+    n = len(encabezados)
+    ultima = get_column_letter(n)
+    monedas = set(spec.get('monedas', ()))
+    izquierda_idx = set(spec.get('izquierda', ()))
+    negrita = spec.get('negrita')
+    info = spec.get('info', [])
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = spec.get('hoja', 'Detalle')[:31]
+    ws.sheet_properties.tabColor = XL_NAVY
+    ws.sheet_view.showGridLines = False
+
+    anchos = spec['anchos_xl']
+    for idx, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = ancho
+
+    # ---------- Banner ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
+        ws.row_dimensions[r].height = h
+
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    lado_oro = Side(style="medium", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
+
+    ws.merge_cells(f"C1:{ultima}2")
+    ws["C1"] = spec['titulo']
+    ws["C1"].font = Font(name=XL_FUENTE, size=28, bold=True, color=XL_NAVY)
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
+
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
+
+    # ---------- Bloque de información ----------
+    r = 6
+    for etiqueta, valor in info:
+        ws.row_dimensions[r].height = 22
+        ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=n)
+        c = ws.cell(r, 1, f"{etiqueta}:  {valor}")
+        c.font = Font(name=XL_FUENTE, size=13, color=XL_NAVY)
+        c.alignment = Alignment(horizontal="left", vertical="center", indent=1, wrap_text=True)
+        r += 1
+    if info:
+        ws.row_dimensions[r].height = 10
+        r += 1
+
+    # ---------- Encabezado de tabla ----------
+    fila_enc = r
+    ws.row_dimensions[fila_enc].height = 34
+    blanco = Side(style="thin", color="FFFFFF")
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=15, bold=True, color="FFFFFF")
+        c.fill = _xl_fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center")
+        c.border = Border(left=blanco if i > 1 else None)
+
+    # ---------- Datos ----------
+    vertical = Side(style="thin", color=XL_BORDE)
+    for k, fila in enumerate(filas):
+        rr = fila_enc + 1 + k
+        ws.row_dimensions[rr].height = 26
+        bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
+        ultima_fila = (k == len(filas) - 1)
+        for i, valor in enumerate(fila):
+            col = i + 1
+            c = ws.cell(rr, col, valor)
+            c.fill = _xl_fill(bg)
+            c.border = Border(
+                left=vertical,
+                right=vertical if col == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            c.font = Font(name=XL_FUENTE, size=13, color="1F2937", bold=(i == negrita))
+            izq = i in izquierda_idx
+            c.alignment = Alignment(
+                horizontal="left" if izq else "center",
+                vertical="center",
+                indent=1 if izq else 0,
+                wrap_text=izq,
+            )
+            if i in monedas:
+                c.number_format = '"$"#,##0'
+
+    # ---------- Pie ----------
+    rp = fila_enc + len(filas) + 1
+    ws.row_dimensions[rp].height = 8
+    textos_pie = [spec['resumen'],
+                  f"Generado el {timezone.localtime():%d/%m/%Y %H:%M}"]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = rp + j
+        ws.row_dimensions[rr].height = 22
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=12 if j == 1 else 11,
+                      bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = f"{fila_enc}:{fila_enc}"
+    ws.print_options.horizontalCentered = True
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    resp = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = f'attachment; filename="{spec["archivo"]}_{_sello()}.xlsx"'
+    return resp
+
+
+def _pdf_detalle(spec):
+    filas = spec['filas']
+    encabezados = spec['encabezados']
+    monedas = set(spec.get('monedas', ()))
+    izquierda_idx = set(spec.get('izquierda', ()))
+    negrita = spec.get('negrita')
+
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_texto = colors.HexColor("#1F2937")
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
+        title=f"{spec['titulo']} — CYS Ltda",
+    )
+
+    estilos = getSampleStyleSheet()
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=10, leading=13, textColor=c_texto)
+    st_bold = ParagraphStyle("bold", parent=st_base, fontName="Helvetica-Bold",
+                             textColor=c_navy, leftIndent=6)
+    st_izq = ParagraphStyle("izq", parent=st_base, leftIndent=6)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=12,
+                             textColor=colors.white, alignment=TA_CENTER, leading=15)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=11, alignment=TA_RIGHT)
+    st_info = ParagraphStyle("info", parent=st_base, fontSize=10.5, leading=15,
+                             textColor=c_navy, leftIndent=8)
+
+    elementos = [_BannerPDF(ancho_util, spec['titulo'], _logo_png(300)), Spacer(1, 10)]
+
+    # Bloque de información en 2 columnas
+    info = spec.get('info', [])
+    if info:
+        celdas = [Paragraph(f"<b>{escape(str(e))}:</b> {escape(str(v))}", st_info) for e, v in info]
+        if len(celdas) % 2:
+            celdas.append("")
+        pares = [celdas[i:i + 2] for i in range(0, len(celdas), 2)]
+        t_info = Table(pares, colWidths=[ancho_util / 2] * 2)
+        t_info.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("TOPPADDING", (0, 0), (-1, -1), 1),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+            ("LINEBEFORE", (0, 0), (0, -1), 2, colors.HexColor("#" + XL_GOLD)),
+        ]))
+        elementos += [t_info, Spacer(1, 12)]
+
+    # Tabla
+    data = [[Paragraph(escape(h), st_head) for h in encabezados]]
+    for f in filas:
+        fila = []
+        for i, valor in enumerate(f):
+            txt = escape(_moneda(valor) if i in monedas else str(valor))
+            if i == negrita:
+                fila.append(Paragraph(txt, st_bold))
+            elif i in izquierda_idx:
+                fila.append(Paragraph(txt, st_izq))
+            else:
+                fila.append(Paragraph(txt, st_centro))
+        data.append(fila)
+    if not filas:
+        data.append([Paragraph(spec.get('vacio', 'Sin registros.'), st_centro)]
+                    + [""] * (len(encabezados) - 1))
+
+    anchos = spec['anchos_pdf']
+    escala = ancho_util / sum(anchos)
+    tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
+    estilo = [
+        ("BACKGROUND", (0, 0), (-1, 0), c_navy),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
+        ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+        ("TOPPADDING", (0, 1), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BOX", (0, 0), (-1, -1), 1, c_navy),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+    ]
+    if not filas:
+        estilo.append(("SPAN", (0, 1), (-1, 1)))
+    tabla.setStyle(TableStyle(estilo))
+    elementos.append(tabla)
+
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(escape(spec['resumen']), st_tot),
+        Spacer(1, 2),
+        Paragraph(f"Generado el {timezone.localtime():%d/%m/%Y %H:%M}", st_meta),
+    ]
+
+    def pie(canvas, documento):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
+        canvas.restoreState()
+
+    doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
+    resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{spec["archivo"]}_{_sello()}.pdf"'
+    return resp
+
+
+def _imprimir_detalle(spec):
+    filas = spec['filas']
+    encab = spec['encabezados']
+    monedas = set(spec.get('monedas', ()))
+    izquierda_idx = set(spec.get('izquierda', ()))
+    negrita = spec.get('negrita')
+
+    def fila_html(f):
+        celdas = []
+        for i, valor in enumerate(f):
+            txt = escape(_moneda(valor) if i in monedas else str(valor))
+            if i == negrita:
+                celdas.append(f"<td class='marca'>{txt}</td>")
+            elif i in izquierda_idx:
+                celdas.append(f"<td>{txt}</td>")
+            else:
+                celdas.append(f"<td class='c'>{txt}</td>")
+        return "<tr>" + "".join(celdas) + "</tr>"
+
+    filas_html = "".join(fila_html(f) for f in filas) or \
+        f"<tr><td colspan='{len(encab)}' class='c'>{escape(spec.get('vacio', 'Sin registros.'))}</td></tr>"
+    encabezados = "".join(f"<th>{escape(h)}</th>" for h in encab)
+    info_html = "".join(
+        f"<div><b>{escape(str(e))}:</b> {escape(str(v))}</div>" for e, v in spec.get('info', [])
+    )
+
+    logo = _logo_png(300)
+    logo_html = ""
+    if logo:
+        logo_html = f"<img class='logo' src='data:image/png;base64,{base64.b64encode(logo).decode()}' alt='CYS Ltda'>"
+
+    html = f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>{escape(spec['titulo'])} — CYS Ltda</title>
+<style>
+  @page {{ margin: 14mm; }}
+  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+  body {{ font-family: Arial, sans-serif; margin: 0; color: #1f2937; }}
+  .banner {{ background: #{NAVY}; border-bottom: 4px solid #{GOLD}; padding: 14px 20px;
+            display: flex; align-items: center; gap: 18px; border-radius: 6px 6px 0 0; }}
+  .logo {{ width: 70px; height: 70px; }}
+  .banner h1 {{ margin: 0; font: bold 24px Georgia, 'Times New Roman', serif; color: #{GOLD}; letter-spacing: 1px; }}
+  .banner p {{ margin: 3px 0 0; font-size: 14px; color: #{CREAM}; }}
+  .info {{ display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 13px;
+           color: #{NAVY}; margin: 12px 2px; padding-left: 10px; border-left: 3px solid #{GOLD}; }}
+  .meta {{ font-size: 11px; color: #6b6b6b; margin: 0 2px 12px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  th {{ background: #{NAVY}; color: #{GOLD}; padding: 9px 10px; border-bottom: 3px solid #{GOLD}; text-align: center; }}
+  td {{ padding: 8px 10px; border: 1px solid #{BORDE}; }}
+  td.c {{ text-align: center; }}
+  td.marca {{ font-weight: bold; color: #{NAVY}; }}
+  tr:nth-child(even) td {{ background: #{ZEBRA}; }}
+  .total {{ margin-top: 8px; background: #{CREAM}; border-top: 3px solid #{GOLD}; padding: 9px 14px;
+           text-align: right; font-weight: bold; color: #{NAVY}; font-size: 13px; }}
+  .pie {{ margin-top: 14px; font-size: 10px; color: #888; text-align: center; }}
+</style></head>
+<body>
+  <div class="banner">
+    {logo_html}
+    <div><h1>CYS LTDA · DISTRIBUCIONES</h1><p>{escape(spec['titulo'])}</p></div>
+  </div>
+  <div class="info">{info_html}</div>
+  <div class="meta">Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}</div>
+  <table><thead><tr>{encabezados}</tr></thead><tbody>{filas_html}</tbody></table>
+  <div class="total">{escape(spec['resumen'])}</div>
+  <div class="pie">CYS Ltda · Distribuciones</div>
+  <script>window.onload = function () {{ window.print(); }};</script>
+</body></html>"""
+    return HttpResponse(html)
+
+
+def _responder_detalle(request, spec):
+    """Elige el formato según ?export=excel|pdf|imprimir."""
+    tipo = request.GET.get('export')
+    if tipo == 'pdf':
+        return _pdf_detalle(spec)
+    if tipo == 'imprimir':
+        return _imprimir_detalle(spec)
+    return _excel_detalle(spec)
+
+
+# ── Especificaciones de cada detalle ─────────────────────────────────────────
+def _spec_detalle_venta(venta):
+    detalles = venta.detalles.select_related('producto', 'presentacion', 'lote').all()
+
+    filas, unidades, total_calc = [], 0, Decimal('0')
+    for i, d in enumerate(detalles, start=1):
+        subtotal = getattr(d, 'subtotal', None)
+        if subtotal is None:
+            subtotal = d.cantidad * d.precio_unitario
+        unidades += d.cantidad
+        total_calc += subtotal
+        filas.append([
+            i,
+            d.producto.nombre if d.producto else "Producto eliminado",
+            _attr_txt(d.presentacion, 'nombre'),
+            _attr_txt(d.lote, 'numero_lote'),
+            d.cantidad,
+            float(d.precio_unitario or 0),
+            float(subtotal or 0),
+        ])
+
+    cliente = (getattr(venta, 'cliente_nombre', '') or '').strip() or 'General'
+    usuario = getattr(venta, 'usuario', None)
+    vendedor = getattr(usuario, 'nombre', None) or _attr_txt(
+        getattr(venta, 'vendedor', None), 'get_full_name', 'username')
+
+    pagos = PagoVenta.objects.filter(venta=venta).select_related('metodo')
+    pagos_txt = " · ".join(
+        f"{_attr_txt(p.metodo, 'nombre', 'referencia')}: {_moneda(p.monto)}" for p in pagos
+    ) or "—"
+
+    total_venta = getattr(venta, 'total_venta', None)
+    if total_venta is None:
+        total_venta = total_calc
+
+    return {
+        'titulo': f'Detalle de Venta #{venta.pk}',
+        'archivo': f'venta_{venta.pk}',
+        'hoja': f'Venta {venta.pk}',
+        'info': [
+            ('Venta', f'#{venta.pk}'),
+            ('Fecha', _fecha_txt(venta.fecha)),
+            ('Cliente', cliente),
+            ('Vendedor', vendedor),
+            ('Pagos', pagos_txt),
+        ],
+        'encabezados': ['#', 'Producto', 'Presentación', 'Lote', 'Cantidad', 'Precio unitario', 'Subtotal'],
+        'anchos_xl': [8, 38, 22, 18, 14, 22, 22],
+        'anchos_pdf': [35, 220, 100, 80, 65, 100, 100],
+        'izquierda': (1, 2),
+        'negrita': 1,
+        'monedas': (5, 6),
+        'filas': filas,
+        'resumen': f"Productos: {len(filas)}   ·   Unidades: {unidades}   ·   Total venta: {_moneda(total_venta)}",
+        'vacio': 'Esta venta no tiene productos.',
+    }
+
+
+def _spec_detalle_devolucion(dev):
+    motivos = dict(MOTIVO_CHOICES)
+    tipos = dict(TIPO_DEVOLUCION_CHOICES)
+
+    detalles = dev.detalles.select_related('producto', 'presentacion', 'lote').all()
+    filas, unidades = [], 0
+    for i, d in enumerate(detalles, start=1):
+        sub = d.cantidad * d.precio_unitario
+        unidades += d.cantidad
+        filas.append([
+            i,
+            d.producto.nombre if d.producto else "Producto eliminado",
+            _attr_txt(d.presentacion, 'nombre'),
+            d.cantidad,
+            float(d.precio_unitario or 0),
+            float(sub or 0),
+        ])
+
+    venta = dev.venta
+    cliente = (getattr(venta, 'cliente_nombre', '') or '').strip() or 'General'
+
+    info = [
+        ('Devolución', str(dev.codigo_devolucion)),
+        ('Venta', f'#{venta.pk}' if venta else '—'),
+        ('Fecha', _fecha_txt(dev.fecha)),
+        ('Cliente', cliente),
+        ('Motivo', motivos.get(dev.motivo, dev.motivo or '—')),
+        ('Solución', tipos.get(dev.tipo_devolucion, dev.tipo_devolucion or '—')),
+        ('Estado', _estado_txt(dev.estado)),
+        ('Registrada por', _attr_txt(dev.usuario, 'nombre')),
+    ]
+    if dev.tipo_devolucion == 'reembolso' and getattr(dev, 'metodo_pago_devolucion', None):
+        info.append(('Medio de reembolso',
+                     dict(METODO_PAGO_CHOICES).get(dev.metodo_pago_devolucion, dev.metodo_pago_devolucion)))
+    if dev.tipo_devolucion == 'cambio' and getattr(dev, 'cantidad_cambio', 0):
+        info.append(('Unidades de cambio', str(dev.cantidad_cambio)))
+    if getattr(dev, 'observaciones', ''):
+        info.append(('Observaciones', dev.observaciones))
+
+    return {
+        'titulo': f'Detalle de Devolución {dev.codigo_devolucion}',
+        'archivo': f'devolucion_{dev.codigo_devolucion}',
+        'hoja': 'Devolución',
+        'info': info,
+        'encabezados': ['#', 'Producto', 'Presentación', 'Cantidad', 'Precio unitario', 'Subtotal'],
+        'anchos_xl': [8, 40, 24, 14, 22, 22],
+        'anchos_pdf': [35, 250, 110, 70, 100, 100],
+        'izquierda': (1, 2),
+        'negrita': 1,
+        'monedas': (4, 5),
+        'filas': filas,
+        'resumen': f"Productos: {len(filas)}   ·   Unidades: {unidades}   ·   Total devuelto: {_moneda(dev.total_devuelto)}",
+        'vacio': 'Esta devolución no tiene productos.',
+    }
+
+
+def _spec_detalle_dev_proveedor(dev, extra, compra):
+    motivos = dict(DevolucionProveedores.MOTIVO_CHOICES)
+    resoluciones = dict(DevolucionProveedores.RESOLUCION_CHOICES)
+
+    cantidad = int(extra.get('cantidad') or 0)
+    precio = float(extra.get('precio_unitario') or 0)
+    total = float(dev.total_devuelto or 0)
+    lote = Lote.objects.filter(pk=extra.get('lote_id')).first() if extra.get('lote_id') else None
+
+    filas = [[
+        1,
+        extra.get('producto_nombre') or "—",
+        _attr_txt(lote, 'numero_lote'),
+        cantidad,
+        precio,
+        total or cantidad * precio,
+    ]]
+
+    info = [
+        ('Devolución', str(dev.numero)),
+        ('Proveedor', dev.proveedor.nombre_empresa if dev.proveedor else '—'),
+        ('Fecha', _fecha_txt(dev.fecha)),
+        ('Compra', f'#{compra.pk}' if compra else '—'),
+        ('Motivo', motivos.get(dev.motivo, dev.motivo or '—')),
+        ('Resolución', resoluciones.get(extra.get('tipo_resolucion'), extra.get('tipo_resolucion') or '—')),
+        ('Estado', _estado_txt(dev.estado)),
+    ]
+    if extra.get('obs'):
+        info.append(('Observaciones', extra['obs']))
+    if extra.get('unidades_descontadas') is not None:
+        info.append(('Inventario descontado', f"{extra['unidades_descontadas']} de {cantidad} unidades"))
+
+    return {
+        'titulo': f'Detalle de Devolución {dev.numero}',
+        'archivo': f'devolucion_proveedor_{dev.numero}',
+        'hoja': 'Devolución proveedor',
+        'info': info,
+        'encabezados': ['#', 'Producto', 'Lote', 'Cantidad', 'Precio unitario', 'Subtotal'],
+        'anchos_xl': [8, 40, 20, 14, 22, 22],
+        'anchos_pdf': [35, 250, 100, 70, 100, 100],
+        'izquierda': (1,),
+        'negrita': 1,
+        'monedas': (4, 5),
+        'filas': filas,
+        'resumen': f"Unidades: {cantidad}   ·   Total devuelto: {_moneda(total)}",
+        'vacio': 'Sin productos.',
+    }
+
+
+def exportar_detalle_venta(request, venta):
+    """Exporta el detalle de UNA venta (Excel / PDF / Imprimir).
+    Úsala desde cualquier vista de detalle de venta:
+
+        from app.views.devoluciones import exportar_detalle_venta
+        if request.GET.get('export') in ('excel', 'pdf', 'imprimir'):
+            return exportar_detalle_venta(request, venta)
+    """
+    return _responder_detalle(request, _spec_detalle_venta(venta))
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MÓDULO DEVOLUCIONES DE CLIENTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -809,8 +1340,13 @@ def buscar_venta_devolucion(request):
 
 @login_required
 def detalle_venta_devolucion(request, venta_id):
-    """Detalle AJAX de una venta seleccionada."""
+    """Detalle AJAX de una venta seleccionada.
+    Con ?export=excel|pdf|imprimir exporta el detalle de la venta."""
     venta = get_object_or_404(Venta.objects.prefetch_related('detalles__producto'), pk=venta_id)
+
+    if request.GET.get('export') in ('excel', 'pdf', 'imprimir'):
+        return exportar_detalle_venta(request, venta)
+
     detalles = venta.detalles.select_related('producto').all()
 
     return JsonResponse({
@@ -857,12 +1393,16 @@ def registrar_devolucion(request, venta_id):
 
 @login_required
 def comprobante_devolucion(request, pk):
-    """Muestra el comprobante individual de una devolución."""
+    """Muestra el comprobante individual de una devolución.
+    Con ?export=excel|pdf|imprimir exporta el comprobante con el diseño corporativo."""
     devolucion = get_object_or_404(
         Devolucion.objects.select_related('venta', 'usuario', 'detalle_venta__producto')
         .prefetch_related('detalles__producto'),
         pk=pk
     )
+    if request.GET.get('export') in ('excel', 'pdf', 'imprimir'):
+        return _responder_detalle(request, _spec_detalle_devolucion(devolucion))
+
     return render(request, 'devoluciones/comprobante_devolucion.html', {
         'devolucion': devolucion,
         'breadcrumb_items': [
@@ -874,7 +1414,8 @@ def comprobante_devolucion(request, pk):
 
 @login_required
 def detalle_devolucion(request, pk):
-    """Muestra el detalle completo de una devolución de cliente."""
+    """Muestra el detalle completo de una devolución de cliente.
+    Con ?export=excel|pdf|imprimir exporta el detalle."""
     devolucion = get_object_or_404(
         Devolucion.objects.select_related(
             'venta',
@@ -886,6 +1427,9 @@ def detalle_devolucion(request, pk):
         ),
         pk=pk
     )
+    if request.GET.get('export') in ('excel', 'pdf', 'imprimir'):
+        return _responder_detalle(request, _spec_detalle_devolucion(devolucion))
+
     return render(request, 'devoluciones/detalle_devolucion.html', {
         'devolucion': devolucion,
         'breadcrumb_items': [
@@ -1383,10 +1927,14 @@ ACCIONES_DEV_PROVEEDOR = {
 
 @login_required
 def detalle_devolucion_proveedor(request, pk):
-    """Detalle de una devolución a proveedor. Con ?accion=… muestra la confirmación (sin JavaScript)."""
+    """Detalle de una devolución a proveedor. Con ?accion=… muestra la confirmación (sin JavaScript).
+    Con ?export=excel|pdf|imprimir exporta el detalle."""
     dev = get_object_or_404(DevolucionProveedores.objects.select_related('proveedor'), pk=pk)
     extra = dev.datos_extra
     compra = Compra.objects.filter(pk=extra.get('compra_id')).first()
+
+    if request.GET.get('export') in ('excel', 'pdf', 'imprimir'):
+        return _responder_detalle(request, _spec_detalle_dev_proveedor(dev, extra, compra))
 
     accion = request.GET.get('accion', '')
     confirmar = None

@@ -1942,3 +1942,294 @@ html body .cys-table-footer .cys-table-count {
 html body .cys-table-footer .cys-pagination {
   justify-content: center !important;
 }
+
+/* ══════════════════════════════════════════
+   ESTADO: badge con ícono (Activa / Inactiva)
+   ══════════════════════════════════════════ */
+html body .cys-table .cys-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 3px 10px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--cys-green) !important;
+  background: var(--cys-green-soft) !important;
+  border: 1px solid var(--cys-green-border) !important;
+}
+html body .cys-table .cys-status::before {
+  content: none !important;
+  display: none !important;
+}
+html body .cys-table .cys-status i {
+  font-size: 15px;
+  line-height: 1;
+}
+html body .cys-table .cys-status--inactiva {
+  color: var(--cys-red) !important;
+  background: var(--cys-red-soft) !important;
+  border-color: var(--cys-red-border) !important;
+}
+
+/* ══════════════════════════════════════════
+   MENÚ DE ACCIONES (tres puntos) — versión compacta
+   ══════════════════════════════════════════ */
+.cys-row-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+html body .cys-row-menu__trigger {
+  width: 40px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--cys-accent-border);
+  background: var(--cys-accent-soft);
+  color: var(--cys-accent);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+html body .cys-row-menu__trigger:hover {
+  background: color-mix(in srgb, var(--cys-accent) 24%, transparent);
+}
+
+html body .cys-row-menu__list {
+  display: none;
+  position: fixed;
+  min-width: 160px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--cys-surface-alt);
+  border: 1px solid var(--cys-accent-border);
+  border-radius: 12px;
+  box-shadow: var(--cys-shadow);
+  z-index: 3000;
+}
+html body .cys-row-menu__list.cys-row-menu--open {
+  display: block;
+}
+html body .cys-row-menu__list li {
+  list-style: none;
+  text-align: left;
+}
+html body .cys-row-menu__list li + li {
+  border-top: 1px solid var(--cys-border-soft);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+html body .cys-row-menu__list form {
+  display: block;
+  margin: 0;
+}
+
+html body .cys-row-menu__list .cys-menu-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  height: auto !important;
+  padding: 8px 12px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--cys-text) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  cursor: pointer;
+}
+html body .cys-row-menu__list .cys-menu-item i {
+  font-size: 15px;
+}
+html body .cys-row-menu__list .cys-menu-item:hover {
+  background: color-mix(in srgb, var(--cys-text) 7%, transparent) !important;
+}
+html body .cys-row-menu__list .cys-menu-item--danger {
+  color: var(--cys-red) !important;
+}
+html body .cys-row-menu__list .cys-menu-item--danger:hover {
+  background: var(--cys-red-soft) !important;
+}
+html body .cys-row-menu__list .cys-menu-item--success {
+  color: var(--cys-green) !important;
+}
+html body .cys-row-menu__list .cys-menu-item--success:hover {
+  background: var(--cys-green-soft) !important;
+}
+
+/* ══════════════════════════════════════════
+   FILTROS (Marcas): botón + panel desplegable
+   Estilo igual al de Presentaciones
+   ══════════════════════════════════════════ */
+
+/* Fila: buscador + botón Filtros alineados */
+html body .cys-marcas-page .cys-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+/* ── Botón "Filtros" ── */
+html body .cys-marcas-page .cys-btn--filtros {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .45rem !important;
+  height: 42px !important;
+  padding: 0 1rem !important;
+  border-radius: 999px !important;
+  font-size: .95rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;     /* quita las MAYÚSCULAS */
+  letter-spacing: normal !important;
+  white-space: nowrap !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
+  color: var(--azul-claro) !important;
+  box-shadow: none !important;
+}
+html body .cys-marcas-page .cys-btn--filtros:hover,
+html body .cys-marcas-page .cys-btn--filtros[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+}
+
+.cys-filtro-chevron {
+  font-size: .7rem;
+  transition: transform .2s ease;
+}
+.cys-btn--filtros[aria-expanded="true"] > .cys-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+/* Badge con la cantidad de filtros activos */
+.cys-filtros-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--azul-claro);
+  color: var(--fondo);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Panel desplegable ── */
+html body .cys-marcas-page .cys-filtros-panel {
+  flex: 1 1 100% !important;
+  padding: 1rem !important;
+  background: color-mix(in srgb, var(--texto) 3%, transparent) !important;
+  border: 1px solid var(--azul-borde) !important;
+  border-radius: 12px !important;
+  overflow: visible !important;
+}
+.cys-filtros-panel[hidden] {
+  display: none !important;
+}
+
+/* Cuadrícula: Estado + Limpiar filtros en la misma fila */
+html body .cys-marcas-page .cys-filtros-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-items: end !important;
+}
+
+.cys-filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Etiqueta: sin mayúsculas, como en Presentaciones */
+html body .cys-marcas-page .cys-filtro-label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  color: color-mix(in srgb, var(--azul-claro) 85%, var(--texto)) !important;
+}
+
+/* ── Select de estado: rectangular con esquinas suaves ── */
+html body .cys-marcas-page .cys-filtro-item .cys-select {
+  width: 100% !important;
+}
+html body .cys-marcas-page .cys-filtro-item .cys-select__trigger {
+  height: 42px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-size: .95rem !important;
+  font-weight: 500 !important;
+  background-color: var(--fondo-card2, var(--cys-surface-alt)) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  color: var(--texto) !important;
+}
+html body .cys-marcas-page .cys-filtro-item .cys-select__trigger:hover,
+html body .cys-marcas-page .cys-filtro-item .cys-select--open .cys-select__trigger {
+  border-color: var(--azul-claro) !important;
+}
+
+/* Menú del select */
+html body .cys-marcas-page .cys-filtro-item .cys-select__menu {
+  border-radius: 10px !important;
+  padding: 4px !important;
+}
+html body .cys-marcas-page .cys-filtro-item .cys-select__menu li {
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+}
+
+/* ── Botón "Limpiar filtros": píldora del ancho de su celda ── */
+html body .cys-marcas-page .cys-btn--limpiar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .5rem !important;
+  width: 100% !important;
+  height: 42px !important;
+  padding: 0 1rem !important;
+  border-radius: 999px !important;
+  font-size: .95rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;     /* quita las MAYÚSCULAS */
+  letter-spacing: normal !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
+  color: var(--azul-claro) !important;
+  box-shadow: none !important;
+}
+html body .cys-marcas-page .cys-btn--limpiar:hover {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--azul-claro) !important;
+}
+
+/* ── Móvil ── */
+@media (max-width: 960px) {
+  html body .cys-marcas-page .cys-toolbar {
+    flex-direction: row !important;
+  }
+  html body .cys-marcas-page .cys-search {
+    flex: 1 1 100% !important;
+  }
+  html body .cys-marcas-page .cys-btn--filtros {
+    flex: 1 1 100% !important;
+  }
+  html body .cys-marcas-page .cys-filtros-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
