@@ -6,7 +6,7 @@
 {% block nav_devoluciones %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261118c">
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261125">
 <link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
@@ -189,20 +189,28 @@
             <h2>Devoluciones Registradas a Proveedores</h2>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2">
+            <!-- EXPORTAR (servidor): Excel / PDF / Imprimir -->
+            <div id="dev-export-proveedor" class="d-flex align-items-center gap-2" data-dev-export-scope="proveedor">
               <div class="dropdown d-inline-block">
-                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar el historial a PDF o Excel">
-                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-box-arrow-up"></i>
+                  <span>Exportar</span>
+                  <i class="bi bi-chevron-down dev-export__chevron"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
-                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    <button class="dropdown-item" type="button" data-dev-export="excel">
+                      <i class="bi bi-file-earmark-excel"></i><span>Excel</span>
                     </button>
                   </li>
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en Excel">
-                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    <button class="dropdown-item" type="button" data-dev-export="pdf">
+                      <i class="bi bi-file-earmark-pdf"></i><span>PDF</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item" type="button" data-dev-export="imprimir">
+                      <i class="bi bi-printer"></i><span>Imprimir</span>
                     </button>
                   </li>
                 </ul>
@@ -313,7 +321,7 @@
 
   {% else %}
   <!-- ════════════════════════════════════════════════════════════════
-       SECCIÓN: DEVOLUCIONES DE CLIENTES (EXISTENTE)
+       SECCIÓN: DEVOLUCIONES DE CLIENTES
        ════════════════════════════════════════════════════════════════ -->
   <section class="dev-kpis" aria-label="Resumen de devoluciones">
     <article class="dev-kpi dev-kpi--cyan" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total de devoluciones de clientes registradas"><i class="bi bi-receipt"></i><div><span>Devoluciones</span><strong>{{ devoluciones|length }}</strong><small>registradas</small></div></article>
@@ -412,20 +420,28 @@
         </button>
         <div class="dev-history-body d-none" id="devHistoryBody">
           <div class="d-flex justify-content-end align-items-center mb-2 px-2 pt-2">
-            <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2">
+            <!-- EXPORTAR (servidor): Excel / PDF / Imprimir -->
+            <div id="dev-export-cliente" class="d-flex align-items-center gap-2" data-dev-export-scope="cliente">
               <div class="dropdown d-inline-block">
-                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar el historial a PDF o Excel">
-                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-box-arrow-up"></i>
+                  <span>Exportar</span>
+                  <i class="bi bi-chevron-down dev-export__chevron"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
-                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    <button class="dropdown-item" type="button" data-dev-export="excel">
+                      <i class="bi bi-file-earmark-excel"></i><span>Excel</span>
                     </button>
                   </li>
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en Excel">
-                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    <button class="dropdown-item" type="button" data-dev-export="pdf">
+                      <i class="bi bi-file-earmark-pdf"></i><span>PDF</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item" type="button" data-dev-export="imprimir">
+                      <i class="bi bi-printer"></i><span>Imprimir</span>
                     </button>
                   </li>
                 </ul>
@@ -454,6 +470,5 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261118b"></script>
+<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261125"></script>
 {% endblock %}
-

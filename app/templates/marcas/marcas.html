@@ -4,7 +4,7 @@
 {% block page_title %}Marcas{% endblock %}
 {% block nav_marcas %}active{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=16" />
+<link rel="stylesheet" href="{% static 'css/marcas/marcas.css' %}?v=20" />
 {% endblock %}
 {% block content %}
 
@@ -80,7 +80,7 @@
         </ul>
       </div>
 
-      <!-- Botón Nueva marca (con tooltip "Crear nueva marca") -->
+      <!-- Botón Nueva marca -->
       <button
         class="cys-btn cys-btn--primary"
         id="btnNuevaMarca"
@@ -141,23 +141,55 @@
       />
     </div>
 
-    <div class="cys-select" id="cysEstadoSelect">
-      <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
-        {# IMPORTANTE: cada {% ... %} debe ir completo en UNA sola línea #}
-        <span id="cysEstadoLabel">{% if estado_filtro == "activo" %}Activa{% elif estado_filtro == "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span>
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <ul class="cys-select__menu" id="cysEstadoMenu">
-        <li data-value="todos">Todos los estados</li>
-        <li data-value="activo">Activa</li>
-        <li data-value="inactivo">Inactiva</li>
-      </ul>
-      <input
-        type="hidden"
-        name="estado"
-        id="fieldEstadoFiltro"
-        value="{{ estado_filtro }}"
-      />
+    <button
+      type="button"
+      class="cys-btn cys-btn--filtros"
+      id="cysFiltrosBtn"
+      aria-expanded="{% if estado_filtro == 'activo' or estado_filtro == 'inactivo' %}true{% else %}false{% endif %}"
+      aria-controls="cysFiltrosPanel"
+    >
+      <i class="bi bi-funnel"></i>
+      Filtros
+      {% if estado_filtro == "activo" or estado_filtro == "inactivo" %}<span class="cys-filtros-badge">1</span>{% endif %}
+      <i class="bi bi-chevron-down cys-filtro-chevron"></i>
+    </button>
+
+    <div
+      class="cys-filtros-panel"
+      id="cysFiltrosPanel"
+      {% if estado_filtro != "activo" and estado_filtro != "inactivo" %}hidden{% endif %}
+    >
+      <div class="cys-filtros-grid">
+        <!-- Estado -->
+        <div class="cys-filtro-item">
+          <span class="cys-filtro-label">Estado</span>
+          <div class="cys-select" id="cysEstadoSelect">
+            <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
+              {# IMPORTANTE: cada {% ... %} debe ir completo en UNA sola línea #}
+              <span id="cysEstadoLabel">{% if estado_filtro == "activo" %}Activa{% elif estado_filtro == "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
+            <ul class="cys-select__menu" id="cysEstadoMenu">
+              <li data-value="todos">Todos los estados</li>
+              <li data-value="activo">Activa</li>
+              <li data-value="inactivo">Inactiva</li>
+            </ul>
+            <input
+              type="hidden"
+              name="estado"
+              id="fieldEstadoFiltro"
+              value="{{ estado_filtro }}"
+            />
+          </div>
+        </div>
+
+        <!-- Limpiar filtros (ahora es una celda más de la cuadrícula) -->
+        <div class="cys-filtro-item cys-filtro-item--accion">
+          <a class="cys-btn cys-btn--limpiar" href="{% url 'lista_marcas' %}">
+            <i class="bi bi-x-circle"></i> Limpiar filtros
+          </a>
+        </div>
+      </div>
     </div>
   </form>
 
@@ -192,49 +224,65 @@
           <td class="cys-col-center">{{ marca.total_productos }}</td>
           <td>
             {% if marca.estado == "activo" %}
-            <span class="cys-status">Activa</span>
+            <span class="cys-status"><i class="bi bi-check-circle"></i>Activa</span>
             {% else %}
-            <span class="cys-status cys-status--inactiva">Inactiva</span>
+            <span class="cys-status cys-status--inactiva"><i class="bi bi-x-circle"></i>Inactiva</span>
             {% endif %}
           </td>
           <td>
             <div class="cys-row-actions">
-              <button
-                class="cys-action-btn cys-action-btn--edit"
-                type="button"
-                title="Editar"
-                data-id="{{ marca.codigo_marca }}"
-                data-url="{% url 'editar_marca' marca.codigo_marca %}"
-                data-nombre="{{ marca.nombre }}"
-                data-descripcion="{{ marca.descripcion|default:'' }}"
-                data-estado="{{ marca.estado }}"
-              >
-                <i class="bi bi-pencil"></i>
-              </button>
+              <div class="cys-row-menu">
+                <button
+                  class="cys-row-menu__trigger"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-label="Acciones"
+                >
+                  <i class="bi bi-three-dots"></i>
+                </button>
 
-              <form
-                method="post"
-                action="{% url 'cambiar_estado_marca' marca.codigo_marca %}"
-              >
-                {% csrf_token %}
-                {% if marca.estado == "activo" %}
-                <button
-                  class="cys-action-btn cys-action-btn--deactivate"
-                  type="submit"
-                  title="Desactivar"
-                >
-                  <i class="bi bi-toggle-on"></i>
-                </button>
-                {% else %}
-                <button
-                  class="cys-action-btn cys-action-btn--activate"
-                  type="submit"
-                  title="Activar"
-                >
-                  <i class="bi bi-toggle-off"></i>
-                </button>
-                {% endif %}
-              </form>
+                <ul class="cys-row-menu__list">
+                  <li>
+                    <button
+                      class="cys-menu-item cys-action-btn cys-action-btn--edit"
+                      type="button"
+                      data-id="{{ marca.codigo_marca }}"
+                      data-url="{% url 'editar_marca' marca.codigo_marca %}"
+                      data-nombre="{{ marca.nombre }}"
+                      data-descripcion="{{ marca.descripcion|default:'' }}"
+                      data-estado="{{ marca.estado }}"
+                    >
+                      <i class="bi bi-pencil"></i>
+                      <span>Editar</span>
+                    </button>
+                  </li>
+                  <li>
+                    <form
+                      method="post"
+                      action="{% url 'cambiar_estado_marca' marca.codigo_marca %}"
+                    >
+                      {% csrf_token %}
+                      {% if marca.estado == "activo" %}
+                      <button
+                        class="cys-menu-item cys-menu-item--danger cys-action-btn cys-action-btn--deactivate"
+                        type="submit"
+                      >
+                        <i class="bi bi-pause-circle"></i>
+                        <span>Desactivar</span>
+                      </button>
+                      {% else %}
+                      <button
+                        class="cys-menu-item cys-menu-item--success cys-action-btn cys-action-btn--activate"
+                        type="submit"
+                      >
+                        <i class="bi bi-play-circle"></i>
+                        <span>Activar</span>
+                      </button>
+                      {% endif %}
+                    </form>
+                  </li>
+                </ul>
+              </div>
             </div>
           </td>
         </tr>
@@ -455,5 +503,69 @@
       "Revisa que el archivo esté en static/js/marcas/marcas.js (o static/js/marca/marcas.js).";
     page.insertBefore(aviso, page.firstChild);
   });
+</script>
+
+<!-- Menú de acciones (tres puntos) -->
+<script>
+  (function () {
+    var openMenu = null;
+
+    function closeMenu() {
+      if (openMenu) {
+        openMenu.classList.remove("cys-row-menu--open");
+        openMenu = null;
+      }
+    }
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".cys-row-menu__trigger");
+
+      if (btn) {
+        e.stopPropagation();
+        var menu = btn.parentElement.querySelector(".cys-row-menu__list");
+        var same = openMenu === menu;
+        closeMenu();
+        if (same) return;
+
+        menu.classList.add("cys-row-menu--open");
+        var r = btn.getBoundingClientRect();
+        var w = menu.offsetWidth;
+        var h = menu.offsetHeight;
+        var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+        var top = r.bottom + 6;
+        if (top + h > window.innerHeight - 8) top = r.top - h - 6;
+        menu.style.left = left + "px";
+        menu.style.top = top + "px";
+        openMenu = menu;
+        return;
+      }
+
+      if (e.target.closest(".cys-row-menu__list")) {
+        setTimeout(closeMenu, 0);
+        return;
+      }
+      closeMenu();
+    });
+
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeMenu();
+    });
+  })();
+</script>
+
+<!-- Panel de filtros -->
+<script>
+  (function () {
+    var btn = document.getElementById("cysFiltrosBtn");
+    var panel = document.getElementById("cysFiltrosPanel");
+    if (!btn || !panel) return;
+    btn.addEventListener("click", function () {
+      var abierto = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", abierto ? "false" : "true");
+      panel.hidden = abierto;
+    });
+  })();
 </script>
 {% endblock %}
