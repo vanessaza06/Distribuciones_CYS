@@ -470,3 +470,493 @@
 .badge-aplicada  { color: #15803d; background: rgba(34, 197, 94, .15); border-color: rgba(34, 197, 94, .5); }
 .badge-rechazada { color: #b91c1c; background: rgba(239, 68, 68, .13); border-color: rgba(239, 68, 68, .45); }
 .dev-table .dropdown-menu { z-index: 1055; }
+
+/* ════════════════════════════════════════════════════════════════
+   MENÚ DE ACCIONES (⋯) — mismo diseño que Presentaciones
+   ════════════════════════════════════════════════════════════════ */
+.dev-page .dd-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.dev-page .dd-wrap > .dd-btn {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  cursor: pointer;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dev-page .dd-wrap > .dd-btn i,
+.dev-page .dd-wrap > .dd-btn .bi {
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.dev-page .dd-wrap > .dd-btn:hover,
+.dev-page .dd-wrap > .dd-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+}
+
+.dev-page .dd-menu {
+  display: none;
+  position: fixed;
+  background: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-radius: 12px !important;
+  min-width: 175px;
+  z-index: 9999;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22) !important;
+  overflow: hidden;
+  text-align: left;
+}
+
+.dev-page .dd-menu.open {
+  display: block;
+}
+
+.dev-page .dd-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 11px 16px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+  text-decoration: none !important;
+  text-align: left !important;
+}
+
+.dev-page .dd-item i,
+.dev-page .dd-item .bi {
+  font-size: 15px !important;
+  width: 18px;
+  text-align: center;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+}
+
+.dev-page .dd-item:hover,
+.dev-page .dd-item:focus-visible {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  outline: none;
+}
+
+.dev-page .dd-item.danger {
+  color: #dc3545 !important;
+  -webkit-text-fill-color: #dc3545 !important;
+}
+
+.dev-page .dd-item.danger i,
+.dev-page .dd-item.danger .bi {
+  color: #dc3545 !important;
+  -webkit-text-fill-color: #dc3545 !important;
+}
+
+.dev-page .dd-item.danger:hover,
+.dev-page .dd-item.danger:focus-visible {
+  background: rgba(220, 53, 69, 0.1) !important;
+  color: #dc3545 !important;
+  -webkit-text-fill-color: #dc3545 !important;
+}
+
+.dev-page .dd-sep {
+  height: 1px;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BUSCADOR + PANEL DE FILTROS DESPLEGABLE (igual a Compras / Productos)
+   ════════════════════════════════════════════════════════════════ */
+.dev-page .dev-bp-card {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  color: var(--texto) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dev-page .dev-bp-card .input-group .dev-bp-input {
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  border-radius: 30px 0 0 30px !important;
+  padding: 0.45rem 0.9rem 0.45rem 1.15rem !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+.dev-page .dev-bp-card .input-group .dev-bp-input:focus {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.dev-page .dev-bp-card .input-group .dev-bp-input::placeholder,
+.dev-page .dev-bp-card .dev-bp-field::placeholder {
+  color: color-mix(in srgb, var(--texto) 35%, transparent) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--texto) 35%, transparent) !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-outline {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-outline i,
+.dev-page .dev-bp-card .dev-bp-btn-outline .bi {
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-outline:hover,
+.dev-page .dev-bp-card .dev-bp-btn-outline:focus {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 50%, transparent) !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-filtro {
+  border-radius: 0 !important;
+  padding: 0.45rem 0.85rem !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-filtro-chevron {
+  font-size: 0.7rem !important;
+  transition: transform 0.2s ease !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-filtro[aria-expanded="true"] .dev-bp-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-primary {
+  background: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  -webkit-text-fill-color: var(--fondo) !important;
+  border: 1px solid var(--azul-claro) !important;
+  font-weight: 700 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0.45rem 0.95rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-primary i,
+.dev-page .dev-bp-card .dev-bp-btn-primary .bi {
+  color: var(--fondo) !important;
+  -webkit-text-fill-color: var(--fondo) !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-btn-primary:hover,
+.dev-page .dev-bp-card .dev-bp-btn-primary:focus {
+  background: var(--azul-claro) !important;
+  opacity: 0.88;
+}
+
+.dev-page .dev-bp-filtros-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+
+.dev-page .dev-bp-card .dev-bp-label {
+  color: var(--texto-muted) !important;
+  -webkit-text-fill-color: var(--texto-muted) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  margin-bottom: 0.45rem !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-label i,
+.dev-page .dev-bp-card .dev-bp-label .bi {
+  color: var(--texto-muted) !important;
+  -webkit-text-fill-color: var(--texto-muted) !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-field {
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+}
+
+.dev-page .dev-bp-card .dev-bp-field:focus {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.dev-page .dev-bp-card select.dev-bp-field option {
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
+}
+
+/* ── Pie DataTables (info + paginación igual a Compras) ── */
+.dev-page .dt-container .dt-layout-row:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--dev-line);
+}
+
+.dev-page .dt-container .dt-info {
+  color: var(--texto-muted) !important;
+  font-size: 0.82rem;
+  padding-top: 0 !important;
+}
+
+.dev-page .dt-container .dt-paging .pagination {
+  margin: 0 !important;
+  gap: 4px;
+}
+
+.dev-page .dt-container .dt-paging-button,
+.dev-page .dt-container .page-link {
+  color: var(--texto) !important;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
+  padding: 0.3rem 0.65rem !important;
+  box-shadow: none !important;
+}
+
+.dev-page .dt-container .dt-paging-button:hover:not(.disabled),
+.dev-page .dt-container .page-link:hover {
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+}
+
+.dev-page .dt-container .dt-paging-button.current,
+.dev-page .dt-container .page-item.active .page-link {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  font-weight: 700 !important;
+}
+
+.dev-page .dt-container .dt-paging-button.disabled,
+.dev-page .dt-container .page-item.disabled .page-link {
+  opacity: 0.45 !important;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TABLAS DE DEVOLUCIONES (Clientes y Proveedores)
+   Color y estilo exacto de .prod-table (Presentaciones / Productos)
+   ════════════════════════════════════════════════════════════════ */
+.dev-page .dev-table-wrap,
+.dev-page .dev-history-table-wrap {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.dev-page .dev-table-wrap:hover,
+.dev-page .dev-history-table-wrap:hover {
+  box-shadow: none !important;
+}
+
+.dev-page .dev-table,
+.dev-page .dev-history-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: transparent !important;
+  --bs-table-bg: transparent !important;
+  --bs-table-striped-bg: transparent !important;
+  --bs-table-hover-bg: color-mix(in srgb, var(--azul-claro) 4%, transparent) !important;
+  --bs-table-color: var(--texto) !important;
+  --bs-table-border-color: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+}
+
+.dev-page .dev-table thead,
+.dev-page .dev-history-table thead,
+.dev-page .dev-table thead tr,
+.dev-page .dev-history-table thead tr {
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+}
+
+.dev-page .dev-table thead th,
+.dev-page .dev-history-table thead th {
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  white-space: nowrap;
+}
+
+.dev-page .dev-table thead th .dt-column-order::before,
+.dev-page .dev-table thead th .dt-column-order::after,
+.dev-page .dev-history-table thead th .dt-column-order::before,
+.dev-page .dev-history-table thead th .dt-column-order::after {
+  color: var(--azul-claro) !important;
+}
+
+.dev-page .dev-table tbody tr,
+.dev-page .dev-history-table tbody tr {
+  background: transparent !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+  transition: background 0.15s ease !important;
+}
+
+.dev-page .dev-table tbody tr:last-child,
+.dev-page .dev-history-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.dev-page .dev-table > tbody > tr:hover > td,
+.dev-page .dev-history-table > tbody > tr:hover > td {
+  background-color: color-mix(in srgb, var(--azul-claro) 4%, transparent) !important;
+  color: var(--texto) !important;
+  box-shadow: none !important;
+}
+
+.dev-page .dev-table > tbody > tr > td,
+.dev-page .dev-history-table > tbody > tr > td {
+  padding: 13px 16px !important;
+  background-color: transparent !important;
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  font-size: 13.5px !important;
+  vertical-align: middle !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
+}
+
+.dev-page .dev-table > tbody > tr > td strong,
+.dev-page .dev-history-table > tbody > tr > td strong {
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  font-weight: 600 !important;
+}
+
+.dev-page .dev-table > tbody > tr > td small,
+.dev-page .dev-history-table > tbody > tr > td small {
+  color: var(--texto-muted) !important;
+  -webkit-text-fill-color: var(--texto-muted) !important;
+  font-size: 0.78rem !important;
+}
+
+.dev-page .dev-table > tbody > tr > td.dev-money,
+.dev-page .dev-history-table > tbody > tr > td.dev-money {
+  color: var(--texto) !important;
+  -webkit-text-fill-color: var(--texto) !important;
+  font-weight: 600 !important;
+}
+
+/* Badges de estado en tabla (idénticos a .tag-ok / .tag-warn / .tag-info / .tag-crit) */
+.dev-page .badge-estado {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 3px 9px !important;
+  border-radius: 6px !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  white-space: nowrap !important;
+}
+
+.dev-page .badge-estado i,
+.dev-page .badge-estado .bi {
+  color: currentColor !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.dev-page .badge-pendiente {
+  background: rgba(255, 193, 7, 0.12) !important;
+  color: #f39c12 !important;
+  -webkit-text-fill-color: #f39c12 !important;
+  border: 1px solid rgba(255, 193, 7, 0.3) !important;
+}
+
+.dev-page .badge-aplicada {
+  background: rgba(39, 174, 96, 0.15) !important;
+  color: #27ae60 !important;
+  -webkit-text-fill-color: #27ae60 !important;
+  border: 1px solid rgba(39, 174, 96, 0.3) !important;
+}
+
+.dev-page .badge-aprobada {
+  background: rgba(77, 168, 218, 0.12) !important;
+  color: #4DA8DA !important;
+  -webkit-text-fill-color: #4DA8DA !important;
+  border: 1px solid rgba(77, 168, 218, 0.25) !important;
+}
+
+.dev-page .badge-rechazada {
+  background: rgba(220, 53, 69, 0.15) !important;
+  color: #dc3545 !important;
+  -webkit-text-fill-color: #dc3545 !important;
+  border: 1px solid rgba(220, 53, 69, 0.3) !important;
+}
+
+.dev-page .dev-table .badge-motivo {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--azul-claro) !important;
+  -webkit-text-fill-color: var(--azul-claro) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  border-radius: 6px !important;
+  padding: 3px 9px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.dev-page .dt-container .dt-layout-row:last-child {
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+}

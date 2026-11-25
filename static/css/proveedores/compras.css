@@ -1734,7 +1734,9 @@ html.cys-a11y-modo-claro #cys-export-compras .cat-btn-exportar.show {
 
 .card-proveedor-header {
   border-left: 4px solid var(--cp-dorado) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .proveedor-container {
@@ -3318,7 +3320,7 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 #cys-export-compras .cat-btn-exportar.dropdown-toggle::after {
   content: "\f282";                       /* bi-chevron-down */
   font-family: "bootstrap-icons" !important;
-  display: inline-block;
+  display: inline-block !important;
   margin: 0 0 0 .1rem;
   vertical-align: middle;
   border: 0 !important;
@@ -3458,4 +3460,269 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
     min-width: 100% !important;
     max-width: 100% !important;
   }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BUSCADOR + PANEL DE FILTROS DESPLEGABLE (mismo diseño que Productos)
+   ════════════════════════════════════════════════════════════════ */
+.cmp-bp-card {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  color: var(--texto) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input {
+  background: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 30px 0 0 30px !important;
+  padding: 0.45rem 0.9rem 0.45rem 1.15rem !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input:focus {
+  background: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input::placeholder,
+.cmp-bp-card .cmp-bp-field::placeholder {
+  color: color-mix(in srgb, var(--texto) 35%, transparent) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline i {
+  color: var(--azul-claro) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline:hover,
+.cmp-bp-card .cmp-bp-btn-outline:focus {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 50%, transparent) !important;
+  color: var(--azul-claro) !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-filtro {
+  border-radius: 0 !important;
+  padding: 0.45rem 0.85rem !important;
+}
+
+.cmp-bp-card .cmp-bp-filtro-chevron {
+  font-size: 0.7rem !important;
+  transition: transform 0.2s ease !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-filtro[aria-expanded="true"] .cmp-bp-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+.cmp-bp-card .cmp-bp-btn-primary {
+  background: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  border: 1px solid var(--azul-claro) !important;
+  font-weight: 700 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0.45rem 0.95rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-primary i {
+  color: var(--fondo) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-primary:hover,
+.cmp-bp-card .cmp-bp-btn-primary:focus,
+.cmp-bp-card .cmp-bp-btn-primary:active {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  opacity: 0.88;
+  transform: none !important;
+}
+
+.cmp-bp-filtros-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+
+.cmp-bp-card .cmp-bp-label {
+  color: var(--texto-muted) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  margin-bottom: 0.45rem !important;
+}
+
+.cmp-bp-card .cmp-bp-label i {
+  color: var(--texto-muted) !important;
+}
+
+.cmp-bp-card .cmp-bp-field {
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+}
+
+.cmp-bp-card .cmp-bp-field:focus {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.cmp-bp-card select.cmp-bp-field option {
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MENÚ DE ACCIONES (⋯) — mismo diseño que Presentaciones
+   ════════════════════════════════════════════════════════════════ */
+.dd-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.dd-btn {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  cursor: pointer;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px;
+  white-space: nowrap;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background 0.15s ease, border-color 0.15s ease !important;
+}
+
+.dd-btn i {
+  color: var(--azul-claro) !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.dd-btn:hover,
+.dd-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  transform: none !important;
+}
+
+.dd-menu {
+  display: none;
+  position: fixed;
+  background: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-radius: 12px !important;
+  min-width: 180px;
+  z-index: 9999;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22) !important;
+  overflow: hidden;
+  text-align: left;
+}
+
+.dd-menu.open {
+  display: block;
+}
+
+.dd-menu form {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.dd-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 11px 16px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--texto) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  transition: background 0.12s ease !important;
+  white-space: nowrap;
+  text-decoration: none !important;
+  text-align: left !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dd-item i {
+  font-size: 15px !important;
+  width: 18px;
+  text-align: center;
+  color: currentColor !important;
+}
+
+.dd-item:hover,
+.dd-item:focus-visible {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--texto) !important;
+  outline: none !important;
+}
+
+.dd-item.danger {
+  color: #dc3545 !important;
+}
+
+.dd-item.danger:hover,
+.dd-item.danger:focus-visible {
+  background: rgba(220, 53, 69, 0.1) !important;
+  color: #dc3545 !important;
+}
+
+.dd-item.is-disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.dd-sep {
+  height: 1px;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  margin: 0;
 }

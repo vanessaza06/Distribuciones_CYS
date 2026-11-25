@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
 <link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}?v=20261125b">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script>
@@ -83,53 +83,108 @@
     {% endfor %}
   {% endif %}
 
+  <!-- BUSCADOR Y FILTROS (MISMO DISEÑO QUE PRODUCTOS) -->
+  <div class="card prod-card prov-bp-card mb-4" id="prov-bp-container">
+    <div class="card-body">
+      <div class="input-group position-relative">
+        <input type="text" class="form-control prod-input prov-bp-input" id="buscar-proveedores"
+               autocomplete="off" placeholder="Buscar proveedor por nombre, NIT o contacto…">
+
+        <!-- Botón que despliega/oculta los filtros -->
+        <button class="btn prod-btn-outline bp-btn-filtro" type="button" id="prov-btn-filtro"
+                data-bs-toggle="collapse" data-bs-target="#prov-filtros"
+                aria-expanded="false" aria-controls="prov-filtros"
+                title="Filtrar proveedores">
+          <i class="bi bi-funnel"></i>
+          <i class="bi bi-chevron-down bp-filtro-chevron ms-1"></i>
+        </button>
+
+        <button class="btn prod-btn-primary prov-bp-btn" type="button" id="prov-btn-buscar"
+                title="Buscar proveedores">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+
+      <!-- ═══ PANEL DE FILTROS (se despliega debajo de la barra) ═══ -->
+      <div class="collapse" id="prov-filtros">
+        <div class="bp-filtros-panel">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label prod-label" for="prov-f-nit">NIT</label>
+              <input type="text" id="prov-f-nit" class="form-control prod-input"
+                     placeholder="Filtrar por NIT…">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label prod-label" for="prov-f-tipo">Tipo</label>
+              <select id="prov-f-tipo" class="form-select prod-input">
+                <option value="todos">Todos los tipos</option>
+                <option value="distribuidor">Distribuidor</option>
+                <option value="fabricante">Fabricante</option>
+                <option value="importador">Importador</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label prod-label" for="prov-f-estado">Estado</label>
+              <select id="prov-f-estado" class="form-select prod-input">
+                <option value="todos">Todos los estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="sancionado">Sancionado</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn prod-btn-outline w-100" id="prov-btn-limpiar">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+              </button>
+            </div>
+          </div>
+          <p class="prod-label small mb-0 mt-2">
+            <i class="bi bi-info-circle me-1"></i>
+            Estos filtros se aplican a la tabla de proveedores.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TABLA DE PROVEEDORES (ESTILO REPORTES) -->
   <section class="cys-card mb-4">
-    <div class="cys-card__title">
-      <i class="bi bi-table cys-card__title-icon"></i>Tabla de Proveedores
+    <div class="prov-table-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="cys-card__title mb-0">
+        <i class="bi bi-table cys-card__title-icon"></i>Tabla de Proveedores
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap px-3 py-2">
+        <!-- Botones de Exportar (Excel y PDF con DataTables) -->
+        <div id="cys-dt-export-proveedores" class="d-flex align-items-center gap-2">
+          <div class="dropdown d-inline-block">
+            <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar datos">
+              <i class="bi bi-box-arrow-up me-2"></i>Exportar
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+              <li>
+                <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
+                  <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
+                  <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Nuevo proveedor -->
+        <button type="button" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor" class="btn-nuevo-prov">
+          <i class="bi bi-plus-circle"></i> Nuevo proveedor
+        </button>
+      </div>
     </div>
 
-    <!-- Barra de filtros -->
-    <div class="cys-hv-filters d-flex align-items-center gap-3">
-
-      <!-- Buscador -->
-      <div class="flex-grow-1">
-        <div class="cys-hv-search-wrap">
-          <i class="bi bi-search cys-hv-search-icon"></i>
-          <input type="text" id="buscar-proveedores" class="cys-hv-search-input"
-                 placeholder="Buscar proveedor, NIT, contacto...">
-        </div>
-      </div>
-
-      <!-- Botones de Exportar (Excel y PDF con DataTables) -->
-      <div id="cys-dt-export-proveedores" class="d-flex align-items-center gap-2">
-        <div class="dropdown d-inline-block">
-          <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Exportar datos">
-            <i class="bi bi-box-arrow-up me-2"></i>Exportar
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
-            <li>
-              <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf">
-                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel">
-                <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Nuevo proveedor -->
-      <button type="button" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor" class="btn-nuevo-prov">
-        <i class="bi bi-plus-circle"></i> Nuevo proveedor
-      </button>
-
-    </div><!-- /cys-hv-filters -->
-
-    <div class="table-responsive mt-3">
+    <div class="table-responsive mt-2">
       <table class="cys-inv-table table w-100" id="tablaProveedores">
         <thead>
           <tr>
@@ -178,49 +233,40 @@
               <span class="text-sm text-muted">{{ p.fecha_registro|date:"H:i" }}</span>
             </td>
             <td class="cys-td text-center" data-label="Acciones">
-              <div class="dropdown">
-                <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
-                  <i class="bi bi-three-dots-vertical"></i>
+              <div class="dd-wrap">
+                <button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Acciones de {{ p.nombre_empresa }}" title="Acciones">
+                  <i class="bi bi-three-dots"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                  <li>
-                    <a class="dropdown-item" href="/proveedores/detalle/{{ p.id }}/">
-                      <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="/proveedores/editar/{{ p.id }}/">
-                      <i class="bi bi-pencil me-2 text-warning"></i>Editar
-                    </a>
-                  </li>
-                  <li><hr class="dropdown-divider"></li>
+                <div class="dd-menu" role="menu">
+                  <a class="dd-item" href="/proveedores/detalle/{{ p.id }}/">
+                    <i class="bi bi-eye"></i> Ver detalles
+                  </a>
+                  <div class="dd-sep"></div>
+                  <a class="dd-item" href="/proveedores/editar/{{ p.id }}/">
+                    <i class="bi bi-pencil"></i> Editar
+                  </a>
                   {% if p.estado == 'activo' %}
-                  <li>
-                    <button type="button" class="dropdown-item btn-desactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
-                      <i class="bi bi-pause-circle me-2 text-warning"></i>Desactivar
-                    </button>
-                  </li>
+                  <div class="dd-sep"></div>
+                  <button type="button" class="dd-item btn-desactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                    <i class="bi bi-pause-circle"></i> Desactivar
+                  </button>
                   {% elif p.estado == 'inactivo' %}
-                  <li>
-                    <button type="button" class="dropdown-item btn-reactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
-                      <i class="bi bi-play-circle me-2 text-success"></i>Activar
-                    </button>
-                  </li>
+                  <div class="dd-sep"></div>
+                  <button type="button" class="dd-item btn-reactivar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                    <i class="bi bi-play-circle"></i> Activar
+                  </button>
                   {% endif %}
+                  <div class="dd-sep"></div>
                   {% if p.estado != 'sancionado' %}
-                  <li>
-                    <button type="button" class="dropdown-item btn-sancionar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
-                      <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Sancionar
-                    </button>
-                  </li>
+                  <button type="button" class="dd-item danger btn-sancionar" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                    <i class="bi bi-exclamation-triangle"></i> Sancionar
+                  </button>
                   {% else %}
-                  <li>
-                    <button type="button" class="dropdown-item btn-levantar-sancion" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
-                      <i class="bi bi-info-circle me-2 text-info"></i>Levantar sanción
-                    </button>
-                  </li>
+                  <button type="button" class="dd-item btn-levantar-sancion" data-provider-id="{{ p.id }}" data-provider-name="{{ p.nombre_empresa }}">
+                    <i class="bi bi-info-circle"></i> Levantar sanción
+                  </button>
                   {% endif %}
-                </ul>
+                </div>
               </div>
             </td>
           </tr>
@@ -489,5 +535,5 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/proveedores.js' %}"></script>
+<script src="{% static 'js/proveedores/proveedores.js' %}?v=20261125b"></script>
 {% endblock %}
