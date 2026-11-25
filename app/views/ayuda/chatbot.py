@@ -11,8 +11,8 @@ CÓMO AGREGAR UNA GUÍA NUEVA
 import json
 import re
 import unicodedata
+from importlib import import_module
 from decouple import config
-from openai import OpenAI
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import JsonResponse
@@ -402,7 +402,8 @@ SYSTEM_PROMPT = (
 def _get_client():
     global _client
     if _client is None:
-        _client = OpenAI(
+        openai = import_module("openai")
+        _client = openai.OpenAI(
             api_key=config("GROQ_API_KEY"),
             base_url="https://api.groq.com/openai/v1",
             timeout=15,

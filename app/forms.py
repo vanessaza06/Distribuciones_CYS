@@ -72,7 +72,7 @@ class ProveedorForm(forms.ModelForm):
         widgets = {
             'nombre_empresa': forms.TextInput(attrs={'class': 'form-control prod-input', 'required': True}),
             'nit_proveedores': forms.TextInput(attrs={'class': 'form-control prod-input', 'required': True}),
-            'correo': forms.EmailInput(attrs={'class': 'form-control prod-input', 'required': True}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control prod-input'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control prod-input'}),
             'tipo_proveedor': forms.Select(attrs={'class': 'form-select prod-input'}),
             'observacion': forms.Textarea(attrs={'class': 'form-control prod-input', 'rows': 3}),
