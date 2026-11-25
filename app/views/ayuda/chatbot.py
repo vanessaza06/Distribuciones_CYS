@@ -11,7 +11,8 @@ CÓMO AGREGAR UNA GUÍA NUEVA
 import json
 import re
 import unicodedata
-
+from decouple import config
+from openai import OpenAI
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import JsonResponse
@@ -384,6 +385,62 @@ def _responder(mensaje):
             mejor, puntaje = respuesta, score
     return mejor or FALLBACK
 
+GROQ_MODEL = "llama-3.3-70b-versatile"
+_client = None
+
+SYSTEM_PROMPT = (
+    "Eres Botellín 🍺, el asistente del sistema de inventario y ventas de CYS Ltda. "
+    "Responde SIEMPRE en español, de forma amable y breve. "
+    "Usa ÚNICAMENTE la información de las GUÍAS que te doy abajo. "
+    "Si las guías no responden la pregunta, di que no tienes esa guía y sugiere revisar "
+    "las Guías rápidas o escribir a soporte. No inventes pasos, botones ni menús. "
+    "Mantén los nombres en **negrita** tal como aparecen en las guías.\n\n"
+    "GUÍAS:\n{contexto}"
+)
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(
+            api_key=config("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1",
+            timeout=15,
+        )
+    return _client
+
+
+def _mejores_guias(mensaje, n=3):
+    t = " " + _norm(mensaje) + " "
+    puntuadas = []
+    for i, (patrones, respuesta) in enumerate(RESPUESTAS):
+        if respuesta is PENDIENTE:
+            continue
+        score = sum(len(p) for p in patrones if all(f in t for f in p))
+        if score > 0:
+            puntuadas.append((score, -i, respuesta))
+    puntuadas.sort(reverse=True)
+    return [r for _, _, r in puntuadas[:n]]
+
+
+def _responder_ia(mensaje):
+    guias = _mejores_guias(mensaje)
+    if not guias:
+        return FALLBACK
+    try:
+        r = _get_client().chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.2,
+            max_tokens=500,
+            messages=[
+                {"role": "system",
+                 "content": SYSTEM_PROMPT.format(contexto="\n\n---\n\n".join(guias))},
+                {"role": "user", "content": mensaje},
+            ],
+        )
+        return r.choices[0].message.content.strip()
+    except Exception:
+        return guias[0]  # si la API falla, responde como antes
 
 def _excede_limite(user_id):
     clave = f"botellin_rate_{user_id}"
@@ -409,4 +466,4 @@ def chatbot_responder(request):
     if _excede_limite(request.user.pk):
         return JsonResponse({"respuesta": "Vas muy rápido 😅 Espera un momentico."}, status=429)
 
-    return JsonResponse({"respuesta": _responder(mensaje)})
+    return JsonResponse({"respuesta": _responder_ia(mensaje)})

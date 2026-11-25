@@ -77,12 +77,10 @@ function inicializarDataTablePresentaciones() {
     return;
   }
 
-  dtPres = $(tabla).DataTable({
-    paging: true,
-    pageLength: 10,
-    lengthMenu: [5, 10, 25, 50],
+    dtPres = $(tabla).DataTable({
+    paging: false,
     searching: true,
-    info: true,
+    info: false,
     ordering: true,
     order: [],                       // respeta el orden con el que llega desde Django
     autoWidth: false,
@@ -90,8 +88,8 @@ function inicializarDataTablePresentaciones() {
       { targets: 6, orderable: false, searchable: false }   // columna Acciones
     ],
     language: IDIOMA_PRES,
-    // r=procesando, t=tabla, l=selector, i=info, p=paginación (sin buscador nativo)
-    dom: 'rt<"pres-dt-footer"lip>'
+    // r=procesando, t=tabla (sin buscador nativo, sin selector, sin info, sin paginación)
+    dom: 'rt'
   });
 
   // Los menús "⋯" usan position: fixed: se cierran al cambiar de página u ordenar
@@ -273,9 +271,6 @@ function resaltarFilaNueva() {
   const nodos = dtPres.rows({ order: 'current', search: 'applied' }).nodes().toArray();
   const fila = nodos.find(function (n) { return n.classList.contains('fila-resaltada'); });
   if (!fila) return;
-
-  const posicion = nodos.indexOf(fila);
-  dtPres.page(Math.floor(posicion / dtPres.page.len())).draw('page');
 
   fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
 

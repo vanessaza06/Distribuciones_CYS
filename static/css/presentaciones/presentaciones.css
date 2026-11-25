@@ -337,3 +337,93 @@
 .dd-menu form a.danger {
   color: #ef4444 !important;
 }
+/* ══════════════════════════════════════════
+   Presentaciones: botón Activar/Desactivar dentro del menú ⋯
+   ══════════════════════════════════════════ */
+.dd-menu form {
+  margin: 0;
+}
+
+.dd-menu .pres-dd-submit {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dd-menu .pres-dd-submit:hover,
+.dd-menu .pres-dd-submit:focus-visible {
+  background: rgba(77, 168, 218, .12) !important;
+  outline: none;
+}
+
+.dd-menu .pres-dd-submit.danger {
+  color: #ef4444;
+}
+
+.dd-menu .pres-dd-submit.danger:hover,
+.dd-menu .pres-dd-submit.danger:focus-visible {
+  background: rgba(239, 68, 68, .12) !important;
+}
+
+/* ══════════════════════════════════════════
+   Presentaciones: pie de tabla (Mostrar / info / paginación) en tema oscuro
+   ══════════════════════════════════════════ */
+#tablaPresentaciones_wrapper .dataTables_length,
+#tablaPresentaciones_wrapper .dataTables_info,
+#tablaPresentaciones_wrapper .dt-length,
+#tablaPresentaciones_wrapper .dt-info {
+  color: rgba(230, 238, 252, .6);
+  font-size: .82rem;
+}
+
+#tablaPresentaciones_wrapper select {
+  color-scheme: dark;
+  background-color: #0d2a4f;
+  color: #e6eefc;
+  border: 1px solid rgba(77, 168, 218, .25);
+  border-radius: 8px;
+  padding: .25rem 1.75rem .25rem .6rem;
+}
+
+#tablaPresentaciones_wrapper .pagination {
+  gap: 4px;
+  margin: 0;
+}
+
+#tablaPresentaciones_wrapper .pagination .page-link {
+  background: transparent;
+  color: #e6eefc;
+  border: 1px solid rgba(77, 168, 218, .25);
+  border-radius: 8px !important;
+  box-shadow: none;
+}
+
+#tablaPresentaciones_wrapper .pagination .page-link:hover,
+#tablaPresentaciones_wrapper .pagination .page-link:focus {
+  background: rgba(77, 168, 218, .15);
+  border-color: #4DA8DA;
+  color: #ffffff;
+}
+
+#tablaPresentaciones_wrapper .pagination .active > .page-link {
+  background: #4DA8DA;
+  border-color: #4DA8DA;
+  color: #0b1d33;
+  font-weight: 600;
+}
+
+#tablaPresentaciones_wrapper .pagination .disabled > .page-link {
+  background: transparent;
+  border-color: rgba(77, 168, 218, .12);
+  color: rgba(230, 238, 252, .35);
+}
