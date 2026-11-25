@@ -163,22 +163,70 @@
     color: var(--azul-claro, #0369a1);
   }
 
+  .mp-card {
+    background: var(--fondo-card, #0F3B6C) !important;
+    border: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.18)) !important;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .mp-table {
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-hover-bg: transparent !important;
+    --bs-table-color: var(--texto, #E8EDF2) !important;
+    background: transparent !important;
+    color: var(--texto, #E8EDF2) !important;
+    border-collapse: collapse !important;
+  }
+
+  .mp-table thead,
+  .mp-table tbody,
+  .mp-table tfoot,
+  .mp-table tr,
+  .mp-table th,
+  .mp-table td {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
   .mp-table th {
-    padding: 0.7rem 1rem !important;
+    padding: 0.75rem 1rem !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--texto-muted, #64748b) !important;
-    border-bottom: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
+    color: var(--azul-claro, #4DA8DA) !important;
+    border-bottom: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.2)) !important;
+    background: transparent !important;
   }
 
   .mp-table td {
-    padding: 0.75rem 1rem !important;
+    padding: 0.8rem 1rem !important;
     vertical-align: middle;
     font-size: 0.85rem;
-    color: var(--texto, #f8fafc);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+    color: var(--texto, #E8EDF2) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--texto, #E8EDF2) 8%, transparent) !important;
+    background: transparent !important;
+  }
+
+  .mp-table tbody tr {
+    transition: background 0.18s ease;
+    background: transparent !important;
+  }
+
+  .mp-table tbody tr:hover td {
+    background-color: var(--azul-glow, rgba(77, 168, 218, 0.08)) !important;
+  }
+
+  .mp-table tbody tr.cys-tr-pendiente td {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+  }
+
+  .mp-table tbody tr.cys-tr-pendiente:hover td {
+    background-color: rgba(245, 158, 11, 0.22) !important;
   }
 
   .mp-footer-bar {
@@ -201,7 +249,10 @@
 
   html.cys-a11y-modo-claro .mp-kpi-box,
   html.cys-modo-claro .mp-kpi-box,
-  html[data-cys-tema="claro"] .mp-kpi-box {
+  html[data-cys-tema="claro"] .mp-kpi-box,
+  html.cys-a11y-modo-claro .mp-card,
+  html.cys-modo-claro .mp-card,
+  html[data-cys-tema="claro"] .mp-card {
     background: #ffffff !important;
     border-color: #e2e8f0 !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
@@ -209,11 +260,22 @@
 
   html.cys-a11y-modo-claro .mp-kpi-value,
   html.cys-modo-claro .mp-kpi-value,
-  html[data-cys-tema="claro"] .mp-kpi-value,
+  html[data-cys-tema="claro"] .mp-kpi-value {
+    color: #0f172a !important;
+  }
+
   html.cys-a11y-modo-claro .mp-table td,
   html.cys-modo-claro .mp-table td,
   html[data-cys-tema="claro"] .mp-table td {
     color: #0f172a !important;
+    border-bottom-color: #e2e8f0 !important;
+  }
+
+  html.cys-a11y-modo-claro .mp-table th,
+  html.cys-modo-claro .mp-table th,
+  html[data-cys-tema="claro"] .mp-table th {
+    color: #0369a1 !important;
+    border-bottom-color: #cbd5e1 !important;
   }
 
   html.cys-a11y-modo-claro .mp-toolbar,
@@ -323,7 +385,7 @@
   </div>
 
   <!-- Card Principal: Filtros + Tabla de Ventas -->
-  <div class="prod-card mb-4">
+  <div class="prod-card mp-card mb-4">
     <form method="GET" class="mp-toolbar">
       <input type="hidden" name="tab" value="ventas">
 
@@ -521,7 +583,7 @@
     </div>
   </div>
 
-  <div class="prod-card mb-4">
+  <div class="prod-card mp-card mb-4">
     <form method="GET" class="mp-toolbar">
       <input type="hidden" name="tab" value="compras">
 

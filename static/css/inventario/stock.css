@@ -10,9 +10,21 @@
   border-color: color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
   color: color-mix(in srgb, var(--texto) 85%, transparent) !important;
 }
-#buscarLote { border-radius: 0 8px 8px 0 !important; }
-#buscarLote::placeholder { color: color-mix(in srgb, var(--texto) 45%, transparent); }
-#filtroEstado-btn { border-radius: 8px !important; display: flex; align-items: center; justify-content: space-between; }
+
+#buscarLote {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+#buscarLote::placeholder {
+  color: color-mix(in srgb, var(--texto) 45%, transparent);
+}
+
+#filtroEstado-btn {
+  border-radius: 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 /* KPI cards — dorado de marca fijo en las 4 variantes */
 .kpi-card--stock,
@@ -21,18 +33,32 @@
 .kpi-card--vencidos {
   background: var(--fondo-card);
   border-left: 3px solid #CF9C48;
-  border-top: none; border-right: none; border-bottom: none;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
   border-radius: 8px;
 }
-.kpi-value--claro { color: var(--texto); }
+
+.kpi-value--claro {
+  color: var(--texto);
+}
+
 .kpi-icon--productos,
 .kpi-icon--lotes-activos,
 .kpi-icon--por-vencer,
-.kpi-icon--vencidos { color: #CF9C48; }
+.kpi-icon--vencidos {
+  color: #CF9C48;
+}
 
 /* Encabezado de sección */
-.lotes-seccion-icon { color: #CF9C48; font-size: 1.5rem; }
-.lotes-seccion-titulo { color: var(--texto); }
+.lotes-seccion-icon {
+  color: #CF9C48;
+  font-size: 1.5rem;
+}
+
+.lotes-seccion-titulo {
+  color: var(--texto);
+}
 
 /* Buscador de lotes */
 .lotes-search-prefix {
@@ -48,6 +74,7 @@
   justify-content: center;
   font-size: 1rem;
 }
+
 .lotes-search-input {
   background: color-mix(in srgb, var(--fondo) 60%, transparent);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
@@ -56,22 +83,59 @@
   color: var(--texto);
 }
 
-/* Dropdown filtro estado */
+/* ── Botón Filtros ──
+   Bootstrap 5.3 pinta los estados del .btn con variables (--bs-btn-*).
+   Se definen todas con el mismo color para que NO cambie al pasar el mouse,
+   hacer clic, enfocar o abrir el panel. */
 .lotes-filtro-btn {
-  background: color-mix(in srgb, var(--azul-claro) 80%, black);
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent);
-  color: color-mix(in srgb, var(--azul-claro) 70%, white);
+  --lotes-btn-bg: color-mix(in srgb, var(--azul-claro) 80%, black);
+  --lotes-btn-borde: color-mix(in srgb, var(--azul-claro) 35%, transparent);
+  --lotes-btn-texto: color-mix(in srgb, var(--azul-claro) 70%, white);
+
+  --bs-btn-color: var(--lotes-btn-texto);
+  --bs-btn-bg: var(--lotes-btn-bg);
+  --bs-btn-border-color: var(--lotes-btn-borde);
+  --bs-btn-hover-color: var(--lotes-btn-texto);
+  --bs-btn-hover-bg: var(--lotes-btn-bg);
+  --bs-btn-hover-border-color: var(--lotes-btn-borde);
+  --bs-btn-focus-shadow-rgb: 0, 0, 0;
+  --bs-btn-active-color: var(--lotes-btn-texto);
+  --bs-btn-active-bg: var(--lotes-btn-bg);
+  --bs-btn-active-border-color: var(--lotes-btn-borde);
+  --bs-btn-active-shadow: none;
+
   font-size: .82rem;
   border-radius: 8px;
   min-width: 170px;
   width: auto;
   text-align: left;
+  transition: filter .15s ease;
 }
+
+.lotes-filtro-btn,
+.lotes-filtro-btn:hover,
+.lotes-filtro-btn:focus,
+.lotes-filtro-btn:focus-visible,
+.lotes-filtro-btn:active,
+.lotes-filtro-btn.show,
+.lotes-filtro-btn[aria-expanded="true"] {
+  background: var(--lotes-btn-bg) !important;
+  border: 1px solid var(--lotes-btn-borde) !important;
+  color: var(--lotes-btn-texto) !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.lotes-filtro-btn:hover {
+  filter: brightness(1.15);
+}
+
 .lotes-filtro-menu {
   background: var(--fondo-card2);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent);
   min-width: 170px;
 }
+
 .lotes-filtro-menu .dropdown-item {
   color: color-mix(in srgb, var(--texto) 85%, transparent);
   font-size: .82rem;
@@ -81,15 +145,18 @@
 .lotes-table-wrap {
   border: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent);
 }
+
 #tablaLotes {
   --bs-table-bg: color-mix(in srgb, var(--fondo-card) 83%, transparent);
   --bs-table-hover-bg: color-mix(in srgb, var(--texto) 7%, transparent);
   --bs-table-color: var(--texto);
   --bs-table-border-color: color-mix(in srgb, var(--azul-claro) 12%, transparent);
 }
+
 #tablaLotes thead {
   background: color-mix(in srgb, var(--fondo-card2) 90%, transparent);
 }
+
 #tablaLotes thead tr {
   font-size: .72rem;
   text-transform: uppercase;
@@ -98,8 +165,13 @@
 }
 
 /* Celdas de contenido */
-.lote-producto-nombre { color: var(--texto); }
-.lote-presentacion-nombre { color: color-mix(in srgb, var(--azul-claro) 80%, transparent); }
+.lote-producto-nombre {
+  color: var(--texto);
+}
+
+.lote-presentacion-nombre {
+  color: color-mix(in srgb, var(--azul-claro) 80%, transparent);
+}
 
 .lote-badge-numero {
   background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
@@ -108,70 +180,116 @@
   font-size: .75rem;
 }
 
-.lote-stock-valor { color: var(--texto); }
-.lote-stock-unidad { color: color-mix(in srgb, var(--texto) 40%, transparent); }
+.lote-stock-valor {
+  color: var(--texto);
+}
+
+.lote-stock-unidad {
+  color: color-mix(in srgb, var(--texto) 40%, transparent);
+}
 
 /* Nota: estas 3 estaban casi ilegibles (blanco casi puro sobre fondo
    oscuro sin contraste real entre estados) — las dejé mapeadas a
    var(--texto) para que se adapten al tema, pero si querías vencido
    en rojo/dorado y por-vencer en ámbar, dímelo y les doy color real */
-.lote-fecha--vencido { color: var(--texto); }
-.lote-fecha--por-vencer { color: var(--texto); }
-.lote-fecha--ok { color: color-mix(in srgb, var(--texto) 60%, transparent); }
-.lote-fecha--vacio { color: color-mix(in srgb, var(--texto) 35%, transparent); }
-.lote-fecha-dias { font-size: .7rem; color: color-mix(in srgb, var(--texto) 40%, transparent); }
+.lote-fecha--vencido {
+  color: var(--texto);
+}
+
+.lote-fecha--por-vencer {
+  color: var(--texto);
+}
+
+.lote-fecha--ok {
+  color: color-mix(in srgb, var(--texto) 60%, transparent);
+}
+
+.lote-fecha--vacio {
+  color: color-mix(in srgb, var(--texto) 35%, transparent);
+}
+
+.lote-fecha-dias {
+  font-size: .7rem;
+  color: color-mix(in srgb, var(--texto) 40%, transparent);
+}
 
 .lote-badge-estado--vencido {
   background: rgba(207, 156, 72, 0.15);
   color: #CF9C48;
   border: 1px solid rgba(207, 156, 72, 0.3);
 }
+
 .lote-badge-estado--por-vencer {
   background: rgba(18, 221, 243, 0.15);
   color: #00bec5;
   border: 1px solid rgba(18, 224, 243, 0.3);
 }
+
 .lote-badge-estado--ok {
-  background: rgba(39,174,96,.12);
+  background: rgba(39, 174, 96, .12);
   color: #1cd368;
-  border: 1px solid rgba(39,174,96,.25);
+  border: 1px solid rgba(39, 174, 96, .25);
 }
 
-.lote-costo-valor { color: var(--azul-claro); }
-.lote-valor-total { color: color-mix(in srgb, var(--texto) 70%, transparent); font-size: .85rem; }
-.lote-valor-vacio { color: color-mix(in srgb, var(--texto) 35%, transparent); }
+.lote-costo-valor {
+  color: var(--azul-claro);
+}
 
-.lotes-sin-resultados { color: color-mix(in srgb, var(--texto) 35%, transparent); }
+.lote-valor-total {
+  color: color-mix(in srgb, var(--texto) 70%, transparent);
+  font-size: .85rem;
+}
+
+.lote-valor-vacio {
+  color: color-mix(in srgb, var(--texto) 35%, transparent);
+}
+
+.lotes-sin-resultados {
+  color: color-mix(in srgb, var(--texto) 35%, transparent);
+}
 
 /* Modal editar lote */
 .lote-modal-content {
   background: var(--fondo-card);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent);
 }
+
 .lote-modal-header {
   border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent);
 }
+
 .lote-modal-titulo {
   color: var(--texto);
   font-size: 1rem;
 }
+
 .lote-modal-footer {
   border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent);
 }
+
 .lote-modal-info-box {
   background: color-mix(in srgb, var(--azul-claro) 5%, transparent);
   border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
 }
-.lote-modal-producto-nombre { color: var(--texto); }
-.lote-modal-presentacion-nombre { color: color-mix(in srgb, var(--azul-claro) 80%, transparent); }
+
+.lote-modal-producto-nombre {
+  color: var(--texto);
+}
+
+.lote-modal-presentacion-nombre {
+  color: color-mix(in srgb, var(--azul-claro) 80%, transparent);
+}
+
 .lote-modal-label {
   color: color-mix(in srgb, var(--texto) 70%, transparent);
 }
+
 .lote-modal-input {
   background: color-mix(in srgb, var(--fondo) 70%, transparent);
   border-color: color-mix(in srgb, var(--azul-claro) 30%, transparent);
   color: var(--texto);
 }
+
 .lote-modal-input--stock {
   font-size: 1.1rem;
 }
@@ -190,18 +308,21 @@
 }
 
 /* ── Panel expandible (Responsive) ── */
-#tablaLotes.dataTable > tbody > tr.child {
+#tablaLotes.dataTable>tbody>tr.child {
   background: var(--fondo-card2) !important;
   padding: .75rem 1rem !important;
 }
-#tablaLotes.dataTable > tbody > tr.child:hover {
+
+#tablaLotes.dataTable>tbody>tr.child:hover {
   background: color-mix(in srgb, var(--fondo) 85%, transparent) !important;
 }
-#tablaLotes.dataTable > tbody > tr.child ul.dtr-details > li {
+
+#tablaLotes.dataTable>tbody>tr.child ul.dtr-details>li {
   border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
   padding: .6rem 0 !important;
 }
-#tablaLotes.dataTable > tbody > tr.child span.dtr-title {
+
+#tablaLotes.dataTable>tbody>tr.child span.dtr-title {
   color: var(--azul-claro) !important;
   font-weight: 700 !important;
   font-size: .78rem !important;
@@ -209,34 +330,43 @@
   letter-spacing: .04em;
   min-width: 100px;
 }
-#tablaLotes.dataTable > tbody > tr.child span.dtr-data {
+
+#tablaLotes.dataTable>tbody>tr.child span.dtr-data {
   color: var(--texto) !important;
 }
 
-#tablaLotes.dataTable > tbody > tr > td.dtr-control:before {
+#tablaLotes.dataTable>tbody>tr>td.dtr-control:before {
   border-left-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }
-#tablaLotes.dataTable > tbody > tr.dtr-expanded > td.dtr-control:before {
+
+#tablaLotes.dataTable>tbody>tr.dtr-expanded>td.dtr-control:before {
   border-top-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }
+
 /* KPI cards: las 4 miden lo mismo aunque un título ocupe dos líneas */
 .kpi-card--stock,
 .kpi-card--lotes-activos,
 .kpi-card--por-vencer,
 .kpi-card--vencidos {
-  align-self: stretch;   /* se estira a la altura de la fila (flex o grid) */
-  height: 100%;          /* cubre el caso en que estén dentro de una columna de Bootstrap */
-  min-height: 150px;     /* respaldo: altura mínima igual para todas */
+  align-self: stretch;
+  /* se estira a la altura de la fila (flex o grid) */
+  height: 100%;
+  /* cubre el caso en que estén dentro de una columna de Bootstrap */
+  min-height: 150px;
+  /* respaldo: altura mínima igual para todas */
   box-sizing: border-box;
 }
+
 /* ── Botón Filtros: chevron que gira + contador de filtros activos ── */
 .lotes-filtro-chevron {
   font-size: 0.7rem;
   transition: transform 0.2s ease;
 }
-[aria-expanded="true"] > .lotes-filtro-chevron {
+
+[aria-expanded="true"]>.lotes-filtro-chevron {
   transform: rotate(180deg);
 }
+
 .lotes-filtros-contador {
   background: var(--rojo);
   color: #fff;
@@ -251,6 +381,7 @@
   border: 1px solid var(--azul-borde);
   border-radius: 10px;
 }
+
 .lotes-filtro-label {
   display: block;
   margin-bottom: 4px;
@@ -260,6 +391,7 @@
   letter-spacing: 0.5px;
   color: var(--texto-muted);
 }
+
 .lotes-filtro-input {
   background-color: var(--fondo-card);
   border: 1px solid var(--azul-borde);
@@ -267,9 +399,29 @@
   border-radius: 8px;
   font-size: 0.85rem;
 }
+
 .lotes-filtro-input:focus {
   background-color: var(--fondo-card);
   color: var(--texto);
   border-color: var(--azul-claro);
   box-shadow: none;
+}
+
+/* ── Campos de fecha: ícono visible y campo clicable ── */
+.lotes-filtro-input[type="date"] {
+  color-scheme: light;
+  min-height: 38px;
+  cursor: pointer;
+}
+
+html[data-tema="oscuro"] .lotes-filtro-input[type="date"],
+html[data-cys-tema="oscuro"] .lotes-filtro-input[type="date"] {
+  color-scheme: dark;
+}
+
+.lotes-filtro-input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  opacity: 1;
+  cursor: pointer;
+  filter: none;
 }
