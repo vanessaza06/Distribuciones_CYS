@@ -23,7 +23,17 @@ function inicializarTooltipsLotes() {
   });
 }
 
-$(document).ready(function() {
+// ── CALENDARIO: el campo completo abre el selector de fecha ──
+function habilitarCalendarioAlClic(input) {
+  if (!input) return;
+  input.addEventListener('click', function () {
+    if (typeof this.showPicker === 'function') {
+      try { this.showPicker(); } catch (e) { /* ya estaba abierto */ }
+    }
+  });
+}
+
+$(document).ready(function () {
   if ($.fn.DataTable.isDataTable('#tablaLotes')) {
     $('#tablaLotes').DataTable().destroy();
   }
@@ -58,9 +68,9 @@ $(document).ready(function() {
       paginate: { first: '«', previous: '‹', next: '›', last: '»' }
     },
     dom: 'rt<"d-flex justify-content-center align-items-center mt-3"ip>',
-    drawCallback: function() {
-      $('#tablaLotes tbody tr').each(function() {
-        [5, 6].forEach(function(idx) {
+    drawCallback: function () {
+      $('#tablaLotes tbody tr').each(function () {
+        [5, 6].forEach(function (idx) {
           var $td = $(this).find('td').eq(idx);
           var $span = $td.find('span');
           if ($span.length) {
@@ -79,7 +89,7 @@ $(document).ready(function() {
   inicializarTooltipsLotes();
 
   // ═══════ BUSCADOR ═══════
-  $('#buscarLote').on('input', function() {
+  $('#buscarLote').on('input', function () {
     table.search(this.value).draw();
   });
 
@@ -144,13 +154,13 @@ $(document).ready(function() {
     return input.value === '' ? null : parseFloat(input.value);
   }
 
-  var selProducto  = document.getElementById('filtroLoteProducto');
-  var selEstado    = document.getElementById('filtroLoteEstado');
-  var inStockMin   = document.getElementById('filtroLoteStockMin');
-  var inStockMax   = document.getElementById('filtroLoteStockMax');
+  var selProducto = document.getElementById('filtroLoteProducto');
+  var selEstado = document.getElementById('filtroLoteEstado');
+  var inStockMin = document.getElementById('filtroLoteStockMin');
+  var inStockMax = document.getElementById('filtroLoteStockMax');
   var inVenceDesde = document.getElementById('filtroLoteVenceDesde');
   var inVenceHasta = document.getElementById('filtroLoteVenceHasta');
-  var btnLimpiar   = document.getElementById('filtroLoteLimpiar');
+  var btnLimpiar = document.getElementById('filtroLoteLimpiar');
 
   // Llenar el select de productos con los que existen en la tabla
   if (selProducto) {
@@ -193,16 +203,24 @@ $(document).ready(function() {
     });
   }
 
+  // Fechas: el campo entero abre el calendario y se filtra al cambiar o escribir
+  habilitarCalendarioAlClic(inVenceDesde);
+  habilitarCalendarioAlClic(inVenceHasta);
+
   if (inVenceDesde) {
-    inVenceDesde.addEventListener('change', function () {
-      filtros.venceDesde = this.value;
-      aplicarFiltros();
+    ['change', 'input'].forEach(function (ev) {
+      inVenceDesde.addEventListener(ev, function () {
+        filtros.venceDesde = this.value;
+        aplicarFiltros();
+      });
     });
   }
   if (inVenceHasta) {
-    inVenceHasta.addEventListener('change', function () {
-      filtros.venceHasta = this.value;
-      aplicarFiltros();
+    ['change', 'input'].forEach(function (ev) {
+      inVenceHasta.addEventListener(ev, function () {
+        filtros.venceHasta = this.value;
+        aplicarFiltros();
+      });
     });
   }
 
@@ -236,9 +254,9 @@ $(document).ready(function() {
     table.search(termino).draw();
 
     setTimeout(() => {
-      const row = table.row({search: 'applied'}).node();
+      const row = table.row({ search: 'applied' }).node();
       if (row) {
-        $(row).css({transition: 'background-color 0.3s ease', backgroundColor: 'rgba(77,168,218,0.18)'});
+        $(row).css({ transition: 'background-color 0.3s ease', backgroundColor: 'rgba(77,168,218,0.18)' });
         row.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 100);

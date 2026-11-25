@@ -170,13 +170,14 @@
                 <form method="POST" action="{% url 'presentacion_toggle_activo' pres.pk %}">
                   {% csrf_token %}
                   <input type="hidden" name="next" value="{{ request.path }}">
-                  <button type="submit" class="dd-item pres-dd-submit {% if pres.activo %}danger{% endif %}">
+                  <a href="#" class="dd-item {% if pres.activo %}danger{% endif %}"
+                     onclick="this.closest('form').submit(); return false;">
                     {% if pres.activo %}
                       <i class="bi bi-pause-circle"></i> Desactivar
                     {% else %}
                       <i class="bi bi-play-circle"></i> Activar
                     {% endif %}
-                  </button>
+                  </a>
                 </form>
               </div>
             </div>
