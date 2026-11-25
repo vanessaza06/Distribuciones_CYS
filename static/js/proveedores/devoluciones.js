@@ -370,12 +370,106 @@
       };
     });
 
-    // Inicializar ambas tablas
+    // Inicializar menú de acciones (⋯), exportaciones y ambas tablas
+    initAccionesDropdownDev();
+    initExportarDevoluciones();
     initTablaDevolucionesClientes();
     initTablaDevolucionesProveedor();
   }
 
-  // 3. Tabla Devoluciones Clientes (#tablaDevoluciones)
+  function initExportarDevoluciones() {
+    document.querySelectorAll('[data-dev-export-scope]').forEach(function(container) {
+      const scope = container.dataset.devExportScope || 'cliente';
+      container.querySelectorAll('[data-dev-export]').forEach(function(btn) {
+        if (btn.dataset.devExportBound) return;
+        btn.dataset.devExportBound = 'true';
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const tipo = btn.dataset.devExport;
+          const params = new URLSearchParams();
+          params.set('tab', scope);
+          params.set('export', tipo);
+
+          if (scope === 'proveedor') {
+            const q = (document.getElementById('filtroProvTexto') || {}).value || '';
+            const desde = (document.getElementById('filtroProvDesde') || {}).value || '';
+            const hasta = (document.getElementById('filtroProvHasta') || {}).value || '';
+            const estado = (document.getElementById('filtroProvEstado') || {}).value || 'todos';
+            if (q.trim()) params.set('q', q.trim());
+            if (desde) params.set('desde', desde);
+            if (hasta) params.set('hasta', hasta);
+            if (estado && estado !== 'todos') params.set('estado', estado);
+          } else {
+            const q = (document.getElementById('filtroCliTexto') || {}).value || '';
+            const desde = (document.getElementById('filtroCliDesde') || {}).value || '';
+            const hasta = (document.getElementById('filtroCliHasta') || {}).value || '';
+            if (q.trim()) params.set('q', q.trim());
+            if (desde) params.set('desde', desde);
+            if (hasta) params.set('hasta', hasta);
+          }
+
+          const url = window.location.pathname + '?' + params.toString();
+          if (tipo === 'imprimir') {
+            window.open(url, '_blank');
+          } else {
+            window.location.href = url;
+          }
+        });
+      });
+    });
+  }
+
+  function cerrarMenusDev() {
+    document.querySelectorAll('.dev-page .dd-menu.open').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.dev-page .dd-btn[aria-expanded="true"]').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+  }
+
+  function initAccionesDropdownDev() {
+    if (window._cysDevDdBound) return;
+    window._cysDevDdBound = true;
+
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.dev-page .dd-btn');
+      if (btn) {
+        e.stopPropagation();
+        const wrap = btn.closest('.dd-wrap');
+        const menu = wrap && wrap.querySelector('.dd-menu');
+        if (!menu) return;
+        const yaAbierto = menu.classList.contains('open');
+        cerrarMenusDev();
+        if (!yaAbierto) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          const rect = btn.getBoundingClientRect();
+          const menuH = menu.offsetHeight || 150;
+          let top = rect.bottom + 4;
+          if (top + menuH > window.innerHeight - 8 && rect.top - menuH - 4 > 8) {
+            top = rect.top - menuH - 4;
+          }
+          menu.style.top = top + 'px';
+          menu.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
+        }
+        return;
+      }
+
+      if (e.target.closest('.dev-page .dd-item')) {
+        setTimeout(cerrarMenusDev, 0);
+        return;
+      }
+
+      if (!e.target.closest('.dd-wrap')) {
+        cerrarMenusDev();
+      }
+    });
+
+    window.addEventListener('scroll', cerrarMenusDev, true);
+    window.addEventListener('resize', cerrarMenusDev);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarMenusDev();
+    });
+  }
+
+  // 3. Tabla Devoluciones Clientes (#tablaDevoluciones) — igual a Compras
   function initTablaDevolucionesClientes() {
     if (!window.jQuery || !jQuery.fn.DataTable) return;
     const $table = jQuery('#tablaDevoluciones');
@@ -387,53 +481,90 @@
 
     const dt = $table.DataTable({
       responsive: true,
-      paging: false,
-      searching: false,
+      paging: true,
+      pageLength: 10,
+      searching: true,
       lengthChange: false,
-      info: false,
+      info: true,
+      ordering: true,
       order: [[5, 'desc']],
       columnDefs: [{ targets: [6], orderable: false, searchable: false }],
       language: {
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ devoluciones',
+        infoEmpty: 'Mostrando 0 a 0 de 0 devoluciones',
+        infoFiltered: '(filtrado de _MAX_)',
         emptyTable: 'No hay devoluciones registradas.',
-        zeroRecords: 'No encontramos coincidencias.'
+        zeroRecords: 'Sin resultados para tu búsqueda.',
+        paginate: { first: '«', previous: '‹', next: '›', last: '»' }
       },
       layout: {
         topStart: null,
         topEnd: null,
-        bottomStart: null,
-        bottomEnd: null
-      },
-      buttons: [
-        {
-          extend: 'excelHtml5',
-          text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
-          className: 'cys-dt-btn-excel',
-          title: 'Devoluciones_Clientes_CYS',
-          filename: 'Devoluciones_Clientes_CYS',
-          exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
-        },
-        {
-          extend: 'pdfHtml5',
-          text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
-          className: 'cys-dt-btn-pdf',
-          title: 'Distribuciones CYS Ltda - Historial de Devoluciones (Clientes)',
-          filename: 'Devoluciones_Clientes_CYS',
-          orientation: 'landscape',
-          pageSize: 'A4',
-          exportOptions: { columns: [0, 1, 2, 3, 4, 5] },
-          customize: function (doc) {
-            doc.defaultStyle.fontSize = 9;
-            if (doc.styles && doc.styles.tableHeader) {
-              doc.styles.tableHeader.fontSize = 10;
-              doc.styles.tableHeader.bold = true;
-              doc.styles.tableHeader.fillColor = '#011936';
-              doc.styles.tableHeader.color = '#CF9C48';
-              doc.styles.tableHeader.alignment = 'center';
-            }
-          }
-        }
-      ]
+        bottomStart: 'info',
+        bottomEnd: 'paging'
+      }
     });
+
+    dt.on('draw.dt', cerrarMenusDev);
+
+    if (!window._cysDevCliExtSearchBound) {
+      window._cysDevCliExtSearchBound = true;
+      jQuery.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.sTableId !== 'tablaDevoluciones') return true;
+        const rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
+        if (!rowNode) return true;
+
+        const desdeEl = document.getElementById('filtroCliDesde');
+        const hastaEl = document.getElementById('filtroCliHasta');
+        const solEl = document.getElementById('filtroCliSolucion');
+
+        const desde = desdeEl ? desdeEl.value : '';
+        const hasta = hastaEl ? hastaEl.value : '';
+        const sol = solEl ? solEl.value : 'todos';
+
+        const fechaRow = rowNode.getAttribute('data-fecha') || '';
+        const solRow = rowNode.getAttribute('data-solucion') || '';
+
+        if (desde && fechaRow && fechaRow < desde) return false;
+        if (hasta && fechaRow && fechaRow > hasta) return false;
+        if (sol && sol !== 'todos' && solRow !== sol) return false;
+        return true;
+      });
+    }
+
+    const txt = document.getElementById('filtroCliTexto');
+    const btnBuscar = document.getElementById('dev-cli-btn-buscar');
+    const desdeEl = document.getElementById('filtroCliDesde');
+    const hastaEl = document.getElementById('filtroCliHasta');
+    const solEl = document.getElementById('filtroCliSolucion');
+    const btnLimpiar = document.getElementById('dev-cli-btn-limpiar');
+
+    if (txt) {
+      txt.oninput = function() { dt.search(this.value.trim()).draw(); };
+      txt.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          dt.search(this.value.trim()).draw();
+        }
+      };
+    }
+    if (btnBuscar) {
+      btnBuscar.onclick = function() {
+        dt.search(txt ? txt.value.trim() : '').draw();
+      };
+    }
+    [desdeEl, hastaEl, solEl].forEach(function(el) {
+      if (el) el.onchange = function() { dt.draw(); };
+    });
+    if (btnLimpiar) {
+      btnLimpiar.onclick = function() {
+        if (txt) txt.value = '';
+        if (desdeEl) desdeEl.value = '';
+        if (hastaEl) hastaEl.value = '';
+        if (solEl) solEl.value = 'todos';
+        dt.search('').draw();
+      };
+    }
 
     const exportContainer = document.getElementById('cys-dt-export-devoluciones');
     if (exportContainer) {
@@ -441,7 +572,7 @@
     }
   }
 
-  // 4. Tabla Devoluciones Proveedor (#tablaDevolucionesProveedor)
+  // 4. Tabla Devoluciones Proveedor (#tablaDevolucionesProveedor) — igual a Compras
   function initTablaDevolucionesProveedor() {
     if (!window.jQuery || !jQuery.fn.DataTable) return;
     const $tableProv = jQuery('#tablaDevolucionesProveedor');
@@ -453,58 +584,96 @@
 
     const dtProv = $tableProv.DataTable({
       responsive: true,
-      paging: false,
+      paging: true,
+      pageLength: 10,
       searching: true,
       lengthChange: false,
-      info: false,
+      info: true,
+      ordering: true,
       order: [[0, 'desc']],
       columnDefs: [{ targets: [8], orderable: false, searchable: false }],
       language: {
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ devoluciones',
+        infoEmpty: 'Mostrando 0 a 0 de 0 devoluciones',
+        infoFiltered: '(filtrado de _MAX_)',
         emptyTable: 'No hay devoluciones a proveedores registradas.',
-        zeroRecords: 'No se encontraron registros.'
+        zeroRecords: 'Sin resultados para tu búsqueda.',
+        paginate: { first: '«', previous: '‹', next: '›', last: '»' }
       },
       layout: {
         topStart: null,
         topEnd: null,
-        bottomStart: null,
-        bottomEnd: null
-      },
-      buttons: [
-        {
-          extend: 'excelHtml5',
-          text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
-          className: 'cys-dt-btn-excel',
-          title: 'Devoluciones_Proveedores_CYS',
-          filename: 'Devoluciones_Proveedores_CYS',
-          exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
-        },
-        {
-          extend: 'pdfHtml5',
-          text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
-          className: 'cys-dt-btn-pdf',
-          title: 'Distribuciones CYS Ltda - Devoluciones a Proveedores',
-          filename: 'Devoluciones_Proveedores_CYS',
-          orientation: 'landscape',
-          pageSize: 'A4',
-          exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] },
-          customize: function (doc) {
-            doc.defaultStyle.fontSize = 9;
-            if (doc.styles && doc.styles.tableHeader) {
-              doc.styles.tableHeader.fontSize = 10;
-              doc.styles.tableHeader.bold = true;
-              doc.styles.tableHeader.fillColor = '#011936';
-              doc.styles.tableHeader.color = '#CF9C48';
-              doc.styles.tableHeader.alignment = 'center';
-            }
-          }
-        }
-      ]
+        bottomStart: 'info',
+        bottomEnd: 'paging'
+      }
     });
 
+    dtProv.on('draw.dt', cerrarMenusDev);
+
+    if (!window._cysDevProvExtSearchBound) {
+      window._cysDevProvExtSearchBound = true;
+      jQuery.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.sTableId !== 'tablaDevolucionesProveedor') return true;
+        const rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
+        if (!rowNode) return true;
+
+        const desdeEl = document.getElementById('filtroProvDesde');
+        const hastaEl = document.getElementById('filtroProvHasta');
+        const estadoEl = document.getElementById('filtroProvEstado');
+        const solEl = document.getElementById('filtroProvSolucion');
+
+        const desde = desdeEl ? desdeEl.value : '';
+        const hasta = hastaEl ? hastaEl.value : '';
+        const estado = estadoEl ? estadoEl.value : 'todos';
+        const sol = solEl ? solEl.value : 'todos';
+
+        const fechaRow = rowNode.getAttribute('data-fecha') || '';
+        const estadoRow = rowNode.getAttribute('data-estado') || '';
+        const solRow = rowNode.getAttribute('data-solucion') || '';
+
+        if (desde && fechaRow && fechaRow < desde) return false;
+        if (hasta && fechaRow && fechaRow > hasta) return false;
+        if (estado && estado !== 'todos' && estadoRow !== estado) return false;
+        if (sol && sol !== 'todos' && solRow !== sol) return false;
+        return true;
+      });
+    }
+
     const txt = document.getElementById('filtroProvTexto');
-    const est = document.getElementById('filtroProvEstado');
-    if (txt) txt.oninput = function() { dtProv.search(this.value).draw(); };
-    if (est) est.onchange = function() { dtProv.column(7).search(this.value).draw(); };
+    const btnBuscar = document.getElementById('dev-prov-btn-buscar');
+    const desdeEl = document.getElementById('filtroProvDesde');
+    const hastaEl = document.getElementById('filtroProvHasta');
+    const estEl = document.getElementById('filtroProvEstado');
+    const solEl = document.getElementById('filtroProvSolucion');
+    const btnLimpiar = document.getElementById('dev-prov-btn-limpiar');
+
+    if (txt) {
+      txt.oninput = function() { dtProv.search(this.value.trim()).draw(); };
+      txt.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          dtProv.search(this.value.trim()).draw();
+        }
+      };
+    }
+    if (btnBuscar) {
+      btnBuscar.onclick = function() {
+        dtProv.search(txt ? txt.value.trim() : '').draw();
+      };
+    }
+    [desdeEl, hastaEl, estEl, solEl].forEach(function(el) {
+      if (el) el.onchange = function() { dtProv.draw(); };
+    });
+    if (btnLimpiar) {
+      btnLimpiar.onclick = function() {
+        if (txt) txt.value = '';
+        if (desdeEl) desdeEl.value = '';
+        if (hastaEl) hastaEl.value = '';
+        if (estEl) estEl.value = 'todos';
+        if (solEl) solEl.value = 'todos';
+        dtProv.search('').draw();
+      };
+    }
 
     const contProv = document.getElementById('cys-dt-export-dev-proveedor');
     if (contProv) {

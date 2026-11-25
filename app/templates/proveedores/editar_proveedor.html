@@ -1,116 +1,179 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Editar {{ proveedor.nombre_empresa }} | Proveedores{% endblock %}
 {% block page_title %}Editar Proveedor{% endblock %}
+{% block nav_proveedores %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/editar_proveedor.css' %}">
+<link rel="stylesheet" href="{% static 'css/proveedores/editar_proveedor.css' %}?v=20261125g">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
-  <div class="cys-snap-section px-3 py-4">
+<div class="container-fluid ep-page">
+  <div class="ep-container">
+
+    {% if messages %}
+    <div aria-live="polite" class="mb-4">
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show mb-2" role="alert">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BARRA SUPERIOR -->
+    <div class="ep-topbar">
+      <a href="{% url 'lista_proveedores' %}" class="ep-back-link">
+        <i class="bi bi-arrow-left"></i> Volver a Proveedores
+      </a>
+
+      <a href="{% url 'detalle_proveedor' proveedor.id %}" class="ep-btn ep-btn--ghost py-2 px-3" style="font-size: 0.84rem;">
+        <i class="bi bi-eye"></i> Ver Detalle
+      </a>
+    </div>
 
     <!-- ENCABEZADO -->
-    <div class="card card-dev cys-card editar-header p-4 mb-4">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-        <div>
-          <span class="badge badge-cyan small mb-2 d-inline-block">
-            <i class="bi bi-pencil me-1"></i>EDITAR
-          </span>
-          <h1 class="editar-title mb-0">
-            <i class="bi bi-building"></i> {{ proveedor.nombre_empresa }}
-          </h1>
+    <header class="ep-hero">
+      <div>
+        <span class="ep-hero__eyebrow">Editar Proveedor</span>
+        <div class="ep-hero__title-row">
+          <h1 class="ep-hero__title">{{ proveedor.nombre_empresa }}</h1>
+          {% if proveedor.estado == 'activo' %}
+            <span class="ep-status ep-status--ok"><i class="bi bi-check-circle-fill"></i> Activo</span>
+          {% elif proveedor.estado == 'inactivo' %}
+            <span class="ep-status ep-status--warn"><i class="bi bi-pause-circle-fill"></i> Inactivo</span>
+          {% else %}
+            <span class="ep-status ep-status--bad"><i class="bi bi-exclamation-octagon-fill"></i> {{ proveedor.get_estado_display }}</span>
+          {% endif %}
         </div>
-        <a href="{% url 'lista_proveedores' %}" class="btn btn-sm btn-outline-secondary fw-bold">
-          <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-      </div>
-    </div>
-
-    <!-- INFORMACIÓN DE AUDITORÍA -->
-    <div class="row gx-2 gy-2 mb-4">
-      <div class="col-12 col-md-6">
-        <div class="cys-card cys-card--inv p-3">
-          <div class="cys-card__title small mb-2">Registrado Por</div>
-          <div class="fw-bold text-cyan">{{ proveedor.registrado_por.email|default:"Admin" }}</div>
-          <div class="text-sm text-muted">{{ proveedor.fecha_registro|date:"d/m/Y H:i" }}</div>
+        <div class="ep-hero__meta">
+          <span><i class="bi bi-hash"></i>NIT {{ proveedor.nit_proveedores }}</span>
+          <span>·</span>
+          <span><i class="bi bi-person"></i>Registrado por {{ proveedor.registrado_por.email|default:"Admin" }}</span>
+          <span>·</span>
+          <span><i class="bi bi-calendar3"></i>{{ proveedor.fecha_registro|date:"d/m/Y, H:i" }}</span>
         </div>
       </div>
-      <div class="col-12 col-md-6">
-        <div class="cys-card cys-card--diario p-3">
-          <div class="cys-card__title small mb-2">Estado</div>
-          <span class="cys-badge
-            {% if proveedor.estado == 'activo' %}cys-badge--verde
-            {% elif proveedor.estado == 'inactivo' %}cys-badge--amarillo
-            {% else %}cys-badge--rojo{% endif %}">
-            {{ proveedor.get_estado_display|upper }}
-          </span>
-        </div>
-      </div>
-    </div>
+    </header>
 
     <!-- FORMULARIO -->
-    <div class="prod-card p-4 mb-4">
+    <section class="ep-card">
       <form method="POST">
         {% csrf_token %}
 
-        <!-- INFORMACIÓN BÁSICA -->
-        <div class="mb-4">
-          <h5 class="text-info mb-3"><i class="bi bi-building me-2"></i>Información Básica</h5>
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label for="id_nombre_empresa" class="form-label prod-label">Empresa <span class="text-danger">*</span></label>
-              <input type="text" name="nombre_empresa" id="id_nombre_empresa" class="form-control prod-input" value="{{ proveedor.nombre_empresa }}" required placeholder="Nombre de la empresa">
+        <!-- SECCIÓN 1: INFORMACIÓN BÁSICA -->
+        <div class="ep-section">
+          <div class="ep-section__head">
+            <h2 class="ep-section__title"><i class="bi bi-building"></i> Información Básica</h2>
+            <p class="ep-section__sub">Identificación principal de la empresa proveedora.</p>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-12 col-md-7">
+              <label for="id_nombre_empresa" class="ep-label">
+                Nombre de la Empresa <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="nombre_empresa"
+                id="id_nombre_empresa"
+                class="form-control ep-input"
+                value="{{ proveedor.nombre_empresa }}"
+                required
+                placeholder="Nombre de la empresa"
+              >
             </div>
-            <div class="col-12 col-md-6">
-              <label for="id_nit" class="form-label prod-label">NIT / Documento</label>
-              <input type="text" name="nit" id="id_nit" class="form-control prod-input" value="{{ proveedor.nit_proveedores }}" readonly style="opacity: 0.75; cursor: not-allowed;" title="El NIT es el identificador único y no puede modificarse">
+
+            <div class="col-12 col-md-5">
+              <label for="id_nit" class="ep-label">NIT / Documento</label>
+              <input
+                type="text"
+                name="nit"
+                id="id_nit"
+                class="form-control ep-input font-monospace"
+                value="{{ proveedor.nit_proveedores }}"
+                readonly
+              >
+              <small class="ep-hint">Identificador único; no puede modificarse.</small>
             </div>
           </div>
         </div>
 
-        <!-- CONTACTO Y CLASIFICACIÓN -->
-        <div class="mb-4">
-          <h5 class="text-info mb-3"><i class="bi bi-telephone me-2"></i>Datos de Contacto y Clasificación</h5>
-          <div class="row g-3">
+        <!-- SECCIÓN 2: CONTACTO Y CLASIFICACIÓN -->
+        <div class="ep-section">
+          <div class="ep-section__head">
+            <h2 class="ep-section__title"><i class="bi bi-telephone"></i> Contacto y Clasificación</h2>
+            <p class="ep-section__sub">Datos de comunicación, categoría comercial y notas internas.</p>
+          </div>
+
+          <div class="row g-4">
             <div class="col-12 col-md-6">
-              <label for="id_email" class="form-label prod-label">Correo <span class="text-muted text-sm fw-normal">(Opcional)</span></label>
-              <input type="email" name="correo" id="id_email" class="form-control prod-input" value="{{ proveedor.correo|default:'' }}" placeholder="correo@empresa.com">
+              <label for="id_email" class="ep-label">
+                Correo Electrónico <span class="ep-opt">(Opcional)</span>
+              </label>
+              <input
+                type="email"
+                name="correo"
+                id="id_email"
+                class="form-control ep-input"
+                value="{{ proveedor.correo|default:'' }}"
+                placeholder="correo@empresa.com"
+              >
             </div>
+
             <div class="col-12 col-md-6">
-              <label for="id_telefono" class="form-label prod-label">Número de Teléfono</label>
-              <input type="text" name="telefono" id="id_telefono" class="form-control prod-input" value="{{ proveedor.telefono }}" pattern="[0-9]{7,15}" inputmode="numeric" maxlength="15" placeholder="Ej: 3001234567">
+              <label for="id_telefono" class="ep-label">Número de Teléfono</label>
+              <input
+                type="text"
+                name="telefono"
+                id="id_telefono"
+                class="form-control ep-input"
+                value="{{ proveedor.telefono }}"
+                pattern="[0-9]{7,15}"
+                inputmode="numeric"
+                maxlength="15"
+                placeholder="Ej: 3001234567"
+              >
+              <small class="ep-hint">Solo números, entre 7 y 15 dígitos.</small>
             </div>
+
             <div class="col-12 col-md-6">
-              <label for="id_tipo_proveedor" class="form-label prod-label">Tipo de Proveedor</label>
-              <select name="tipo_proveedor" id="id_tipo_proveedor" class="form-select prod-input">
+              <label for="id_tipo_proveedor" class="ep-label">Tipo de Proveedor</label>
+              <select name="tipo_proveedor" id="id_tipo_proveedor" class="form-select ep-select">
                 {% for val, lab in tipos_proveedor %}
                   <option value="{{ val }}" {% if proveedor.tipo_proveedor == val %}selected{% endif %}>{{ lab }}</option>
                 {% endfor %}
               </select>
             </div>
-            <div class="col-12 col-md-6">
-              <label for="id_observacion" class="form-label prod-label">Observaciones</label>
-              <input type="text" name="observacion" id="id_observacion" class="form-control prod-input" value="{{ proveedor.observacion|default:'' }}" placeholder="Observaciones opcionales...">
+
+            <div class="col-12">
+              <label for="id_observacion" class="ep-label">
+                Observaciones <span class="ep-opt">(Opcional)</span>
+              </label>
+              <textarea
+                name="observacion"
+                id="id_observacion"
+                class="form-control ep-textarea"
+                rows="3"
+                placeholder="Notas o comentarios sobre el proveedor..."
+              >{{ proveedor.observacion|default:'' }}</textarea>
             </div>
           </div>
         </div>
 
-
-        <!-- BOTONES -->
-        <div class="d-flex gap-2 mt-4">
-          <button type="submit" class="btn prod-btn-primary fw-bold">
-            <i class="bi bi-check-circle me-1"></i>Guardar Cambios
-          </button>
-          <a href="{% url 'lista_proveedores' %}" class="btn prod-btn-outline fw-bold">
-            <i class="bi bi-x-circle me-1"></i>Cancelar
+        <!-- ACCIONES -->
+        <div class="ep-actions">
+          <a href="{% url 'lista_proveedores' %}" class="ep-btn ep-btn--ghost">
+            Cancelar
           </a>
+          <button type="submit" class="ep-btn ep-btn--primary">
+            <i class="bi bi-check-lg"></i> Guardar Cambios
+          </button>
         </div>
       </form>
-    </div>
+    </section>
 
   </div>
 </div>

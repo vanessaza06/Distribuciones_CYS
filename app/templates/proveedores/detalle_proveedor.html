@@ -4,174 +4,234 @@
 
 {% block title %}{{ proveedor.nombre_empresa }} | Proveedor{% endblock %}
 {% block page_title %}Detalle del Proveedor{% endblock %}
+{% block nav_proveedores %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">
-<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/detalle_proveedor.css' %}?v=20261016d">
+<link rel="stylesheet" href="{% static 'css/proveedores/detalle_proveedor.css' %}?v=20261125g">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
-  <div class="cys-snap-section px-3 py-4">
+<div class="container-fluid dp-page">
+  <div class="dp-container">
 
-    <!-- RESUMEN (mismas tarjetas que la lista de proveedores) -->
-    <div class="kpi-cards-grid mb-4">
-      <div class="kpi-card kpi-card-cyan">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-box cyan"><i class="bi bi-bag-check"></i></div>
-          <span class="kpi-badge cyan">COMPRADO</span>
-        </div>
-        <div class="kpi-value cyan">{{ total_compras|cop }}</div>
-        <p class="kpi-title">Total comprado</p>
-        <p class="kpi-sub">{{ compras_count }} compra{{ compras_count|pluralize }} registrada{{ compras_count|pluralize }}</p>
+    {% if messages %}
+    <div aria-live="polite" class="mb-4">
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show mb-2" role="alert">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
       </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-      <div class="kpi-card kpi-card-yellow">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-box yellow"><i class="bi bi-hourglass-split"></i></div>
-          <span class="kpi-badge yellow">SALDO</span>
-        </div>
-        <div class="kpi-value yellow">{{ saldo_pendiente|cop }}</div>
-        <p class="kpi-title">Saldo pendiente</p>
-        <p class="kpi-sub">{% if saldo_pendiente > 0 %}Por pagar al proveedor{% else %}Al día con este proveedor{% endif %}</p>
-      </div>
+    <!-- BARRA SUPERIOR -->
+    <div class="dp-topbar">
+      <a href="{% url 'lista_proveedores' %}" class="dp-back-link">
+        <i class="bi bi-arrow-left"></i> Volver a Proveedores
+      </a>
 
-      <div class="kpi-card kpi-card-green">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-box green"><i class="bi bi-calendar-event"></i></div>
-          <span class="kpi-badge green">ÚLTIMA</span>
-        </div>
-        <div class="kpi-value green">{% if ultima_compra %}{{ ultima_compra.fecha|date:"d/m/Y" }}{% else %}—{% endif %}</div>
-        <p class="kpi-title">Última compra</p>
-        <p class="kpi-sub">{% if ultima_compra %}Compra #{{ ultima_compra.codigo_compra }}{% else %}Sin compras aún{% endif %}</p>
-      </div>
-
-      <div class="kpi-card kpi-card-orange">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-box orange"><i class="bi bi-arrow-return-left"></i></div>
-          <span class="kpi-badge orange">DEVUELTO</span>
-        </div>
-        <div class="kpi-value orange">{{ devoluciones_count }}</div>
-        <p class="kpi-title">Devoluciones</p>
-        <p class="kpi-sub">{{ total_devuelto|cop }} reclamados</p>
+      <div class="dp-topbar__actions">
+        <a href="{% url 'lista_compras' %}?proveedor={{ proveedor.id }}" class="dp-btn dp-btn--ghost">
+          <i class="bi bi-receipt"></i> Ver Compras
+        </a>
+        <a href="{% url 'editar_proveedor' proveedor.id %}" class="dp-btn dp-btn--primary">
+          <i class="bi bi-pencil-square"></i> Editar Proveedor
+        </a>
       </div>
     </div>
 
-    <!-- FICHA DEL PROVEEDOR -->
-    <section class="cys-card mb-4">
-      <div class="dp-head">
-        <div class="dp-head__main">
-          <div class="cys-card__title mb-2">
-            <i class="bi bi-building cys-card__title-icon"></i>Ficha del proveedor
-          </div>
-          <h1 class="dp-name">{{ proveedor.nombre_empresa }}</h1>
-          <div class="dp-badges">
-            <span class="cys-tag cys-tag--prov">{{ proveedor.get_tipo_proveedor_display }}</span>
-            <span class="cys-badge
-              {% if proveedor.estado == 'activo' %}cys-badge--verde
-              {% elif proveedor.estado == 'inactivo' %}cys-badge--amarillo
-              {% else %}cys-badge--rojo{% endif %}">
-              {{ proveedor.get_estado_display|upper }}
-            </span>
-          </div>
+    <!-- ENCABEZADO -->
+    <header class="dp-hero">
+      <div class="dp-hero__left">
+        <span class="dp-hero__eyebrow">Ficha de Proveedor</span>
+        <div class="dp-hero__title-row">
+          <h1 class="dp-hero__title">{{ proveedor.nombre_empresa }}</h1>
+          {% if proveedor.estado == 'activo' %}
+            <span class="dp-status dp-status--ok"><i class="bi bi-check-circle-fill"></i> Activo</span>
+          {% elif proveedor.estado == 'inactivo' %}
+            <span class="dp-status dp-status--warn"><i class="bi bi-pause-circle-fill"></i> Inactivo</span>
+          {% else %}
+            <span class="dp-status dp-status--bad"><i class="bi bi-exclamation-octagon-fill"></i> {{ proveedor.get_estado_display }}</span>
+          {% endif %}
+          <span class="dp-tag">{{ proveedor.get_tipo_proveedor_display }}</span>
         </div>
-        <div class="dp-head__actions">
-          <a href="{% url 'editar_proveedor' proveedor.id %}" class="btn-nuevo-prov">
-            <i class="bi bi-pencil-square"></i> Editar
-          </a>
-          <a href="{% url 'lista_proveedores' %}" class="dp-btn-ghost">
-            <i class="bi bi-arrow-left"></i> Volver
-          </a>
+        <div class="dp-hero__meta">
+          <span><i class="bi bi-hash"></i>NIT {{ proveedor.nit|default:"No especificado" }}</span>
+          <span>·</span>
+          <span><i class="bi bi-calendar3"></i>Registrado el {{ proveedor.fecha_registro|date:"d/m/Y" }}</span>
         </div>
       </div>
 
-      <dl class="dp-info">
-        <div><dt>NIT / Documento</dt><dd class="text-monospace">{{ proveedor.nit|default:"No especificado" }}</dd></div>
-        <div>
-          <dt>Correo</dt>
-          <dd>{% if proveedor.email %}<a href="mailto:{{ proveedor.email }}" class="dp-link"><i class="bi bi-envelope"></i> {{ proveedor.email }}</a>{% else %}No especificado{% endif %}</dd>
-        </div>
-        <div>
-          <dt>Teléfono</dt>
-          <dd>{% if proveedor.telefono %}<a href="tel:{{ proveedor.telefono }}" class="dp-link"><i class="bi bi-telephone"></i> {{ proveedor.telefono }}</a>{% else %}No especificado{% endif %}</dd>
-        </div>
-        <div><dt>Registrado el</dt><dd>{{ proveedor.fecha_registro|date:"d/m/Y H:i" }}</dd></div>
-      </dl>
-
-      {% if proveedor.observacion %}
-      <div class="dp-note {% if proveedor.estado == 'sancionado' %}dp-note--sancion{% endif %}">
-        <div class="dp-note__title">
-          <i class="bi {% if proveedor.estado == 'sancionado' %}bi-exclamation-triangle{% else %}bi-chat-dots{% endif %}"></i>
-          {% if proveedor.estado == 'sancionado' %}Motivo de la sanción{% else %}Observaciones{% endif %}
-        </div>
-        <p>{{ proveedor.observacion|linebreaksbr }}</p>
+      <div class="dp-hero__total">
+        <span>Total comprado</span>
+        <strong>{{ total_compras|cop }}</strong>
+        <small>{{ compras_count }} compra{{ compras_count|pluralize }} registrada{{ compras_count|pluralize }}</small>
       </div>
-      {% endif %}
+    </header>
+
+    <!-- MÉTRICAS SOBRIAS -->
+    <section class="dp-metrics" aria-label="Resumen del proveedor">
+      <div class="dp-metric-card">
+        <span class="dp-metric-card__label">Total comprado</span>
+        <span class="dp-metric-card__value">{{ total_compras|cop }}</span>
+        <span class="dp-metric-card__sub">{{ compras_count }} compra{{ compras_count|pluralize }}</span>
+      </div>
+
+      <div class="dp-metric-card">
+        <span class="dp-metric-card__label">Saldo pendiente</span>
+        <span class="dp-metric-card__value {% if saldo_pendiente > 0 %}text-danger{% else %}text-success{% endif %}">
+          {{ saldo_pendiente|cop }}
+        </span>
+        <span class="dp-metric-card__sub">{% if saldo_pendiente > 0 %}Por pagar al proveedor{% else %}Al día{% endif %}</span>
+      </div>
+
+      <div class="dp-metric-card">
+        <span class="dp-metric-card__label">Última compra</span>
+        <span class="dp-metric-card__value">{% if ultima_compra %}{{ ultima_compra.fecha|date:"d/m/Y" }}{% else %}—{% endif %}</span>
+        <span class="dp-metric-card__sub">{% if ultima_compra %}Compra #{{ ultima_compra.codigo_compra }}{% else %}Sin compras aún{% endif %}</span>
+      </div>
+
+      <div class="dp-metric-card">
+        <span class="dp-metric-card__label">Devoluciones</span>
+        <span class="dp-metric-card__value">{{ devoluciones_count }}</span>
+        <span class="dp-metric-card__sub">{{ total_devuelto|cop }} reclamados</span>
+      </div>
     </section>
 
-    <!-- ÚLTIMAS COMPRAS -->
-    <section class="cys-card mb-4">
-      <div class="dp-head">
-        <div class="cys-card__title">
-          <i class="bi bi-receipt cys-card__title-icon"></i>Últimas compras
-        </div>
-        <a href="{% url 'lista_compras' %}?proveedor={{ proveedor.id }}" class="dp-btn-ghost">
-          Ver todas <i class="bi bi-arrow-right"></i>
-        </a>
+    <!-- CONTENIDO PRINCIPAL EN 2 COLUMNAS -->
+    <div class="dp-layout">
+
+      <!-- COLUMNA PRINCIPAL: ÚLTIMAS COMPRAS -->
+      <div class="dp-main">
+        <section class="dp-card">
+          <div class="dp-card__head">
+            <h2 class="dp-card__title"><i class="bi bi-receipt"></i> Últimas Compras</h2>
+            <a href="{% url 'lista_compras' %}?proveedor={{ proveedor.id }}" class="dp-btn dp-btn--ghost py-1 px-3" style="font-size: 0.8rem;">
+              Ver todas <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+
+          {% if compras %}
+          <div class="table-responsive">
+            <table class="dp-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">#</th>
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Estado</th>
+                  <th class="text-end">Total</th>
+                  <th class="text-end">Saldo</th>
+                  <th class="text-center" style="width: 64px;">Ver</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in compras %}
+                <tr>
+                  <td class="dp-td-muted">{{ c.codigo_compra }}</td>
+                  <td>{{ c.fecha|date:"d/m/Y" }}</td>
+                  <td class="fw-semibold">
+                    {{ c.producto.nombre|default:"—" }}
+                    {% if c.cantidad > 1 %}<span class="dp-td-muted fw-normal"> × {{ c.cantidad }}</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if c.estado == 'recibida' %}
+                      <span class="dp-status dp-status--ok">Recibida</span>
+                    {% elif c.estado == 'confirmada' %}
+                      <span class="dp-status dp-status--info">Confirmada</span>
+                    {% elif c.estado == 'cancelada' %}
+                      <span class="dp-status dp-status--bad">Cancelada</span>
+                    {% else %}
+                      <span class="dp-status dp-status--warn">{{ c.get_estado_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end fw-bold">{{ c.valor|cop }}</td>
+                  <td class="text-end {% if c.saldo > 0 %}dp-saldo-pend{% else %}dp-td-muted{% endif %}">{{ c.saldo|cop }}</td>
+                  <td class="text-center">
+                    <a href="{% url 'detalle_compra' c.codigo_compra %}" class="dp-icon-btn" title="Ver compra #{{ c.codigo_compra }}">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="dp-empty">
+            <i class="bi bi-inbox"></i>
+            <strong>Todavía no le has comprado a este proveedor</strong>
+            <span class="small">Registra una compra para empezar a ver el historial aquí.</span>
+            <a href="{% url 'lista_compras' %}?proveedor={{ proveedor.id }}" class="dp-btn dp-btn--primary mt-1">
+              <i class="bi bi-plus-circle"></i> Registrar una compra
+            </a>
+          </div>
+          {% endif %}
+        </section>
       </div>
 
-      {% if compras %}
-      <div class="table-responsive mt-3">
-        <table class="cys-inv-table table w-100">
-          <thead>
-            <tr>
-              <th class="cys-col-num">#</th>
-              <th>Fecha</th>
-              <th>Producto</th>
-              <th>Estado</th>
-              <th class="text-end">Total</th>
-              <th class="text-end">Saldo</th>
-              <th class="text-center">Ver</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for c in compras %}
-            <tr class="cys-tr">
-              <td class="cys-td cys-td--muted">{{ c.codigo_compra }}</td>
-              <td class="cys-td">{{ c.fecha|date:"d/m/Y" }}</td>
-              <td class="cys-td cys-td--bold">{{ c.producto.nombre|default:"—" }}{% if c.cantidad > 1 %} <span class="text-sm text-muted">× {{ c.cantidad }}</span>{% endif %}</td>
-              <td class="cys-td">
-                <span class="cys-badge
-                  {% if c.estado == 'recibida' %}cys-badge--verde
-                  {% elif c.estado == 'cancelada' %}cys-badge--rojo
-                  {% else %}cys-badge--amarillo{% endif %}">
-                  {{ c.get_estado_display|upper }}
-                </span>
-              </td>
-              <td class="cys-td text-end fw-bold">{{ c.valor|cop }}</td>
-              <td class="cys-td text-end {% if c.saldo > 0 %}dp-saldo{% else %}cys-td--muted{% endif %}">{{ c.saldo|cop }}</td>
-              <td class="cys-td text-center">
-                <a href="{% url 'detalle_compra' c.codigo_compra %}" class="dp-icon-btn" title="Ver compra #{{ c.codigo_compra }}">
-                  <i class="bi bi-eye"></i>
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="dp-empty">
-        <i class="bi bi-inbox"></i>
-        <strong>Todavía no le has comprado a este proveedor</strong>
-        <a href="{% url 'lista_compras' %}?proveedor={{ proveedor.id }}" class="btn-nuevo-prov">
-          <i class="bi bi-plus-circle"></i> Registrar una compra
-        </a>
-      </div>
-      {% endif %}
-    </section>
+      <!-- COLUMNA LATERAL: CONTACTO Y OBSERVACIONES -->
+      <aside class="dp-side">
+        <section class="dp-card">
+          <div class="dp-card__head">
+            <h2 class="dp-card__title"><i class="bi bi-info-circle"></i> Datos de Contacto</h2>
+          </div>
+          <div class="dp-card__body">
+            <dl class="dp-info-list">
+              <div>
+                <dt>NIT / Documento</dt>
+                <dd class="font-monospace">{{ proveedor.nit|default:"No especificado" }}</dd>
+              </div>
+              <div>
+                <dt>Tipo de proveedor</dt>
+                <dd>{{ proveedor.get_tipo_proveedor_display }}</dd>
+              </div>
+              <div>
+                <dt>Correo electrónico</dt>
+                <dd>
+                  {% if proveedor.email %}
+                    <a href="mailto:{{ proveedor.email }}" class="dp-link">{{ proveedor.email }}</a>
+                  {% else %}
+                    <span class="dp-td-muted fw-normal">No especificado</span>
+                  {% endif %}
+                </dd>
+              </div>
+              <div>
+                <dt>Teléfono</dt>
+                <dd>
+                  {% if proveedor.telefono %}
+                    <a href="tel:{{ proveedor.telefono }}" class="dp-link">{{ proveedor.telefono }}</a>
+                  {% else %}
+                    <span class="dp-td-muted fw-normal">No especificado</span>
+                  {% endif %}
+                </dd>
+              </div>
+              <div>
+                <dt>Fecha de registro</dt>
+                <dd>{{ proveedor.fecha_registro|date:"d/m/Y, H:i" }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        {% if proveedor.observacion %}
+        <section class="dp-card">
+          <div class="dp-card__head">
+            <h2 class="dp-card__title">
+              <i class="bi {% if proveedor.estado == 'sancionado' %}bi-exclamation-triangle{% else %}bi-chat-left-text{% endif %}"></i>
+              {% if proveedor.estado == 'sancionado' %}Motivo de la sanción{% else %}Observaciones{% endif %}
+            </h2>
+          </div>
+          <div class="dp-card__body">
+            <p class="dp-note {% if proveedor.estado == 'sancionado' %}dp-note--sancion{% endif %}">
+              {{ proveedor.observacion|linebreaksbr }}
+            </p>
+          </div>
+        </section>
+        {% endif %}
+      </aside>
+
+    </div>
 
   </div>
 </div>

@@ -1,4 +1,5 @@
 import os
+import re
 import glob
 import shutil
 import subprocess
@@ -7,11 +8,60 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from app.models import BackupRegistro
+
+MAX_UPLOAD_MB = 500
+
+
+def _sanitizar_nombre(texto, fallback="backup_cys"):
+    """Deja solo caracteres seguros para nombres de archivo (evita path traversal)."""
+    base = os.path.basename((texto or "").strip())
+    if base.lower().endswith(".sql"):
+        base = base[:-4]
+    limpio = re.sub(r"[^A-Za-z0-9._\- ]+", "", base).strip().replace(" ", "_")
+    limpio = re.sub(r"_+", "_", limpio).strip("._-")
+    return (limpio[:80] or fallback)
+
+
+def _formatear_tamano(size_mb):
+    """Formatea un tamaño en MB a KB o MB legible."""
+    val = float(size_mb or 0)
+    if val < 1 and val > 0:
+        return f"{round(val * 1024, 1)} KB"
+    return f"{val:.2f} MB"
+
+
+def _ejecutar_mysqldump(bin_dump, db_info, dest_path):
+    """Ejecuta mysqldump hacia dest_path. Devuelve (ok, error_msg)."""
+    comando = [
+        bin_dump,
+        f"-u{db_info['usuario']}",
+        f"-h{db_info['host']}",
+        f"-P{db_info['puerto']}",
+        "--default-character-set=utf8mb4",
+        "--single-transaction",
+        "--quick",
+        db_info["nombre"],
+    ]
+    env = os.environ.copy()
+    if db_info["password"]:
+        env["MYSQL_PWD"] = db_info["password"]
+
+    with open(dest_path, "wb") as f:
+        res = subprocess.run(
+            comando, stdout=f, stderr=subprocess.PIPE, env=env, check=False
+        )
+
+    if res.returncode != 0:
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
+        err_msg = res.stderr.decode("utf-8", errors="ignore").strip() or "Error en mysqldump"
+        return False, err_msg
+    return True, ""
 
 
 
@@ -60,25 +110,42 @@ def _obtener_datos_db():
 @login_required
 def respaldos_index(request):
     """Vista principal del módulo Copia de Seguridad."""
-    respaldos = BackupRegistro.objects.all().order_by("-fecha")
-    total_respaldos = respaldos.count()
+    respaldos = list(BackupRegistro.objects.all().order_by("-fecha"))
+    total_respaldos = len(respaldos)
 
-    total_mb = sum(r.tamaño_mb for r in respaldos)
-    ultimo_respaldo = respaldos.first()
-    db_info = _obtener_datos_db()
-
-    # Comprobar que los archivos físicos existan en disco
+    disponibles_count = 0
+    total_mb = 0.0
     for r in respaldos:
-        r.existe_en_disco = os.path.exists(r.ruta) if r.ruta else False
+        r.existe_en_disco = bool(r.ruta and os.path.exists(r.ruta))
+        if r.existe_en_disco:
+            disponibles_count += 1
+            try:
+                real_mb = round(os.path.getsize(r.ruta) / (1024 * 1024), 4)
+                if abs(real_mb - float(r.tamaño_mb or 0)) > 0.01:
+                    r.tamaño_mb = real_mb
+                    r.save(update_fields=["tamaño_mb"])
+            except OSError:
+                pass
+        r.tamano_legible = _formatear_tamano(r.tamaño_mb)
+        total_mb += float(r.tamaño_mb or 0)
+
+    ultimo_respaldo = respaldos[0] if respaldos else None
+    db_info = _obtener_datos_db()
+    mysqldump_disponible = bool(_obtener_binario("mysqldump"))
 
     contexto = {
         "respaldos": respaldos,
         "total_respaldos": total_respaldos,
+        "disponibles_count": disponibles_count,
+        "faltantes_count": total_respaldos - disponibles_count,
         "total_mb": round(total_mb, 2),
+        "total_espacio_legible": _formatear_tamano(total_mb),
         "ultimo_respaldo": ultimo_respaldo,
         "db_name": db_info["nombre"],
         "db_host": db_info["host"],
         "db_port": db_info["puerto"],
+        "mysqldump_disponible": mysqldump_disponible,
+        "breadcrumb_items": [{"nombre": "Copia de Seguridad", "url": None}],
     }
     return render(request, "respaldos/respaldos.html", contexto)
 
@@ -101,44 +168,19 @@ def respaldo_crear(request):
         os.makedirs(backup_dir, exist_ok=True)
 
         nombre_custom = request.POST.get("nombre", "").strip()
-        descripcion = request.POST.get("descripcion", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()[:500]
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         if nombre_custom:
-            # Limpiar caracteres inválidos
-            nombre_limpio = "".join(
-                c for c in nombre_custom if c.isalnum() or c in ("-", "_", " ")
-            ).strip()
+            nombre_limpio = _sanitizar_nombre(nombre_custom, fallback="backup_cys")
             nombre_archivo = f"{nombre_limpio}_{timestamp}.sql"
         else:
             nombre_archivo = f"backup_cys_{timestamp}.sql"
 
         dest_path = os.path.join(backup_dir, nombre_archivo)
 
-        comando = [
-            bin_dump,
-            f"-u{db_info['usuario']}",
-            f"-h{db_info['host']}",
-            f"-P{db_info['puerto']}",
-            "--default-character-set=utf8mb4",
-            "--single-transaction",
-            "--quick",
-            db_info["nombre"],
-        ]
-
-        env = os.environ.copy()
-        if db_info["password"]:
-            env["MYSQL_PWD"] = db_info["password"]
-
-        with open(dest_path, "wb") as f:
-            res = subprocess.run(
-                comando, stdout=f, stderr=subprocess.PIPE, env=env, check=False
-            )
-
-        if res.returncode != 0:
-            if os.path.exists(dest_path):
-                os.remove(dest_path)
-            err_msg = res.stderr.decode("utf-8", errors="ignore") or "Error en mysqldump"
+        ok, err_msg = _ejecutar_mysqldump(bin_dump, db_info, dest_path)
+        if not ok:
             messages.error(request, f"Error al generar la copia de seguridad: {err_msg}")
             return redirect("respaldos_index")
 
@@ -154,7 +196,7 @@ def respaldo_crear(request):
 
         messages.success(
             request,
-            f"¡Copia de seguridad '{nombre_archivo}' generada con éxito ({size_mb:.2f} MB)!",
+            f"¡Copia de seguridad '{nombre_archivo}' generada con éxito ({_formatear_tamano(size_mb)})!",
         )
     except Exception as e:
         messages.error(request, f"Ocurrió un error inesperado al crear el respaldo: {e}")
@@ -187,17 +229,22 @@ def respaldo_descargar(request, pk):
 def respaldo_editar(request, pk):
     """Edita el nombre y la descripción de una copia de seguridad."""
     registro = get_object_or_404(BackupRegistro, pk=pk)
-    nuevo_nombre = request.POST.get("nombre", "").strip()
-    nueva_desc = request.POST.get("descripcion", "").strip()
+    nuevo_nombre_raw = request.POST.get("nombre", "").strip()
+    nueva_desc = request.POST.get("descripcion", "").strip()[:500]
 
-    if nuevo_nombre:
-        if not nuevo_nombre.endswith(".sql"):
-            nuevo_nombre = f"{nuevo_nombre}.sql"
+    if nuevo_nombre_raw:
+        base_segura = _sanitizar_nombre(nuevo_nombre_raw, fallback=f"backup_{registro.pk}")
+        nuevo_nombre = f"{base_segura}.sql"
 
-        # Si el nombre físico cambia, renombrar el archivo en disco si existe
         if nuevo_nombre != registro.nombre and registro.ruta and os.path.exists(registro.ruta):
             backup_dir = os.path.dirname(registro.ruta)
             nueva_ruta = os.path.join(backup_dir, nuevo_nombre)
+            if os.path.exists(nueva_ruta):
+                messages.error(
+                    request,
+                    f"Ya existe un archivo llamado '{nuevo_nombre}'. Elige otro nombre.",
+                )
+                return redirect("respaldos_index")
             try:
                 os.rename(registro.ruta, nueva_ruta)
                 registro.ruta = nueva_ruta
@@ -257,6 +304,27 @@ def respaldo_restaurar(request, pk):
 
     db_info = _obtener_datos_db()
 
+    # Respaldo automático previo de seguridad (si el usuario lo dejó activo)
+    nota_previo = ""
+    if request.POST.get("crear_previo") == "1":
+        bin_dump = _obtener_binario("mysqldump")
+        if bin_dump:
+            backup_dir = os.path.join(settings.BASE_DIR, "backups")
+            os.makedirs(backup_dir, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_previo = f"auto_pre_restauracion_{ts}.sql"
+            ruta_previo = os.path.join(backup_dir, nombre_previo)
+            ok_prev, _ = _ejecutar_mysqldump(bin_dump, db_info, ruta_previo)
+            if ok_prev:
+                size_mb_prev = round(os.path.getsize(ruta_previo) / (1024 * 1024), 4)
+                BackupRegistro.objects.create(
+                    nombre=nombre_previo,
+                    descripcion=f"Respaldo automático previo a restaurar '{registro.nombre}'",
+                    ruta=ruta_previo,
+                    tamaño_mb=size_mb_prev,
+                )
+                nota_previo = f" Se guardó un respaldo previo automático ({nombre_previo})."
+
     comando = [
         bin_mysql,
         f"-u{db_info['usuario']}",
@@ -279,7 +347,7 @@ def respaldo_restaurar(request, pk):
         if res.returncode == 0:
             messages.success(
                 request,
-                f"¡Base de datos restaurada exitosamente desde '{registro.nombre}'!",
+                f"¡Base de datos restaurada exitosamente desde '{registro.nombre}'!{nota_previo}",
             )
         else:
             err = res.stderr.decode("utf-8", errors="ignore") or "Error en mysql"
@@ -303,12 +371,20 @@ def respaldo_subir(request):
         messages.error(request, "El archivo debe tener extensión .sql")
         return redirect("respaldos_index")
 
+    if archivo.size == 0:
+        messages.error(request, "El archivo seleccionado está vacío.")
+        return redirect("respaldos_index")
+
+    if archivo.size > MAX_UPLOAD_MB * 1024 * 1024:
+        messages.error(request, f"El archivo supera el límite permitido de {MAX_UPLOAD_MB} MB.")
+        return redirect("respaldos_index")
+
     try:
         backup_dir = os.path.join(settings.BASE_DIR, "backups")
         os.makedirs(backup_dir, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_base = os.path.splitext(archivo.name)[0]
+        nombre_base = _sanitizar_nombre(os.path.splitext(archivo.name)[0], fallback="respaldo")
         nombre_final = f"{nombre_base}_subido_{timestamp}.sql"
         dest_path = os.path.join(backup_dir, nombre_final)
 
@@ -319,7 +395,7 @@ def respaldo_subir(request):
         size_bytes = os.path.getsize(dest_path)
         size_mb = round(size_bytes / (1024 * 1024), 4)
 
-        desc = request.POST.get("descripcion", "").strip() or "Copia de seguridad subida manualmente"
+        desc = request.POST.get("descripcion", "").strip()[:500] or "Copia de seguridad subida manualmente"
 
         BackupRegistro.objects.create(
             nombre=nombre_final,
@@ -330,7 +406,7 @@ def respaldo_subir(request):
 
         messages.success(
             request,
-            f"¡Archivo '{nombre_final}' subido y registrado exitosamente ({size_mb:.2f} MB)!",
+            f"¡Archivo '{nombre_final}' subido y registrado exitosamente ({_formatear_tamano(size_mb)})!",
         )
     except Exception as e:
         messages.error(request, f"Error al subir el archivo: {e}")

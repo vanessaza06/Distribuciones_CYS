@@ -17,6 +17,7 @@ function init() {
   initModalPago();
   initBusquedaProveedores();
   initAccesibilidad();
+  initAccionesDropdown();
   initTabla();
   initExportar();
   initializeCharts();
@@ -37,18 +38,6 @@ function init() {
       bsModal.show();
     }
   }
-
-  document.querySelectorAll('.form-confirm-action').forEach(form => {
-    if (!form.dataset.confirmBound) {
-      form.dataset.confirmBound = 'true';
-      form.addEventListener('submit', function(e) {
-        const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
-        if (!window.confirm(msg)) {
-          e.preventDefault();
-        }
-      });
-    }
-  });
 }
 
 function leerDatos() {
@@ -90,6 +79,26 @@ function initExportar() {
       params.delete('modal');
       params.delete('page');
 
+      // Sincroniza con los valores actuales del formulario de filtros
+      const formFiltros = byId('filtrosCompras');
+      if (formFiltros) {
+        const leerCampo = (id) => {
+          const el = byId(id);
+          return el ? el.value.trim() : '';
+        };
+        const qVal = leerCampo('cmp-buscar-input');
+        const desdeVal = leerCampo('filtroComprasDesde');
+        const hastaVal = leerCampo('filtroComprasHasta');
+        const estadoVal = leerCampo('filtroComprasEstado');
+        const pagoVal = leerCampo('filtroComprasPago');
+
+        if (qVal) params.set('q', qVal); else params.delete('q');
+        if (desdeVal) params.set('desde', desdeVal); else params.delete('desde');
+        if (hastaVal) params.set('hasta', hastaVal); else params.delete('hasta');
+        if (estadoVal && estadoVal !== 'todos') params.set('estado', estadoVal); else params.delete('estado');
+        if (pagoVal && pagoVal !== 'todos') params.set('pago', pagoVal); else params.delete('pago');
+      }
+
       // Si el proveedor no está en la URL, toma el del selector del modal
       if (!params.get('proveedor')) {
         const sel = byId('proveedorSeleccionado');
@@ -109,12 +118,12 @@ function initExportar() {
   });
 }
 
-// ── Tabla del historial (DataTables) ───────────────────────────
+// ── Tabla del historial (DataTables) + Filtros desplegables ────
 function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
-  jQuery(tabla).DataTable({
+  const dt = jQuery(tabla).DataTable({
     paging: true,
     searching: true,
     info: true,
@@ -139,9 +148,151 @@ function initTabla() {
     }
   });
 
+  // Filtro en vivo por fecha, estado y pago (solo se registra una vez)
+  if (!window._cysComprasExtSearchBound) {
+    window._cysComprasExtSearchBound = true;
+    jQuery.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+      if (settings.sTableId !== 'tablaHistorialCompras') return true;
+      const rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
+      if (!rowNode) return true;
 
-  if (typeof window.cysCrearDropdownExportar === 'function') {
-    window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
+      const desdeEl = byId('filtroComprasDesde');
+      const hastaEl = byId('filtroComprasHasta');
+      const estadoEl = byId('filtroComprasEstado');
+      const pagoEl = byId('filtroComprasPago');
+
+      const desde = desdeEl ? desdeEl.value : '';
+      const hasta = hastaEl ? hastaEl.value : '';
+      const estado = estadoEl ? estadoEl.value : 'todos';
+      const pago = pagoEl ? pagoEl.value : 'todos';
+
+      const fechaRow = rowNode.getAttribute('data-fecha') || '';
+      const estadoRow = rowNode.getAttribute('data-estado') || '';
+      const pagoRow = rowNode.getAttribute('data-pago') || '';
+
+      if (desde && fechaRow && fechaRow < desde) return false;
+      if (hasta && fechaRow && fechaRow > hasta) return false;
+      if (estado && estado !== 'todos' && estadoRow !== estado) return false;
+      if (pago && pago !== 'todos' && pagoRow !== pago) return false;
+      return true;
+    });
+  }
+
+  const inputBuscar = byId('cmp-buscar-input');
+  const desdeEl = byId('filtroComprasDesde');
+  const hastaEl = byId('filtroComprasHasta');
+  const estadoEl = byId('filtroComprasEstado');
+  const pagoEl = byId('filtroComprasPago');
+  const btnLimpiar = byId('cmp-btn-limpiar');
+
+  if (inputBuscar && !inputBuscar.dataset.dtBound) {
+    inputBuscar.dataset.dtBound = 'true';
+    inputBuscar.addEventListener('input', function () {
+      const api = jQuery('#tablaHistorialCompras').DataTable();
+      api.search(this.value.trim()).draw();
+    });
+  }
+
+  [desdeEl, hastaEl, estadoEl, pagoEl].forEach((el) => {
+    if (el && !el.dataset.dtBound) {
+      el.dataset.dtBound = 'true';
+      el.addEventListener('change', function () {
+        const api = jQuery('#tablaHistorialCompras').DataTable();
+        api.draw();
+      });
+    }
+  });
+
+  if (btnLimpiar && !btnLimpiar.dataset.dtBound) {
+    btnLimpiar.dataset.dtBound = 'true';
+    btnLimpiar.addEventListener('click', function (e) {
+      const params = new URLSearchParams(window.location.search);
+      const tieneFiltrosUrl =
+        params.get('q') ||
+        params.get('desde') ||
+        params.get('hasta') ||
+        (params.get('estado') && params.get('estado') !== 'todos') ||
+        (params.get('pago') && params.get('pago') !== 'todos');
+
+      if (!tieneFiltrosUrl) {
+        e.preventDefault();
+        if (inputBuscar) inputBuscar.value = '';
+        if (desdeEl) desdeEl.value = '';
+        if (hastaEl) hastaEl.value = '';
+        if (estadoEl) estadoEl.value = 'todos';
+        if (pagoEl) pagoEl.value = 'todos';
+        const api = jQuery('#tablaHistorialCompras').DataTable();
+        api.search('').draw();
+      }
+    });
+  }
+
+  dt.on('draw.dt', function () {
+    document.querySelectorAll('.dd-menu.open').forEach((m) => m.classList.remove('open'));
+    document.querySelectorAll('.dd-btn[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  });
+}
+
+function initAccionesDropdown() {
+  const cerrarMenus = () => {
+    document.querySelectorAll('#tablaHistorialCompras .dd-menu.open').forEach((m) => m.classList.remove('open'));
+    document.querySelectorAll('#tablaHistorialCompras .dd-btn[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  };
+
+  if (!window._cysComprasDdBound) {
+    window._cysComprasDdBound = true;
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('#tablaHistorialCompras .dd-btn');
+      if (btn) {
+        e.stopPropagation();
+        const wrap = btn.closest('.dd-wrap');
+        const menu = wrap && wrap.querySelector('.dd-menu');
+        if (!menu) return;
+        const yaAbierto = menu.classList.contains('open');
+        cerrarMenus();
+        if (!yaAbierto) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          const rect = btn.getBoundingClientRect();
+          const menuH = menu.offsetHeight || 160;
+          let top = rect.bottom + 4;
+          if (top + menuH > window.innerHeight - 8 && rect.top - menuH - 4 > 8) {
+            top = rect.top - menuH - 4;
+          }
+          menu.style.top = top + 'px';
+          menu.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
+        }
+        return;
+      }
+
+      if (e.target.closest('#tablaHistorialCompras .dd-item')) {
+        setTimeout(cerrarMenus, 0);
+        return;
+      }
+
+      if (!e.target.closest('#tablaHistorialCompras .dd-wrap')) {
+        cerrarMenus();
+      }
+    });
+
+    window.addEventListener('scroll', cerrarMenus, true);
+    window.addEventListener('resize', cerrarMenus);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') cerrarMenus();
+    });
+  }
+
+  if (!window._cysComprasConfirmBound) {
+    window._cysComprasConfirmBound = true;
+    document.addEventListener('submit', function (e) {
+      const form = e.target.closest('.form-confirm-action');
+      if (!form) return;
+      const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
+      if (!window.confirm(msg)) {
+        e.preventDefault();
+      }
+    });
   }
 }
 
@@ -747,29 +898,36 @@ function initModalPago() {
     }
   }
 
-  document.querySelectorAll('.btn-abrir-pago').forEach((btn) => {
-    btn.addEventListener('click', function () {
-      const total = parseFloat(this.dataset.compraTotal) || 0;
-      const pagado = parseFloat(this.dataset.compraPagado) || 0;
-      const saldo = parseFloat(this.dataset.compraSaldo);
+  if (!window._cysComprasPagoDelegated) {
+    window._cysComprasPagoDelegated = true;
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn-abrir-pago');
+      if (!btn) return;
+      const total = parseFloat(btn.dataset.compraTotal) || 0;
+      const pagado = parseFloat(btn.dataset.compraPagado) || 0;
+      const saldo = parseFloat(btn.dataset.compraSaldo);
       const saldoFinal = isNaN(saldo) ? Math.max(0, total - pagado) : saldo;
 
-      byId('compraId').value = this.dataset.compraId;
+      const f = byId('formPago');
+      const m = byId('montoPagado');
+      if (!f || !m) return;
+
+      byId('compraId').value = btn.dataset.compraId;
       byId('saldoActual').value = saldoFinal;
       byId('resumenMontoTotal').textContent = fmtCOP(total);
       byId('resumenMontoPagado').textContent = fmtCOP(pagado);
       byId('resumenSaldoPendiente').textContent = fmtCOP(saldoFinal);
 
-      monto.value = '';
-      monto.max = saldoFinal;
+      m.value = '';
+      m.max = saldoFinal;
       byId('btnPagarTodoSaldo').innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar todo (${fmtCOP(saldoFinal)})`;
 
       const pagada = saldoFinal <= 0;
       byId('alertaPagada').classList.toggle('d-none', !pagada);
-      form.querySelector('button[type="submit"]').disabled = pagada;
-      actualizar();
+      f.querySelector('button[type="submit"]').disabled = pagada;
+      m.dispatchEvent(new Event('input'));
     });
-  });
+  }
 
   byId('btnPagarTodoSaldo').addEventListener('click', () => {
     monto.value = saldoActual().toFixed(2);

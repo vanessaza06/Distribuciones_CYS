@@ -1,64 +1,544 @@
 /* ══════════════════════════════════════════════════════════════════════════════
    DETALLE COMPRA — CYS Ltda
-   Diseño 100% alineado con el sistema visual de Compras (compras.css)
+   Diseño limpio, sobrio y espacioso, adaptable a los 5 temas de base.js
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Asegurar compatibilidad de cards principales ── */
-.card-dev,
-.card-proveedor-header {
-  background-color: var(--fondo-card) !important;
-  border: 1px solid var(--cp-borde) !important;
-  border-left: 4px solid var(--cp-dorado) !important;
-  border-radius: 12px !important;
-  color: var(--texto) !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+.dc-page {
+  --dc-accent: var(--azul-claro);
+  --dc-border: color-mix(in srgb, var(--texto) 10%, transparent);
+  --dc-border-soft: color-mix(in srgb, var(--texto) 7%, transparent);
+  --dc-surface: color-mix(in srgb, var(--texto) 3%, var(--fondo-card));
+  --dc-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+  color: var(--texto);
+  padding: 1.75rem 2rem 3.25rem !important;
 }
 
-/* ── Tabla de Ítems (alineada exactamente al historial de compras) ── */
+.dc-container {
+  max-width: 1220px;
+  margin: 0 auto;
+}
+
+/* ── Barra superior (volver + exportar + acciones principales) ── */
+.dc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.dc-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--texto-muted);
+  background: var(--fondo-card);
+  border: 1px solid var(--dc-border);
+  text-decoration: none;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.dc-back-link:hover {
+  color: var(--texto);
+  border-color: color-mix(in srgb, var(--texto) 24%, transparent);
+  background: var(--dc-surface);
+}
+
+/* ── Encabezado Hero limpio (misma jerarquía que Detalle de Devolución) ── */
+.dc-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.75rem;
+  background: var(--fondo-card);
+  border: 1px solid var(--dc-border);
+  border-radius: 16px;
+  box-shadow: var(--dc-shadow);
+  position: relative;
+  z-index: 15;
+}
+
+.dc-hero__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1 1 360px;
+}
+
+.dc-hero__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texto-muted);
+}
+
+.dc-hero__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.dc-hero__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--texto);
+  line-height: 1.15;
+}
+
+.dc-hero__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  font-size: 0.87rem;
+  color: var(--texto-muted);
+  margin-top: 0.1rem;
+}
+
+.dc-hero__meta i {
+  color: var(--texto-muted) !important;
+  margin-right: 0.25rem;
+}
+
+.dc-hero__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  padding: 0.25rem 0 0.25rem 1.75rem;
+  border-left: 1px solid var(--dc-border);
+  min-width: 210px;
+}
+
+.dc-hero__total span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-muted);
+}
+
+.dc-hero__total strong {
+  font-size: clamp(1.55rem, 2.3vw, 2rem);
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--texto);
+  margin-top: 0.15rem;
+}
+
+.dc-hero__total small {
+  font-size: 0.78rem;
+  color: var(--texto-muted);
+  margin-top: 0.2rem;
+}
+
+/* ── Banda de métricas sobria (reemplaza 4 KPIs multicolores sobrecargados) ── */
+.dc-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.dc-metric-card {
+  background: var(--fondo-card);
+  border: 1px solid var(--dc-border);
+  border-radius: 14px;
+  padding: 1.25rem 1.45rem;
+  box-shadow: var(--dc-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dc-metric-card__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--texto-muted);
+}
+
+.dc-metric-card__value {
+  font-size: clamp(1.2rem, 1.75vw, 1.55rem);
+  font-weight: 800;
+  color: var(--texto);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.dc-metric-card__sub {
+  font-size: 0.78rem;
+  color: var(--texto-muted);
+}
+
+/* ── Layout 2 columnas (66% principal / 34% lateral) ── */
+.dc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.dc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.dc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* ── Tarjetas neutras y espaciosas (anula bordes dorados/colores de compras.css) ── */
+.dc-page .card-dev {
+  background-color: var(--fondo-card) !important;
+  border: 1px solid var(--dc-border) !important;
+  border-left: 1px solid var(--dc-border) !important;
+  border-radius: 16px !important;
+  color: var(--texto) !important;
+  box-shadow: var(--dc-shadow) !important;
+  overflow: hidden;
+  transition: border-color 0.2s ease !important;
+}
+
+.dc-page .card-dev:hover {
+  border-color: color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  border-left-color: color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  box-shadow: var(--dc-shadow) !important;
+}
+
+.dc-page .card-dev .card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--dc-border-soft) !important;
+  padding: 1.2rem 1.75rem !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.dc-page .card-dev .card-header h5 {
+  font-size: 0.96rem !important;
+  font-weight: 700 !important;
+  color: var(--texto) !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.dc-page .card-dev .card-header h5 i {
+  color: var(--texto-muted) !important;
+  font-size: 1rem !important;
+}
+
+.dc-page .card-dev .card-body {
+  background: transparent !important;
+  padding: 1.5rem 1.75rem !important;
+}
+
+.dc-page .card-dev .card-body.dc-table-body {
+  padding: 0 !important;
+}
+
+.dc-count-pill {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--texto-muted);
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border);
+  border-radius: 999px;
+  padding: 0.22rem 0.72rem;
+  white-space: nowrap;
+}
+
+/* ── Badges de estado semánticos (sobrios) ── */
+.dc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dc-status-badge i {
+  color: currentColor !important;
+  font-size: 0.8rem;
+}
+
+.dc-status--pendiente {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.dc-status--confirmada {
+  background: rgba(59, 130, 246, 0.11);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.26);
+}
+
+.dc-status--recibida {
+  background: rgba(34, 197, 94, 0.11);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.26);
+}
+
+.dc-status--cancelada {
+  background: rgba(220, 53, 69, 0.11);
+  color: #dc2626;
+  border: 1px solid rgba(220, 53, 69, 0.26);
+}
+
+/* ── Badges neutros (categoría, lote, cantidad) ── */
+.dc-tag-neutral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 7px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--texto-muted);
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border);
+}
+
+.dc-lote-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.62rem;
+  border-radius: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--texto-muted);
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border);
+}
+
+.dc-qty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 0.5rem;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: var(--texto);
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border);
+}
+
+/* ── Filas de información lateral ── */
+.dc-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--dc-border-soft);
+  font-size: 0.88rem;
+}
+
+.dc-info-row:first-child { padding-top: 0; }
+.dc-info-row:last-child  { border-bottom: none; padding-bottom: 0; }
+
+.dc-info-key {
+  color: var(--texto-muted);
+  font-weight: 500;
+}
+
+.dc-info-row a {
+  color: var(--azul-claro);
+  text-decoration: none;
+}
+
+.dc-info-row a:hover {
+  text-decoration: underline;
+}
+
+.dc-prov-head {
+  margin-bottom: 1.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--dc-border-soft);
+}
+
+.dc-prov-head h6 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+/* ── Tabla de Ítems (.prod-table + espaciado amplio) ── */
 #tablaDetalleCompra {
   color: var(--texto) !important;
+  border-collapse: collapse !important;
+  margin: 0 !important;
+  --bs-table-bg: transparent !important;
+  --bs-table-hover-bg: color-mix(in srgb, var(--azul-claro) 3.5%, transparent) !important;
 }
 
 #tablaDetalleCompra thead th {
-  background: color-mix(in srgb, var(--azul-claro) 8%, var(--fondo-card)) !important;
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent) !important;
   color: var(--azul-claro) !important;
   font-weight: 700 !important;
-  font-size: 0.75rem !important;
+  font-size: 11px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  border-bottom: 2px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
-  padding: 10px 14px !important;
+  letter-spacing: 0.06em !important;
+  border: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  padding: 13px 18px !important;
+  white-space: nowrap;
 }
 
 #tablaDetalleCompra tbody tr {
-  border-bottom: 1px solid color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  border-bottom: 1px solid var(--dc-border-soft) !important;
   transition: background-color 0.15s ease !important;
 }
 
-#tablaDetalleCompra tbody tr:hover {
-  background-color: color-mix(in srgb, var(--cp-dorado) 6%, var(--fondo-card)) !important;
+#tablaDetalleCompra tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+#tablaDetalleCompra tbody tr:hover td {
+  background-color: color-mix(in srgb, var(--azul-claro) 3.5%, transparent) !important;
 }
 
 #tablaDetalleCompra tbody td {
-  padding: 10px 14px !important;
+  padding: 15px 18px !important;
   color: var(--texto) !important;
+  font-size: 13.5px !important;
   vertical-align: middle !important;
   background: transparent !important;
+  border-color: var(--dc-border-soft) !important;
 }
 
-/* ── Timeline de Auditoría ── */
+/* Pie de DataTables */
+.dc-page .dt-container .dt-layout-row:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.95rem 1.5rem;
+  border-top: 1px solid var(--dc-border-soft);
+}
+
+.dc-page .dt-container .dt-info {
+  color: var(--texto-muted) !important;
+  font-size: 0.82rem;
+  padding-top: 0 !important;
+}
+
+.dc-page .dt-container .dt-paging-button,
+.dc-page .dt-container .page-link {
+  color: var(--texto) !important;
+  background: transparent !important;
+  border: 1px solid var(--dc-border) !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
+  padding: 0.3rem 0.65rem !important;
+  box-shadow: none !important;
+}
+
+.dc-page .dt-container .dt-paging-button:hover:not(.disabled),
+.dc-page .dt-container .page-link:hover {
+  background: var(--dc-surface) !important;
+  border-color: color-mix(in srgb, var(--texto) 24%, transparent) !important;
+}
+
+.dc-page .dt-container .dt-paging-button.current,
+.dc-page .dt-container .page-item.active .page-link {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  font-weight: 700 !important;
+}
+
+/* ── Resumen financiero y progreso de pago ── */
+.dc-fin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem 2rem;
+}
+
+.dc-fin-item__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-muted);
+  margin-bottom: 0.3rem;
+}
+
+.dc-fin-item__value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--texto);
+  line-height: 1.2;
+}
+
+.dc-progress-wrap {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--dc-border-soft);
+}
+
+.dc-progress-wrap .progress {
+  background-color: color-mix(in srgb, var(--texto) 9%, transparent);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+/* ── Pagos registrados ── */
+.dc-pago-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--dc-border-soft);
+}
+
+.dc-pago-row:first-child { padding-top: 0; }
+.dc-pago-row:last-child  { border-bottom: none; padding-bottom: 0; }
+
+/* ── Timeline de Auditoría (sobrio) ── */
 .dc-timeline {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0.5rem 0.25rem;
 }
 
 .dc-timeline-item {
   display: flex;
-  gap: 1rem;
+  gap: 0.9rem;
   position: relative;
-  padding-bottom: 1.25rem;
+  padding-bottom: 1.15rem;
 }
 
 .dc-timeline-item:last-child {
@@ -68,11 +548,11 @@
 .dc-timeline-item::before {
   content: '';
   position: absolute;
-  left: 14px;
-  top: 28px;
+  left: 15px;
+  top: 34px;
   bottom: 0;
-  width: 2px;
-  background: color-mix(in srgb, var(--cp-dorado) 25%, transparent);
+  width: 1.5px;
+  background: var(--dc-border);
 }
 
 .dc-timeline-item:last-child::before {
@@ -80,167 +560,201 @@
 }
 
 .dc-timeline-dot {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--cp-dorado) 12%, var(--fondo-card));
-  border: 2px solid color-mix(in srgb, var(--cp-dorado) 40%, transparent);
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--cp-dorado);
-  font-size: 0.75rem;
+  color: var(--texto-muted);
+  font-size: 0.82rem;
   flex-shrink: 0;
   z-index: 1;
 }
 
 .dc-timeline-content {
   flex: 1;
-  padding-top: 0.2rem;
+  padding-top: 0.12rem;
 }
 
 .dc-timeline-title {
   color: var(--texto);
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 2px;
 }
 
 .dc-timeline-sub {
   color: var(--texto-muted);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
 }
 
-.dc-tl-blue   { background: color-mix(in srgb, var(--azul-claro) 15%, var(--fondo-card)) !important; border-color: color-mix(in srgb, var(--azul-claro) 40%, transparent) !important; color: var(--azul-claro) !important; }
-.dc-tl-green  { background: rgba(39, 174, 96, 0.15) !important; border-color: rgba(39, 174, 96, 0.4) !important; color: #27ae60 !important; }
-.dc-tl-red    { background: rgba(231, 76, 60, 0.15) !important; border-color: rgba(231, 76, 60, 0.4) !important; color: #e74c3c !important; }
-.dc-tl-purple { background: rgba(155, 93, 229, 0.15) !important; border-color: rgba(155, 93, 229, 0.4) !important; color: #9b5de5 !important; }
+.dc-tl-blue   { background: rgba(59, 130, 246, 0.11) !important; border-color: rgba(59, 130, 246, 0.35) !important; color: #2563eb !important; }
+.dc-tl-green  { background: rgba(34, 197, 94, 0.11) !important;  border-color: rgba(34, 197, 94, 0.35) !important;  color: #16a34a !important; }
+.dc-tl-red    { background: rgba(220, 53, 69, 0.11) !important;  border-color: rgba(220, 53, 69, 0.35) !important;  color: #dc2626 !important; }
+.dc-tl-purple { background: var(--dc-surface) !important; border-color: var(--dc-border) !important; color: var(--texto-muted) !important; }
 
-/* ── Barra de progreso ── */
-.dc-progress-wrap .progress {
-  background-color: color-mix(in srgb, var(--texto) 8%, transparent);
-  overflow: hidden;
+/* ── Botones píldora limpios ── */
+.dc-btn-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.48rem !important;
+  padding: 0.54rem 1.25rem !important;
+  border-radius: 999px !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  text-decoration: none !important;
+  transition: background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease !important;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   REGLAS ESPECÍFICAS PARA MODO CLARO (Idénticas a la captura de Compras)
-   ══════════════════════════════════════════════════════════════════════════════ */
-html.cys-a11y-modo-claro,
-html[data-tema="claro"] {
-  --cp-borde: rgba(0, 0, 0, 0.08);
+.dc-btn-pill--primary {
+  background: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  border: 1px solid var(--azul-claro) !important;
+  font-weight: 700 !important;
 }
 
-html.cys-a11y-modo-claro .card-dev,
-html[data-tema="claro"] .card-dev,
-html.cys-a11y-modo-claro .kpi-card,
-html[data-tema="claro"] .kpi-card {
-  background-color: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+.dc-btn-pill--primary i {
+  color: var(--fondo) !important;
 }
 
-html.cys-a11y-modo-claro .gradient-header,
-html[data-tema="claro"] .gradient-header {
-  background: #fbeee8 !important;
-  border-bottom: 1px solid #f5cfc4 !important;
+.dc-btn-pill--primary:hover {
+  opacity: 0.9;
+  color: var(--fondo) !important;
 }
 
-html.cys-a11y-modo-claro #tablaDetalleCompra thead th,
-html[data-tema="claro"] #tablaDetalleCompra thead th {
-  background: #fbeee8 !important;
-  color: #b22a1a !important;
-  border-bottom: 2px solid #f2c0b3 !important;
-}
-
-html.cys-a11y-modo-claro .btn-filtro-proveedor,
-html[data-tema="claro"] .btn-filtro-proveedor {
-  background: #fcf6eb !important;
-  color: #9a6a1f !important;
-  border: 1px solid #e8cf9f !important;
-}
-
-html.cys-a11y-modo-claro .btn-filtro-proveedor:hover,
-html[data-tema="claro"] .btn-filtro-proveedor:hover {
-  background: #faecd3 !important;
-  color: #835512 !important;
-}
-
-html.cys-a11y-modo-claro .kpi-value,
-html[data-tema="claro"] .kpi-value {
-  color: #111827 !important;
-}
-
-html.cys-a11y-modo-claro .kpi-title,
-html[data-tema="claro"] .kpi-title {
-  color: #1f2937 !important;
-}
-
-html.cys-a11y-modo-claro .kpi-sub,
-html[data-tema="claro"] .kpi-sub {
-  color: #6b7280 !important;
-}
-
-html.cys-a11y-modo-claro .detail-badge,
-html[data-tema="claro"] .detail-badge {
-  background: #fde8e4 !important;
-  color: #b22a1a !important;
-  border: 1px solid #f5c4be !important;
-}
-
-html.cys-a11y-modo-claro .estado-activo,
-html[data-tema="claro"] .estado-activo {
-  background: #e6f9ed !important;
+.dc-btn-pill--success {
+  background: rgba(34, 197, 94, 0.12) !important;
   color: #16a34a !important;
-  border: 1px solid #bbf2cc !important;
+  border: 1px solid rgba(34, 197, 94, 0.36) !important;
 }
-/* ════════════════════════════════════════════════════════════════
-   BOTÓN EXPORTAR + MENÚ (mismo diseño que Compras)
-   ════════════════════════════════════════════════════════════════ */
 
+.dc-btn-pill--success i {
+  color: #16a34a !important;
+}
+
+.dc-btn-pill--success:hover {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #15803d !important;
+}
+
+.dc-btn-pill--ghost {
+  background: transparent !important;
+  color: var(--texto) !important;
+  border: 1px solid var(--dc-border) !important;
+  box-shadow: none !important;
+}
+
+.dc-btn-pill--ghost i {
+  color: var(--texto-muted) !important;
+}
+
+.dc-btn-pill--ghost:hover {
+  background: var(--dc-surface) !important;
+  border-color: color-mix(in srgb, var(--texto) 24%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+/* ── Modal de pago ── */
+#modalPagoDetalle .modal-content {
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
+  border: 1px solid var(--dc-border) !important;
+  border-radius: 16px !important;
+}
+
+#modalPagoDetalle .modal-header,
+#modalPagoDetalle .modal-footer {
+  border-color: var(--dc-border-soft) !important;
+}
+
+#modalPagoDetalle .btn-close {
+  filter: var(--btn-close-filter);
+}
+
+#modalPagoDetalle .dc-modal-summary {
+  background: var(--dc-surface) !important;
+  border: 1px solid var(--dc-border) !important;
+  border-radius: 12px;
+}
+
+#modalPagoDetalle .dc-modal-sep {
+  border-right: 1px solid var(--dc-border-soft);
+}
+
+#modalPagoDetalle .input-group-text {
+  background: var(--dc-surface) !important;
+  border-color: var(--dc-border) !important;
+  color: var(--texto-muted) !important;
+}
+
+#modalPagoDetalle .cmp-input {
+  background-color: var(--fondo-card2) !important;
+  border-color: var(--dc-border) !important;
+  color: var(--texto) !important;
+}
+
+#modalPagoDetalle .cmp-input:focus {
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+}
+
+#modalPagoDetalle select.cmp-input option {
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BOTÓN EXPORTAR + MENÚ (sobrio, nunca cortado)
+   ════════════════════════════════════════════════════════════════ */
 #cys-dt-export-compra .dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* ── Botón: píldora con borde azul + chevron ── */
 #cys-dt-export-compra .cat-btn-exportar {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: .55rem !important;
-  min-width: 160px !important;
-  padding: .5rem 1.15rem !important;
+  gap: 0.5rem !important;
+  padding: 0.52rem 1.15rem !important;
   border-radius: 999px !important;
-  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  background: var(--fondo-card) !important;
+  border: 1px solid var(--dc-border) !important;
   color: var(--texto) !important;
-  font-size: 1rem !important;
+  font-size: 0.86rem !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
   white-space: nowrap;
   box-shadow: none !important;
   transform: none !important;
-  transition: background .2s ease, border-color .2s ease !important;
+  transition: background 0.18s ease, border-color 0.18s ease !important;
 }
 
 #cys-dt-export-compra .cat-btn-exportar i {
-  color: var(--azul-claro) !important;
-  font-size: 1.05rem;
+  color: var(--texto-muted) !important;
+  font-size: 0.95rem;
   margin: 0 !important;
 }
 
 #cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after {
-  content: "\f282";                 /* bi-chevron-down */
+  content: "\f282";
   font-family: "bootstrap-icons" !important;
-  display: inline-block;
+  display: inline-block !important;
   border: 0 !important;
-  margin: 0 0 0 .1rem;
-  font-size: .8rem;
+  margin: 0 0 0 0.12rem;
+  font-size: 0.7rem;
   font-weight: 700 !important;
   line-height: 1;
-  color: var(--texto);
-  transition: transform .2s ease;
+  color: var(--texto-muted);
+  transition: transform 0.2s ease;
 }
+
 #cys-dt-export-compra .cat-btn-exportar[aria-expanded="true"]::after {
   transform: rotate(180deg);
 }
@@ -248,89 +762,93 @@ html[data-tema="claro"] .estado-activo {
 #cys-dt-export-compra .cat-btn-exportar:hover,
 #cys-dt-export-compra .cat-btn-exportar:focus,
 #cys-dt-export-compra .cat-btn-exportar[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
-  border-color: var(--azul-claro) !important;
+  background: var(--dc-surface) !important;
+  border-color: color-mix(in srgb, var(--texto) 26%, transparent) !important;
   color: var(--texto) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  box-shadow: none !important;
   transform: none !important;
 }
 
-/* ── Menú: mismo ancho que el botón ── */
 #cys-dt-export-compra .cat-dropdown-export {
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
+  width: max-content !important;
+  min-width: 175px !important;
+  max-width: none !important;
   box-sizing: border-box !important;
-  margin-top: .5rem !important;
-  padding: .4rem !important;
-  border-radius: 16px !important;
+  margin-top: 0.5rem !important;
+  padding: 0.45rem !important;
+  border-radius: 14px !important;
   background-color: var(--fondo-card) !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+  border: 1px solid var(--dc-border) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16) !important;
   overflow: visible !important;
   max-height: none !important;
+  z-index: 1080 !important;
 }
 
 #cys-dt-export-compra .cat-dropdown-export .dropdown-item {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: .7rem !important;
+  gap: 0.65rem !important;
   width: 100% !important;
-  padding: .6rem .75rem !important;
-  border-radius: 10px !important;
+  padding: 0.58rem 0.8rem !important;
+  border-radius: 9px !important;
   background: transparent !important;
   border: none !important;
   color: var(--texto) !important;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap !important;
 }
+
 #cys-dt-export-compra .cat-dropdown-export .dropdown-item:hover,
 #cys-dt-export-compra .cat-dropdown-export .dropdown-item:focus {
-  background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+  background: var(--dc-surface) !important;
   color: var(--texto) !important;
 }
 
 #cys-dt-export-compra .cat-dropdown-export .dropdown-item i {
-  width: 22px !important;
+  width: 20px !important;
   margin: 0 !important;
-  font-size: 1.25rem !important;
+  font-size: 1.08rem !important;
   line-height: 1;
   text-align: center;
   flex-shrink: 0;
 }
-#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-excel { color: #2ecc71 !important; }
-#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-pdf   { color: #e74c3c !important; }
 
-/* ── Modo claro ── */
-html.cys-a11y-modo-claro #cys-dt-export-compra .cat-btn-exportar,
-html[data-tema="claro"] #cys-dt-export-compra .cat-btn-exportar {
-  background: #f3f7fc !important;
-  border-color: #b9cbe3 !important;
-  color: #1f2937 !important;
-}
-html.cys-a11y-modo-claro #cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after,
-html[data-tema="claro"] #cys-dt-export-compra .cat-btn-exportar.dropdown-toggle::after {
-  color: #1f2937;
-}
-html.cys-a11y-modo-claro #cys-dt-export-compra .cat-dropdown-export,
-html[data-tema="claro"] #cys-dt-export-compra .cat-dropdown-export {
-  background-color: #ffffff !important;
-  border-color: #d5deeb !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .12) !important;
-}
-html.cys-a11y-modo-claro #cys-dt-export-compra .cat-dropdown-export .dropdown-item,
-html[data-tema="claro"] #cys-dt-export-compra .cat-dropdown-export .dropdown-item {
-  color: #1f2937 !important;
+#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-excel { color: #16a34a !important; }
+#cys-dt-export-compra .cat-dropdown-export .bi-file-earmark-pdf   { color: #dc2626 !important; }
+
+/* ── Responsivo ── */
+@media (max-width: 1100px) {
+  .dc-layout {
+    grid-template-columns: 1fr;
+  }
+  .dc-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-/* ── Móvil: anula la regla global de .dropdown-menu a 240px ── */
-@media (max-width: 480px) {
-  #cys-dt-export-compra .cat-btn-exportar { min-width: 140px !important; }
-  #cys-dt-export-compra .cat-dropdown-export {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
+@media (max-width: 768px) {
+  .dc-page {
+    padding: 1.15rem 1rem 2.25rem !important;
+  }
+  .dc-hero {
+    padding: 1.35rem 1.25rem;
+  }
+  .dc-hero__total {
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+    padding: 1rem 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--dc-border-soft);
+  }
+}
+
+@media (max-width: 576px) {
+  .dc-metrics,
+  .dc-fin-grid {
+    grid-template-columns: 1fr;
   }
 }
