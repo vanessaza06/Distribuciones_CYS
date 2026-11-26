@@ -2,8 +2,14 @@
    aside.js — Barra lateral CYS
    ------------------------------------------------------------
    - Modo compacto (solo íconos) con flyouts de submenú estables
+   - Lado del aside (izquierda / derecha) configurable desde
+     Configuración: cambia la clase del offcanvas, el lado del flyout,
+     el lado de los tooltips y las variables de espacio del contenido
    - Tooltips de Bootstrap SOLO en modo compacto (en modo normal
      las etiquetas ya están visibles)
+   - Al cerrar el aside se ocultan sus tooltips (si no, el de la
+     equis se queda "volando" porque el botón desaparece antes de
+     que el mouse lo "abandone")
    - El grupo del submenú de la página actual queda abierto, también
      cuando se navega con htmx (el aside usa hx-preserve y el script
      no se vuelve a ejecutar en cada navegación)
@@ -12,6 +18,7 @@
   'use strict';
 
   const KEY_MINI   = 'cys_sidebar_mini';
+  const KEY_LADO   = 'cys_aside_lado';
   const ANCHO_FULL = '290px';
   const ANCHO_MINI = '84px';
 
@@ -27,13 +34,16 @@
 
   let sidebar      = null;
   let miniActivo   = false;
+  let ladoActual   = 'derecha';  // 'derecha' | 'izquierda'
   let tipsNav      = [];     // tooltips de la navegación (solo activos en modo compacto)
   let tipMini      = null;   // tooltip del botón compacto/expandido
   let rutaAnterior = null;   // última ruta procesada (evita reabrir grupos cerrados a mano)
   let grupoAuto    = null;   // id del submenú abierto automáticamente por la URL
   let wrapHover    = null;   // grupo bajo el mouse en modo compacto
+  let flipTimer    = null;
 
   const normalizar = p => (p || '').replace(/\/+$/, '') || '/';
+  const ladoValido = v => v === 'izquierda' || v === 'derecha';
 
   function seguro(nombre, fn) {
     try { fn(); } catch (err) { console.error('[CYS] aside — error en "' + nombre + '":', err); }
@@ -64,9 +74,86 @@
     } catch (e) {}
   }
 
+  function leerLado() {
+    try {
+      const dedicado = localStorage.getItem(KEY_LADO);
+      if (ladoValido(dedicado)) return dedicado;
+    } catch (e) {}
+    return leerCfg().asideLado === 'izquierda' ? 'izquierda' : 'derecha';
+  }
+
   function actualizarResumenWrap(visible) {
     const wrap = document.getElementById('cys-sb-resumen-wrap');
     if (wrap) wrap.classList.toggle('cys-sb-resumen-oculto', visible === false);
+  }
+
+  // ══════════════════════════════════════════
+  // LADO DEL ASIDE
+  // ══════════════════════════════════════════
+  // Variables que usa el CSS del contenido para dejar el hueco del aside
+  function actualizarOffsets() {
+    const root = document.documentElement;
+    const off  = miniActivo ? ANCHO_MINI : ANCHO_FULL;
+    root.style.setProperty('--sidebar-offset', off);
+    root.style.setProperty('--sidebar-offset-izq', ladoActual === 'izquierda' ? off : '0px');
+    root.style.setProperty('--sidebar-offset-der', ladoActual === 'derecha' ? off : '0px');
+  }
+
+  // Solo DOM: atributo en <html> + clase de Bootstrap del offcanvas
+  function pintarLado(lado) {
+    document.documentElement.setAttribute('data-aside-lado', lado);
+    if (!sidebar) return;
+    sidebar.classList.toggle('offcanvas-end', lado === 'derecha');
+    sidebar.classList.toggle('offcanvas-start', lado === 'izquierda');
+  }
+
+  // El chevron del botón compacto se espeja según el lado
+  function actualizarIconoMini() {
+    if (!sidebar) return;
+    const btn   = sidebar.querySelector('#btnMiniSidebar');
+    const icono = btn ? btn.querySelector('i') : null;
+    if (!icono) return;
+    // Derecha: expandido «, compacto ».  Izquierda: expandido », compacto «.
+    const apuntaIzq = (ladoActual === 'derecha') ? !miniActivo : miniActivo;
+    icono.classList.toggle('bi-chevron-double-left', apuntaIzq);
+    icono.classList.toggle('bi-chevron-double-right', !apuntaIzq);
+  }
+
+  function limpiarFlyouts() {
+    wrapHover = null;
+    if (!sidebar) return;
+    sidebar.querySelectorAll('.cys-sb-submenu').forEach(function (s) {
+      s.style.removeProperty('--fly-left');
+      s.style.removeProperty('--fly-top');
+    });
+  }
+
+  // Cambio de lado en caliente (desde Configuración u otra pestaña)
+  function aplicarLado(lado) {
+    if (!ladoValido(lado)) return;
+    const cambio = lado !== ladoActual;
+    ladoActual = lado;
+    pintarLado(lado);
+    if (!sidebar) return;
+
+    actualizarOffsets();
+    if (!cambio) return;
+
+    // Tooltips: cambian de lado (izquierda ↔ derecha)
+    inicializarTooltips();
+    crearTipMini(miniActivo ? 'Modo expandido' : 'Modo compacto');
+    aplicarEstadoTooltips();
+    actualizarIconoMini();
+    limpiarFlyouts();
+
+    // Animación de entrada por el nuevo borde (solo si está visible)
+    if (sidebar.classList.contains('show')) {
+      sidebar.classList.remove('cys-sb-flip');
+      void sidebar.offsetWidth;   // reinicia la animación
+      sidebar.classList.add('cys-sb-flip');
+      clearTimeout(flipTimer);
+      flipTimer = setTimeout(function () { sidebar.classList.remove('cys-sb-flip'); }, 350);
+    }
   }
 
   // ══════════════════════════════════════════
@@ -93,8 +180,9 @@
   }
 
   // El flyout es "position: fixed" (así el scroll del aside no lo recorta).
-  // Aquí se calcula dónde va: a la izquierda del ícono, alineado con su fila,
-  // y subido lo justo si no cabe hacia abajo.
+  // Aquí se calcula dónde va: hacia el lado libre del ícono (izquierda si el
+  // aside está a la derecha, derecha si está a la izquierda), alineado con su
+  // fila, y subido lo justo si no cabe hacia abajo.
   function posicionarFlyout(wrap) {
     const sub = wrap.querySelector('.cys-sb-submenu');
     if (!sub) return;
@@ -109,7 +197,13 @@
     if (top + h + margen > window.innerHeight) {
       top = Math.max(margen, window.innerHeight - h - margen);
     }
-    const left = Math.max(margen, r.left - gap - w);
+
+    let left;
+    if (ladoActual === 'izquierda') {
+      left = Math.min(window.innerWidth - w - margen, r.right + gap);
+    } else {
+      left = Math.max(margen, r.left - gap - w);
+    }
 
     // Calibración: si algún ancestro (transform/filter/backdrop-filter) cambia
     // el bloque contenedor del fixed, se corrige con la diferencia real.
@@ -146,9 +240,16 @@
   }
 
   function inicializarTooltips() {
+    tipsNav.forEach(function (t) { try { t.dispose(); } catch (err) {} });
     tipsNav = [];
     tipMini = null;
     if (!window.bootstrap || !bootstrap.Tooltip) return;
+
+    // Los tooltips de navegación salen hacia el lado libre del aside
+    const ladoTip   = ladoActual === 'izquierda' ? 'right' : 'left';
+    const fallbacks = ladoActual === 'izquierda'
+      ? ['right', 'top', 'bottom']
+      : ['left', 'top', 'bottom'];
 
     sidebar.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
       try {
@@ -184,11 +285,10 @@
         if (el.classList.contains('cys-sb-link--config')) customClass = 'cys-tip-config';
         if (el.classList.contains('cys-sb-link--logout')) customClass = 'cys-tip-logout';
 
-        // El aside está pegado a la derecha: el tooltip va a la izquierda
         const tip = new bootstrap.Tooltip(el, {
           trigger: 'hover',
-          placement: 'left',
-          fallbackPlacements: ['left', 'top', 'bottom'],
+          placement: ladoTip,
+          fallbackPlacements: fallbacks,
           container: 'body',
           customClass: customClass,
           delay: { show: 200, hide: 0 }
@@ -198,6 +298,27 @@
         console.error('[CYS] aside — no se pudo inicializar un tooltip:', err);
       }
     });
+  }
+
+  // Tooltips de navegación: solo en modo compacto
+  function aplicarEstadoTooltips() {
+    tipsNav.forEach(function (t) {
+      if (miniActivo) { t.enable(); }
+      else            { t.hide(); t.disable(); }
+    });
+  }
+
+  // Oculta TODOS los tooltips del aside y limpia los que quedaron en <body>.
+  // Se usa al cerrar el aside: el botón (equis) desaparece bajo el mouse y
+  // nunca recibe "mouseleave", así que su tooltip se quedaba flotando.
+  function ocultarTooltipsAside() {
+    if (sidebar && window.bootstrap && bootstrap.Tooltip) {
+      sidebar.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        const t = bootstrap.Tooltip.getInstance(el);
+        if (t) { try { t.hide(); } catch (err) {} }
+      });
+    }
+    document.querySelectorAll('.tooltip').forEach(function (t) { t.remove(); });
   }
 
   // ══════════════════════════════════════════
@@ -210,33 +331,20 @@
     if (activo) sidebar.style.setProperty('width', ANCHO_MINI, 'important');
     else        sidebar.style.removeProperty('width');
 
-    document.documentElement.style.setProperty('--sidebar-offset', activo ? ANCHO_MINI : ANCHO_FULL);
+    actualizarOffsets();
+    actualizarIconoMini();
 
     const btn   = sidebar.querySelector('#btnMiniSidebar');
-    const icono = btn ? btn.querySelector('i') : null;
-    if (icono) {
-      icono.classList.toggle('bi-chevron-double-left', !activo);
-      icono.classList.toggle('bi-chevron-double-right', activo);
-    }
-
     const texto = activo ? 'Modo expandido' : 'Modo compacto';
     if (btn) {
       btn.setAttribute('aria-label', texto);
       if (tipMini) crearTipMini(texto);
     }
 
-    // Tooltips de navegación: solo en modo compacto
-    tipsNav.forEach(function (t) {
-      if (activo) { t.enable(); }
-      else        { t.hide(); t.disable(); }
-    });
+    aplicarEstadoTooltips();
 
     // Limpia ajustes de posición de flyouts anteriores
-    wrapHover = null;
-    sidebar.querySelectorAll('.cys-sb-submenu').forEach(function (s) {
-      s.style.removeProperty('--fly-left');
-      s.style.removeProperty('--fly-top');
-    });
+    limpiarFlyouts();
   }
 
   function configurarModoMini() {
@@ -388,7 +496,13 @@
   // ══════════════════════════════════════════
   function configurarOffcanvas() {
     sidebar.addEventListener('show.bs.offcanvas', function () { document.body.classList.add('sidebar-open'); });
-    sidebar.addEventListener('hide.bs.offcanvas', function () { document.body.classList.remove('sidebar-open'); });
+    sidebar.addEventListener('hide.bs.offcanvas', function () {
+      document.body.classList.remove('sidebar-open');
+      // Al cerrar con la equis, su tooltip no debe quedarse flotando
+      ocultarTooltipsAside();
+    });
+    // Por si el mouse vuelve a quedar sobre el botón durante la animación de cierre
+    sidebar.addEventListener('hidden.bs.offcanvas', ocultarTooltipsAside);
     if (sidebar.classList.contains('show')) document.body.classList.add('sidebar-open');
   }
 
@@ -411,9 +525,10 @@
     const el = document.getElementById('sidebarRight');
     if (!el) return;
 
-    // Ya inicializado (navegación htmx con hx-preserve): solo refrescar el estado activo
+    // Ya inicializado (navegación htmx con hx-preserve): refrescar activo y lado
     if (el.dataset.cysAsideInit === '1') {
       sidebar = el;
+      seguro('lado',   function () { const l = leerLado(); if (l !== ladoActual) aplicarLado(l); else pintarLado(l); });
       seguro('activo', function () { actualizarActivo(false); });
       return;
     }
@@ -423,6 +538,8 @@
     rutaAnterior = null;
     grupoAuto = null;
 
+    // El lado se fija ANTES de crear tooltips y calcular offsets
+    seguro('lado',       function () { ladoActual = leerLado(); pintarLado(ladoActual); });
     seguro('resumen',    function () { actualizarResumenWrap(leerCfg().resumenSidebar); });
     seguro('flyouts',    prepararFlyouts);
     seguro('tooltips',   inicializarTooltips);
@@ -476,6 +593,15 @@
       if (typeof d.sidebarMini === 'boolean' && d.sidebarMini !== miniActivo) {
         aplicarModoMini(d.sidebarMini);
       }
+      if (ladoValido(d.asideLado) && d.asideLado !== ladoActual) {
+        aplicarLado(d.asideLado);
+      }
+    });
+
+    // Cambio de lado hecho en otra pestaña
+    window.addEventListener('storage', function (e) {
+      if (!sidebar || e.key !== KEY_LADO) return;
+      if (ladoValido(e.newValue) && e.newValue !== ladoActual) aplicarLado(e.newValue);
     });
   }
 
