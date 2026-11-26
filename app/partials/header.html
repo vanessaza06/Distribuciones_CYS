@@ -68,9 +68,14 @@
 
                 <!-- Footers dinámicos -->
                 <div id="notif-footer-container">
-                    <a id="notif-footer-stock" class="dropdown-item text-center py-2 notif-footer-link" href="{% url 'lista_productos' %}">
-                        Ver stock completo →
-                    </a>
+                    <div id="notif-footer-stock" class="d-flex notif-footer-row">
+    <a class="dropdown-item text-center py-2 notif-footer-link flex-fill" href="{% url 'lista_productos' %}">
+        Ver stock completo →
+    </a>
+    <button type="button" id="notif-ignorar-todas" class="btn btn-sm notif-ignorar-todas">
+        <i class="bi bi-bell-slash me-1"></i>Ignorar todas
+    </button>
+</div>
                     <a id="notif-footer-compras" class="dropdown-item text-center py-2 notif-footer-link d-none" href="{% url 'lista_compras' %}" style="color:#CF9C48;">
                         Ir a Gestión de Compras →
                     </a>
