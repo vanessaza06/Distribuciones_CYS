@@ -10,6 +10,46 @@
   let historialNotif = JSON.parse(localStorage.getItem('cys_notif_historial') || '[]');
   let vistosPrevios = new Set(JSON.parse(localStorage.getItem('cys_notif_vistos') || '[]'));
 
+  // ── Alertas ignoradas (localStorage) ──
+  // { "nombre producto": 0 (hasta que se recupere) | timestamp_fin }
+  const KEY_IGN = 'cys_notif_ignorados';
+  let ignorados = {};
+  try { ignorados = JSON.parse(localStorage.getItem(KEY_IGN) || '{}'); } catch (e) { ignorados = {}; }
+  let ultimaData = null;
+  let mostrarIgnoradas = false;
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const guardarIgnorados = () => localStorage.setItem(KEY_IGN, JSON.stringify(ignorados));
+
+  function estaIgnorado(nombre) {
+    const h = ignorados[nombre];
+    if (h === undefined) return false;
+    return h === 0 || Date.now() < h;
+  }
+
+  function ignorar(nombre, ms) {
+    ignorados[nombre] = ms ? Date.now() + ms : 0;
+    guardarIgnorados();
+    pintar();
+  }
+
+  function restaurar(nombre) {
+    delete ignorados[nombre];
+    guardarIgnorados();
+    pintar();
+  }
+
+  // Borra ignorados vencidos o cuyo producto ya no está en alerta
+  function limpiarIgnorados(actuales) {
+    const enAlerta = new Set(actuales.map(p => p.nombre));
+    let cambio = false;
+    Object.keys(ignorados).forEach(n => {
+      const h = ignorados[n];
+      if (!enAlerta.has(n) || (h !== 0 && Date.now() >= h)) { delete ignorados[n]; cambio = true; }
+    });
+    if (cambio) guardarIgnorados();
+  }
+
   window.notifTab = function (tab) {
     const esAlertas = tab === 'alertas';
     const esCompras = tab === 'compras';
@@ -80,18 +120,93 @@
     </a>`;
   }
 
-  function renderAlertas(criticos, bajos) {
+  // ── Panel Stock: items con opción de ignorar ──
+  function alertaItemHTML(p, ignorada) {
+    const c = p.nivel === 'critico' ? '#9b5de5' : '#4DA8DA';
+    const label = p.nivel === 'critico' ? 'crítico' : 'bajo';
+    const nombre = esc(p.nombre);
+    const acciones = ignorada
+      ? `<button type="button" class="notif-act" data-act="restaurar" data-nombre="${nombre}">Restaurar</button>`
+      : `<button type="button" class="notif-act notif-act-x" data-act="abrir" data-tip="Ignorar" aria-label="Ignorar"><i class="bi bi-x-lg"></i></button>`;
+    const opciones = ignorada ? '' : `
+      <div class="notif-ign-opts d-none">
+        <span>Ignorar:</span>
+        <button type="button" data-act="ignorar" data-ms="86400000" data-nombre="${nombre}">1 día</button>
+        <button type="button" data-act="ignorar" data-ms="604800000" data-nombre="${nombre}">7 días</button>
+        <button type="button" data-act="ignorar" data-ms="0" data-nombre="${nombre}">Hasta que se recupere</button>
+      </div>`;
+    return `<div class="px-3 py-2 notif-row ${ignorada ? 'notif-row-ign' : ''}" style="border-top:1px solid rgba(255,255,255,.05);">
+      <div class="d-flex align-items-start gap-2">
+        <span style="width:8px; height:8px; border-radius:50%; background:${c}; flex-shrink:0; margin-top:5px;"></span>
+        <div class="flex-fill" style="font-size:12px; line-height:1.4; color:#e2e8f0;">
+          ${nombre}<br>
+          <small style="color:rgba(226,232,240,.5);">${p.total_stock ?? p.cantidad} uds — ${label}</small>
+        </div>
+        ${acciones}
+      </div>
+      ${opciones}
+    </div>`;
+  }
+
+  function renderAlertas(visibles, ocultos) {
     const panel = document.getElementById('panel-alertas');
     if (!panel) return;
-    const todos = [
-      ...(criticos || []).map(p => ({ ...p, nivel: 'critico' })),
-      ...(bajos || []).map(p => ({ ...p, nivel: 'bajo' })),
-    ];
-    panel.innerHTML = todos.length
-      ? todos.map(p => itemHTML(p.nombre, `${p.total_stock ?? p.cantidad} uds`, p.nivel)).join('')
+    let html = visibles.length
+      ? visibles.map(p => alertaItemHTML(p, false)).join('')
       : `<div class="text-center py-4" style="font-size:12px; color:rgba(226,232,240,.4);">
            <i class="bi bi-check-circle fs-5 d-block mb-1" style="color:#2ecc71;"></i> Sin alertas de stock
          </div>`;
+    if (ocultos.length) {
+      html += `<button type="button" class="notif-ign-toggle" data-act="toggle">
+                 Ignoradas (${ocultos.length}) <i class="bi bi-chevron-${mostrarIgnoradas ? 'up' : 'down'}"></i>
+               </button>`;
+      if (mostrarIgnoradas) html += ocultos.map(p => alertaItemHTML(p, true)).join('');
+    }
+    panel.innerHTML = html;
+  }
+
+  // Calcula visibles/ignoradas y repinta alertas + badge
+  function pintar() {
+    if (!ultimaData) return;
+    const todos = [
+      ...(ultimaData.criticos || []).map(p => ({ ...p, nivel: 'critico' })),
+      ...(ultimaData.bajos || []).map(p => ({ ...p, nivel: 'bajo' })),
+    ];
+    const visibles = todos.filter(p => !estaIgnorado(p.nombre));
+    const ocultos = todos.filter(p => estaIgnorado(p.nombre));
+    renderAlertas(visibles, ocultos);
+    const compras = ultimaData.compras_pendientes || [];
+    actualizarBadgeYBounce(visibles.length + compras.length, false);
+  }
+
+  const panelAlertas = document.getElementById('panel-alertas');
+  if (panelAlertas) {
+    panelAlertas.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const act = btn.dataset.act;
+      if (act === 'abrir') {
+        btn.closest('.notif-row').querySelector('.notif-ign-opts').classList.toggle('d-none');
+      } else if (act === 'ignorar') {
+        ignorar(btn.dataset.nombre, Number(btn.dataset.ms));
+      } else if (act === 'restaurar') {
+        restaurar(btn.dataset.nombre);
+      } else if (act === 'toggle') {
+        mostrarIgnoradas = !mostrarIgnoradas;
+        pintar();
+      }
+    });
+  }
+
+  const btnIgnorarTodas = document.getElementById('notif-ignorar-todas');
+  if (btnIgnorarTodas) {
+    btnIgnorarTodas.addEventListener('click', () => {
+      if (!ultimaData) return;
+      [...(ultimaData.criticos || []), ...(ultimaData.bajos || [])]
+        .forEach(p => { if (!estaIgnorado(p.nombre)) ignorados[p.nombre] = 0; });
+      guardarIgnorados();
+      pintar();
+    });
   }
 
   function renderCompras(compras) {
@@ -146,7 +261,8 @@
         const bajos = data.bajos || [];
         const compras = data.compras_pendientes || [];
 
-        renderAlertas(criticos, bajos);
+        ultimaData = data;
+        limpiarIgnorados([...criticos, ...bajos]);
         renderCompras(compras);
 
         let hayNuevos = false;
@@ -179,8 +295,7 @@
 
         if (hayNuevos) { guardar(); renderHistorial(); }
 
-        const totalTotal = data.total_alertas ?? (criticos.length + bajos.length + compras.length);
-        actualizarBadgeYBounce(totalTotal, hayNuevos);
+        pintar();
       })
       .catch(() => {});
   }

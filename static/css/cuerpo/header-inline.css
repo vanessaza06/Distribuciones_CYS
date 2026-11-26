@@ -2,6 +2,25 @@
    HEADER — ESTILOS EN LÍNEA EXTRAÍDOS
    ============================================================ */
 
+/* ── Acento de notificaciones: rojo en claro, azul en oscuro ── */
+:root {
+  --notif-acento: #b32a1a;
+  --notif-acento-rgb: 179, 42, 26;
+  --notif-acento-texto: #ffffff;
+}
+
+/* Deja solo el selector que use tu página para el modo oscuro */
+[data-theme="dark"],
+[data-bs-theme="dark"],
+html.dark,
+body.dark,
+body.dark-mode,
+body.modo-oscuro {
+  --notif-acento: #4DA8DA;
+  --notif-acento-rgb: 77, 168, 218;
+  --notif-acento-texto: #0b1d33;
+}
+
 /* Separador vertical */
 .header-divider {
   width: 1px;
@@ -25,8 +44,10 @@
 
 /* Badge de notificaciones */
 .notif-badge {
-  background: #4DA8DA !important;
+  background: var(--notif-acento) !important;
+  color: var(--notif-acento-texto) !important;
   font-size: 10px !important;
+  font-weight: 700 !important;
   min-width: 18px !important;
   padding: 3px 6px !important;
   border: 2px solid var(--azul-oscuro) !important;
@@ -97,4 +118,113 @@
   font-size: 12px !important;
   color: #4DA8DA !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ============================================================
+   NOTIFICACIONES: IGNORAR ALERTAS
+   ============================================================ */
+
+/* Botón ✕ / Restaurar de cada fila */
+.notif-act {
+  background: transparent;
+  border: 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  line-height: 1.4;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.notif-act:hover { color: var(--notif-acento); }
+.notif-act-x { font-size: 12px; }
+
+/* Tooltip propio (reemplaza el title nativo) */
+.notif-act[data-tip] { position: relative; }
+
+.notif-act[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--notif-acento);
+  color: var(--notif-acento-texto);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 10;
+}
+
+.notif-act[data-tip]:hover::after,
+.notif-act[data-tip]:focus-visible::after {
+  opacity: 1;
+}
+
+/* Opciones de duración (1 día / 7 días / Hasta que se recupere) */
+.notif-ign-opts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 2px 16px;
+  font-size: 11px;
+  color: #64748b;
+}
+.notif-ign-opts button {
+  background: rgba(var(--notif-acento-rgb), .08);
+  border: 1px solid rgba(var(--notif-acento-rgb), .35);
+  color: var(--notif-acento);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.notif-ign-opts button:hover {
+  background: var(--notif-acento);
+  color: var(--notif-acento-texto);
+}
+
+/* Filas ignoradas (atenuadas) */
+.notif-row-ign { opacity: .6; }
+
+/* Botón "Ignoradas (n)" */
+.notif-ign-toggle {
+  width: 100%;
+  background: rgba(0, 0, 0, .03);
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.notif-ign-toggle:hover { color: var(--notif-acento); }
+
+/* Pie del panel Stock: "Ver stock completo" + "Ignorar todas" */
+.notif-footer-row { border-top: 1px solid rgba(0, 0, 0, .08); }
+.notif-footer-row .notif-footer-link { border-top: 0 !important; }
+
+.notif-ignorar-todas {
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 1px solid rgba(0, 0, 0, .08) !important;
+  border-radius: 0 !important;
+  color: var(--notif-acento) !important;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 .9rem;
+}
+.notif-ignorar-todas:hover {
+  background: rgba(var(--notif-acento-rgb), .08) !important;
 }
