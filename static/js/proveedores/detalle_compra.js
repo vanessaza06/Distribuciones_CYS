@@ -6,15 +6,13 @@
     return '$' + Math.round(n).toLocaleString('es-CO');
   }
 
-  /* ── Aviso flotante (toast) ────────────────────────────────── 
+  /* ── Aviso flotante ────────────────────────────────────────────
      Solo se muestran los errores. Las descargas correctas se ven
      directamente en el panel de descargas del navegador. */
   var _avisoTimer = null;
   function mostrarAviso(mensaje, tipo) {
     if (tipo !== 'error') return;
 
-    var colores = { info: '#1F3A5F', ok: '#198754', error: '#dc3545' };
-    var iconos = { info: 'bi-hourglass-split', ok: 'bi-check-circle-fill', error: 'bi-x-circle-fill' };
     var el = document.getElementById('cys-aviso-descarga');
     if (!el) {
       el = document.createElement('div');
@@ -26,9 +24,9 @@
         'max-width:360px;transition:opacity .25s ease;';
       document.body.appendChild(el);
     }
-    el.style.background = colores[tipo] || colores.info;
+    el.style.background = '#dc3545';
     el.style.opacity = '1';
-    el.innerHTML = '<i class="bi ' + (iconos[tipo] || iconos.info) + '"></i><span></span>';
+    el.innerHTML = '<i class="bi bi-x-circle-fill"></i><span></span>';
     el.querySelector('span').textContent = mensaje;
 
     clearTimeout(_avisoTimer);
@@ -130,9 +128,10 @@
   }
 
   /* ── Exportación (Excel / PDF / Imprimir) ─────────────────────
-     1) Intenta con el servidor (?export=excel|pdf) → archivo real.
+     1) Pide el archivo al servidor (?export=excel|pdf) y lo guarda
+        como descarga real → el navegador abre su panel de Descargas.
      2) Si el servidor falla, genera el archivo en el navegador.
-     La descarga se ve en el panel de descargas del navegador. */
+     No se muestran avisos cuando todo sale bien. */
 
   function escHtml(s) {
     return String(s == null ? '' : s)
@@ -218,15 +217,17 @@
     return 'Compra_' + d.codigo + '_' + d.fecha + '.' + ext;
   }
 
+  // Guarda un blob como descarga real (el navegador la muestra en su panel de Descargas)
   function descargarBlob(blob, nombre) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
     a.download = nombre;
+    a.setAttribute('hx-boost', 'false');
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    setTimeout(function() { a.remove(); URL.revokeObjectURL(url); }, 1000);
+    setTimeout(function() { a.remove(); URL.revokeObjectURL(url); }, 30000);
   }
 
   function urlExportacion(tipo) {
@@ -243,13 +244,17 @@
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
       if (!resp.ok) return null;
-      var ct = resp.headers.get('Content-Type') || '';
+      var ct = (resp.headers.get('Content-Type') || '').toLowerCase();
       if (ct.indexOf('text/html') !== -1) return null;
 
       var blob = await resp.blob();
       var cd = resp.headers.get('Content-Disposition') || '';
-      var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
-      return { blob: blob, nombre: m ? decodeURIComponent(m[1]) : null };
+      var nombre = null;
+      var m = /filename\*=UTF-8''([^;]+)/i.exec(cd) || /filename="?([^";]+)"?/i.exec(cd);
+      if (m) {
+        try { nombre = decodeURIComponent(m[1].trim()); } catch (e) { nombre = m[1].trim(); }
+      }
+      return { blob: blob, nombre: nombre };
     } catch (err) {
       console.warn('[DetalleCompra] Servidor no disponible, uso respaldo:', err);
       return null;
@@ -386,26 +391,31 @@
     return true;
   }
 
-  /* ── Flujo de cada botón ──
-     Descarga directa desde el servidor (igual que los otros módulos):
-     el navegador la maneja solo y abre su panel de Descargas. */
-  function descargarDirecto(tipo) {
-    var viejo = document.getElementById('cys-iframe-descarga');
-    if (viejo) viejo.remove();
+  /* ── Flujo de cada botón ── */
+  async function exportarArchivo(tipo, btn) {
+    var ext = tipo === 'excel' ? 'xlsx' : 'pdf';
+    var d = obtenerDatos();
 
-    var iframe = document.createElement('iframe');
-    iframe.id = 'cys-iframe-descarga';
-    iframe.style.display = 'none';
-    iframe.src = urlExportacion(tipo);
-    document.body.appendChild(iframe);
+    if (btn) btn.disabled = true;
+    try {
+      // 1) Archivo real del servidor → descarga normal del navegador
+      var res = await pedirAlServidor(tipo);
+      if (res) {
+        descargarBlob(res.blob, res.nombre || nombreArchivo(d, ext));
+        return;
+      }
 
-    setTimeout(function() {
-      if (iframe.parentNode) iframe.remove();
-    }, 60000);
-  }
-
-  function exportarArchivo(tipo) {
-    descargarDirecto(tipo);
+      // 2) Respaldo en el navegador si el servidor no respondió con un archivo
+      if (tipo === 'excel') {
+        var local = generarExcelLocal();
+        descargarBlob(local.blob, local.nombre);
+      } else {
+        // Sin PDF del servidor: se abre la vista lista para "Guardar como PDF"
+        abrirVistaImpresion();
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   function manejarClickExportar(e) {
@@ -420,7 +430,10 @@
     var tipo = btn.getAttribute('data-cys-export');
     try {
       if (tipo === 'excel' || tipo === 'pdf') {
-        exportarArchivo(tipo);
+        exportarArchivo(tipo, btn).catch(function(err) {
+          console.error('[DetalleCompra] Falló la exportación:', err);
+          mostrarAviso('No se pudo generar el archivo: ' + err.message, 'error');
+        });
       } else if (tipo === 'imprimir') {
         abrirVistaImpresion();
       }
