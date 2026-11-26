@@ -19,7 +19,7 @@
 
     <!-- ====== BARRA SUPERIOR: VOLVER + ACCIONES + EXPORTAR ====== -->
     <div class="dc-topbar">
-      <a href="{{ url_lista }}" class="dc-back-link">
+      <a href="{{ url_lista|default:'' }}" class="dc-back-link" data-cys-volver>
         <i class="bi bi-arrow-left"></i> Volver a Compras
       </a>
 
@@ -49,14 +49,15 @@
           </div>
         </div>
 
-        {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
-        <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.codigo_compra %}" class="d-inline">
+        {% if compra.estado == 'pendiente' or compra.estado == 'confirmada' %}
+        <form id="formEstadoDetalle" method="POST" action="{% url 'cambiar_estado_compra_id' compra.codigo_compra %}" class="d-inline" hx-boost="false">
           {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'detalle_compra' compra.codigo_compra %}">
           <input type="hidden" name="estado"
-            value="{% if compra.estado == 'pendiente' %}confirmada{% elif compra.estado == 'confirmada' %}recibida{% endif %}">
+            value="{% if compra.estado == 'pendiente' %}confirmada{% else %}recibida{% endif %}">
           <button type="submit" class="dc-btn-pill dc-btn-pill--success">
             <i class="bi bi-check2-circle"></i>
-            {% if compra.estado == 'pendiente' %}Confirmar Compra{% elif compra.estado == 'confirmada' %}Marcar como Recibida{% endif %}
+            {% if compra.estado == 'pendiente' %}Confirmar Compra{% else %}Marcar como Recibida{% endif %}
           </button>
         </form>
         {% endif %}
@@ -393,7 +394,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
 
-      <form id="formPagoDetalle" method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}">
+      <form id="formPagoDetalle" method="POST" action="{% url 'registrar_pago_compra_id' compra.codigo_compra %}" hx-boost="false">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'detalle_compra' compra.codigo_compra %}">
 
@@ -476,5 +477,5 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/detalle_compra.js' %}?v=20261126f"></script>
+<script src="{% static 'js/proveedores/detalle_compra.js' %}?v=20261126g"></script>
 {% endblock %}

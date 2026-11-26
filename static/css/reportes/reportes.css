@@ -3062,3 +3062,230 @@ html body .cys-hv-table-footer .pagination {
   justify-content: center !important;
   margin: 0 !important;
 }
+/* ══════════════════════════════════════════
+   PAGINACIÓN HISTORIAL DE VENTAS — píldoras
+   (texto a la izquierda, botones a la derecha)
+   ══════════════════════════════════════════ */
+html body .cys-hv-table-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  padding: 14px 24px !important;
+  text-align: left !important;
+  background: color-mix(in srgb, var(--azul-claro) 6%, transparent) !important;
+  border-top: 1px solid color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+}
+
+html body .cys-hv-table-footer .cys-hv-showing-info {
+  font-size: .95rem !important;
+  font-weight: 500 !important;
+  color: var(--texto-muted) !important;
+}
+
+html body .cys-hv-table-footer .cys-hv-pagination-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+/* Botón base (píldora) */
+html body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 56px !important;
+  width: auto !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  color: var(--texto-muted) !important;
+  font-size: .95rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s !important;
+}
+
+html body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn:hover:not(:disabled):not(.active) {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+}
+
+/* Página activa */
+html body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn.active {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  font-weight: 700 !important;
+}
+
+/* Flechas deshabilitadas */
+html body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+}
+
+/* Puntos suspensivos */
+html body .cys-hv-table-footer .cys-pag-dots {
+  color: var(--texto-muted) !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px;
+  padding: 0 4px;
+}
+
+/* ── Tema ROJO: activa en rojo oscuro como en la imagen ── */
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn.active {
+  background: var(--rojo, #B3271C) !important;
+  border-color: var(--rojo, #B3271C) !important;
+  color: #fff !important;
+}
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--rojo, #B3271C) !important;
+  background: color-mix(in srgb, var(--rojo, #B3271C) 10%, transparent) !important;
+}
+
+/* ── Móvil: todo centrado y apilado ── */
+@media (max-width: 768px) {
+  html body .cys-hv-table-footer {
+    flex-direction: column !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  html body .cys-hv-table-footer .cys-hv-pagination-wrap {
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+  html body .cys-hv-table-footer .cys-hv-pagination-wrap .cys-pag-btn {
+    min-width: 44px !important;
+    height: 38px !important;
+    padding: 0 10px !important;
+  }
+}
+/* ══════════════════════════════════════
+   OPTIMIZACIÓN: apertura instantánea de modales
+   - Sin animación fade/slide
+   - Sin blur en backdrop (muy costoso de renderizar)
+   - Aislamiento de layout para no repintar toda la página
+══════════════════════════════════════ */
+.modal,
+.modal.fade,
+.modal.fade .modal-dialog,
+.modal-backdrop,
+.modal-backdrop.fade,
+.tab-pane.fade {
+  transition: none !important;
+  animation: none !important;
+}
+
+.modal.fade .modal-dialog {
+  transform: none !important;
+}
+
+.modal-backdrop,
+.modal-backdrop.show,
+.cys-modal,
+.cys-modal__header {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.modal-backdrop.show {
+  opacity: .6;
+}
+
+.cys-modal {
+  will-change: auto;
+  contain: layout paint;
+}
+
+.cys-modal__body {
+  contain: content;
+}
+/* ══════════════════════════════════════════
+   QUITAR VERDES DE TARJETAS → color del tema
+   ══════════════════════════════════════════ */
+
+/* Números de las tarjetas principales (text-success de Bootstrap) */
+html body .cys-report-card__stat-num.text-success {
+  color: var(--azul-claro) !important;
+}
+
+/* KPIs de modales (Inventario, Compras, Devoluciones) */
+html body .cys-modal-kpi-v2--verde,
+html body .cys-modal-kpi-v2--menta {
+  border-top-color: var(--azul-claro);
+}
+html body .cys-modal-kpi-v2__icon--verde,
+html body .cys-modal-kpi-v2__icon--menta {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-modal-kpi-v2__val--verde,
+html body .cys-modal-kpi-v2__val--menta {
+  color: var(--azul-claro);
+}
+
+/* Resumen Diario (tarjetas laterales) */
+html body .cys-rd-stat-card--verde,
+html body .cys-rd-stat-card--amarillo {
+  border-left-color: var(--azul-claro);
+}
+html body .cys-rd-stat-card__icon--verde,
+html body .cys-rd-stat-card__icon--amarillo {
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-rd-stat-card__val--verde,
+html body .cys-rd-stat-card__val--amarillo {
+  color: var(--azul-claro);
+}
+
+/* Análisis de Ventas (KPIs) */
+html body .cys-av-kpi-card--verde,
+html body .cys-av-kpi-card--amarillo {
+  border-color: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  border-top-color: var(--azul-claro);
+}
+html body .cys-av-kpi-card--verde .cys-av-kpi-card__icon,
+html body .cys-av-kpi-card--amarillo .cys-av-kpi-card__icon {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-av-kpi-card--verde .cys-av-kpi-card__val,
+html body .cys-av-kpi-card--amarillo .cys-av-kpi-card__val {
+  color: var(--azul-claro);
+}
+html body .cys-av-table-card__star {
+  color: var(--azul-claro);
+}
+
+/* Proveedores (KPI único + icono del modal) */
+html body .cys-modal__kpi-single {
+  border-color: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+}
+html body .cys-modal__kpi-single-icon {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-modal__kpi-single-val {
+  color: var(--azul-claro);
+}
+html body .cys-modal__icon--prov {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}

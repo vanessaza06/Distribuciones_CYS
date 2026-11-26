@@ -6,15 +6,13 @@
     return '$' + Math.round(n).toLocaleString('es-CO');
   }
 
-  /* ── Aviso flotante (toast) ────────────────────────────────── 
+  /* ── Aviso flotante ────────────────────────────────────────────
      Solo se muestran los errores. Las descargas correctas se ven
      directamente en el panel de descargas del navegador. */
   var _avisoTimer = null;
   function mostrarAviso(mensaje, tipo) {
     if (tipo !== 'error') return;
 
-    var colores = { info: '#1F3A5F', ok: '#198754', error: '#dc3545' };
-    var iconos = { info: 'bi-hourglass-split', ok: 'bi-check-circle-fill', error: 'bi-x-circle-fill' };
     var el = document.getElementById('cys-aviso-descarga');
     if (!el) {
       el = document.createElement('div');
@@ -26,9 +24,9 @@
         'max-width:360px;transition:opacity .25s ease;';
       document.body.appendChild(el);
     }
-    el.style.background = colores[tipo] || colores.info;
+    el.style.background = '#dc3545';
     el.style.opacity = '1';
-    el.innerHTML = '<i class="bi ' + (iconos[tipo] || iconos.info) + '"></i><span></span>';
+    el.innerHTML = '<i class="bi bi-x-circle-fill"></i><span></span>';
     el.querySelector('span').textContent = mensaje;
 
     clearTimeout(_avisoTimer);
@@ -43,8 +41,10 @@
     const modal = document.getElementById('modalPagoDetalle');
     if (!modal) return;
 
-    if (modal.dataset.pagoBound === 'true') return;
-    modal.dataset.pagoBound = 'true';
+    // La marca va en memoria y no en el HTML: si htmx restaura la página desde su
+    // historial, los botones vuelven a conectarse.
+    if (modal._cysPagoBound) return;
+    modal._cysPagoBound = true;
 
     const saldo = parseFloat(modal.dataset.saldo) || 0;
     const inputMonto = document.getElementById('inputMontoDetalle');
@@ -100,7 +100,9 @@
       inputMonto.addEventListener('input', function() {
         const digitos = this.value.replace(/\D/g, '').replace(/^0+/, '');
         this.value = digitos ? Number(digitos).toLocaleString('es-CO') : '';
-        inputRaw.value = digitos;
+        // Si el saldo tiene decimales, escribir el valor redondeado equivale a pagar todo
+        const esTodo = digitos && Number(digitos) === Math.round(saldo);
+        inputRaw.value = esTodo ? saldo.toFixed(2) : digitos;
         recalcularPago();
       });
     }
@@ -117,9 +119,20 @@
       form.addEventListener('submit', function(e) {
         const abono = parseFloat(inputRaw.value) || 0;
         recalcularPago();
-        if (abono <= 0 || abono > saldo) {
+        if (abono <= 0 || abono > saldo || form._cysEnviando) {
           e.preventDefault();
+          return;
         }
+        // Evita registrar el mismo pago dos veces con doble clic
+        form._cysEnviando = true;
+        if (btnConfirmar) btnConfirmar.disabled = true;
+      });
+
+      // Al volver con el botón "Atrás" el formulario queda utilizable
+      window.addEventListener('pageshow', function(e) {
+        if (!e.persisted) return;
+        form._cysEnviando = false;
+        recalcularPago();
       });
     }
 
@@ -130,9 +143,10 @@
   }
 
   /* ── Exportación (Excel / PDF / Imprimir) ─────────────────────
-     1) Intenta con el servidor (?export=excel|pdf) → archivo real.
+     1) Pide el archivo al servidor (?export=excel|pdf) y lo guarda
+        como descarga real → el navegador abre su panel de Descargas.
      2) Si el servidor falla, genera el archivo en el navegador.
-     La descarga se ve en el panel de descargas del navegador. */
+     No se muestran avisos cuando todo sale bien. */
 
   function escHtml(s) {
     return String(s == null ? '' : s)
@@ -145,9 +159,13 @@
     return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
   }
 
+  // Convierte "$1.234.567" o "$1.234,50" en número
   function aNumero(s) {
-    var limpio = String(s || '').replace(/[^\d-]/g, '');
-    return limpio === '' || limpio === '-' ? null : Number(limpio);
+    var limpio = String(s || '').replace(/[^\d.,-]/g, '');
+    var dec = /[.,](\d{1,2})$/.exec(limpio);
+    var entero = (dec ? limpio.slice(0, dec.index) : limpio).replace(/[.,]/g, '');
+    if (!/^-?\d+$/.test(entero)) return null;
+    return Number(entero + (dec ? '.' + dec[1] : ''));
   }
 
   function obtenerFilas() {
@@ -218,15 +236,17 @@
     return 'Compra_' + d.codigo + '_' + d.fecha + '.' + ext;
   }
 
+  // Guarda un blob como descarga real (el navegador la muestra en su panel de Descargas)
   function descargarBlob(blob, nombre) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
     a.download = nombre;
+    a.setAttribute('hx-boost', 'false');
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    setTimeout(function() { a.remove(); URL.revokeObjectURL(url); }, 1000);
+    setTimeout(function() { a.remove(); URL.revokeObjectURL(url); }, 30000);
   }
 
   function urlExportacion(tipo) {
@@ -235,24 +255,39 @@
     return window.location.pathname + '?' + params.toString();
   }
 
+  // Tipos de respuesta que sí corresponden a cada archivo
+  var TIPOS_VALIDOS = {
+    excel: /spreadsheet|ms-excel|octet-stream|text\/csv/,
+    pdf: /application\/pdf|octet-stream/
+  };
+
   // Pide el archivo al servidor. Devuelve {blob, nombre} o null si falla.
   async function pedirAlServidor(tipo) {
+    var control = new AbortController();
+    var limite = setTimeout(function() { control.abort(); }, 15000);
     try {
       var resp = await fetch(urlExportacion(tipo), {
         credentials: 'same-origin',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        signal: control.signal
       });
       if (!resp.ok) return null;
-      var ct = resp.headers.get('Content-Type') || '';
-      if (ct.indexOf('text/html') !== -1) return null;
+      var ct = (resp.headers.get('Content-Type') || '').toLowerCase();
+      if (!TIPOS_VALIDOS[tipo].test(ct)) return null;
 
       var blob = await resp.blob();
       var cd = resp.headers.get('Content-Disposition') || '';
-      var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
-      return { blob: blob, nombre: m ? decodeURIComponent(m[1]) : null };
+      var nombre = null;
+      var m = /filename\*=UTF-8''([^;]+)/i.exec(cd) || /filename="?([^";]+)"?/i.exec(cd);
+      if (m) {
+        try { nombre = decodeURIComponent(m[1].trim()); } catch (e) { nombre = m[1].trim(); }
+      }
+      return { blob: blob, nombre: nombre };
     } catch (err) {
       console.warn('[DetalleCompra] Servidor no disponible, uso respaldo:', err);
       return null;
+    } finally {
+      clearTimeout(limite);
     }
   }
 
@@ -286,7 +321,8 @@
           var q = aNumero(v);
           h += '<td style="border:1px solid #ccc">' + (q === null ? escHtml(v) : q) + '</td>';
         } else {
-          h += '<td style="border:1px solid #ccc">' + escHtml(v) + '</td>';
+          // Formato texto: conserva ceros a la izquierda en lotes y códigos
+          h += '<td style="border:1px solid #ccc;mso-number-format:\'\\@\'">' + escHtml(v) + '</td>';
         }
       }
       h += '</tr>';
@@ -370,42 +406,68 @@
       '<div><span>Saldo pendiente</span><span>' + escHtml(d.saldo) + '</span></div>' +
       '<div><span>Estado de pago</span><span>' + escHtml(d.estadoPago) + '</span></div>' +
       '</div>' + pagos +
-      '<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300);};<\/script>' +
       '</body></html>';
   }
 
+  // Imprime desde un marco oculto: no abre ventanas, así que el navegador
+  // no lo bloquea (ni siquiera después de esperar la respuesta del servidor).
   function abrirVistaImpresion() {
-    var ventana = window.open('', '_blank');
-    if (!ventana) {
-      mostrarAviso('El navegador bloqueó la ventana. Permite las ventanas emergentes.', 'error');
-      return false;
+    var d = obtenerDatos();
+    var anterior = document.getElementById('cys-marco-impresion');
+    if (anterior) anterior.remove();
+
+    var marco = document.createElement('iframe');
+    marco.id = 'cys-marco-impresion';
+    marco.title = 'Vista de impresión';
+    marco.setAttribute('aria-hidden', 'true');
+    marco.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;';
+
+    marco.onload = function() {
+      var tituloOriginal = document.title;
+      var restaurar = function() { document.title = tituloOriginal; };
+      try {
+        // El título se usa como nombre sugerido al "Guardar como PDF"
+        document.title = nombreArchivo(d, 'pdf').replace(/\.pdf$/, '');
+        marco.contentWindow.addEventListener('afterprint', restaurar);
+        marco.contentWindow.focus();
+        marco.contentWindow.print();
+        setTimeout(restaurar, 1000);
+      } catch (err) {
+        restaurar();
+        console.error('[DetalleCompra] No se pudo imprimir:', err);
+        mostrarAviso('No se pudo abrir la impresión: ' + err.message, 'error');
+      }
+    };
+
+    marco.srcdoc = htmlImpresion(d);
+    document.body.appendChild(marco);
+  }
+
+  /* ── Flujo de cada botón ── */
+  async function exportarArchivo(tipo, btn) {
+    var ext = tipo === 'excel' ? 'xlsx' : 'pdf';
+    var d = obtenerDatos();
+
+    if (btn) btn.disabled = true;
+    try {
+      // 1) Archivo real del servidor → descarga normal del navegador
+      var res = await pedirAlServidor(tipo);
+      if (res) {
+        descargarBlob(res.blob, res.nombre || nombreArchivo(d, ext));
+        return;
+      }
+
+      // 2) Respaldo en el navegador si el servidor no respondió con un archivo
+      if (tipo === 'excel') {
+        var local = generarExcelLocal();
+        descargarBlob(local.blob, local.nombre);
+      } else {
+        // Sin PDF del servidor: se abre el diálogo para "Guardar como PDF"
+        abrirVistaImpresion();
+      }
+    } finally {
+      if (btn) btn.disabled = false;
     }
-    ventana.document.open();
-    ventana.document.write(htmlImpresion(obtenerDatos()));
-    ventana.document.close();
-    return true;
-  }
-
-  /* ── Flujo de cada botón ──
-     Descarga directa desde el servidor (igual que los otros módulos):
-     el navegador la maneja solo y abre su panel de Descargas. */
-  function descargarDirecto(tipo) {
-    var viejo = document.getElementById('cys-iframe-descarga');
-    if (viejo) viejo.remove();
-
-    var iframe = document.createElement('iframe');
-    iframe.id = 'cys-iframe-descarga';
-    iframe.style.display = 'none';
-    iframe.src = urlExportacion(tipo);
-    document.body.appendChild(iframe);
-
-    setTimeout(function() {
-      if (iframe.parentNode) iframe.remove();
-    }, 60000);
-  }
-
-  function exportarArchivo(tipo) {
-    descargarDirecto(tipo);
   }
 
   function manejarClickExportar(e) {
@@ -420,7 +482,10 @@
     var tipo = btn.getAttribute('data-cys-export');
     try {
       if (tipo === 'excel' || tipo === 'pdf') {
-        exportarArchivo(tipo);
+        exportarArchivo(tipo, btn).catch(function(err) {
+          console.error('[DetalleCompra] Falló la exportación:', err);
+          mostrarAviso('No se pudo generar el archivo: ' + err.message, 'error');
+        });
       } else if (tipo === 'imprimir') {
         abrirVistaImpresion();
       }
@@ -444,11 +509,41 @@
   window._cysDetalleExportHandler = manejarClickExportar;
   window.addEventListener('click', manejarClickExportar, true);
 
-  function initExportacionServidor() {
-    var contenedor = document.getElementById('cys-dt-export-compra');
-    if (!contenedor) return;
-    contenedor.querySelectorAll('[data-cys-export]').forEach(function(btn) {
-      btn.dataset.cysExportBound = 'true';
+  /* ── Botón "Volver a Compras" ─────────────────────────────── */
+  function initVolver() {
+    var enlace = document.querySelector('[data-cys-volver]');
+    if (!enlace || enlace._cysBound) return;
+    enlace._cysBound = true;
+    // Si la vista no envió url_lista, el enlace queda vacío: se regresa en el historial
+    if (enlace.getAttribute('href')) return;
+    enlace.setAttribute('href', '#');
+    enlace.setAttribute('hx-boost', 'false');
+    enlace.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.history.back();
+    });
+  }
+
+  /* ── Confirmar compra / Marcar como recibida ──────────────── */
+  function initCambioEstado() {
+    var form = document.getElementById('formEstadoDetalle');
+    if (!form || form._cysBound) return;
+    form._cysBound = true;
+    var btn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function(e) {
+      if (form._cysEnviando) {
+        e.preventDefault();
+        return;
+      }
+      form._cysEnviando = true;
+      if (btn) btn.disabled = true;
+    });
+
+    window.addEventListener('pageshow', function(e) {
+      if (!e.persisted) return;
+      form._cysEnviando = false;
+      if (btn) btn.disabled = false;
     });
   }
 
@@ -491,7 +586,7 @@
   }
 
   function initPage() {
-    [initProgressBar, initPagoModal, initExportacionServidor, initTablaDetalleCompra].forEach(function(fn) {
+    [initProgressBar, initVolver, initCambioEstado, initPagoModal, initTablaDetalleCompra].forEach(function(fn) {
       try {
         fn();
       } catch (err) {

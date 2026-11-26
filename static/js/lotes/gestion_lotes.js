@@ -17,6 +17,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /**
+ * Colores del gráfico según el tema actual.
+ * Lee las variables --lt-* del CSS de Lotes; si no existen, usa
+ * estos mismos tonos como respaldo.
+ */
+function coloresGraficoSegunTema() {
+  const tema = document.documentElement.getAttribute('data-theme');
+  const estilos = getComputedStyle(document.documentElement);
+
+  const respaldo = {
+    claro: { titulo: '#56708F', label: '#6F819A', grid: 'rgba(77,168,218,0.18)' },
+    sepia: { titulo: '#4A3826', label: '#7A6448', grid: 'rgba(138,90,43,0.20)' }
+  }[tema] || { titulo: '#dce8f2', label: '#dce8f2', grid: 'rgba(255,255,255,0.06)' };
+
+  const leer = (nombre, valorRespaldo) =>
+    (estilos.getPropertyValue(nombre) || '').trim() || valorRespaldo;
+
+  return {
+    titulo: leer('--lt-titulo', respaldo.titulo),
+    label: leer('--lt-label', respaldo.label),
+    grid: respaldo.grid
+  };
+}
+
+/**
  * Crea el gráfico de barras de stock por producto
  */
 function inicializarGraficoProveedores() {
@@ -46,7 +70,9 @@ function inicializarGraficoProveedores() {
     }
   }
 
-  new Chart(canvas.getContext('2d'), {
+  const colores = coloresGraficoSegunTema();
+
+  const grafico = new Chart(canvas.getContext('2d'), {
     type: 'bar',
     data: {
       labels: labels,
@@ -72,15 +98,28 @@ function inicializarGraficoProveedores() {
       plugins: { legend: { display: false } },
       scales: {
         x: {
-          grid: { color: 'rgba(255,255,255,0.06)' },
-          ticks: { color: '#dce8f2', font: { size: 10 } }
+          grid: { color: colores.grid },
+          ticks: { color: colores.label, font: { size: 10 } }
         },
         y: {
           grid: { display: false },
-          ticks: { color: '#dce8f2', font: { size: 11, weight: '600' } }
+          ticks: { color: colores.titulo, font: { size: 11, weight: '600' } }
         }
       }
     }
+  });
+
+  // Si cambia el tema (data-theme en <html>), se recolorea el gráfico al instante
+  const observador = new MutationObserver(() => {
+    const c = coloresGraficoSegunTema();
+    grafico.options.scales.x.grid.color = c.grid;
+    grafico.options.scales.x.ticks.color = c.label;
+    grafico.options.scales.y.ticks.color = c.titulo;
+    grafico.update('none');
+  });
+  observador.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
   });
 }
 
