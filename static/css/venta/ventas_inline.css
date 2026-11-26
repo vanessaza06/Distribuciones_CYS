@@ -274,7 +274,7 @@
 .cys-pos-header-bar {
   background: rgba(14, 28, 52, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 4px solid #38bdf8;
+  border-left: 4px solid #CF9C48 !important;
   border-radius: 14px;
   padding: 0.95rem 1.35rem;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
@@ -321,40 +321,58 @@
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
-/* Botones suaves de cabecera */
-.cys-btn-danger-soft {
-  background: rgba(239, 68, 68, 0.1) !important;
-  color: #f87171 !important;
-  border: 1px solid rgba(239, 68, 68, 0.25) !important;
-  border-radius: 10px !important;
-  padding: 0.45rem 1rem !important;
-  font-size: 0.84rem !important;
+/* Botones suaves de cabecera estilo Píldora (Coincidentes con diseño Ventas/Caja/POS) */
+.cys-btn-danger-soft,
+.cys-btn-cerrar-turno {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+  border-radius: 999px !important;
+  padding: 0.45rem 1.15rem !important;
+  font-size: 0.85rem !important;
   font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
   transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
+  text-decoration: none !important;
 }
 
-.cys-btn-danger-soft:hover {
-  background: rgba(239, 68, 68, 0.2) !important;
-  color: #fca5a5 !important;
-  border-color: rgba(239, 68, 68, 0.4) !important;
+.cys-btn-danger-soft:hover,
+.cys-btn-cerrar-turno:hover {
+  background: #fecaca !important;
+  color: #991b1b !important;
+  border-color: #f87171 !important;
   transform: translateY(-1px);
 }
 
-.cys-btn-ghost-soft {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #cbd5e1 !important;
-  border-radius: 10px !important;
-  padding: 0.45rem 1rem !important;
-  font-size: 0.84rem !important;
+.cys-btn-ghost-soft,
+.cys-btn-secondary,
+.cys-btn-pos-link,
+.mp-btn-outline {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  border-radius: 999px !important;
+  padding: 0.45rem 1.15rem !important;
+  font-size: 0.85rem !important;
   font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
   transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  text-decoration: none !important;
 }
 
-.cys-btn-ghost-soft:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+.cys-btn-ghost-soft:hover,
+.cys-btn-secondary:hover,
+.cys-btn-pos-link:hover,
+.mp-btn-outline:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
   transform: translateY(-1px);
 }
 
@@ -383,9 +401,26 @@
 
 .cys-soft-alert-success,
 .alert.alert-success {
-  background: rgba(16, 185, 129, 0.12) !important;
-  border-color: rgba(16, 185, 129, 0.28) !important;
-  color: #a7f3d0 !important;
+  background: rgba(16, 185, 129, 0.14) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-left: 4px solid #15803d !important;
+  color: #14532d !important;
+}
+
+.cys-soft-alert-success .cys-alert-msg,
+.alert.alert-success .cys-alert-msg {
+  color: #14532d !important;
+  font-weight: 700 !important;
+}
+
+html:not(.cys-modo-claro):not([data-cys-tema="claro"]):not(.cys-a11y-modo-claro) .cys-soft-alert-success,
+html:not(.cys-modo-claro):not([data-cys-tema="claro"]):not(.cys-a11y-modo-claro) .alert.alert-success {
+  color: #4ade80 !important;
+}
+
+html:not(.cys-modo-claro):not([data-cys-tema="claro"]):not(.cys-a11y-modo-claro) .cys-soft-alert-success .cys-alert-msg,
+html:not(.cys-modo-claro):not([data-cys-tema="claro"]):not(.cys-a11y-modo-claro) .alert.alert-success .cys-alert-msg {
+  color: #4ade80 !important;
 }
 
 .cys-soft-alert-danger,
@@ -414,6 +449,7 @@
 .cys-pos-card {
   background: rgba(14, 28, 52, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3.5px solid #CF9C48 !important;
   border-radius: 16px;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
   overflow: hidden;
@@ -1008,6 +1044,41 @@ select:-webkit-autofill {
   color: #fbbf24;
 }
 
+.cys-btn-pago-pendiente {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 6px;
+  transition: all 0.18s ease;
+}
+.cys-btn-pago-pendiente:hover {
+  background: rgba(245, 158, 11, 0.22);
+  color: #f59e0b;
+}
+
+.cys-btn-pago-exacto {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 6px;
+  transition: all 0.18s ease;
+}
+.cys-btn-pago-exacto:hover {
+  background: rgba(56, 189, 248, 0.22);
+  color: #0284c7;
+}
+
+#totalPagado.cys-monto-pendiente {
+  color: #ef4444;
+}
+#totalPagado.cys-monto-ok {
+  color: #22c55e;
+}
+
 /* Botones Principales POS */
 .cys-btn-checkout {
   background: linear-gradient(135deg, #059669, #10b981) !important;
@@ -1544,6 +1615,7 @@ select:-webkit-autofill {
 .mp-header-banner {
   background: var(--fondo-card) !important;
   border: 1px solid color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  border-left: 4px solid #CF9C48 !important;
   border-radius: var(--cys-radius-md) !important;
   padding: 1rem 1.4rem !important;
   margin-bottom: 1.25rem !important;
@@ -1586,6 +1658,7 @@ select:-webkit-autofill {
 .mp-filter-card {
   background: var(--fondo-card) !important;
   border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-left: 3.5px solid #CF9C48 !important;
   border-radius: var(--cys-radius-md) !important;
   padding: 1rem 1.25rem !important;
   box-shadow: none !important;
@@ -1675,37 +1748,39 @@ select:-webkit-autofill {
 
 /* ── Botones Redondeados Estilo Productos (Pills) ── */
 .cys-btn-primary,
+.prod-btn-primary,
 .mp-btn-action,
 .cys-btn-header-action,
-.cys-btn-abrir-turno,
-.cys-btn-checkout {
+.cys-btn-abrir-turno {
   min-height: 38px !important;
   height: auto !important;
-  padding: 0.45rem 1.25rem !important;
+  padding: 0.45rem 1.4rem !important;
   font-size: 0.88rem !important;
   font-weight: 700 !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  border-radius: 20px !important;
-  border: none !important;
-  background: var(--azul-claro) !important;
-  color: var(--azul-oscuro, #0A2A52) !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  border-radius: 999px !important;
+  border: 1px solid #a82315 !important;
+  background: #a82315 !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
   transition: all 0.2s ease;
-  text-decoration: none;
-  box-shadow: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 2px 6px rgba(168, 35, 21, 0.25) !important;
   cursor: pointer;
 }
 
 .cys-btn-primary:hover,
+.prod-btn-primary:hover,
 .mp-btn-action:hover,
 .cys-btn-header-action:hover,
-.cys-btn-checkout:hover {
-  background: var(--azul-claro) !important;
-  opacity: 0.88 !important;
-  color: var(--azul-oscuro, #0A2A52) !important;
+.cys-btn-abrir-turno:hover {
+  background: #8e1c10 !important;
+  border-color: #8e1c10 !important;
+  opacity: 0.95 !important;
+  color: #ffffff !important;
   transform: translateY(-1px);
 }
 
@@ -1719,17 +1794,17 @@ select:-webkit-autofill {
   font-size: 0.88rem !important;
   font-weight: 600 !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  border-radius: 20px !important;
-  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
-  background: transparent !important;
-  color: var(--azul-claro) !important;
+  border-radius: 999px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
-  box-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
   cursor: pointer;
 }
 
@@ -1737,9 +1812,9 @@ select:-webkit-autofill {
 .mp-btn-outline:hover,
 .cys-btn-pos-link:hover,
 .cys-btn-ghost-soft:hover {
-  background: color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
-  border-color: var(--azul-claro) !important;
-  color: var(--azul-claro) !important;
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
   transform: translateY(-1px);
 }
 
@@ -1751,25 +1826,25 @@ select:-webkit-autofill {
   font-size: 0.88rem !important;
   font-weight: 600 !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  border-radius: 20px !important;
-  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent) !important;
-  background: color-mix(in srgb, var(--rojo) 12%, transparent) !important;
-  color: var(--rojo) !important;
+  border-radius: 999px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
   cursor: pointer;
 }
 
 .cys-btn-danger-soft:hover,
 .cys-btn-cerrar-turno:hover {
-  background: color-mix(in srgb, var(--rojo) 20%, transparent) !important;
-  border-color: var(--rojo) !important;
-  color: #ffffff !important;
+  background: #fecaca !important;
+  border-color: #f87171 !important;
+  color: #991b1b !important;
   transform: translateY(-1px);
 }
 
@@ -2331,6 +2406,106 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ════════════════════════════════════════════════════════════════
+   DROPDOWN ACCIONES EN TABLA DE VENTAS (3 PUNTOS)
+   ════════════════════════════════════════════════════════════════ */
+.dd-wrap {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.dd-btn {
+  background: rgba(235, 77, 75, 0.12) !important;
+  border: 1px solid rgba(235, 77, 75, 0.35) !important;
+  color: #ff7675 !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.dd-btn:hover {
+  background: rgba(235, 77, 75, 0.25) !important;
+  border-color: rgba(235, 77, 75, 0.55) !important;
+  color: #ff9f9e !important;
+}
+
+.dd-menu {
+  display: none !important;
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  right: 0 !important;
+  left: auto !important;
+  background: #0f1c34 !important;
+  border: 1px solid rgba(77, 168, 218, 0.3) !important;
+  border-radius: 12px !important;
+  min-width: 170px !important;
+  z-index: 1050 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  padding: 4px 0 !important;
+  text-align: left !important;
+}
+
+.dd-menu.open {
+  display: block !important;
+}
+
+#seccionHistorial .table-responsive {
+  overflow: visible !important;
+}
+
+.dd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+  text-decoration: none;
+  text-align: left;
+}
+
+.dd-item i {
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+}
+
+.dd-item:hover {
+  background: rgba(77, 168, 218, 0.15);
+  color: #ffffff;
+}
+
+.dd-item.danger {
+  color: #ff7675 !important;
+}
+
+.dd-item.danger:hover {
+  background: rgba(235, 77, 75, 0.15) !important;
+  color: #ff8e8d !important;
+}
+
+.dd-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+/* ════════════════════════════════════════════════════════════════
    DISEÑO PRÉMIUM EN MODO CLARO PARA VENTAS, CAJA Y MÉTODOS DE PAGO
    Activado automáticamente cuando el modo claro esté activo
    ════════════════════════════════════════════════════════════════ */
@@ -2343,7 +2518,7 @@ html[data-cys-tema="claro"] {
   .cys-pos-header-bar {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    border-left: 4px solid #0284c7 !important;
+    border-left: 4px solid #CF9C48 !important;
     box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
     backdrop-filter: none !important;
   }
@@ -2367,33 +2542,134 @@ html[data-cys-tema="claro"] {
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
   }
 
-  .cys-btn-danger-soft {
+  .cys-btn-danger-soft,
+  .cys-btn-cerrar-turno {
     background: #fee2e2 !important;
     color: #b91c1c !important;
     border: 1px solid #fca5a5 !important;
+    border-radius: 999px !important;
+    padding: 0.45rem 1.15rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
     box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
   }
-  .cys-btn-danger-soft:hover {
+  .cys-btn-danger-soft:hover,
+  .cys-btn-cerrar-turno:hover {
     background: #fecaca !important;
     color: #991b1b !important;
     border-color: #f87171 !important;
+    transform: translateY(-1px);
   }
 
-  .cys-btn-ghost-soft {
-    background: #f8fafc !important;
+  .cys-btn-ghost-soft,
+  .cys-btn-secondary,
+  .cys-btn-pos-link,
+  .mp-btn-outline {
+    background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
-    color: #334155 !important;
+    border-radius: 999px !important;
+    color: #0f172a !important;
+    padding: 0.45rem 1.15rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
   }
-  .cys-btn-ghost-soft:hover {
-    background: #e2e8f0 !important;
+  .cys-btn-ghost-soft:hover,
+  .cys-btn-secondary:hover,
+  .cys-btn-pos-link:hover,
+  .mp-btn-outline:hover {
+    background: #f1f5f9 !important;
     color: #0f172a !important;
     border-color: #94a3b8 !important;
+    transform: translateY(-1px);
+  }
+
+  .cys-btn-primary,
+  .prod-btn-primary,
+  .cys-btn-header-action,
+  .cys-btn-abrir-turno {
+    background: #a82315 !important;
+    border: 1px solid #a82315 !important;
+    color: #ffffff !important;
+    border-radius: 999px !important;
+    padding: 0.45rem 1.25rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    box-shadow: 0 2px 6px rgba(168, 35, 21, 0.25) !important;
+  }
+  .cys-btn-primary:hover,
+  .prod-btn-primary:hover,
+  .cys-btn-header-action:hover,
+  .cys-btn-abrir-turno:hover {
+    background: #8e1c10 !important;
+    border-color: #8e1c10 !important;
+    color: #ffffff !important;
+    opacity: 0.95 !important;
+    transform: translateY(-1px);
+  }
+
+  .cys-export-btn,
+  .prod-btn-outline {
+    background: #fdf2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #1e293b !important;
+    border-radius: 999px !important;
+    padding: 0.45rem 1.15rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+  }
+  .cys-export-btn:hover,
+  .prod-btn-outline:hover {
+    background: #fee2e2 !important;
+    border-color: #f87171 !important;
+    color: #0f172a !important;
+    transform: translateY(-1px);
+  }
+
+  /* ── ALERTAS EN MODO CLARO CON ALTO CONTRASTE Y LETRAS VERDE OSCURO ── */
+  .cys-soft-alert-success,
+  .alert.alert-success {
+    background: #ecfdf5 !important;
+    border: 1px solid #a7f3d0 !important;
+    border-left: 4px solid #16a34a !important;
+    color: #14532d !important;
+  }
+  .cys-soft-alert-success .cys-alert-msg,
+  .alert.alert-success .cys-alert-msg {
+    color: #14532d !important;
+    font-weight: 700 !important;
+  }
+  .cys-soft-alert-success i.bi,
+  .alert.alert-success i.bi {
+    color: #15803d !important;
+  }
+  .cys-soft-alert .btn-close,
+  .alert.cys-soft-alert .btn-close {
+    filter: none !important;
+    opacity: 0.65 !important;
+  }
+  .cys-soft-alert .btn-close:hover,
+  .alert.cys-soft-alert .btn-close:hover {
+    opacity: 1 !important;
   }
 
   /* ── 2. TARJETAS CONTENEDORAS POS (CATÁLOGO Y ORDEN) ── */
   .cys-pos-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
+    border-left: 3.5px solid #CF9C48 !important;
     box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
     backdrop-filter: none !important;
   }
@@ -2578,6 +2854,22 @@ html[data-cys-tema="claro"] {
     border: 1px solid #e2e8f0 !important;
     color: #0f172a !important;
   }
+  .cys-cart-item .cys-cart-item-name,
+  .cys-cart-item .cys-cart-item-qty,
+  .cys-cart-item span[style*="color:#fff"],
+  .cys-cart-item span[style*="color: #fff"],
+  .cys-cart-item span[style*="color:var(--texto"] {
+    color: #0f172a !important;
+  }
+  .cys-cart-item .btn-close,
+  .cys-cart-item .cys-cart-close-btn {
+    filter: none !important;
+    opacity: 0.65 !important;
+  }
+  .cys-cart-item .btn-close:hover,
+  .cys-cart-item .cys-cart-close-btn:hover {
+    opacity: 1 !important;
+  }
   .cys-cart-item:hover {
     background: #f1f5f9 !important;
     border-color: #cbd5e1 !important;
@@ -2606,15 +2898,170 @@ html[data-cys-tema="claro"] {
     color: #0f172a !important;
   }
 
+  /* ════════════════════════════════════════════════════════════════
+     ESQUEMA DE 2 COLORES (VERDE Y ROJO) PARA VENTAS EN MODO CLARO
+     ════════════════════════════════════════════════════════════════ */
+
+  /* 1. TOTAL A COBRAR (VERDE) */
   #totalGeneral {
-    background: #eff6ff !important;
-    border: 1px solid #bfdbfe !important;
+    background: #f0fdf4 !important;
+    border: 1px solid #86efac !important;
   }
-  #totalGeneral span {
-    color: #1e3a8a !important;
+  #totalGeneral span,
+  #totalGeneral span:first-child {
+    color: #15803d !important;
+    font-weight: 800 !important;
   }
   #totalGeneral #totalMonto {
-    color: #0284c7 !important;
+    color: #16a34a !important;
+    font-weight: 800 !important;
+  }
+
+  /* 2. BOTONES DE ACCIÓN RÁPIDA: Pago Exacto (VERDE) y Pago Pendiente (ROJO) */
+  #btnPagoExacto,
+  .cys-btn-pago-exacto {
+    background: #ecfdf5 !important;
+    border: 1px solid #86efac !important;
+    color: #15803d !important;
+    font-weight: 700 !important;
+  }
+  #btnPagoExacto:hover,
+  .cys-btn-pago-exacto:hover {
+    background: #dcfce7 !important;
+    border-color: #4ade80 !important;
+    color: #166534 !important;
+  }
+  #btnPagoExacto i,
+  .cys-btn-pago-exacto i {
+    color: #15803d !important;
+  }
+
+  #btnPagoPendiente,
+  .cys-btn-pago-pendiente {
+    background: #fef2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+  }
+  #btnPagoPendiente:hover,
+  .cys-btn-pago-pendiente:hover {
+    background: #fee2e2 !important;
+    border-color: #f87171 !important;
+    color: #b91c1c !important;
+  }
+  #btnPagoPendiente i,
+  .cys-btn-pago-pendiente i {
+    color: #dc2626 !important;
+  }
+
+  /* 3. TOTAL INGRESADO (ROJO si incompleto/0, VERDE si cubierto) */
+  #totalPagado {
+    font-weight: 800 !important;
+    color: #dc2626 !important;
+  }
+  #totalPagado.cys-monto-pendiente {
+    color: #dc2626 !important;
+  }
+  #totalPagado.cys-monto-ok {
+    color: #16a34a !important;
+  }
+
+  /* 4. INDICADOR DINÁMICO DE CAMBIO / SALDO PENDIENTE (VERDE Y ROJO) */
+  .cys-change-indicator--pending {
+    background: #fef2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+  }
+  .cys-change-indicator--pending span,
+  .cys-change-indicator--pending #montoCambio,
+  .cys-change-indicator--pending #labelCambio {
+    color: #dc2626 !important;
+    font-weight: 800 !important;
+  }
+
+  .cys-change-indicator--ok {
+    background: #f0fdf4 !important;
+    border: 1px solid #86efac !important;
+    color: #15803d !important;
+  }
+  .cys-change-indicator--ok span,
+  .cys-change-indicator--ok #montoCambio,
+  .cys-change-indicator--ok #labelCambio {
+    color: #15803d !important;
+    font-weight: 800 !important;
+  }
+
+  /* 5. SECCIÓN MOTIVO DE PAGO PENDIENTE (DEUDA): ROJO */
+  #seccionObservacionPago,
+  .cys-debt-box {
+    background: #fef2f2 !important;
+    border: 1px solid #fca5a5 !important;
+  }
+  #seccionObservacionPago label,
+  #seccionObservacionPago i.bi-exclamation-triangle-fill,
+  .cys-debt-box label {
+    color: #dc2626 !important;
+  }
+  #seccionObservacionPago .badge,
+  .cys-debt-badge {
+    background: #fee2e2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+  }
+  #seccionObservacionPago #textoSaldoPendiente {
+    color: #dc2626 !important;
+    font-weight: 800 !important;
+  }
+  #seccionObservacionPago textarea {
+    background: #ffffff !important;
+    border: 1px solid #fca5a5 !important;
+    color: #0f172a !important;
+  }
+  #seccionObservacionPago textarea:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+  }
+  #seccionObservacionPago .small,
+  #seccionObservacionPago .small span,
+  #seccionObservacionPago .small i {
+    color: #b91c1c !important;
+  }
+
+  /* 6. BOTONES DE CIERRE: Registrar Venta (VERDE) y Cancelar Venta (ROJO) */
+  #btnRegistrar,
+  .cys-btn-checkout {
+    background: linear-gradient(135deg, #16a34a, #15803d) !important;
+    border: 1px solid #16a34a !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25) !important;
+  }
+  #btnRegistrar:hover,
+  .cys-btn-checkout:hover {
+    background: #15803d !important;
+    box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35) !important;
+  }
+
+  #btnCancelarVenta {
+    background: #fee2e2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+  }
+  #btnCancelarVenta:hover {
+    background: #fecaca !important;
+    color: #b91c1c !important;
+    border-color: #f87171 !important;
+  }
+
+  /* 7. DETALLES Y PRECIOS DEL CARRITO: VERDE */
+  .cys-cart-item span[style*="var(--azul-claro"],
+  .cys-cart-item span[style*="#4DA8DA"] {
+    color: #16a34a !important;
+  }
+  #badgeCountItems {
+    background: #f0fdf4 !important;
+    color: #15803d !important;
+    border: 1px solid #86efac !important;
   }
 
   /* Autocomplete sugerencias */
@@ -2643,6 +3090,7 @@ html[data-cys-tema="claro"] {
   .mp-kpi-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
+    border-left: 3.5px solid #CF9C48 !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
     color: #0f172a !important;
   }
@@ -2793,13 +3241,35 @@ html[data-cys-tema="claro"] {
     background: #f8fafc !important;
   }
 
-  /* Botones secundarios estándar */
-  .cys-btn-secondary {
-    background: #f8fafc !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #334155 !important;
+  /* Botones principales y secundarios estándar estilo píldora */
+  .cys-btn-primary,
+  .prod-btn-primary {
+    background: #a82315 !important;
+    color: #ffffff !important;
+    border-radius: 999px !important;
+    border: 1px solid #a82315 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(168, 35, 21, 0.25) !important;
   }
-  .cys-btn-secondary:hover {
+  .cys-btn-primary:hover,
+  .prod-btn-primary:hover {
+    background: #8e1c10 !important;
+    border-color: #8e1c10 !important;
+    opacity: 0.95 !important;
+    color: #ffffff !important;
+  }
+
+  .cys-btn-secondary,
+  .cys-btn-ghost-soft {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 999px !important;
+    color: #0f172a !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  }
+  .cys-btn-secondary:hover,
+  .cys-btn-ghost-soft:hover {
     background: #f1f5f9 !important;
     color: #0f172a !important;
     border-color: #94a3b8 !important;
@@ -2870,11 +3340,61 @@ html[data-cys-tema="claro"] {
   .cys-top-sales-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
+    border-left: 3px solid #CF9C48 !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
   }
   .cys-top-sales-card:hover {
     box-shadow: 0 8px 24px rgba(2, 132, 199, 0.1) !important;
     border-color: #bae6fd !important;
+  }
+
+  /* Dropdown 3 puntos en modo claro */
+  .dd-btn {
+    background: #fdf2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08) !important;
+  }
+  .dd-btn:hover {
+    background: #fee2e2 !important;
+    border-color: #f87171 !important;
+    color: #b91c1c !important;
+  }
+  .dd-menu {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15) !important;
+  }
+  .dd-item {
+    color: #1e293b !important;
+  }
+  .dd-item:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+  .dd-item.danger {
+    color: #dc2626 !important;
+  }
+  .dd-item.danger:hover {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+  }
+  .dd-sep {
+    background: #e2e8f0 !important;
+  }
+
+  /* Modal Eliminar Venta en modo claro */
+  #modalEliminarVenta textarea#motivoEliminarVenta {
+    background: #ffffff !important;
+    border: 1px solid #fca5a5 !important;
+    color: #0f172a !important;
+  }
+  #modalEliminarVenta textarea#motivoEliminarVenta:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+  }
+  #modalEliminarVenta label[for="motivoEliminarVenta"] {
+    color: #0f172a !important;
   }
 }
 
