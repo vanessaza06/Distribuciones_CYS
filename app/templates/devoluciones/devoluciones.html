@@ -6,8 +6,8 @@
 {% block nav_devoluciones %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261016h">
-<link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261125d">
+<link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}?v=20261125d">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
 
@@ -189,20 +189,28 @@
             <h2>Devoluciones Registradas a Proveedores</h2>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <div id="cys-dt-export-dev-proveedor" class="d-flex align-items-center gap-2">
+            <!-- EXPORTAR (servidor): Excel / PDF / Imprimir -->
+            <div id="dev-export-proveedor" class="d-flex align-items-center gap-2" data-dev-export-scope="proveedor">
               <div class="dropdown d-inline-block">
-                <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar el historial a PDF o Excel"><button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
-                </button></span>
-                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-box-arrow-up"></i>
+                  <span>Exportar</span>
+                  <i class="bi bi-chevron-down dev-export__chevron"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
-                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    <button class="dropdown-item" type="button" data-dev-export="excel">
+                      <i class="bi bi-file-earmark-excel"></i><span>Excel</span>
                     </button>
                   </li>
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en Excel">
-                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    <button class="dropdown-item" type="button" data-dev-export="pdf">
+                      <i class="bi bi-file-earmark-pdf"></i><span>PDF</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item" type="button" data-dev-export="imprimir">
+                      <i class="bi bi-printer"></i><span>Imprimir</span>
                     </button>
                   </li>
                 </ul>
@@ -212,18 +220,68 @@
           </div>
         </div>
 
-        <div class="dev-filters mb-3">
-          <div class="dev-filters__search">
-            <i class="bi bi-search"></i>
-            <input type="search" id="filtroProvTexto" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtra la tabla por número, proveedor o producto" class="form-control dev-input-sm" placeholder="Buscar por número, proveedor o producto...">
+        <!-- BUSCADOR Y FILTROS (MISMO DISEÑO QUE COMPRAS) -->
+        <div class="dev-bp-card mb-3" id="dev-prov-bp-container">
+          <div class="input-group position-relative">
+            <input type="text" id="filtroProvTexto" class="form-control dev-bp-input" autocomplete="off"
+                   placeholder="Buscar devolución por número, proveedor o producto…"
+                   title="Filtra la tabla por número, proveedor o producto">
+
+            <button class="btn dev-bp-btn-outline dev-bp-btn-filtro" type="button" id="dev-prov-btn-filtro"
+                    data-bs-toggle="collapse" data-bs-target="#dev-prov-filtros"
+                    aria-expanded="false" aria-controls="dev-prov-filtros"
+                    title="Filtrar devoluciones">
+              <i class="bi bi-funnel"></i>
+              <i class="bi bi-chevron-down dev-bp-filtro-chevron ms-1"></i>
+            </button>
+
+            <button class="btn dev-bp-btn-primary" type="button" id="dev-prov-btn-buscar" title="Buscar devoluciones">
+              <i class="bi bi-search"></i>
+            </button>
           </div>
-          <select id="filtroProvEstado" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtra las devoluciones por su estado" class="form-select dev-select dev-filters__estado">
-            <option value="">Todos los estados</option>
-            <option value="Pendiente">Pendiente</option>
-            <option value="Aprobada">Aprobada</option>
-            <option value="Aplicada">Aplicada</option>
-            <option value="Rechazada">Rechazada</option>
-          </select>
+
+          <div class="collapse" id="dev-prov-filtros">
+            <div class="dev-bp-filtros-panel">
+              <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label dev-bp-label" for="filtroProvDesde">Desde</label>
+                  <input type="date" id="filtroProvDesde" class="form-control dev-bp-field" title="Devoluciones desde esta fecha">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label dev-bp-label" for="filtroProvHasta">Hasta</label>
+                  <input type="date" id="filtroProvHasta" class="form-control dev-bp-field" title="Devoluciones hasta esta fecha">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label dev-bp-label" for="filtroProvEstado">Estado</label>
+                  <select id="filtroProvEstado" class="form-select dev-bp-field">
+                    <option value="todos">Todos</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="aprobada">Aprobada</option>
+                    <option value="aplicada">Aplicada</option>
+                    <option value="rechazada">Rechazada</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label dev-bp-label" for="filtroProvSolucion">Solución</label>
+                  <select id="filtroProvSolucion" class="form-select dev-bp-field">
+                    <option value="todos">Todas</option>
+                    <option value="nota_credito">Nota Crédito</option>
+                    <option value="reembolso">Reembolso</option>
+                    <option value="reposicion">Reposición</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <button type="button" id="dev-prov-btn-limpiar" class="btn dev-bp-btn-outline w-100" title="Quitar todos los filtros">
+                    <i class="bi bi-x-circle me-1"></i> Limpiar
+                  </button>
+                </div>
+              </div>
+              <p class="dev-bp-label small mb-0 mt-2">
+                <i class="bi bi-info-circle me-1"></i>
+                Estos filtros se aplican a la tabla de devoluciones registradas a proveedores.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="table-responsive dev-table-wrap dev-table-wrap--menu">
@@ -243,7 +301,7 @@
             </thead>
             <tbody>
               {% for dp in devoluciones_proveedor %}
-              <tr>
+              <tr data-fecha="{{ dp.fecha|date:'Y-m-d' }}" data-estado="{{ dp.estado }}" data-solucion="{{ dp.tipo_resolucion }}">
                 <td data-order="{{ dp.numero_proveedor }}"><strong>{{ dp.numero }}</strong></td>
                 <td data-order="{{ dp.fecha|date:'Y-m-d H:i:s' }}">{{ dp.fecha|date:'d/m/Y H:i' }}</td>
                 <td>{{ dp.proveedor.nombre_empresa }}</td>
@@ -254,41 +312,44 @@
                 <td><span class="badge badge-motivo">{{ dp.get_motivo_display }}</span></td>
                 <td>{{ dp.get_tipo_resolucion_display }}</td>
                 <td class="text-end dev-money">${{ dp.total_devuelto|floatformat:0 }}</td>
+                <td class="text-center" data-order="{{ dp.estado }}">
+                  {% if dp.estado == 'pendiente' %}
+                    <span class="badge-estado badge-pendiente"><i class="bi bi-clock-history"></i> Pendiente</span>
+                  {% elif dp.estado == 'aprobada' %}
+                    <span class="badge-estado badge-aprobada"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
+                  {% elif dp.estado == 'aplicada' %}
+                    <span class="badge-estado badge-aplicada"><i class="bi bi-check-all"></i> Aplicada</span>
+                  {% else %}
+                    <span class="badge-estado badge-rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
+                  {% endif %}
+                </td>
                 <td class="text-center">
-                  <div class="dropdown">
-                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Acciones"><button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-three-dots-vertical"></i>
-                    </button></span>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end dev-menu">
-                      <li>
-                        <a class="dropdown-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Abrir el detalle de la devolución" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}">
-                          <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
-                        </a>
-                      </li>
-                      {% if dp.estado == 'pendiente' or dp.estado == 'aprobada' %}
-                      <li><hr class="dropdown-divider"></li>
-                      {% endif %}
+                  <div class="dd-wrap">
+                    <button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Acciones de {{ dp.numero }}" title="Acciones">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <div class="dd-menu" role="menu">
+                      <a class="dd-item" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}" title="Abrir el detalle de la devolución">
+                        <i class="bi bi-eye"></i> Ver detalles
+                      </a>
                       {% if dp.estado == 'pendiente' %}
-                      <li>
-                        <a class="dropdown-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aprobar la devolución (pide confirmación)" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=aprobada">
-                          <i class="bi bi-check-circle me-2 text-success"></i>Aprobar
-                        </a>
-                      </li>
+                      <div class="dd-sep"></div>
+                      <a class="dd-item" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=aprobada" title="Aprobar la devolución">
+                        <i class="bi bi-check-circle"></i> Aprobar
+                      </a>
                       {% elif dp.estado == 'aprobada' %}
-                      <li>
-                        <a class="dropdown-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aplicar la devolución y descontar inventario" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=aplicada">
-                          <i class="bi bi-check-all me-2 text-warning"></i>Aplicar
-                        </a>
-                      </li>
+                      <div class="dd-sep"></div>
+                      <a class="dd-item" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=aplicada" title="Aplicar la devolución y descontar inventario">
+                        <i class="bi bi-check-all"></i> Aplicar
+                      </a>
                       {% endif %}
                       {% if dp.estado == 'pendiente' or dp.estado == 'aprobada' %}
-                      <li>
-                        <a class="dropdown-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Rechazar la devolución (pide confirmación)" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=rechazada">
-                          <i class="bi bi-x-circle me-2 text-danger"></i>Rechazar
-                        </a>
-                      </li>
+                      <div class="dd-sep"></div>
+                      <a class="dd-item danger" href="{% url 'detalle_devolucion_proveedor' dp.numero_proveedor %}?accion=rechazada" title="Rechazar la devolución">
+                        <i class="bi bi-x-circle"></i> Rechazar
+                      </a>
                       {% endif %}
-                    </ul>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -302,7 +363,7 @@
 
   {% else %}
   <!-- ════════════════════════════════════════════════════════════════
-       SECCIÓN: DEVOLUCIONES DE CLIENTES (EXISTENTE)
+       SECCIÓN: DEVOLUCIONES DE CLIENTES
        ════════════════════════════════════════════════════════════════ -->
   <section class="dev-kpis" aria-label="Resumen de devoluciones">
     <article class="dev-kpi dev-kpi--cyan" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total de devoluciones de clientes registradas"><i class="bi bi-receipt"></i><div><span>Devoluciones</span><strong>{{ devoluciones|length }}</strong><small>registradas</small></div></article>
@@ -401,30 +462,92 @@
         </button>
         <div class="dev-history-body d-none" id="devHistoryBody">
           <div class="d-flex justify-content-end align-items-center mb-2 px-2 pt-2">
-            <div id="cys-dt-export-devoluciones" class="d-flex align-items-center gap-2">
+            <!-- EXPORTAR (servidor): Excel / PDF / Imprimir -->
+            <div id="dev-export-cliente" class="d-flex align-items-center gap-2" data-dev-export-scope="cliente">
               <div class="dropdown d-inline-block">
-                <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Exportar el historial a PDF o Excel"><button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-box-arrow-up me-2"></i>Exportar
-                </button></span>
-                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
+                <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-box-arrow-up"></i>
+                  <span>Exportar</span>
+                  <i class="bi bi-chevron-down dev-export__chevron"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export">
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="pdf" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en PDF">
-                      <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Exportar PDF
+                    <button class="dropdown-item" type="button" data-dev-export="excel">
+                      <i class="bi bi-file-earmark-excel"></i><span>Excel</span>
                     </button>
                   </li>
                   <li>
-                    <button class="dropdown-item d-flex align-items-center py-2" type="button" data-cys-export="excel" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Descargar el listado en Excel">
-                      <i class="bi bi-file-earmark-excel text-success me-2"></i>Exportar Excel
+                    <button class="dropdown-item" type="button" data-dev-export="pdf">
+                      <i class="bi bi-file-earmark-pdf"></i><span>PDF</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item" type="button" data-dev-export="imprimir">
+                      <i class="bi bi-printer"></i><span>Imprimir</span>
                     </button>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
+          <!-- BUSCADOR Y FILTROS (MISMO DISEÑO QUE COMPRAS) -->
+          <div class="dev-bp-card mb-3" id="dev-cli-bp-container">
+            <div class="input-group position-relative">
+              <input type="text" id="filtroCliTexto" class="form-control dev-bp-input" autocomplete="off"
+                     placeholder="Buscar devolución por número, cliente o motivo…"
+                     title="Filtra el historial de devoluciones de clientes">
+
+              <button class="btn dev-bp-btn-outline dev-bp-btn-filtro" type="button" id="dev-cli-btn-filtro"
+                      data-bs-toggle="collapse" data-bs-target="#dev-cli-filtros"
+                      aria-expanded="false" aria-controls="dev-cli-filtros"
+                      title="Filtrar devoluciones de clientes">
+                <i class="bi bi-funnel"></i>
+                <i class="bi bi-chevron-down dev-bp-filtro-chevron ms-1"></i>
+              </button>
+
+              <button class="btn dev-bp-btn-primary" type="button" id="dev-cli-btn-buscar" title="Buscar devoluciones">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+
+            <div class="collapse" id="dev-cli-filtros">
+              <div class="dev-bp-filtros-panel">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3">
+                    <label class="form-label dev-bp-label" for="filtroCliDesde">Desde</label>
+                    <input type="date" id="filtroCliDesde" class="form-control dev-bp-field" title="Devoluciones desde esta fecha">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label dev-bp-label" for="filtroCliHasta">Hasta</label>
+                    <input type="date" id="filtroCliHasta" class="form-control dev-bp-field" title="Devoluciones hasta esta fecha">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label dev-bp-label" for="filtroCliSolucion">Solución</label>
+                    <select id="filtroCliSolucion" class="form-select dev-bp-field">
+                      <option value="todos">Todas</option>
+                      <option value="cambio">Cambio por otro producto</option>
+                      <option value="nota_credito">Nota de crédito / saldo a favor</option>
+                      <option value="reembolso">Reembolso de dinero</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" id="dev-cli-btn-limpiar" class="btn dev-bp-btn-outline w-100" title="Quitar todos los filtros">
+                      <i class="bi bi-x-circle me-1"></i> Limpiar
+                    </button>
+                  </div>
+                </div>
+                <p class="dev-bp-label small mb-0 mt-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Estos filtros se aplican a la tabla del historial de devoluciones de clientes.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div class="table-responsive dev-history-table-wrap">
             <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">
-              <thead><tr><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Consecutivo de la devolución">Número</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cliente de la venta original">Cliente</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Razón de la devolución">Motivo</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cambio, nota crédito o reembolso">Solución</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Valor total devuelto">Total</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Fecha y hora del registro">Fecha</th><th></th></tr></thead>
-              <tbody>{% for dev in devoluciones %}<tr><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{% if dev.venta.cliente %}{{ dev.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td><a class="dev-table-action" href="{% url 'detalle_devolucion' dev.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Ver detalle"><i class="bi bi-eye"></i></a></td></tr>{% endfor %}</tbody>
+              <thead><tr><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Consecutivo de la devolución">Número</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cliente de la venta original">Cliente</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Razón de la devolución">Motivo</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cambio, nota crédito o reembolso">Solución</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Valor total devuelto">Total</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Fecha y hora del registro">Fecha</th><th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Acciones disponibles">Acción</th></tr></thead>
+              <tbody>{% for dev in devoluciones %}<tr data-fecha="{{ dev.fecha|date:'Y-m-d' }}" data-solucion="{{ dev.tipo_devolucion }}"><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{% if dev.venta.cliente %}{{ dev.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td class="text-center"><div class="dd-wrap"><button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Acciones de {{ dev.numero }}" title="Acciones"><i class="bi bi-three-dots"></i></button><div class="dd-menu" role="menu"><a class="dd-item" href="{% url 'detalle_devolucion' dev.pk %}"><i class="bi bi-eye"></i> Ver detalle</a><div class="dd-sep"></div><a class="dd-item" href="{% url 'comprobante_devolucion' dev.pk %}"><i class="bi bi-receipt"></i> Comprobante</a></div></div></td></tr>{% endfor %}</tbody>
             </table>
           </div>
         </div>
@@ -443,6 +566,5 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261016i"></script>
+<script src="{% static 'js/proveedores/devoluciones.js' %}?v=20261125c"></script>
 {% endblock %}
-

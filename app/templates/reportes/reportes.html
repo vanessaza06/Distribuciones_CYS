@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load l10n %}
 
 {% block title %}Reportes — CYS Ltda{% endblock %}
 {% block page_title %}Reportes{% endblock %}
@@ -296,8 +297,7 @@
           <span class="cys-hv-date-label">Desde</span>
           <div class="cys-hv-date-input-wrap">
             <input type="date" id="filtro-fecha-inicio" name="fecha_inicio"
-                   class="cys-hv-date-input" value="{{ fecha_inicio }}"
-                   placeholder="dd/mm/aaaa">
+                   class="cys-hv-date-input" value="{{ fecha_inicio }}">
             <i class="bi bi-calendar3 cys-hv-cal-icon"></i>
           </div>
         </div>
@@ -307,8 +307,7 @@
           <span class="cys-hv-date-label">Hasta</span>
           <div class="cys-hv-date-input-wrap">
             <input type="date" id="filtro-fecha-fin" name="fecha_fin"
-                   class="cys-hv-date-input" value="{{ fecha_fin }}"
-                   placeholder="dd/mm/aaaa">
+                   class="cys-hv-date-input" value="{{ fecha_fin }}">
             <i class="bi bi-calendar3 cys-hv-cal-icon"></i>
           </div>
         </div>
@@ -364,7 +363,8 @@
       {% endif %}
 
       <div class="table-responsive mt-3">
-        <table id="reportes-table" class="cys-inv-table table w-100">
+        <table id="reportes-table" class="cys-inv-table table w-100"
+               data-empty-msg="{% if fecha_inicio or fecha_fin %}No se encontraron ventas con los filtros aplicados.{% else %}No hay ventas registradas aún.{% endif %}">
           <thead>
             <tr>
               <th>#</th>
@@ -383,33 +383,19 @@
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                 <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
                 <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
-                <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
-                <td class="cys-td" data-label="Precio Uni.">${{ det.precio_unitario|floatformat:0 }}</td>
-                <td class="cys-td cys-td--bold" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
-                <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"Y-m-d" }}</td>
+                <td class="cys-td" data-label="Cantidad" data-order="{{ det.cantidad|unlocalize }}">{{ det.cantidad }}</td>
+                <td class="cys-td" data-label="Precio Uni." data-order="{{ det.precio_unitario|unlocalize }}">${{ det.precio_unitario|floatformat:0 }}</td>
+                <td class="cys-td cys-td--bold" data-label="Total" data-order="{{ det.subtotal|unlocalize }}">${{ det.subtotal|floatformat:0 }}</td>
+                <td class="cys-td" data-label="Fecha" data-order="{{ venta.fecha|date:'Y-m-d H:i:s' }}">{{ venta.fecha|date:"Y-m-d" }}</td>
               </tr>
               {% endfor %}
-            {% empty %}
-            <tr>
-              <td colspan="7" class="cys-td--empty border-0">
-                <div class="cys-empty-box">
-                  <i class="bi bi-bar-chart"></i>
-                  {% if cliente_q or producto_q or fecha_inicio or fecha_fin %}
-                    No se encontraron ventas con los filtros aplicados.
-                  {% else %}
-                    No hay ventas registradas aún.
-                  {% endif %}
-                </div>
-              </td>
-              <td class="d-none"></td><td class="d-none"></td><td class="d-none"></td>
-              <td class="d-none"></td><td class="d-none"></td><td class="d-none"></td>
-            </tr>
             {% endfor %}
+            {# SIN fila "empty": DataTables muestra el mensaje con language.emptyTable #}
           </tbody>
         </table>
       </div>
 
-      <!-- Pie de tabla -->
+      <!-- Pie de tabla (lo llena reportes.js) -->
       <div class="cys-hv-table-footer">
         <span class="cys-hv-showing-info" id="cys-dt-info"></span>
         <div class="cys-hv-pagination-wrap" id="cys-dt-pagination"></div>
@@ -511,15 +497,19 @@
             </span>
             <div class="cys-search-box">
               <input type="text" id="buscar-inventario" placeholder="Buscar producto..."
-                class="cys-search-box__input"
-                oninput="filtrarTablaInv(this.value)">
+                class="cys-search-box__input">
               <i class="bi bi-search cys-search-box__icon"></i>
             </div>
           </div>
         </div>
 
         <div class="table-responsive cys-modal-table-wrap">
-          <table class="cys-inv-table" id="tabla-modal-stock">
+          <table class="cys-inv-table cys-dt" id="tabla-modal-stock"
+                 data-dt-search="buscar-inventario"
+                 data-dt-label="productos"
+                 data-dt-page="10"
+                 data-dt-empty="No hay productos registrados."
+                 data-dt-icon="bi-box-seam">
             <thead>
               <tr>
                 <th class="cys-col-num">#</th>
@@ -535,7 +525,7 @@
                 <td data-label="Producto" class="cys-td cys-td--bold cys-col-producto">
                   {{ p.nombre }}
                 </td>
-                <td data-label="Stock" class="cys-col-stock">
+                <td data-label="Stock" class="cys-col-stock" data-order="{{ p.cantidad_disponible|unlocalize }}">
                   {% if p.cantidad_disponible == 0 %}
                     <span class="cys-qty cys-qty--out">{{ p.cantidad_disponible }}</span>
                   {% elif p.cantidad_disponible <= 10 %}
@@ -554,13 +544,8 @@
                   {% endif %}
                 </td>
               </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" class="cys-td--empty">
-                  <div class="cys-empty-box"><i class="bi bi-box-seam"></i>No hay productos registrados.</div>
-                </td>
-              </tr>
               {% endfor %}
+              {# SIN fila "empty": DataTables muestra el mensaje con data-dt-empty #}
             </tbody>
           </table>
         </div>
@@ -573,7 +558,11 @@
           </div>
         </div>
         <div class="table-responsive cys-modal-table-wrap--noTop cys-modal-table-wrap--bottom">
-          <table class="cys-inv-table" id="tabla-modal-entradas">
+          <table class="cys-inv-table cys-dt" id="tabla-modal-entradas"
+                 data-dt-label="entradas"
+                 data-dt-page="10"
+                 data-dt-empty="No hay entradas registradas."
+                 data-dt-icon="bi-inbox">
             <thead>
               <tr>
                 <th>#</th>
@@ -590,17 +579,11 @@
               <tr class="cys-tr">
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                 <td data-label="Producto" class="cys-td cys-td--bold">{% if e.producto %}{{ e.producto.nombre }}{% else %}—{% endif %}</td>
-                <td class="cys-qty cys-qty--ok" data-label="Cantidad">+{{ e.cantidad }}</td>
+                <td class="cys-qty cys-qty--ok" data-label="Cantidad" data-order="{{ e.cantidad|unlocalize }}">+{{ e.cantidad }}</td>
                 <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.compra.codigo_compra }}</td>
                 <td class="cys-td cys-td--muted" data-label="Motivo">Compra recibida</td>
                 <td class="cys-td" data-label="Fecha Venc.">{% if e.producto %}{{ e.producto.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% else %}—{% endif %}</td>
-                <td class="cys-td" data-label="Fecha">{{ e.compra.fecha|date:"d/m/Y H:i" }}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="7" class="cys-td--empty">
-                  <div class="cys-empty-box"><i class="bi bi-inbox"></i>No hay entradas registradas.</div>
-                </td>
+                <td class="cys-td" data-label="Fecha" data-order="{{ e.compra.fecha|date:'Y-m-d H:i:s' }}">{{ e.compra.fecha|date:"d/m/Y H:i" }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -680,54 +663,47 @@
             </div>
             <div class="cys-search-box">
               <input type="text" id="buscar-proveedores" placeholder="Buscar proveedor..."
-                class="cys-search-box__input cys-search-box__input--dark"
-                oninput="filtrarTablaProv(this.value)">
+                class="cys-search-box__input cys-search-box__input--dark">
               <i class="bi bi-search cys-search-box__icon"></i>
             </div>
           </div>
 
-          <table class="cys-inv-table cys-table--noTopMargin" id="tabla-modal-proveedores">
-            <thead>
-              <tr>
-                <th class="cys-col-num">#</th>
-                <th>PROVEEDOR</th>
-                <th>TIPO</th>
-                <th>TELÉFONO</th>
-                <th>CORREO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for prov in proveedores %}
-              <tr class="cys-tr prov-row">
-                <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                <td class="cys-prov-name-text" data-label="Nombre">
-                  {{ prov.nombre_empresa }}
-                </td>
-                <td class="cys-prov-company" data-label="Empresa">
-                  {{ prov.get_tipo_proveedor_display }}
-                </td>
-                <td class="cys-prov-phone" data-label="Teléfono">
-                  {{ prov.telefono }}
-                </td>
-                <td class="cys-prov-email" data-label="Correo">
-                  {{ prov.correo }}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="5" class="cys-td--empty">
-                  <div class="cys-empty-box"><i class="bi bi-truck"></i>No hay proveedores registrados.</div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-          <!-- Paginación simple -->
-          <div class="cys-prov-pagination">
-            <button class="cys-pag-btn" onclick="pagProv(-1)"><i class="bi bi-chevron-left"></i></button>
-            <span id="prov-pag-indicator" class="cys-prov-pagination__indicator">1</span>
-            <button class="cys-pag-btn" onclick="pagProv(1)"><i class="bi bi-chevron-right"></i></button>
+          <div class="table-responsive">
+            <table class="cys-inv-table cys-table--noTopMargin cys-dt" id="tabla-modal-proveedores"
+                   data-dt-search="buscar-proveedores"
+                   data-dt-label="proveedores"
+                   data-dt-page="5"
+                   data-dt-empty="No hay proveedores registrados."
+                   data-dt-icon="bi-truck">
+              <thead>
+                <tr>
+                  <th class="cys-col-num">#</th>
+                  <th>PROVEEDOR</th>
+                  <th>TIPO</th>
+                  <th>TELÉFONO</th>
+                  <th>CORREO</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for prov in proveedores %}
+                <tr class="cys-tr prov-row">
+                  <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+                  <td class="cys-prov-name-text" data-label="Nombre">
+                    {{ prov.nombre_empresa }}
+                  </td>
+                  <td class="cys-prov-company" data-label="Empresa">
+                    {{ prov.get_tipo_proveedor_display }}
+                  </td>
+                  <td class="cys-prov-phone" data-label="Teléfono">
+                    {{ prov.telefono }}
+                  </td>
+                  <td class="cys-prov-email" data-label="Correo">
+                    {{ prov.correo }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -796,7 +772,11 @@
 
       <div class="modal-body p-0 cys-modal__body">
         <div class="table-responsive cys-modal-table-wrap--padded">
-          <table class="cys-inv-table" id="tabla-modal-compras">
+          <table class="cys-inv-table cys-dt" id="tabla-modal-compras"
+                 data-dt-label="compras"
+                 data-dt-page="10"
+                 data-dt-empty="No hay compras registradas."
+                 data-dt-icon="bi-cart3">
             <thead>
               <tr>
                 <th>#</th><th>PROVEEDOR</th><th>PRODUCTO</th><th>CANTIDAD</th><th>VALOR</th><th>FECHA</th>
@@ -806,20 +786,14 @@
               {% for compra in compras %}
                 {% for detalle in compra.detalles.all %}
               <tr class="cys-tr">
-                <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+                <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                 <td data-label="Proveedor"><span class="cys-tag">{{ compra.proveedor }}</span></td>
                 <td class="cys-td" data-label="Producto">{% if detalle.producto %}{{ detalle.producto.nombre }}{% else %}—{% endif %}</td>
-                <td class="cys-td" data-label="Cantidad">{{ detalle.cantidad }}</td>
-                <td class="cys-qty cys-qty--ok" data-label="Valor">${{ detalle.subtotal_compra|floatformat:0 }}</td>
-                <td class="cys-td" data-label="Fecha">{{ compra.fecha|date:"d/m/Y" }}</td>
+                <td class="cys-td" data-label="Cantidad" data-order="{{ detalle.cantidad|unlocalize }}">{{ detalle.cantidad }}</td>
+                <td class="cys-qty cys-qty--ok" data-label="Valor" data-order="{{ detalle.subtotal_compra|unlocalize }}">${{ detalle.subtotal_compra|floatformat:0 }}</td>
+                <td class="cys-td" data-label="Fecha" data-order="{{ compra.fecha|date:'Y-m-d H:i:s' }}">{{ compra.fecha|date:"d/m/Y" }}</td>
               </tr>
                 {% endfor %}
-              {% empty %}
-              <tr>
-                <td colspan="6" class="cys-td--empty">
-                  <div class="cys-empty-box"><i class="bi bi-cart3"></i>No hay compras registradas.</div>
-                </td>
-              </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -932,13 +906,17 @@
                   <span class="cys-av-table-card__title">ENTRADAS DE HOY</span>
                   <div class="cys-search-box cys-av-table-card__search">
                     <input type="text" id="buscar-rd-entradas" placeholder="Buscar producto..."
-                      class="cys-search-box__input cys-search-box__input--dark"
-                      oninput="filtrarTablaRDEntradas(this.value)">
+                      class="cys-search-box__input cys-search-box__input--dark">
                     <i class="bi bi-search cys-search-box__icon"></i>
                   </div>
                 </div>
                 <div class="table-responsive cys-rd-table-wrap">
-                  <table class="cys-inv-table" id="tabla-modal-rd-entradas">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-rd-entradas"
+                         data-dt-search="buscar-rd-entradas"
+                         data-dt-label="entradas"
+                         data-dt-page="5"
+                         data-dt-empty="No hay entradas hoy."
+                         data-dt-icon="bi-inbox">
                     <thead>
                       <tr>
                         <th>#</th>
@@ -955,24 +933,15 @@
                       <tr class="cys-tr rd-entrada-row">
                         <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
                         <td data-label="Producto" class="cys-td cys-td--bold">{% if e.producto %}{{ e.producto.nombre }}{% else %}—{% endif %}</td>
-                        <td class="cys-qty cys-qty--ok" data-label="Cantidad">+{{ e.cantidad }}</td>
+                        <td class="cys-qty cys-qty--ok" data-label="Cantidad" data-order="{{ e.cantidad|unlocalize }}">+{{ e.cantidad }}</td>
                         <td class="cys-td cys-td--muted" data-label="N° Orden/Factura">{{ e.compra.codigo_compra }}</td>
                         <td class="cys-td cys-td--muted" data-label="Motivo">Compra recibida</td>
                         <td class="cys-td" data-label="Fecha Venc.">{% if e.producto %}{{ e.producto.fecha_vencimiento|date:"d/m/Y"|default:"—" }}{% else %}—{% endif %}</td>
-                        <td class="cys-td" data-label="Fecha">{{ e.compra.fecha|date:"d/m/Y" }}</td>
-                      </tr>
-                      {% empty %}
-                      <tr>
-                        <td colspan="7" class="cys-td--empty">
-                          <div class="cys-empty-box"><i class="bi bi-inbox"></i>No hay entradas hoy.</div>
-                        </td>
+                        <td class="cys-td" data-label="Fecha" data-order="{{ e.compra.fecha|date:'Y-m-d H:i:s' }}">{{ e.compra.fecha|date:"d/m/Y" }}</td>
                       </tr>
                       {% endfor %}
                     </tbody>
                   </table>
-                </div>
-                <div class="cys-empty-box cys-av-no-results d-none" id="rd-entradas-no-results">
-                  <i class="bi bi-search"></i>No se encontraron resultados.
                 </div>
               </div>
 
@@ -983,13 +952,17 @@
                   <span class="cys-av-table-card__title">VENTAS DE HOY</span>
                   <div class="cys-search-box cys-av-table-card__search">
                     <input type="text" id="buscar-rd-ventas" placeholder="Buscar producto, cliente..."
-                      class="cys-search-box__input cys-search-box__input--dark"
-                      oninput="filtrarTablaRDVentas(this.value)">
+                      class="cys-search-box__input cys-search-box__input--dark">
                     <i class="bi bi-search cys-search-box__icon"></i>
                   </div>
                 </div>
                 <div class="table-responsive cys-rd-table-wrap">
-                  <table class="cys-inv-table" id="tabla-modal-rd-ventas">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-rd-ventas"
+                         data-dt-search="buscar-rd-ventas"
+                         data-dt-label="ventas"
+                         data-dt-page="5"
+                         data-dt-empty="No hay ventas hoy."
+                         data-dt-icon="bi-inbox">
                     <thead>
                       <tr>
                         <th>#</th><th>CLIENTE</th><th>PRODUCTO</th>
@@ -1003,24 +976,15 @@
                           <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                           <td data-label="Cliente"><strong>{{ v.cliente }}</strong></td>
                           <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
-                          <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
-                          <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
-                          <td class="cys-td" data-label="Fecha">{{ v.fecha|date:"d/m/Y" }}</td>
-                          <td class="cys-td" data-label="Hora">{{ v.fecha|date:"H:i" }}</td>
+                          <td class="cys-td" data-label="Cantidad" data-order="{{ det.cantidad|unlocalize }}">{{ det.cantidad }}</td>
+                          <td class="cys-qty cys-qty--ok" data-label="Total" data-order="{{ det.subtotal|unlocalize }}">${{ det.subtotal|floatformat:0 }}</td>
+                          <td class="cys-td" data-label="Fecha" data-order="{{ v.fecha|date:'Y-m-d H:i:s' }}">{{ v.fecha|date:"d/m/Y" }}</td>
+                          <td class="cys-td" data-label="Hora" data-order="{{ v.fecha|date:'H:i:s' }}">{{ v.fecha|date:"H:i" }}</td>
                         </tr>
                         {% endfor %}
-                      {% empty %}
-                      <tr>
-                        <td colspan="7" class="cys-td--empty">
-                          <div class="cys-empty-box"><i class="bi bi-inbox"></i>No hay ventas hoy.</div>
-                        </td>
-                      </tr>
                       {% endfor %}
                     </tbody>
                   </table>
-                </div>
-                <div class="cys-empty-box cys-av-no-results d-none" id="rd-ventas-no-results">
-                  <i class="bi bi-search"></i>No se encontraron resultados.
                 </div>
               </div>
 
@@ -1032,21 +996,27 @@
                 <span class="cys-rd-top-header__dot"></span>
                 <span class="cys-rd-top-header__label">Top productos del día</span>
               </div>
-              <table class="cys-inv-table" id="tabla-modal-rd-top">
-                <thead>
-                  <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
-                </thead>
-                <tbody>
-                  {% for nombre, datos in top_productos_hoy %}
-                  <tr class="cys-tr">
-                    <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                    <td data-label="Producto"><strong>{{ nombre }}</strong></td>
-                    <td class="cys-td" data-label="Unidades">{{ datos.cantidad }}</td>
-                    <td class="cys-td cys-td--green" data-label="Total">${{ datos.subtotal|floatformat:0 }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="cys-inv-table cys-dt" id="tabla-modal-rd-top"
+                       data-dt-label="productos"
+                       data-dt-page="5"
+                       data-dt-empty="Sin datos."
+                       data-dt-icon="bi-bar-chart">
+                  <thead>
+                    <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for nombre, datos in top_productos_hoy %}
+                    <tr class="cys-tr">
+                      <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+                      <td data-label="Producto"><strong>{{ nombre }}</strong></td>
+                      <td class="cys-td" data-label="Unidades" data-order="{{ datos.cantidad|unlocalize }}">{{ datos.cantidad }}</td>
+                      <td class="cys-td cys-td--green" data-label="Total" data-order="{{ datos.subtotal|unlocalize }}">${{ datos.subtotal|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
           </div><!-- /col derecha -->
@@ -1160,37 +1130,37 @@
 
               </div>
 
-              <!-- Ventas por fecha (resumen) — OPTIMIZADO: solo las 10 ventas más recientes.
+              <!-- Ventas recientes (resumen) — solo las 10 ventas más recientes.
                    La lista completa está en la pestaña "Por fecha". -->
               <div class="cys-av-table-card">
                 <div class="cys-av-table-card__header">
                   <span class="cys-av-table-card__dot cys-av-table-card__dot--morado"></span>
                   <span class="cys-av-table-card__title">VENTAS RECIENTES</span>
                 </div>
-                <table class="cys-inv-table">
-                  <thead>
-                    <tr><th>FECHA</th><th>CLIENTE</th><th>PRODUCTO</th><th>CANTIDAD</th><th>TOTAL</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for venta in ventas|slice:":10" %}
-                      {% for det in venta.detalles.all %}
-                      <tr class="cys-tr">
-                        <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"d/m/Y" }}</td>
-                        <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
-                        <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
-                        <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
-                        <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
-                      </tr>
+                <div class="table-responsive">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-av-recientes"
+                         data-dt-label="ventas"
+                         data-dt-page="5"
+                         data-dt-empty="Sin ventas registradas."
+                         data-dt-icon="bi-bar-chart">
+                    <thead>
+                      <tr><th>FECHA</th><th>CLIENTE</th><th>PRODUCTO</th><th>CANTIDAD</th><th>TOTAL</th></tr>
+                    </thead>
+                    <tbody>
+                      {% for venta in ventas|slice:":10" %}
+                        {% for det in venta.detalles.all %}
+                        <tr class="cys-tr">
+                          <td class="cys-td" data-label="Fecha" data-order="{{ venta.fecha|date:'Y-m-d H:i:s' }}">{{ venta.fecha|date:"d/m/Y" }}</td>
+                          <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
+                          <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
+                          <td class="cys-td" data-label="Cantidad" data-order="{{ det.cantidad|unlocalize }}">{{ det.cantidad }}</td>
+                          <td class="cys-qty cys-qty--ok" data-label="Total" data-order="{{ det.subtotal|unlocalize }}">${{ det.subtotal|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
                       {% endfor %}
-                    {% empty %}
-                    <tr>
-                      <td colspan="5" class="cys-td--empty">
-                        <div class="cys-empty-box"><i class="bi bi-bar-chart"></i>Sin ventas registradas.</div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <!-- Top productos (resumen) -->
@@ -1199,27 +1169,27 @@
                   <i class="bi bi-star-fill cys-av-table-card__star"></i>
                   <span class="cys-av-table-card__title">TOP PRODUCTOS DEL DÍA MÁS VENDIDOS</span>
                 </div>
-                <table class="cys-inv-table">
-                  <thead>
-                    <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for nombre, datos in top_productos %}
-                    <tr class="cys-tr">
-                      <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                      <td data-label="Producto"><strong>{{ nombre }}</strong></td>
-                      <td class="cys-qty cys-qty--ok" data-label="Unidades">{{ datos.cantidad }}</td>
-                      <td class="cys-td cys-td--green" data-label="Total">${{ datos.subtotal|floatformat:0 }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="4" class="cys-td--empty">
-                        <div class="cys-empty-box"><i class="bi bi-bar-chart"></i>Sin datos.</div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-av-top-resumen"
+                         data-dt-label="productos"
+                         data-dt-page="5"
+                         data-dt-empty="Sin datos."
+                         data-dt-icon="bi-bar-chart">
+                    <thead>
+                      <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
+                    </thead>
+                    <tbody>
+                      {% for nombre, datos in top_productos %}
+                      <tr class="cys-tr">
+                        <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+                        <td data-label="Producto"><strong>{{ nombre }}</strong></td>
+                        <td class="cys-qty cys-qty--ok" data-label="Unidades" data-order="{{ datos.cantidad|unlocalize }}">{{ datos.cantidad }}</td>
+                        <td class="cys-td cys-td--green" data-label="Total" data-order="{{ datos.subtotal|unlocalize }}">${{ datos.subtotal|floatformat:0 }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div><!-- /avPanel-resumen -->
 
@@ -1231,37 +1201,34 @@
                   <span class="cys-av-table-card__title">VENTAS POR FECHA</span>
                   <div class="cys-search-box cys-av-table-card__search">
                     <input type="text" id="buscar-av-fecha" placeholder="Buscar producto, cliente..."
-                      class="cys-search-box__input cys-search-box__input--dark"
-                      oninput="filtrarTablaAVFecha(this.value)">
+                      class="cys-search-box__input cys-search-box__input--dark">
                     <i class="bi bi-search cys-search-box__icon"></i>
                   </div>
                 </div>
-                <table class="cys-inv-table" id="tabla-modal-av-ventas">
-                  <thead>
-                    <tr><th>FECHA</th><th>CLIENTE</th><th>PRODUCTO</th><th>CANTIDAD</th><th>TOTAL</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for venta in ventas %}
-                      {% for det in venta.detalles.all %}
-                      <tr class="cys-tr av-fecha-row">
-                        <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"d/m/Y" }}</td>
-                        <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
-                        <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
-                        <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
-                        <td class="cys-qty cys-qty--ok" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
-                      </tr>
+                <div class="table-responsive">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-av-ventas"
+                         data-dt-search="buscar-av-fecha"
+                         data-dt-label="ventas"
+                         data-dt-page="10"
+                         data-dt-empty="Sin ventas registradas."
+                         data-dt-icon="bi-bar-chart">
+                    <thead>
+                      <tr><th>FECHA</th><th>CLIENTE</th><th>PRODUCTO</th><th>CANTIDAD</th><th>TOTAL</th></tr>
+                    </thead>
+                    <tbody>
+                      {% for venta in ventas %}
+                        {% for det in venta.detalles.all %}
+                        <tr class="cys-tr av-fecha-row">
+                          <td class="cys-td" data-label="Fecha" data-order="{{ venta.fecha|date:'Y-m-d H:i:s' }}">{{ venta.fecha|date:"d/m/Y" }}</td>
+                          <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
+                          <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
+                          <td class="cys-td" data-label="Cantidad" data-order="{{ det.cantidad|unlocalize }}">{{ det.cantidad }}</td>
+                          <td class="cys-qty cys-qty--ok" data-label="Total" data-order="{{ det.subtotal|unlocalize }}">${{ det.subtotal|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
                       {% endfor %}
-                    {% empty %}
-                    <tr>
-                      <td colspan="5" class="cys-td--empty">
-                        <div class="cys-empty-box"><i class="bi bi-bar-chart"></i>Sin ventas registradas.</div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-                <div class="cys-empty-box cys-av-no-results d-none" id="av-fecha-no-results">
-                  <i class="bi bi-search"></i>No se encontraron resultados.
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div><!-- /avPanel-fecha -->
@@ -1274,34 +1241,31 @@
                   <span class="cys-av-table-card__title">TOP PRODUCTOS MÁS VENDIDOS</span>
                   <div class="cys-search-box cys-av-table-card__search">
                     <input type="text" id="buscar-av-top" placeholder="Buscar producto..."
-                      class="cys-search-box__input cys-search-box__input--dark"
-                      oninput="filtrarTablaAVTop(this.value)">
+                      class="cys-search-box__input cys-search-box__input--dark">
                     <i class="bi bi-search cys-search-box__icon"></i>
                   </div>
                 </div>
-                <table class="cys-inv-table" id="tabla-modal-av-top">
-                  <thead>
-                    <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for nombre, datos in top_productos %}
-                    <tr class="cys-tr av-top-row">
-                      <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
-                      <td data-label="Producto"><strong>{{ nombre }}</strong></td>
-                      <td class="cys-qty cys-qty--ok" data-label="Unidades">{{ datos.cantidad }}</td>
-                      <td class="cys-td cys-td--green" data-label="Total">${{ datos.subtotal|floatformat:0 }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="4" class="cys-td--empty">
-                        <div class="cys-empty-box"><i class="bi bi-bar-chart"></i>Sin datos de productos.</div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-                <div class="cys-empty-box cys-av-no-results d-none" id="av-top-no-results">
-                  <i class="bi bi-search"></i>No se encontraron resultados.
+                <div class="table-responsive">
+                  <table class="cys-inv-table cys-dt" id="tabla-modal-av-top"
+                         data-dt-search="buscar-av-top"
+                         data-dt-label="productos"
+                         data-dt-page="10"
+                         data-dt-empty="Sin datos de productos."
+                         data-dt-icon="bi-bar-chart">
+                    <thead>
+                      <tr><th>#</th><th>PRODUCTO</th><th>UNIDADES VENDIDAS</th><th>TOTAL GENERADO</th></tr>
+                    </thead>
+                    <tbody>
+                      {% for nombre, datos in top_productos %}
+                      <tr class="cys-tr av-top-row">
+                        <td class="cys-td cys-td--muted" data-label="#">{{ forloop.counter }}</td>
+                        <td data-label="Producto"><strong>{{ nombre }}</strong></td>
+                        <td class="cys-qty cys-qty--ok" data-label="Unidades" data-order="{{ datos.cantidad|unlocalize }}">{{ datos.cantidad }}</td>
+                        <td class="cys-td cys-td--green" data-label="Total" data-order="{{ datos.subtotal|unlocalize }}">${{ datos.subtotal|floatformat:0 }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div><!-- /avPanel-top -->
@@ -1401,15 +1365,19 @@
             </span>
             <div class="cys-search-box">
               <input type="text" id="buscar-devoluciones" placeholder="Buscar devolución..."
-                class="cys-search-box__input"
-                oninput="filtrarTablaDevoluciones(this.value)">
+                class="cys-search-box__input">
               <i class="bi bi-search cys-search-box__icon"></i>
             </div>
           </div>
         </div>
 
         <div class="table-responsive cys-modal-table-wrap--bottom">
-          <table class="cys-inv-table" id="tabla-modal-devoluciones">
+          <table class="cys-inv-table cys-dt" id="tabla-modal-devoluciones"
+                 data-dt-search="buscar-devoluciones"
+                 data-dt-label="devoluciones"
+                 data-dt-page="10"
+                 data-dt-empty="No hay devoluciones registradas."
+                 data-dt-icon="bi-arrow-counterclockwise">
             <thead>
               <tr>
                 <th>FECHA</th>
@@ -1423,11 +1391,11 @@
             <tbody>
               {% for dev in devoluciones %}
               <tr class="cys-tr dev-row">
-                <td class="cys-td" data-label="Fecha">{{ dev.fecha|date:"d/m/Y" }}</td>
+                <td class="cys-td" data-label="Fecha" data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:"d/m/Y" }}</td>
                 <td class="cys-td cys-td--bold" data-label="Cliente">{{ dev.cliente }}</td>
                 <td class="cys-td" data-label="Producto">{{ dev.producto }}</td>
                 <td class="cys-td cys-td--muted" data-label="Motivo">{{ dev.motivo }}</td>
-                <td class="cys-qty cys-qty--out" data-label="Valor">${{ dev.valor|floatformat:0 }}</td>
+                <td class="cys-qty cys-qty--out" data-label="Valor" data-order="{{ dev.valor|unlocalize }}">${{ dev.valor|floatformat:0 }}</td>
                 <td data-label="Estado">
                   {% if dev.estado == "Aprobada" %}
                     <span class="cys-badge cys-badge--verde">Aprobada</span>
@@ -1436,12 +1404,6 @@
                   {% else %}
                     <span class="cys-badge cys-badge--rojo">Rechazada</span>
                   {% endif %}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="6" class="cys-td--empty">
-                  <div class="cys-empty-box"><i class="bi bi-arrow-counterclockwise"></i>No hay devoluciones registradas.</div>
                 </td>
               </tr>
               {% endfor %}
@@ -1474,16 +1436,14 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
-{# Estos dos scripts no se usan en la página de reportes y retrasan la carga.
-   Si algo dejara de funcionar, quita los comentarios. #}
-{# <script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}"></script> #}
-{# <script src="{% static 'js/detalle_producto/detalle_producto.js' %}"></script> #}
+
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/reportes/reportes.js' %}"></script>
 
 <script>
   /* Pre-crear las instancias de los modales al cargar la página,
-     así el primer clic no tiene que inicializar nada. */
+     así el primer clic no tiene que inicializar nada.
+     (reportes.js ya movió los modales a <body> antes de este punto) */
   document.addEventListener('DOMContentLoaded', function () {
     if (!window.bootstrap) return;
     document.querySelectorAll('.modal').forEach(function (el) {

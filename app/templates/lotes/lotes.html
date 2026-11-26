@@ -37,9 +37,9 @@
     </ul>
   </div>
 
-  <a href="{% url 'gestion_stock' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
-    <i class="bi bi-table me-1" title="Ver Stock"></i> Ver Stock
-  </a>
+<a href="{% url 'gestion_stock' %}" class="btn btn-outline-info rounded-pill lote-btn-stock">
+  <i class="bi bi-table"></i><span>Ver Stock</span>
+</a>
 </div>
 
 <div class="row g-4" id="lotes-layout">
@@ -244,17 +244,16 @@
       </div>
     </div>
 
-    <div class="inv-card p-4 flex-grow-1 d-flex flex-column">
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <i class="bi bi-shop lote-icon-azul"></i>
-        <h6 class="mb-0 fw-bold text-uppercase lote-panel-titulo">Top 5 Productos en Stock</h6>
+            <div class="inv-card p-4 flex-grow-1 d-flex flex-column">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <i class="bi bi-arrow-repeat lote-icon-azul"></i>
+        <h6 class="mb-0 fw-bold text-uppercase lote-panel-titulo">Rotación de últimos lotes</h6>
       </div>
+      <small class="lote-subtitulo mb-3">Cantidad inicial vs. stock actual</small>
       <div class="flex-grow-1 position-relative lote-chart-wrap">
-        <canvas id="chartProveedores"></canvas>
+        <canvas id="chartRotacion"></canvas>
       </div>
     </div>
-  </div>
-</div>
 
 {% endblock %}
 
@@ -262,8 +261,15 @@
 <div id="lotes-config"
      data-labels="{{ proveedores_labels }}"
      data-data="{{ proveedores_data }}"
+     class="d-none">
+</div>
+<div id="lotes-rot-config"
+     data-labels='{{ rot_labels|safe }}'
+     data-inicial='{{ rot_inicial|safe }}'
+     data-actual='{{ rot_actual|safe }}'
      class="d-none"></div>
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/lotes/gestion_lotes.js' %}"></script>
+<script src="{% static 'js/lotes/grafica_dias.js' %}"></script>
 {% endblock %}

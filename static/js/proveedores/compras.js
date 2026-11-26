@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════
-// COMPRAS: modal de nueva compra, modal de pago, búsqueda de proveedores y gráficos
+// COMPRAS: modal de nueva compra, modal de pago, búsqueda de proveedores,
+// exportación (Excel / PDF / Imprimir desde el servidor) y gráficos
 // ════════════════════════════════════════════════════════════════
 
 (function () {
@@ -11,13 +12,25 @@ const fmtCOP = (n) => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO');
 const byId = (id) => document.getElementById(id);
 
 function init() {
-  if (!byId('formNuevaCompra') && !byId('chartComprasMes')) return;
-  initNuevaCompra();
-  initModalPago();
-  initBusquedaProveedores();
-  initAccesibilidad();
-  initTabla();
-  initializeCharts();
+  const raiz = byId('formNuevaCompra') || byId('chartComprasMes');
+  if (!raiz) return;
+  // Evita inicializar dos veces el mismo DOM (DOMContentLoaded + htmx:afterSettle)
+  if (raiz.dataset.cmpInit === 'true') return;
+  raiz.dataset.cmpInit = 'true';
+
+  // Cada bloque va aislado: si uno falla, los demás (p. ej. Exportar) siguen funcionando
+  const pasos = [
+    initNuevaCompra,
+    initModalPago,
+    initBusquedaProveedores,
+    initAccesibilidad,
+    initTabla,
+    initExportar,
+    initializeCharts
+  ];
+  pasos.forEach((fn) => {
+    try { fn(); } catch (err) { console.error('[Compras] Error en ' + fn.name + ':', err); }
+  });
 
   const params = new URLSearchParams(window.location.search);
   const modalProv = byId('modalProveedores');
@@ -29,7 +42,7 @@ function init() {
   if (modalNuevaCompra && window.bootstrap) {
     if (modalNuevaCompra.dataset.autoOpen === 'true' ||
         modalNuevaCompra.querySelector('.alert-danger-dev') ||
-        modalNuevaCompra.querySelector('.cmp-inline-error') ||
+        modalNuevaCompra.querySelector('.cmp-inline-error:not(.d-none)') ||
         modalNuevaCompra.querySelector('.is-invalid')) {
       const bsModal = bootstrap.Modal.getInstance(modalNuevaCompra) || new bootstrap.Modal(modalNuevaCompra);
       bsModal.show();
@@ -67,96 +80,134 @@ function leerDatos() {
   }
 }
 
-// Asegurar disponibilidad del helper de exportación unificado
-if (typeof window.cysCrearDropdownExportar !== 'function') {
-  window.cysCrearDropdownExportar = function(dt, containerOrId) {
-    if (!dt) return;
-    var container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
-    if (!container) return;
+// ── Aviso flotante (toast) para las descargas ──────────────────
+let toastTimer = null;
+function mostrarToast(texto, tipo) {
+  let t = byId('cmp-toast-descarga');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'cmp-toast-descarga';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    t.style.cssText = [
+      'position:fixed', 'top:16px', 'right:16px', 'z-index:2000',
+      'min-width:260px', 'max-width:380px', 'padding:12px 16px',
+      'border-radius:12px', 'color:#fff', 'font-size:14px', 'font-weight:600',
+      'box-shadow:0 8px 24px rgba(0,0,0,.45)', 'display:flex', 'gap:10px',
+      'align-items:center', 'transition:opacity .25s ease, transform .25s ease',
+      'opacity:0', 'transform:translateY(-8px)', 'background:#1f1f1f',
+      'border:1px solid rgba(255,255,255,.12)'
+    ].join(';');
+    document.body.appendChild(t);
+  }
+  const colores = { info: '#4DA8DA', ok: '#00C9A7', error: '#E05C7A' };
+  const iconos = { info: 'bi-arrow-repeat', ok: 'bi-check-circle-fill', error: 'bi-exclamation-triangle-fill' };
+  const k = colores[tipo] ? tipo : 'info';
+  t.style.borderLeft = '4px solid ' + colores[k];
+  t.innerHTML = '<i class="bi ' + iconos[k] + '" style="color:' + colores[k] + ';font-size:18px"></i><span></span>';
+  t.querySelector('span').textContent = texto;
+  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+  clearTimeout(toastTimer);
+  if (k !== 'info') {
+    toastTimer = setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(-8px)';
+    }, 4000);
+  }
+}
 
-    var api = (typeof dt.button === 'function') ? dt : (window.jQuery && jQuery.fn && jQuery.fn.dataTable ? jQuery(dt).DataTable() : null);
-    if (!api || typeof api.button !== 'function') return;
+// Saca el nombre del archivo del header Content-Disposition
+function nombreDesdeHeader(resp, respaldo) {
+  const cd = resp.headers.get('Content-Disposition') || '';
+  let m = cd.match(/filename\*=UTF-8''([^;]+)/i);
+  if (m) { try { return decodeURIComponent(m[1].trim()); } catch (e) { /* sigue */ } }
+  m = cd.match(/filename="?([^";]+)"?/i);
+  if (m) return m[1].trim();
+  return respaldo;
+}
 
-    if (!api._buttons || (typeof api.buttons === 'function' && api.buttons().count() === 0)) {
-      var initOptions = (typeof api.init === 'function') ? api.init() : null;
-      if (initOptions && initOptions.buttons && window.DataTable && window.DataTable.Buttons) {
-        try { new window.DataTable.Buttons(api, initOptions.buttons); } catch (e) {}
-      }
+// Descarga real: el navegador la registra en su panel "Descargas"
+async function descargarArchivo(url, tipo, btn) {
+  const ext = tipo === 'excel' ? 'xlsx' : 'pdf';
+  const etiqueta = tipo === 'excel' ? 'Excel' : 'PDF';
+  const sello = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+  const respaldo = 'compras_' + sello + '.' + ext;
+
+  if (btn) btn.disabled = true;
+
+  try {
+    const resp = await fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    if (!resp.ok) throw new Error('El servidor respondió ' + resp.status);
+
+    const ct = (resp.headers.get('Content-Type') || '').toLowerCase();
+    if (ct.includes('text/html')) {
+      throw new Error('El servidor no devolvió un archivo. Revisa que views.py atienda ?export=' + tipo);
     }
 
-    try {
-      if (typeof api.buttons === 'function') {
-        var dtBtns = api.buttons().container();
-        if (dtBtns && dtBtns.length) {
-          dtBtns.remove();
+    const nombre = nombreDesdeHeader(resp, respaldo);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = nombre;
+    a.setAttribute('hx-boost', 'false');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  } catch (err) {
+    console.error('[Compras] Error al exportar:', err);
+    mostrarToast('No se pudo exportar ' + etiqueta + '. ' + (err.message || ''), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── Exportar: Excel / PDF / Imprimir ───────────────────────────
+// Llama a la misma URL de la página con ?export=excel|pdf|imprimir.
+// views.py aplica el mismo filtro (proveedor, q, estado, pago, desde, hasta)
+// que usa el listado, así que lo exportado coincide con lo que ves.
+function initExportar() {
+  const contenedor = byId('cys-export-compras');
+  if (!contenedor) return;
+
+  contenedor.querySelectorAll('[data-export]').forEach((btn) => {
+    if (btn.dataset.exportBound) return;
+    btn.dataset.exportBound = 'true';
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tipo = btn.dataset.export;
+
+      // Parte de los parámetros actuales (proveedor, filtros...)
+      const params = new URLSearchParams(window.location.search);
+      params.delete('modal');
+      params.delete('page');
+
+      // Si el proveedor no está en la URL, toma el del selector del modal
+      if (!params.get('proveedor')) {
+        const sel = byId('proveedorSeleccionado');
+        if (sel && sel.value) params.set('proveedor', sel.value);
+      }
+
+      params.set('export', tipo);
+      const url = window.location.pathname + '?' + params.toString();
+
+      if (tipo === 'imprimir') {
+        const w = window.open(url, '_blank');
+        if (!w) {
+          mostrarToast('El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes.', 'error');
         }
+      } else {
+        descargarArchivo(url, tipo, btn);
       }
-      var extraBtns = container.querySelectorAll('.dt-buttons, .cys-dt-btn-excel, .cys-dt-btn-pdf');
-      extraBtns.forEach(function(el) { el.remove(); });
-    } catch (eBtns) {}
-
-    var btnPdf = container.querySelector('[data-cys-export="pdf"]');
-    var btnExcel = container.querySelector('[data-cys-export="excel"]');
-
-    function dispararExport(tipo) {
-      var isPdf = (tipo === 'pdf');
-      var primaryClass = isPdf ? '.cys-dt-btn-pdf' : '.cys-dt-btn-excel';
-      var fallbackClass = isPdf ? '.buttons-pdf' : '.buttons-excel';
-
-      try {
-        var b = api.button(primaryClass);
-        if (b && b.length) { b.trigger(); return; }
-      } catch (e1) {}
-
-      try {
-        var b2 = api.button(fallbackClass);
-        if (b2 && b2.length) { b2.trigger(); return; }
-      } catch (e2) {}
-
-      try {
-        if (typeof api.buttons === 'function') {
-          var btns = api.buttons();
-          var count = (typeof btns.count === 'function') ? btns.count() : (btns.length || 0);
-          for (var i = 0; i < count; i++) {
-            var singleBtn = api.button(i);
-            var node = singleBtn.node();
-            if (node) {
-              var cls = (node.className || '').toLowerCase();
-              var txt = (node.textContent || '').toLowerCase();
-              if (isPdf && (cls.indexOf('pdf') !== -1 || txt.indexOf('pdf') !== -1)) {
-                singleBtn.trigger(); return;
-              }
-              if (!isPdf && (cls.indexOf('excel') !== -1 || txt.indexOf('excel') !== -1)) {
-                singleBtn.trigger(); return;
-              }
-            }
-          }
-          if (count >= 2) {
-            api.button(isPdf ? 1 : 0).trigger();
-            return;
-          }
-        }
-      } catch (e3) {
-        console.error('Error al exportar ' + tipo, e3);
-      }
-    }
-
-    if (btnPdf && !btnPdf.dataset.cysExportBound) {
-      btnPdf.dataset.cysExportBound = 'true';
-      btnPdf.addEventListener('click', function(e) {
-        e.preventDefault();
-        dispararExport('pdf');
-      });
-    }
-
-    if (btnExcel && !btnExcel.dataset.cysExportBound) {
-      btnExcel.dataset.cysExportBound = 'true';
-      btnExcel.addEventListener('click', function(e) {
-        e.preventDefault();
-        dispararExport('excel');
-      });
-    }
-  };
+    });
+  });
 }
 
 // ── Tabla del historial (DataTables) ───────────────────────────
@@ -164,19 +215,21 @@ function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
-  const dt = jQuery(tabla).DataTable({
+  jQuery(tabla).DataTable({
     paging: true,
-    searching: false,
+    searching: true,
     info: true,
     lengthChange: false,
     pageLength: 10,
     ordering: true,
     order: [],
-    columnDefs: [{ orderable: false, targets: [0, 8] }],
+    columnDefs: [{ orderable: false, targets: [0, 8], searchable: false }],
     language: {
       info: 'Mostrando _START_ a _END_ de _TOTAL_ compras',
       infoEmpty: 'Mostrando 0 a 0 de 0 compras',
+      infoFiltered: '(filtrado de _MAX_)',
       emptyTable: 'Sin compras registradas aún.',
+      zeroRecords: 'Sin resultados para tu búsqueda.',
       paginate: { first: '«', previous: '‹', next: '›', last: '»' }
     },
     layout: {
@@ -184,46 +237,11 @@ function initTabla() {
       topEnd: null,
       bottomStart: 'info',
       bottomEnd: 'paging'
-    },
-    buttons: [
-      {
-        extend: 'excelHtml5',
-        text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
-        className: 'cys-dt-btn-excel',
-        title: 'Distribuciones CYS Ltda - Historial de Compras',
-        filename: 'Compras_CYS',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        }
-      },
-      {
-        extend: 'pdfHtml5',
-        text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
-        className: 'cys-dt-btn-pdf',
-        title: 'Distribuciones CYS Ltda - Historial de Compras',
-        filename: 'Compras_CYS',
-        orientation: 'landscape',
-        pageSize: 'A4',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        },
-        customize: function (doc) {
-          doc.defaultStyle.fontSize = 9;
-          if (doc.styles && doc.styles.tableHeader) {
-            doc.styles.tableHeader.fontSize = 10;
-            doc.styles.tableHeader.bold = true;
-            doc.styles.tableHeader.fillColor = '#011936';
-            doc.styles.tableHeader.color = '#CF9C48';
-            doc.styles.tableHeader.alignment = 'center';
-          }
-        }
-      }
-    ]
+    }
   });
-
-  if (typeof window.cysCrearDropdownExportar === 'function') {
-    window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
-  }
+  // (Antes aquí se llamaba a cysCrearDropdownExportar(dt, ...) con "dt" sin definir:
+  //  eso lanzaba un error y dejaba sin funcionar los botones de Exportar.
+  //  El menú Exportar ya está en el HTML y lo maneja initExportar.)
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -516,9 +534,9 @@ function initNuevaCompra() {
       if (btnLimpiar && !hiddenProducto.value) btnLimpiar.classList.add('d-none');
       if (contador) {
         contador.textContent = `${totalProds} disponibles`;
-        contador.className = 'badge';
-        contador.style.background = 'rgba(77, 168, 218, 0.15)';
-        contador.style.color = '#4DA8DA';
+        contador.className = 'badge cmp-badge-contador';
+        contador.style.background = '';
+        contador.style.color = '';
       }
       return;
     }
@@ -882,18 +900,31 @@ function initModalPago() {
 // ── Búsqueda de proveedores en el directorio ───────────────────
 function initBusquedaProveedores() {
   const input = byId('buscarProveedor');
-  if (!input) return;
-  const sinResultados = byId('sinResultados');
+  const tabla = byId('tablaSeleccionProveedor');
+  if (!input || !tabla || !window.jQuery || !jQuery.fn.DataTable) return;
+  if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
+  const dt = jQuery(tabla).DataTable({
+    paging: true,
+    pageLength: 5,
+    lengthChange: false,
+    searching: true,
+    info: true,
+    ordering: true,
+    order: [[0, 'asc']],
+    columnDefs: [{ orderable: false, targets: [5] }],
+    language: {
+      info: 'Mostrando _START_ a _END_ de _TOTAL_ proveedores',
+      infoEmpty: 'Mostrando 0 a 0 de 0 proveedores',
+      infoFiltered: '(filtrado de _MAX_)',
+      emptyTable: 'No hay proveedores registrados.',
+      zeroRecords: 'No se encontraron proveedores',
+      paginate: { first: '«', previous: '‹', next: '›', last: '»' }
+    },
+    layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' }
+  });
+  // El buscador existente del modal filtra la tabla (nombre, NIT, tipo, teléfono, correo)
   input.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
-    let visibles = 0;
-    document.querySelectorAll('.fila-proveedor').forEach((fila) => {
-      const d = fila.dataset;
-      const coincide = [d.nombre, d.nit, d.telefono].some((v) => (v || '').includes(q));
-      fila.style.display = coincide ? '' : 'none';
-      if (coincide) visibles++;
-    });
-    if (sinResultados) sinResultados.style.display = visibles === 0 && q !== '' ? 'block' : 'none';
+    dt.search(this.value.trim()).draw();
   });
 }
 
@@ -1074,4 +1105,3 @@ if (document.body) {
 }
 
 })();
-

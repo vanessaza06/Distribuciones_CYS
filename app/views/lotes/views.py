@@ -1,9 +1,9 @@
-
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
 import io
 import json
 import os
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,12 +11,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db.models import Sum
+from django.db.models.functions import ExtractIsoWeekDay
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
-
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
@@ -64,6 +64,16 @@ def _stats_lotes(hoy):
     return ingresos_hoy, lotes_mes
 
 
+def _rotacion_lotes(limite=6):
+    """Últimos `limite` lotes: cantidad inicial vs stock actual."""
+    lotes = list(Lote.objects.order_by('-pk')[:limite])
+    lotes.reverse()  # del más antiguo al más reciente
+    labels = [l.numero_lote for l in lotes]
+    inicial = [int(l.cantidad_inicial or 0) for l in lotes]
+    actual = [int(l.stock_actual or 0) for l in lotes]
+    return labels, inicial, actual
+
+
 @login_required
 def lote_list(request):
     """Página 'Lotes': formulario de registro + resumen.
@@ -95,6 +105,8 @@ def lote_list(request):
     labels = [t['presentacion__producto__nombre'] for t in top]
     data = [int(t['total'] or 0) for t in top]
 
+    rot_labels, rot_inicial, rot_actual = _rotacion_lotes()
+
     context = {
         'productos': productos,
         'bodegas': bodegas,
@@ -105,8 +117,10 @@ def lote_list(request):
         'ordenes_mes': ordenes_mes,
         'proveedores_labels': json.dumps(labels),
         'proveedores_data': json.dumps(data),
+        'rot_labels': json.dumps(rot_labels),
+        'rot_inicial': json.dumps(rot_inicial),
+        'rot_actual': json.dumps(rot_actual),
         'breadcrumb_items': [
-            {'nombre': 'Inventario', 'url': None},
             {'nombre': 'Lotes', 'url': reverse('lote_list')},
         ],
     }

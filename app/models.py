@@ -397,7 +397,9 @@ class Proveedor(models.Model):
     telefono = models.CharField(
         max_length=20, blank=True, db_column="telefono", verbose_name="Teléfono"
     )
-    correo = models.EmailField(db_column="correo", verbose_name="Correo Electrónico")
+    correo = models.EmailField(
+        blank=True, default="", db_column="correo", verbose_name="Correo Electrónico"
+    )
     tipo_proveedor = models.CharField(
         max_length=50,
         choices=TIPO_CHOICES,

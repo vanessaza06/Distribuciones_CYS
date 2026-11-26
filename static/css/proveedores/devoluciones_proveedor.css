@@ -197,25 +197,26 @@
 .dev-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: .82rem;
+  font-size: 13.5px;
 }
 .dev-table thead th {
-  background: rgba(255,255,255,.04);
-  color: var(--text-md, #8a9bb0);
-  font-size: .7rem;
+  background: color-mix(in srgb, var(--azul-claro) 7%, transparent);
+  color: var(--azul-claro);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: .07em;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  padding: .7rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 12px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
   white-space: nowrap;
 }
 .dev-table tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 7%, transparent);
   transition: background .15s;
 }
-.dev-table tbody tr:hover { background: rgba(249,115,22,.05); }
-.dev-table td { padding: .75rem 1rem; color: var(--text-hi, #fff); vertical-align: middle; }
+.dev-table tbody tr:last-child { border-bottom: none; }
+.dev-table tbody tr:hover { background: color-mix(in srgb, var(--azul-claro) 4%, transparent); }
+.dev-table td { padding: 13px 16px; color: var(--texto); vertical-align: middle; }
 
 .dev-table tfoot td {
   background: rgba(249,115,22,.08);
@@ -508,3 +509,88 @@
 .dev-pagination a:hover { border-color: var(--dev-accent); color: var(--dev-accent); }
 .dev-pagination .current { background: var(--dev-accent); border-color: var(--dev-accent); color: #fff; }
 .dev-pagination .disabled { opacity: .35; pointer-events: none; }
+/* ═══════════════ Exportar historial (mismo diseño que Marcas) ═══════════════ */
+[data-dev-export-scope] .dropdown { position: relative; }
+
+/* Botón */
+[data-dev-export-scope] .cat-btn-exportar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: #0c2140;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #4da8da;
+  box-shadow: none;
+  transition: background .2s, border-color .2s;
+}
+[data-dev-export-scope] .cat-btn-exportar::after { display: none; } /* quita la flecha de Bootstrap */
+[data-dev-export-scope] .cat-btn-exportar:hover,
+[data-dev-export-scope] .cat-btn-exportar:focus,
+[data-dev-export-scope] .cat-btn-exportar.show {
+  background: #12305c;
+  color: #ffffff;
+  border-color: #6dbbe8;
+  box-shadow: none;
+}
+[data-dev-export-scope] .cat-btn-exportar .bi { font-size: 16px; line-height: 1; }
+
+/* Flecha: hacia abajo cerrado, hacia arriba abierto */
+[data-dev-export-scope] .dev-export__chevron {
+  font-size: 12px !important;
+  transition: transform .2s;
+}
+[data-dev-export-scope] .cat-btn-exportar[aria-expanded="true"] .dev-export__chevron {
+  transform: rotate(180deg);
+}
+
+/* Menú */
+[data-dev-export-scope] .cat-dropdown-export {
+  --bs-dropdown-bg: #12233d;
+  --bs-dropdown-color: #e8eefc;
+  --bs-dropdown-border-color: rgba(255, 255, 255, .08);
+  min-width: 190px;
+  margin-top: 8px !important;
+  padding: 8px;
+  background: #12233d;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .45);
+  z-index: 1060;
+}
+
+/* Opciones */
+[data-dev-export-scope] .cat-dropdown-export .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: transparent;
+  color: #e8eefc;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+[data-dev-export-scope] .cat-dropdown-export .dropdown-item:hover,
+[data-dev-export-scope] .cat-dropdown-export .dropdown-item:focus {
+  background: rgba(77, 168, 218, .14);
+  color: #ffffff;
+}
+[data-dev-export-scope] .cat-dropdown-export .dropdown-item .bi {
+  font-size: 19px;
+  line-height: 1;
+}
+
+/* Colores de los iconos */
+[data-dev-export-scope] .bi-file-earmark-excel { color: #2ecc71; }
+[data-dev-export-scope] .bi-file-earmark-pdf   { color: #ef4444; }
+[data-dev-export-scope] .bi-printer            { color: #4da8da; }
+
+/* El historial de clientes está en un panel plegable: que no recorte el menú */
+.dev-history-body,
+.dev-history { overflow: visible; }

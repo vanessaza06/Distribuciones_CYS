@@ -96,8 +96,13 @@
 }
 
 .pres-search-prefix {
-  color: #4DA8DA;
-  margin-right: 0.5rem;
+  margin-right: 0 !important;
+  border-radius: 10px 0 0 10px;
+}
+
+.search-box .pres-buscador-wrap .pres-search-input {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 
 .pres-search-input {
@@ -150,17 +155,23 @@
   --bs-btn-active-border-color: #4DA8DA;
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: .4rem;
   background: #0d2a4f;
   border: 1px solid #2f7fd1;
   color: #ffffff;
   font-weight: 600;
-  font-size: .9rem;
+  font-size: .85rem;
   border-radius: 999px;
-  padding: .5rem 1.15rem;
+  padding: 0 1rem; 
+  height: 38px; 
+  line-height: 1;          
   transition: background .15s, border-color .15s;
 }
-.exp-btn::after { display: none; }
+
+.exp-btn::after {
+  display: none;
+}
+
 .exp-btn:hover,
 .exp-btn:focus,
 .exp-btn.show {
@@ -169,11 +180,15 @@
   color: #ffffff;
   box-shadow: none;
 }
+
 .exp-btn .exp-chevron {
   font-size: .7rem;
   transition: transform .2s;
 }
-.exp-btn.show .exp-chevron { transform: rotate(180deg); }
+
+.exp-btn.show .exp-chevron {
+  transform: rotate(180deg);
+}
 
 .exp-menu {
   background: #111f33;
@@ -184,6 +199,7 @@
   margin-top: 8px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
 }
+
 .exp-menu .dropdown-item {
   display: flex;
   align-items: center;
@@ -193,12 +209,263 @@
   border-radius: 10px;
   padding: .65rem .9rem;
 }
+
 .exp-menu .dropdown-item:hover,
 .exp-menu .dropdown-item:focus {
   background-color: rgba(77, 168, 218, .12) !important;
   color: #ffffff !important;
 }
-.exp-menu .dropdown-item i { font-size: 1.1rem; }
-.exp-ico-excel { color: #22c55e; }
-.exp-ico-pdf   { color: #ef4444; }
-.exp-ico-print { color: #4DA8DA; }
+
+.exp-menu .dropdown-item i {
+  font-size: 1.1rem;
+}
+
+.exp-ico-excel {
+  color: #22c55e;
+}
+
+.exp-ico-pdf {
+  color: #ef4444;
+}
+
+.exp-ico-print {
+  color: #4DA8DA;
+}
+
+/* ── Presentaciones: botón Filtros (el chevron gira al abrir) ── */
+.pres-filtro-chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+[aria-expanded="true"]>.pres-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Presentaciones: panel desplegable de filtros ── */
+.pres-filtros-panel {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+
+/* ── Presentaciones: pie de la tabla (selector + info + paginación) ── */
+.pres-dt-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  color: var(--texto-muted);
+  font-size: 0.82rem;
+}
+
+/* ── Buscador: que el input use todo el ancho disponible ── */
+.search-box .pres-buscador-wrap {
+  flex: 1 1 320px !important;
+  /* crece, pero nunca baja de 320px */
+  min-width: 0;
+  max-width: none !important;
+  width: auto !important;
+}
+
+.search-box .pres-buscador-wrap .pres-search-input {
+  flex: 1 1 auto !important;
+  /* el input ocupa todo lo que sobra junto a la lupa */
+  width: 100% !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
+/* ══════════════════════════════════════════
+   MENÚ ⋯ — opción "Desactivar / Activar"
+   Quita el borde "hundido", el fondo y la sombra que el navegador
+   o el CSS global le ponen. Sirve si es <button> o si es <a>.
+   ══════════════════════════════════════════ */
+.dd-menu form {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.dd-menu form .dd-item,
+.dd-menu form button,
+.dd-menu form a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-style: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  font: inherit !important;
+  cursor: pointer !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.dd-menu form .dd-item:hover,
+.dd-menu form button:hover,
+.dd-menu form a:hover {
+  background: rgba(77, 168, 218, 0.12) !important;
+}
+
+.dd-menu form .dd-item:focus,
+.dd-menu form .dd-item:focus-visible,
+.dd-menu form .dd-item:active,
+.dd-menu form button:focus,
+.dd-menu form button:focus-visible,
+.dd-menu form button:active,
+.dd-menu form a:focus,
+.dd-menu form a:focus-visible,
+.dd-menu form a:active {
+  outline: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+/* Color rojo de "Desactivar" */
+.dd-menu form .dd-item.danger,
+.dd-menu form button.danger,
+.dd-menu form a.danger {
+  color: #ef4444 !important;
+}
+/* ══════════════════════════════════════════
+   Presentaciones: botón Activar/Desactivar dentro del menú ⋯
+   ══════════════════════════════════════════ */
+.dd-menu form {
+  margin: 0;
+}
+
+.dd-menu .pres-dd-submit {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dd-menu .pres-dd-submit:hover,
+.dd-menu .pres-dd-submit:focus-visible {
+  background: rgba(77, 168, 218, .12) !important;
+  outline: none;
+}
+
+.dd-menu .pres-dd-submit.danger {
+  color: #ef4444;
+}
+
+.dd-menu .pres-dd-submit.danger:hover,
+.dd-menu .pres-dd-submit.danger:focus-visible {
+  background: rgba(239, 68, 68, .12) !important;
+}
+
+/* ══════════════════════════════════════════
+   Presentaciones: pie de tabla (Mostrar / info / paginación) en tema oscuro
+   ══════════════════════════════════════════ */
+#tablaPresentaciones_wrapper .dataTables_length,
+#tablaPresentaciones_wrapper .dataTables_info,
+#tablaPresentaciones_wrapper .dt-length,
+#tablaPresentaciones_wrapper .dt-info {
+  color: rgba(230, 238, 252, .6);
+  font-size: .82rem;
+}
+
+#tablaPresentaciones_wrapper select {
+  color-scheme: dark;
+  background-color: #0d2a4f;
+  color: #e6eefc;
+  border: 1px solid rgba(77, 168, 218, .25);
+  border-radius: 8px;
+  padding: .25rem 1.75rem .25rem .6rem;
+}
+
+#tablaPresentaciones_wrapper .pagination {
+  gap: 4px;
+  margin: 0;
+}
+
+#tablaPresentaciones_wrapper .pagination .page-link {
+  background: transparent;
+  color: #e6eefc;
+  border: 1px solid rgba(77, 168, 218, .25);
+  border-radius: 8px !important;
+  box-shadow: none;
+}
+
+#tablaPresentaciones_wrapper .pagination .page-link:hover,
+#tablaPresentaciones_wrapper .pagination .page-link:focus {
+  background: rgba(77, 168, 218, .15);
+  border-color: #4DA8DA;
+  color: #ffffff;
+}
+
+#tablaPresentaciones_wrapper .pagination .active > .page-link {
+  background: #4DA8DA;
+  border-color: #4DA8DA;
+  color: #0b1d33;
+  font-weight: 600;
+}
+
+#tablaPresentaciones_wrapper .pagination .disabled > .page-link {
+  background: transparent;
+  border-color: rgba(77, 168, 218, .12);
+  color: rgba(230, 238, 252, .35);
+}
+button.exp-btn.dropdown-toggle {
+  height: 38px !important;
+  min-height: 0 !important;
+  padding: 0 1rem !important;
+  font-size: .85rem !important;
+  line-height: 1 !important;
+  gap: .4rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+/* ── Presentaciones: cuadro de la lupa en rojo (solo color) ── */
+.pres-search-prefix {
+  background: #b32a1a !important;
+  color: #ffffff !important;
+  border-color: #b32a1a !important;
+}
+
+.pres-search-prefix i,
+.pres-search-prefix svg {
+  color: #ffffff !important;
+}
+/* ── Presentaciones: "Ir a Bodega" del mismo tamaño que "Exportar" ── */
+.pres-btn-bodega {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: .4rem !important;
+  height: 38px !important;
+  min-height: 0 !important;
+  padding: 0 1rem !important;
+  font-size: .85rem !important;
+  font-weight: 600;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+}

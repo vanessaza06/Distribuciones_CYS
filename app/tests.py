@@ -734,3 +734,225 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
         response = self.client.get(reverse('guardar_codigo', args=[self.detalle.pk]))
         self.assertEqual(response.status_code, 405)
 
+
+# ─────────────────────────────────────────────
+#  TESTS: Respaldos (Copia de Seguridad)
+# ─────────────────────────────────────────────
+class RespaldosValidacionTest(TestCase):
+
+    def setUp(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.SimpleUploadedFile = SimpleUploadedFile
+        self.user = Usuario.objects.create_user(
+            username='admin_backup',
+            email='backup@cys.com',
+            identificacion='5555555555',
+            first_name='Admin',
+            last_name='Backup',
+            rol='admin',
+            password='clave123',
+        )
+        self.client.force_login(self.user)
+
+    def test_validar_nombre_rechaza_numeros_puntos_y_simbolos_al_inicio(self):
+        from app.views.respaldos.views import _validar_nombre_respaldo
+
+        invalidos = [
+            '123',
+            '123abc',
+            '1ab',
+            'a1b',
+            'ab1',
+            '2026_backup',
+            '.abc',
+            '..abc',
+            '...',
+            'a.bc',
+            'ab.c',
+            '_abc',
+            '-abc',
+            'a b c',
+            'ab',
+            'a',
+            '.sql',
+            '12.sql',
+            'abc..def',
+            'abc.',
+            'abc/def',
+        ]
+        for nombre in invalidos:
+            with self.subTest(nombre=nombre):
+                self.assertIsNotNone(
+                    _validar_nombre_respaldo(nombre, obligatorio=True),
+                    f"Debió rechazar '{nombre}'",
+                )
+
+    def test_validar_nombre_acepta_tres_letras_al_inicio(self):
+        from app.views.respaldos.views import _validar_nombre_respaldo
+
+        validos = [
+            'abc',
+            'cys123',
+            'respaldo_2026',
+            'respaldo fin de mes',
+            'copia.1',
+            'backup_cys_20261118_084247.sql',
+            'año_2026',
+        ]
+        for nombre in validos:
+            with self.subTest(nombre=nombre):
+                self.assertIsNone(
+                    _validar_nombre_respaldo(nombre, obligatorio=True),
+                    f"Debió aceptar '{nombre}'",
+                )
+        # Opcional vacío se permite en crear
+        self.assertIsNone(_validar_nombre_respaldo('', obligatorio=False))
+        self.assertIsNotNone(_validar_nombre_respaldo('', obligatorio=True))
+
+    def test_validar_contenido_sql_rechaza_vacio_comentarios_sin_datos_y_binario(self):
+        from app.views.respaldos.views import _validar_contenido_sql
+
+        casos_invalidos = {
+            'vacio': b'',
+            'solo_espacios': b'   \r\n\t  ',
+            'solo_bom_y_espacios': b'\xef\xbb\xbf   \n',
+            'solo_comentarios': (
+                b'-- MySQL dump 10.13\n'
+                b'/* comentario */\n'
+                b'/*!40101 SET NAMES utf8mb4 */;\n'
+                b'# otro comentario\n'
+            ),
+            'comentarios_y_texto_basura': (
+                b'-- MySQL dump 10.13\n'
+                b'-- Host: 127.0.0.1 Database: distribuidora_cys\n'
+                b'hola\n'
+                b'-- Dump completed\n'
+            ),
+            'insert_en_comentario': b'-- INSERT INTO categoria VALUES (1, "Test");\n',
+            'solo_estructura_sin_datos': (
+                b'CREATE TABLE `categoria` (`id` int NOT NULL, PRIMARY KEY (`id`));\n'
+                b'LOCK TABLES `categoria` WRITE;\n'
+                b'UNLOCK TABLES;\n'
+            ),
+            'insert_sin_valores': b'INSERT INTO `categoria` VALUES ();\n',
+            'archivo_binario': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR',
+        }
+        for nombre, contenido in casos_invalidos.items():
+            with self.subTest(caso=nombre):
+                archivo = self.SimpleUploadedFile('copia_test.sql', contenido)
+                self.assertIsNotNone(
+                    _validar_contenido_sql(archivo),
+                    f"Debió rechazar el caso '{nombre}'",
+                )
+
+    def test_validar_contenido_sql_acepta_sql_con_datos(self):
+        from app.views.respaldos.views import _validar_contenido_sql
+
+        sql_valido = (
+            b'-- MySQL dump\n'
+            b'CREATE TABLE `categoria` (`id` int NOT NULL);\n'
+            b"INSERT INTO `categoria` VALUES (1, 'Cervezas');\n"
+        )
+        archivo = self.SimpleUploadedFile('copia_valida.sql', sql_valido)
+        self.assertIsNone(_validar_contenido_sql(archivo))
+
+        sql_multilinea = (
+            b'INSERT INTO `categoria` (`id`, `nombre`)\n'
+            b"VALUES\n(1, 'Licores');\n"
+        )
+        archivo2 = self.SimpleUploadedFile('copia_multi.sql', sql_multilinea)
+        self.assertIsNone(_validar_contenido_sql(archivo2))
+
+    def test_vista_crear_rechaza_nombre_invalido(self):
+        from app.models import BackupRegistro
+
+        antes = BackupRegistro.objects.count()
+        for nombre in ('123', '.respaldo', 'a1b_copia', 'ab'):
+            resp = self.client.post(
+                reverse('respaldo_crear'),
+                {'nombre': nombre, 'descripcion': 'test'},
+                follow=True,
+            )
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(BackupRegistro.objects.count(), antes)
+            msgs = [str(m) for m in resp.context['messages']]
+            self.assertTrue(any('3 letras' in m for m in msgs), f"Sin error esperado para '{nombre}': {msgs}")
+
+    def test_vista_editar_rechaza_nombre_invalido_y_acepta_valido(self):
+        from app.models import BackupRegistro
+
+        reg = BackupRegistro.objects.create(
+            nombre='backup_original.sql',
+            descripcion='desc',
+            ruta='',
+            tamaño_mb=0.1,
+        )
+        self.client.post(
+            reverse('respaldo_editar', args=[reg.pk]),
+            {'nombre': '123_malo.sql', 'descripcion': 'otra'},
+        )
+        reg.refresh_from_db()
+        self.assertEqual(reg.nombre, 'backup_original.sql')
+
+        self.client.post(
+            reverse('respaldo_editar', args=[reg.pk]),
+            {'nombre': '.punto.sql', 'descripcion': 'otra'},
+        )
+        reg.refresh_from_db()
+        self.assertEqual(reg.nombre, 'backup_original.sql')
+
+        self.client.post(
+            reverse('respaldo_editar', args=[reg.pk]),
+            {'nombre': 'copia_buena_2026', 'descripcion': 'actualizada'},
+        )
+        reg.refresh_from_db()
+        self.assertEqual(reg.nombre, 'copia_buena_2026.sql')
+        self.assertEqual(reg.descripcion, 'actualizada')
+
+    def test_vista_subir_rechaza_vacio_sin_datos_y_nombre_invalido(self):
+        import os
+        from app.models import BackupRegistro
+
+        antes = BackupRegistro.objects.count()
+
+        # 1. Archivo vacío
+        f_vacio = self.SimpleUploadedFile('respaldo_vacio.sql', b'')
+        self.client.post(reverse('respaldo_subir'), {'archivo_sql': f_vacio})
+        self.assertEqual(BackupRegistro.objects.count(), antes)
+
+        # 2. Archivo con solo comentarios y texto sin datos SQL
+        f_sin_datos = self.SimpleUploadedFile(
+            'respaldo_sin_datos.sql',
+            b'-- MySQL dump\nhola\n-- Dump completed\n',
+        )
+        self.client.post(reverse('respaldo_subir'), {'archivo_sql': f_sin_datos})
+        self.assertEqual(BackupRegistro.objects.count(), antes)
+
+        # 3. Archivo con nombre empezando con números o punto aunque tenga datos
+        sql_ok = b"INSERT INTO `categoria` VALUES (1, 'Cervezas');\n"
+        f_num = self.SimpleUploadedFile('123_backup.sql', sql_ok)
+        self.client.post(reverse('respaldo_subir'), {'archivo_sql': f_num})
+        self.assertEqual(BackupRegistro.objects.count(), antes)
+
+        f_punto = self.SimpleUploadedFile('.backup.sql', sql_ok)
+        self.client.post(reverse('respaldo_subir'), {'archivo_sql': f_punto})
+        self.assertEqual(BackupRegistro.objects.count(), antes)
+
+        # 4. Archivo válido con nombre correcto y datos SQL sí se registra
+        f_valido = self.SimpleUploadedFile('respaldo_valido_test.sql', sql_ok)
+        resp = self.client.post(
+            reverse('respaldo_subir'),
+            {'archivo_sql': f_valido, 'descripcion': 'Prueba valida'},
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(BackupRegistro.objects.count(), antes + 1)
+        creado = BackupRegistro.objects.order_by('-pk').first()
+        try:
+            self.assertTrue(creado.nombre.startswith('respaldo_valido_test_subido_'))
+            self.assertTrue(os.path.exists(creado.ruta))
+        finally:
+            if creado and creado.ruta and os.path.exists(creado.ruta):
+                os.remove(creado.ruta)
+
+

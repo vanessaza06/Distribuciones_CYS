@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}Presentaciones — CYS Ltda{% endblock %}
 {% block page_title %}Presentaciones{% endblock %}
@@ -7,6 +7,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+<link rel="stylesheet" href="{% static 'css/presentaciones/presentaciones.css' %}">
+
 {% endblock %}
 
 {% block content %}
@@ -48,21 +51,70 @@
     </ul>
   </div>
 
-  <a href="{% url 'bodega_home' %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
-    <i class="bi bi-boxes me-1" title="Ver Bodega"></i> Ir a Bodega
-  </a>
+  <a href="/bodega" class="btn btn-outline-info pres-btn-bodega">Ir a Bodega</a>
 </div>
 
 <div class="search-box d-flex justify-content-between align-items-center flex-wrap gap-2">
   <div class="d-flex flex-grow-1 pres-buscador-wrap">
     <span class="search-prefix pres-search-prefix"><i class="bi bi-search"></i></span>
     <input type="text" id="buscarPresentacion" class="prod-input pres-search-input"
-           placeholder="Buscar por producto o presentación…">
+           placeholder="Buscar por producto o presentación…" autocomplete="off">
   </div>
+
+  <!-- Botón que despliega/oculta los filtros -->
+  <button type="button" class="btn prod-btn-outline px-3 py-2 d-inline-flex align-items-center gap-1"
+          data-bs-toggle="collapse" data-bs-target="#filtrosPresentaciones"
+          aria-expanded="false" aria-controls="filtrosPresentaciones" title="Filtrar presentaciones">
+    <i class="bi bi-funnel"></i><span>Filtros</span>
+    <i class="bi bi-chevron-down pres-filtro-chevron"></i>
+  </button>
 
   <button type="button" class="btn prod-btn-primary prod-btn-nuevo px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalCrearPresentacion">
     <i class="bi bi-plus-lg me-1" title="Crear Presentación"></i> <span class="btn-texto">Nueva Presentación</span>
   </button>
+
+  <!-- ═══ PANEL DE FILTROS (ocupa su propia fila dentro de la tarjeta) ═══ -->
+  <div class="collapse w-100" id="filtrosPresentaciones">
+    <div class="pres-filtros-panel">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label prod-label" for="filtroPresCategoria">Categoría</label>
+          <select id="filtroPresCategoria" class="form-select prod-input">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label prod-label" for="filtroPresEstado">Estado</label>
+          <select id="filtroPresEstado" class="form-select prod-input">
+            <option value="">Todos</option>
+            <option value="1">Activa</option>
+            <option value="0">Inactiva</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label prod-label" for="filtroPresStock">Stock</label>
+          <select id="filtroPresStock" class="form-select prod-input">
+            <option value="">Todos</option>
+            <option value="con">Con stock</option>
+            <option value="sin">Sin stock</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label prod-label" for="filtroPresPrecioMin">Precio mínimo ($)</label>
+          <input type="number" id="filtroPresPrecioMin" class="form-control prod-input" min="0" placeholder="0">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label prod-label" for="filtroPresPrecioMax">Precio máximo ($)</label>
+          <input type="number" id="filtroPresPrecioMax" class="form-control prod-input" min="0" placeholder="Sin límite">
+        </div>
+        <div class="col-md-4">
+          <button type="button" id="filtroPresLimpiar" class="btn prod-btn-outline w-100">
+            <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="prod-card">
@@ -81,7 +133,12 @@
       </thead>
       <tbody>
         {% for pres in presentaciones %}
-        <tr data-producto="{{ pres.producto.nombre|lower }}" data-presentacion="{{ pres.nombre|lower }}"
+        <tr data-producto="{{ pres.producto.nombre|lower }}"
+            data-presentacion="{{ pres.nombre|lower }}"
+            data-categoria="{{ pres.producto.categoria.nombre|default:'—' }}"
+            data-activo="{% if pres.activo %}1{% else %}0{% endif %}"
+            data-precio="{{ pres.precio_venta|unlocalize }}"
+            data-stock="{{ pres.stock_real|unlocalize }}"
             {% if pres.pk == resaltar_pk %}class="fila-resaltada"{% endif %}>
           <td class="ps-3">
             <div class="fw-semibold prod-cell-nombre">{{ pres.producto.nombre }}</div>
@@ -89,8 +146,8 @@
           </td>
           <td>{{ pres.nombre }}</td>
           <td class="text-center">{{ pres.cantidad }}</td>
-          <td class="text-center">${{ pres.precio_venta|floatformat:0 }}</td>
-          <td class="text-center">{{ pres.stock_real }}</td>
+          <td class="text-center" data-order="{{ pres.precio_venta|unlocalize }}">${{ pres.precio_venta|floatformat:0 }}</td>
+          <td class="text-center" data-order="{{ pres.stock_real|unlocalize }}">{{ pres.stock_real }}</td>
           <td class="text-center">
             {% if pres.activo %}
               <span class="tag-ok"><i class="bi bi-check-circle me-1"></i>Activa</span>
@@ -111,29 +168,23 @@
                 <form method="POST" action="{% url 'presentacion_toggle_activo' pres.pk %}">
                   {% csrf_token %}
                   <input type="hidden" name="next" value="{{ request.path }}">
-                  <button type="submit" class="dd-item pres-dd-submit {% if pres.activo %}danger{% endif %}">
+                  <a href="#" class="dd-item {% if pres.activo %}danger{% endif %}"
+                     onclick="this.closest('form').submit(); return false;">
                     {% if pres.activo %}
                       <i class="bi bi-pause-circle"></i> Desactivar
                     {% else %}
                       <i class="bi bi-play-circle"></i> Activar
                     {% endif %}
-                  </button>
+                  </a>
                 </form>
               </div>
             </div>
           </td>
         </tr>
-        {% empty %}
-        <tr><td colspan="7" class="text-center py-4 text-muted">No hay presentaciones registradas.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-</div>
-
-<div id="sinResultadosPresentaciones" class="text-center py-5 d-none prod-label">
-  <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
-  Sin resultados para tu búsqueda.
 </div>
 
 <!-- MODAL CREAR PRESENTACIÓN -->
@@ -162,7 +213,7 @@
             <label class="form-label prod-label">Nombre <span class="text-danger">*</span></label>
             <input type="text" name="nombre" class="form-control prod-input" placeholder="Ej: Six-pack" required
                    data-validar-nombre data-etiqueta="El nombre de la presentación">
-          </div><!-- ← este cierre faltaba -->
+          </div>
           <div class="row g-3">
             <div class="col-6">
               <label class="form-label prod-label">Cantidad <span class="text-danger">*</span></label>
@@ -234,6 +285,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'js/validaciones/validar_nombre.js' %}"></script>
 <script src="{% static 'js/presentaciones/presentaciones.js' %}"></script>
 {% endblock %}

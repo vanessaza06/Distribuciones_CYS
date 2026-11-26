@@ -1,110 +1,280 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load money_filters %}
 
 {% block title %}{{ dev.numero }} | Devolución a proveedor{% endblock %}
 {% block page_title %}Devolución a Proveedor{% endblock %}
 {% block nav_devoluciones %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261016i">
-<link rel="stylesheet" href="{% static 'css/proveedores/devoluciones_proveedor.css' %}">
+<link rel="stylesheet" href="{% static 'css/devoluciones/devoluciones.css' %}?v=20261125g">
+<link rel="stylesheet" href="{% static 'css/devoluciones/detalle_devolucion.css' %}?v=20261126a">
 {% endblock %}
 
 {% block content %}
-<div class="dev-page container-fluid p-0">
+<div class="dev-page dev-detail-page container-fluid">
+  <div class="dev-detail-container">
 
-  {% if messages %}
-  <div class="dev-messages" aria-live="polite">
-    {% for message in messages %}
-    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <section class="dev-card dev-process">
-    <div class="dev-card__head">
-      <div>
-        <span class="dev-section-label">Devolución a proveedor</span>
-        <h2>{{ dev.numero }}</h2>
+    {% if messages %}
+    <div class="dev-messages mb-4" aria-live="polite">
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show mb-2" role="alert">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
       </div>
-      {% if dev.estado == 'pendiente' %}
-        <span class="badge-estado badge-pendiente" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Pendiente de aprobar o rechazar"><i class="bi bi-clock-history"></i> Pendiente</span>
-      {% elif dev.estado == 'aprobada' %}
-        <span class="badge-estado badge-aprobada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aprobada; falta aplicarla"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
-      {% elif dev.estado == 'aplicada' %}
-        <span class="badge-estado badge-aplicada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Aplicada; inventario descontado"><i class="bi bi-check-all"></i> Aplicada</span>
-      {% else %}
-        <span class="badge-estado badge-rechazada" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Devolución rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
-      {% endif %}
+      {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- BARRA SUPERIOR -->
+    <div class="dd-topbar">
+      <a href="{% url 'lista_devoluciones' %}?tab=proveedor" class="dd-back-link">
+        <i class="bi bi-arrow-left"></i> Volver a Devoluciones a Proveedores
+      </a>
+
+      <div class="dd-export-wrap d-flex align-items-center gap-2">
+        <div class="dropdown">
+          <button class="btn dd-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
+            <i class="bi bi-box-arrow-up"></i> Exportar
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end dd-dropdown-export">
+            <li>
+              <a class="dropdown-item" href="?export=excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="?export=pdf">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+              </a>
+            </li>
+            <li>
+              <button class="dropdown-item btn-print" type="button">
+                <i class="bi bi-printer"></i> Imprimir
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCABEZADO -->
+    <header class="dpv-hero dpv-hero--{{ dev.estado }}">
+      <div class="dpv-hero__main">
+        <span class="dd-hero__badge">Devolución a Proveedor</span>
+        <div class="dpv-hero__title">
+          <h2>{{ dev.numero }}</h2>
+          {% if dev.estado == 'pendiente' %}
+            <span class="badge-estado badge-pendiente"><i class="bi bi-clock-history"></i> Pendiente</span>
+          {% elif dev.estado == 'aprobada' %}
+            <span class="badge-estado badge-aprobada"><i class="bi bi-hand-thumbs-up"></i> Aprobada</span>
+          {% elif dev.estado == 'aplicada' %}
+            <span class="badge-estado badge-aplicada"><i class="bi bi-check-all"></i> Aplicada</span>
+          {% else %}
+            <span class="badge-estado badge-rechazada"><i class="bi bi-x-circle"></i> Rechazada</span>
+          {% endif %}
+        </div>
+        <p class="dpv-hero__sub">
+          <span><i class="bi bi-calendar3"></i>{{ dev.fecha|date:"d/m/Y, H:i" }}</span>
+          <span>·</span>
+          <span><i class="bi bi-building"></i>{{ dev.proveedor.nombre_empresa }}</span>
+        </p>
+      </div>
+      <div class="dpv-hero__total">
+        <span>Total reclamado</span>
+        <strong>{{ dev.total_devuelto|cop }}</strong>
+        <small>{{ dev.cantidad_devuelta }} und. × {{ dev.precio_unitario_devuelto|cop }}</small>
+      </div>
+    </header>
+
+    <!-- LÍNEA DE PROGRESO -->
+    <ol class="dpv-steps" aria-label="Progreso de la devolución">
+      <li class="is-done">
+        <span><i class="bi bi-plus-lg"></i></span>
+        <div><strong>Registrada</strong><small>{{ dev.fecha|date:"d/m/Y" }}</small></div>
+      </li>
+      <li class="{% if dev.estado == 'pendiente' %}is-current{% else %}is-done{% endif %}">
+        <span><i class="bi bi-clock-history"></i></span>
+        <div><strong>Pendiente</strong><small>En revisión</small></div>
+      </li>
+      {% if dev.estado == 'rechazada' %}
+      <li class="is-current is-bad">
+        <span><i class="bi bi-x-lg"></i></span>
+        <div><strong>Rechazada</strong><small>Cerrada sin aplicar</small></div>
+      </li>
+      {% else %}
+      <li class="{% if dev.estado == 'aprobada' %}is-current{% elif dev.estado == 'aplicada' %}is-done{% endif %}">
+        <span><i class="bi bi-hand-thumbs-up"></i></span>
+        <div><strong>Aprobada</strong><small>Lista para aplicar</small></div>
+      </li>
+      <li class="{% if dev.estado == 'aplicada' %}is-current is-done{% endif %}">
+        <span><i class="bi bi-check-all"></i></span>
+        <div><strong>Aplicada</strong><small>Inventario descontado</small></div>
+      </li>
+      {% endif %}
+    </ol>
 
     {% if confirmar %}
-    <!-- CONFIRMACIÓN (se valida en el servidor) -->
+    <!-- CONFIRMACIÓN -->
     <div class="dpv-confirm dpv-confirm--{{ confirmar.tono }}">
-      <h3><i class="bi {{ confirmar.icono }} me-1"></i> ¿{{ confirmar.etiqueta }} la devolución {{ dev.numero }}?</h3>
-      <p>{{ confirmar.texto }}</p>
-      <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dev.numero_proveedor %}" class="d-flex gap-2 flex-wrap">
-        {% csrf_token %}
-        <input type="hidden" name="nuevo_estado" value="{{ confirmar.estado }}">
-        <button type="submit" class="dev-act dev-act--{{ confirmar.tono }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Confirmar el cambio de estado">
-          <i class="bi {{ confirmar.icono }}"></i> Sí, {{ confirmar.etiqueta|lower }}
-        </button>
-        <a href="{% url 'detalle_devolucion_proveedor' dev.numero_proveedor %}" class="dev-btn dev-btn--ghost" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cancelar sin cambiar el estado">Cancelar</a>
-      </form>
-    </div>
-    {% endif %}
-
-    <div class="dpv-grid">
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Proveedor que recibe la devolución"><span>Proveedor</span><strong>{{ dev.proveedor.nombre_empresa }}</strong><small>NIT {{ dev.proveedor.pk }}</small></div>
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Fecha y hora del registro"><span>Fecha</span><strong>{{ dev.fecha|date:"d/m/Y H:i" }}</strong></div>
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Compra de la que proviene el producto">
-        <span>Compra de origen</span>
-        {% if compra %}
-          <strong>Compra #{{ compra.pk }}</strong>
-          <small>{{ compra.fecha|date:"d/m/Y" }} · {{ compra.get_estado_display }} · ${{ compra.valor|floatformat:0 }}</small>
-        {% else %}
-          <strong>—</strong>
-        {% endif %}
+      <div class="dpv-confirm__icon"><i class="bi {{ confirmar.icono }}"></i></div>
+      <div class="dpv-confirm__body">
+        <h3>¿{{ confirmar.etiqueta }} la devolución {{ dev.numero }}?</h3>
+        <p>{{ confirmar.texto }}</p>
+        <form method="post" action="{% url 'cambiar_estado_devolucion_proveedor' dev.numero_proveedor %}" class="d-flex gap-2 flex-wrap">
+          {% csrf_token %}
+          <input type="hidden" name="nuevo_estado" value="{{ confirmar.estado }}">
+          <button type="submit" class="dev-act dev-act--{{ confirmar.tono }}">
+            <i class="bi {{ confirmar.icono }}"></i> Sí, {{ confirmar.etiqueta|lower }}
+          </button>
+          <a href="{% url 'detalle_devolucion_proveedor' dev.numero_proveedor %}" class="dev-btn dev-btn--ghost">Cancelar</a>
+        </form>
       </div>
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Razón de la devolución"><span>Motivo</span><strong>{{ dev.get_motivo_display }}</strong></div>
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Compensación solicitada al proveedor"><span>Solución requerida</span><strong>{{ dev.get_tipo_resolucion_display }}</strong></div>
-      <div class="dpv-box" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Valor total reclamado al proveedor"><span>Total reclamado</span><strong class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</strong></div>
-    </div>
-
-    <div class="table-responsive dev-table-wrap">
-      <table class="table dev-table align-middle mb-0">
-        <thead>
-          <tr><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Producto devuelto">Producto</th><th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Unidades devueltas">Cantidad</th><th class="text-end" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Precio por unidad">Precio unitario</th><th class="text-end" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cantidad × precio unitario">Subtotal</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>{{ dev.producto_nombre|default:"—" }}</strong></td>
-            <td class="text-center">{{ dev.cantidad_devuelta }}</td>
-            <td class="text-end dev-money">${{ dev.precio_unitario_devuelto|floatformat:0 }}</td>
-            <td class="text-end dev-money">${{ dev.total_devuelto|floatformat:0 }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    {% if dev.texto_observaciones %}
-    <div class="dpv-box mt-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Comentarios registrados con la devolución"><span>Observaciones</span><strong>{{ dev.texto_observaciones }}</strong></div>
-    {% endif %}
-
-    {% if extra.unidades_descontadas is not None %}
-    <div class="dpv-box mt-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Unidades descontadas del inventario al aplicar">
-      <span>Inventario</span>
-      <strong>{{ extra.unidades_descontadas }} de {{ extra.cantidad }} unidades descontadas</strong>
-      {% if extra.unidades_descontadas < extra.cantidad %}<small>El resto no estaba registrado en inventario.</small>{% endif %}
     </div>
     {% endif %}
 
-    <div class="dpv-actions">
-      {% for a in acciones %}
-        <a href="?accion={{ a.estado }}" class="dev-act dev-act--{{ a.tono }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ a.etiqueta }} esta devolución (pide confirmación)"><i class="bi {{ a.icono }}"></i> {{ a.etiqueta }}</a>
-      {% endfor %}
-      <a href="{% url 'lista_devoluciones' %}?tab=proveedor" class="dev-btn dev-btn--ghost" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Regresar al listado de devoluciones a proveedores"><i class="bi bi-arrow-left"></i> Volver a devoluciones</a>
+    <div class="dpv-layout">
+      <!-- COLUMNA PRINCIPAL -->
+      <main class="dpv-main">
+        <section class="dev-card dpv-panel">
+          <div class="dpv-panel__head">
+            <h3 class="dpv-panel__title"><i class="bi bi-box-seam"></i> Producto devuelto</h3>
+            <span class="dd-badge">{{ dev.cantidad_devuelta }} und.</span>
+          </div>
+          <div class="table-responsive dev-table-wrap">
+            <table class="table dev-table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-end">Precio unitario</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>{{ dev.producto_nombre|default:"—" }}</strong>
+                    {% if extra.lote_id %}<small class="d-block">Lote #{{ extra.lote_id }}</small>{% endif %}
+                  </td>
+                  <td class="text-center"><span class="dpv-qty">{{ dev.cantidad_devuelta }}</span></td>
+                  <td class="text-end dd-text-muted">{{ dev.precio_unitario_devuelto|cop }}</td>
+                  <td class="text-end dev-money">{{ dev.total_devuelto|cop }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-end dd-table-subtotal-label">Total reclamado</td>
+                  <td class="text-end dev-money">{{ dev.total_devuelto|cop }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <section class="dev-card dpv-panel">
+          <div class="dpv-panel__head">
+            <h3 class="dpv-panel__title"><i class="bi bi-chat-left-text"></i> Observaciones</h3>
+          </div>
+          <div class="dpv-panel__body">
+            {% if dev.texto_observaciones %}
+              <p class="dpv-note">{{ dev.texto_observaciones }}</p>
+            {% else %}
+              <p class="dpv-note dpv-note--empty">No se registraron observaciones.</p>
+            {% endif %}
+          </div>
+        </section>
+
+        {% if extra.unidades_descontadas is not None %}
+        <section class="dev-card dpv-panel">
+          <div class="dpv-panel__head">
+            <h3 class="dpv-panel__title"><i class="bi bi-boxes"></i> Impacto en inventario</h3>
+          </div>
+          <div class="dpv-panel__body">
+            <div class="dpv-inv">
+              <strong>{{ extra.unidades_descontadas }}</strong>
+              <span>de {{ extra.cantidad }} unidades descontadas</span>
+            </div>
+            {% if extra.unidades_descontadas < extra.cantidad %}
+              <small class="dpv-hint d-block mt-2">El resto no estaba registrado en inventario.</small>
+            {% endif %}
+          </div>
+        </section>
+        {% endif %}
+      </main>
+
+      <!-- COLUMNA LATERAL -->
+      <aside class="dpv-side">
+        <section class="dev-card dpv-panel">
+          <div class="dpv-panel__head">
+            <h3 class="dpv-panel__title"><i class="bi bi-info-circle"></i> Información</h3>
+          </div>
+          <div class="dpv-panel__body">
+            <dl class="dpv-info">
+              <div>
+                <dt>Proveedor</dt>
+                <dd>{{ dev.proveedor.nombre_empresa }}<small>NIT {{ dev.proveedor.pk }}</small></dd>
+              </div>
+              <div>
+                <dt>Compra de origen</dt>
+                <dd>
+                  {% if compra %}
+                    <a href="{% url 'detalle_compra' compra.pk %}">Compra #{{ compra.pk }}</a>
+                    <small>{{ compra.fecha|date:"d/m/Y" }} · {{ compra.get_estado_display }} · {{ compra.valor|cop }}</small>
+                  {% else %}—{% endif %}
+                </dd>
+              </div>
+              <div>
+                <dt>Motivo</dt>
+                <dd>{{ dev.get_motivo_display }}</dd>
+              </div>
+              <div>
+                <dt>Solución requerida</dt>
+                <dd>{{ dev.get_tipo_resolucion_display }}</dd>
+              </div>
+              <div>
+                <dt>Fecha</dt>
+                <dd>{{ dev.fecha|date:"d/m/Y H:i" }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="dev-card dpv-panel">
+          <div class="dpv-panel__head">
+            <h3 class="dpv-panel__title"><i class="bi bi-sliders"></i> Acciones</h3>
+          </div>
+          <div class="dpv-panel__body">
+            <div class="dpv-actions">
+              {% for a in acciones %}
+                <a href="?accion={{ a.estado }}" class="dev-act dev-act--{{ a.tono }}">
+                  <i class="bi {{ a.icono }}"></i> {{ a.etiqueta }}
+                </a>
+              {% empty %}
+                <p class="dpv-note dpv-note--empty mb-1">Esta devolución ya está cerrada; no admite más cambios.</p>
+              {% endfor %}
+              <button type="button" class="dev-btn dev-btn--secondary btn-print">
+                <i class="bi bi-printer"></i> Imprimir
+              </button>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
-  </section>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  if (!window.__cysDetalleDevProvPrintBound) {
+    window.__cysDetalleDevProvPrintBound = true;
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.btn-print')) {
+        e.preventDefault();
+        window.print();
+      }
+    });
+  }
+</script>
 {% endblock %}

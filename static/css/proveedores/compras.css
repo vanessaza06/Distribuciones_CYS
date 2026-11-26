@@ -73,7 +73,7 @@
 }
 
 .card-header-top i {
-  color: var(--cp-dorado) !important;
+  color:var(--cp-dorado) !important;
 }
 
 .card-body {
@@ -1179,30 +1179,40 @@ textarea:focus {
 }
 
 /* Botón Nueva Compra redondo con texto */
+/* Idéntico a .btn-nuevo-prov (proveedores.css) */
 .btn-nueva-compra {
   background: var(--azul-claro);
+  color: var(--fondo);
   border: none;
-  color: var(--azul-oscuro);
-  padding: 0.6rem 1.5rem;
   border-radius: 50px;
+  padding: 10px 28px;
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s ease, transform 0.1s ease;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
   white-space: nowrap;
 }
 
 .btn-nueva-compra:hover {
-  background: color-mix(in srgb, var(--azul-claro) 85%, black);
+  background: color-mix(in srgb, var(--azul-claro) 80%, black);
+  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.5);
   transform: translateY(-2px);
 }
 
 .btn-nueva-compra:active {
   transform: translateY(0);
 }
+
+/* ── COLOR DE CADA ICONO DEL ENCABEZADO "HISTORIAL DE COMPRAS" ──
+   Cada icono tiene su propia regla: cambia el color de uno sin afectar a los demás. */
+.gradient-header .ico-historial     { color: var(--azul-claro) !important; }
+.gradient-header .ico-exportar      { color: var(--texto) !important; }
+.gradient-header .ico-nueva-compra  { color: var(--fondo) !important; }
+.gradient-header .ico-chevron       { color: var(--texto) !important; }
 
 /* ────────────────────────────────────────────────────────────────────────────
    DROPDOWN
@@ -1677,7 +1687,9 @@ textarea:focus {
 
 .card-proveedor-header {
   border-left: 4px solid var(--cp-dorado) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .proveedor-container {
@@ -3142,22 +3154,191 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   font-size: 0.95rem;
 }
 .cmp-tarjeta-financiera {
-  background: rgba(2, 34, 74, 0.6) !important;
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
+  background: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  border-left: 4px solid var(--cp-dorado) !important;
+  border-radius: 10px !important;
+}
+.cmp-tarjeta-financiera .border-end {
+  border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
+}
+.cmp-tarjeta-financiera small.cmp-text-mini {
+  color: var(--texto-muted) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.cmp-tarjeta-financiera #resumenMontoTotal {
+  color: var(--texto) !important;
+  font-weight: 800 !important;
+}
+.cmp-tarjeta-financiera #resumenMontoPagado {
+  color: var(--verde) !important;
+  font-weight: 800 !important;
+}
+.cmp-tarjeta-financiera #resumenSaldoPendiente {
+  color: var(--rojo) !important;
+  font-weight: 800 !important;
 }
 .cmp-text-mini {
-  font-size: 0.75rem !important;
+  font-size: 0.72rem !important;
 }
 .cmp-btn-pagar-todo-saldo {
   font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  padding: 0.28rem 0.75rem !important;
+  border-radius: 8px !important;
+  background: color-mix(in srgb, var(--verde) 12%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, transparent) !important;
+  transition: all 0.2s ease !important;
+}
+.cmp-btn-pagar-todo-saldo i {
+  color: currentColor !important;
+}
+.cmp-btn-pagar-todo-saldo:hover,
+.cmp-btn-pagar-todo-saldo:focus {
+  background: color-mix(in srgb, var(--verde) 22%, transparent) !important;
+  border-color: var(--verde) !important;
+  color: var(--verde) !important;
 }
 .cmp-input-saldo-pendiente {
-  background-color: rgba(231, 76, 60, 0.1) !important;
+  background-color: color-mix(in srgb, var(--rojo) 7%, var(--fondo-card2)) !important;
+  border-color: color-mix(in srgb, var(--rojo) 28%, transparent) !important;
   cursor: not-allowed !important;
-  color: #e74c3c !important;
+  color: var(--rojo) !important;
 }
 .cmp-badge-nuevo-estado {
-  font-size: 0.95rem !important;
+  font-size: 0.9rem !important;
+}
+
+/* ── Armonía de colores en #modalPago (compatible con todos los temas) ── */
+#modalPago .modal-content {
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 14%, transparent) !important;
+}
+#modalPago .modal-header {
+  background: var(--fondo-card2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .modal-header .modal-title {
+  color: var(--texto) !important;
+}
+#modalPago .modal-header .modal-title i {
+  color: var(--cp-dorado) !important;
+}
+#modalPago .modal-footer.modal-custom-footer {
+  background: var(--fondo-card2) !important;
+  border-top: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .btn-modal-secondary {
+  border: 1px solid color-mix(in srgb, var(--texto) 20%, transparent) !important;
+  color: var(--texto) !important;
+}
+#modalPago .btn-modal-secondary:hover {
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  border-color: color-mix(in srgb, var(--texto) 32%, transparent) !important;
+}
+
+#modalPago .metodos-pago-container {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 14%, transparent) !important;
+  border-radius: 10px !important;
+}
+#modalPago .metodos-pago-header {
+  background: var(--fondo-card2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .metodos-pago-header:hover {
+  background: color-mix(in srgb, var(--texto) 5%, var(--fondo-card2)) !important;
+}
+#modalPago .metodos-pago-header span {
+  color: var(--texto) !important;
+  font-weight: 600;
+}
+#modalPago .metodos-pago-header > i {
+  color: var(--texto-muted) !important;
+}
+#modalPago .metodos-pago-list {
+  padding: 4px 0 !important;
+}
+#modalPago .metodo-pago-item {
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  color: var(--texto) !important;
+}
+#modalPago .metodo-pago-item:hover {
+  background: color-mix(in srgb, var(--texto) 4%, transparent) !important;
+}
+#modalPago .metodo-pago-item:has(input:checked) {
+  background: color-mix(in srgb, var(--cp-dorado) 12%, transparent) !important;
+}
+#modalPago .metodo-pago-item input[type="radio"] {
+  background-color: var(--fondo-card) !important;
+  border: 1.5px solid color-mix(in srgb, var(--texto) 28%, transparent) !important;
+  accent-color: var(--cp-dorado) !important;
+}
+#modalPago .metodo-pago-item input[type="radio"]:checked {
+  background-color: var(--cp-dorado) !important;
+  border-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cp-dorado) 22%, transparent) !important;
+}
+
+#modalPago .form-control {
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+}
+#modalPago .form-control:focus {
+  border-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cp-dorado) 20%, transparent) !important;
+}
+#modalPago .input-group > .input-group-text {
+  background-color: color-mix(in srgb, var(--texto) 5%, var(--fondo-card2)) !important;
+  color: var(--texto-muted) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  border-right: none !important;
+  border-radius: 8px 0 0 8px !important;
+  font-weight: 700 !important;
+}
+#modalPago .input-group > .form-control {
+  border-radius: 0 8px 8px 0 !important;
+}
+#modalPago input.cmp-input-saldo-pendiente {
+  background-color: color-mix(in srgb, var(--rojo) 7%, var(--fondo-card2)) !important;
+  border-color: color-mix(in srgb, var(--rojo) 28%, transparent) !important;
+  color: var(--rojo) !important;
+}
+
+#modalPago #badgeNuevoEstado {
+  border-radius: 8px !important;
+  padding: 0.5rem 0.85rem !important;
+  min-height: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+}
+#modalPago #badgeNuevoEstado i {
+  color: currentColor !important;
+}
+#modalPago #badgeNuevoEstado.badge-pending-custom,
+#modalPago #badgeNuevoEstado.badge-warning-custom {
+  background: color-mix(in srgb, var(--cp-dorado) 16%, var(--fondo-card2)) !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--texto)) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 42%, transparent) !important;
+}
+#modalPago #badgeNuevoEstado.badge-success-custom {
+  background: color-mix(in srgb, var(--verde) 14%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, transparent) !important;
+}
+#modalPago #badgeNuevoEstado.bg-danger {
+  background: color-mix(in srgb, var(--rojo) 14%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 45%, transparent) !important;
 }
 
 
@@ -3176,4 +3357,622 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
 .cmp-dropdown-menu .cmp-sug-mas {
   background: rgba(0, 0, 0, 0.3);
   font-size: 0.8rem;
+}
+/* ── Botón Exportar con menú desplegable ── */
+.cmp-export-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem 1.1rem !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  color: var(--texto) !important;
+  font-weight: 600 !important;
+  white-space: nowrap;
+}
+.cmp-export-btn::after { display: none !important; } /* quita la flecha por defecto de Bootstrap */
+.cmp-export-btn:hover,
+.cmp-export-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  transform: none !important;
+}
+.cmp-export-btn .bi-box-arrow-up { color: var(--azul-claro); font-size: 1.05rem; }
+.cmp-export-chevron { font-size: .8rem; transition: transform .2s ease; }
+.cmp-export-btn[aria-expanded="true"] .cmp-export-chevron { transform: rotate(180deg); }
+
+.cmp-export-menu {
+  min-width: 190px !important;
+  margin-top: .5rem !important;
+  padding: .5rem !important;
+  border-radius: 14px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+}
+.cmp-export-item {
+  display: flex !important;
+  align-items: center;
+  gap: .85rem;
+  padding: .7rem .9rem !important;
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--texto) !important;
+}
+.cmp-export-item i { font-size: 1.25rem; width: 24px; text-align: center; }
+.cmp-export-item:hover { background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important; }
+
+/* Colores de cada icono */
+.cmp-export-item .ico-excel { color: #2ecc71 !important; }
+.cmp-export-item .ico-pdf   { color: #e74c3c !important; }
+.cmp-export-item .ico-print { color: var(--azul-claro) !important; }
+
+/* ══════════════════════════════════════════
+   EXPORTAR (Compras): mismo diseño que Marcas
+   Único bloque de estilos del botón Exportar y su menú.
+   ══════════════════════════════════════════ */
+
+/* El menú se mide contra el contenedor del botón */
+
+/* Icono de subir: color azul del tema (antes salía dorado) */
+#cys-export-compras .cat-btn-exportar i {
+  color: var(--azul-claro) !important;
+  font-size: 1.05rem;
+  margin: 0 !important;
+}
+
+/* Quita la flecha (caret) nativa de Bootstrap y pone un chevron propio */
+#cys-export-compras .cat-btn-exportar.dropdown-toggle::after {
+  content: "\f282";                       /* bi-chevron-down */
+  font-family: "bootstrap-icons" !important;
+  display: inline-block !important;
+  margin: 0 0 0 .1rem;
+  vertical-align: middle;
+  border: 0 !important;
+  font-size: .8rem;
+  font-weight: 700 !important;
+  line-height: 1;
+  color: var(--texto);
+  transition: transform .2s ease;
+}
+
+/* Chevron hacia arriba cuando el menú está abierto */
+#cys-export-compras .cat-btn-exportar[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+#cys-export-compras .cat-btn-exportar:hover,
+#cys-export-compras .cat-btn-exportar:focus,
+#cys-export-compras .cat-btn-exportar[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 16%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+  transform: none !important;
+}
+
+/* ── Panel del menú ── */
+#cys-export-compras .cat-dropdown-export {
+  min-width: 190px !important;
+  margin-top: .5rem !important;
+  padding: .5rem !important;
+  border-radius: 16px !important;
+  background-color: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important;
+}
+
+/* ── Opciones ── */
+#cys-export-compras .cat-dropdown-export .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .85rem;
+  width: 100%;
+  padding: .7rem .9rem !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--texto) !important;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+#cys-export-compras .cat-dropdown-export .dropdown-item:hover,
+#cys-export-compras .cat-dropdown-export .dropdown-item:focus {
+  background: color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+/* Iconos más grandes, alineados y con su color */
+#cys-export-compras .cat-dropdown-export .dropdown-item i {
+  width: 26px;
+  margin: 0 !important;
+  font-size: 1.35rem;
+  line-height: 1;
+  text-align: center;
+}
+#cys-export-compras .cat-dropdown-export .bi-file-earmark-excel { color: #2ecc71 !important; }  /* Excel  */
+#cys-export-compras .cat-dropdown-export .bi-file-earmark-pdf   { color: #e74c3c !important; }  /* PDF    */
+#cys-export-compras .cat-dropdown-export .bi-printer            { color: var(--azul-claro) !important; } /* Imprimir */
+
+/* Móvil: que el menú no herede el ancho/scroll de los menús de la tabla */
+@media (max-width: 480px) {
+  #cys-export-compras .cat-dropdown-export {
+    width: auto !important;
+    min-width: 180px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+/* ════════════════════════════════════════════════════════════════
+   Menú Excel / PDF / Imprimir = MISMO ANCHO que el botón Exportar
+   ════════════════════════════════════════════════════════════════ */
+
+/* El contenedor se ajusta al ancho del botón; el menú se mide contra él */
+
+#cys-export-compras .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Botón ── */
+html body #cys-export-compras .cat-btn-exportar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .5rem !important;
+  box-sizing: border-box !important;
+  height: 46px !important;
+  min-width: auto !important;
+  padding: 0 1.15rem !important;
+  border-radius: 999px !important;
+  font-size: .9rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transform: none !important;
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 55%, transparent) !important;
+  color: var(--texto) !important;
+  transition: background .15s !important;
+}
+html body #cys-export-compras .cat-btn-exportar:is(:hover, :focus, :active, .show, [aria-expanded="true"]) {
+  background: color-mix(in srgb, var(--azul-claro) 18%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+/* Icono del botón: mismo color y tamaño que el texto */
+html body #cys-export-compras .cat-btn-exportar i {
+  margin: 0 !important;
+  font-size: inherit !important;
+  color: inherit !important;
+}
+
+/* Flecha (gira al abrir el menú) */
+html body #cys-export-compras .cat-btn-exportar.dropdown-toggle::after {
+  content: "\f282";                       /* bi-chevron-down */
+  font-family: "bootstrap-icons" !important;
+  display: inline-block;
+  margin: 0 !important;
+  border: 0 !important;
+  font-size: 11px !important;
+  line-height: 1;
+  color: var(--texto) !important;
+  transition: transform .15s ease;
+}
+html body #cys-export-compras .cat-btn-exportar[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* ── Menú desplegable ── */
+html body #cys-export-compras .cat-dropdown-export {
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: max-content !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin: .4rem 0 0 !important;
+  padding: .4rem !important;
+  list-style: none !important;
+  background-color: var(--fondo-card2, var(--fondo-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .10) !important;
+  z-index: 1060 !important;
+}
+
+/* ── Opciones ── */
+html body #cys-export-compras .cat-dropdown-export li {
+  list-style: none !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .7rem !important;
+  width: 100% !important;
+  padding: .6rem .8rem !important;
+  font-size: .9rem !important;
+  font-weight: 500 !important;
+  color: var(--texto) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 10px !important;
+  white-space: nowrap !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item:is(:hover, :focus, :active) {
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  color: var(--texto) !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item i {
+  width: auto !important;
+  margin: 0 !important;
+  font-size: 1.1rem !important;
+}
+
+/* ── Orden de las opciones: 1. Excel  2. PDF  3. Imprimir ── */
+html body #cys-export-compras .cat-dropdown-export.show {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .1rem !important;
+}
+html body #cys-export-compras .cat-dropdown-export > :has([class*="excel"]),
+html body #cys-export-compras .cat-dropdown-export > [class*="excel"] { order: 1; }
+html body #cys-export-compras .cat-dropdown-export > :has([class*="pdf"]),
+html body #cys-export-compras .cat-dropdown-export > [class*="pdf"] { order: 2; }
+html body #cys-export-compras .cat-dropdown-export > :has([class*="print"]),
+html body #cys-export-compras .cat-dropdown-export > [class*="print"],
+html body #cys-export-compras .cat-dropdown-export > :has([class*="imprimir"]),
+html body #cys-export-compras .cat-dropdown-export > [class*="imprimir"] { order: 3; }
+
+/* ── Menú del MISMO LARGO que el botón Exportar ── */
+html body #cys-export-compras,
+html body #cys-export-compras .dropdown {
+  position: relative !important;
+  display: inline-block !important;
+  width: max-content !important;
+}
+html body #cys-export-compras .cat-btn-exportar {
+  min-width: 160px !important;
+}
+html body #cys-export-compras .cat-dropdown-export {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ── Texto de las opciones: solo "Excel", "PDF" e "Imprimir" ── */
+html body #cys-export-compras .cat-dropdown-export .dropdown-item {
+  font-size: 0 !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item > :not(i) {
+  display: none !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item::after {
+  font-size: .9rem;
+  line-height: 1.4;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item:has([class*="excel"])::after { content: "Excel"; }
+html body #cys-export-compras .cat-dropdown-export .dropdown-item:has([class*="pdf"])::after { content: "PDF"; }
+html body #cys-export-compras .cat-dropdown-export .dropdown-item:has([class*="print"])::after { content: "Imprimir"; }
+html body #cys-export-compras .cat-dropdown-export .dropdown-item:has([class*="imprimir"])::after { content: "Imprimir"; }
+
+html body #cys-export-compras .cat-dropdown-export .dropdown-item {
+  gap: 0 !important;
+}
+html body #cys-export-compras .cat-dropdown-export .dropdown-item > i {
+  margin-right: .7rem !important;
+}
+
+/* Color de cada icono del menú */
+html body #cys-export-compras .cat-dropdown-export .bi-file-earmark-excel { color: #2ecc71 !important; }
+html body #cys-export-compras .cat-dropdown-export .bi-file-earmark-pdf   { color: #e74c3c !important; }
+html body #cys-export-compras .cat-dropdown-export .bi-printer            { color: var(--azul-claro) !important; }
+
+
+/* ── Tema ROJO ── */
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body #cys-export-compras .cat-btn-exportar {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 12%, var(--fondo-card, #fff)) !important;
+  border: 1px solid var(--rojo, #d9534f) !important;
+}
+html:is(
+  [data-tema="rojo"], [data-theme="rojo"], [data-tema-sistema="rojo"],
+  [data-tema="red"], [data-theme="red"],
+  .tema-rojo, .theme-red, .rojo
+) body #cys-export-compras .cat-btn-exportar:is(:hover, :focus, :active, .show, [aria-expanded="true"]) {
+  background: color-mix(in srgb, var(--rojo, #d9534f) 20%, var(--fondo-card, #fff)) !important;
+  border-color: var(--rojo, #d9534f) !important;
+
+/* Móvil: mismo criterio (anula la regla global de 240px) */
+@media (max-width: 480px) {
+  #cys-export-compras .cat-btn-exportar {
+    min-width: 140px !important;
+  }
+  #cys-export-compras .cat-dropdown-export {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BUSCADOR + PANEL DE FILTROS DESPLEGABLE (mismo diseño que Productos)
+   ════════════════════════════════════════════════════════════════ */
+.cmp-bp-card {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  color: var(--texto) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input {
+  background: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 30px 0 0 30px !important;
+  padding: 0.45rem 0.9rem 0.45rem 1.15rem !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input:focus {
+  background: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.cmp-bp-card .input-group .cmp-bp-input::placeholder,
+.cmp-bp-card .cmp-bp-field::placeholder {
+  color: color-mix(in srgb, var(--texto) 35%, transparent) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline i {
+  color: var(--azul-claro) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-outline:hover,
+.cmp-bp-card .cmp-bp-btn-outline:focus {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 50%, transparent) !important;
+  color: var(--azul-claro) !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-filtro {
+  border-radius: 0 !important;
+  padding: 0.45rem 0.85rem !important;
+}
+
+.cmp-bp-card .cmp-bp-filtro-chevron {
+  font-size: 0.7rem !important;
+  transition: transform 0.2s ease !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-filtro[aria-expanded="true"] .cmp-bp-filtro-chevron {
+  transform: rotate(180deg);
+}
+
+.cmp-bp-card .cmp-bp-btn-primary {
+  background: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  border: 1px solid var(--azul-claro) !important;
+  font-weight: 700 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 0.45rem 0.95rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-primary i {
+  color: var(--fondo) !important;
+}
+
+.cmp-bp-card .cmp-bp-btn-primary:hover,
+.cmp-bp-card .cmp-bp-btn-primary:focus,
+.cmp-bp-card .cmp-bp-btn-primary:active {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  opacity: 0.88;
+  transform: none !important;
+}
+
+.cmp-bp-filtros-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+  border: 1px solid var(--azul-borde);
+  border-radius: 10px;
+}
+
+.cmp-bp-card .cmp-bp-label {
+  color: var(--texto-muted) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  margin-bottom: 0.45rem !important;
+}
+
+.cmp-bp-card .cmp-bp-label i {
+  color: var(--texto-muted) !important;
+}
+
+.cmp-bp-card .cmp-bp-field {
+  background-color: color-mix(in srgb, var(--texto) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+}
+
+.cmp-bp-card .cmp-bp-field:focus {
+  background-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  border-color: var(--azul-claro) !important;
+  color: var(--texto) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;
+}
+
+.cmp-bp-card select.cmp-bp-field option {
+  background-color: var(--fondo-card) !important;
+  color: var(--texto) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MENÚ DE ACCIONES (⋯) — mismo diseño que Presentaciones
+   ════════════════════════════════════════════════════════════════ */
+.dd-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.dd-btn {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  cursor: pointer;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px;
+  white-space: nowrap;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background 0.15s ease, border-color 0.15s ease !important;
+}
+
+.dd-btn i {
+  color: var(--azul-claro) !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.dd-btn:hover,
+.dd-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--azul-claro) 22%, transparent) !important;
+  border-color: color-mix(in srgb, var(--azul-claro) 45%, transparent) !important;
+  transform: none !important;
+}
+
+.dd-menu {
+  display: none;
+  position: fixed;
+  background: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent) !important;
+  border-radius: 12px !important;
+  min-width: 180px;
+  z-index: 9999;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22) !important;
+  overflow: hidden;
+  text-align: left;
+}
+
+.dd-menu.open {
+  display: block;
+}
+
+.dd-menu form {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.dd-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 11px 16px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--texto) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  transition: background 0.12s ease !important;
+  white-space: nowrap;
+  text-decoration: none !important;
+  text-align: left !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.dd-item i {
+  font-size: 15px !important;
+  width: 18px;
+  text-align: center;
+  color: currentColor !important;
+}
+
+.dd-item:hover,
+.dd-item:focus-visible {
+  background: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  color: var(--texto) !important;
+  outline: none !important;
+}
+
+.dd-item.danger {
+  color: #dc3545 !important;
+}
+
+.dd-item.danger:hover,
+.dd-item.danger:focus-visible {
+  background: rgba(220, 53, 69, 0.1) !important;
+  color: #dc3545 !important;
+}
+
+.dd-item.is-disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.dd-sep {
+  height: 1px;
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  margin: 0;
 }
