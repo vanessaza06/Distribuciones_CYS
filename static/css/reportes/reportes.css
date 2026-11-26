@@ -3176,3 +3176,116 @@ html:is(
     padding: 0 10px !important;
   }
 }
+/* ══════════════════════════════════════
+   OPTIMIZACIÓN: apertura instantánea de modales
+   - Sin animación fade/slide
+   - Sin blur en backdrop (muy costoso de renderizar)
+   - Aislamiento de layout para no repintar toda la página
+══════════════════════════════════════ */
+.modal,
+.modal.fade,
+.modal.fade .modal-dialog,
+.modal-backdrop,
+.modal-backdrop.fade,
+.tab-pane.fade {
+  transition: none !important;
+  animation: none !important;
+}
+
+.modal.fade .modal-dialog {
+  transform: none !important;
+}
+
+.modal-backdrop,
+.modal-backdrop.show,
+.cys-modal,
+.cys-modal__header {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.modal-backdrop.show {
+  opacity: .6;
+}
+
+.cys-modal {
+  will-change: auto;
+  contain: layout paint;
+}
+
+.cys-modal__body {
+  contain: content;
+}
+/* ══════════════════════════════════════════
+   QUITAR VERDES DE TARJETAS → color del tema
+   ══════════════════════════════════════════ */
+
+/* Números de las tarjetas principales (text-success de Bootstrap) */
+html body .cys-report-card__stat-num.text-success {
+  color: var(--azul-claro) !important;
+}
+
+/* KPIs de modales (Inventario, Compras, Devoluciones) */
+html body .cys-modal-kpi-v2--verde,
+html body .cys-modal-kpi-v2--menta {
+  border-top-color: var(--azul-claro);
+}
+html body .cys-modal-kpi-v2__icon--verde,
+html body .cys-modal-kpi-v2__icon--menta {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-modal-kpi-v2__val--verde,
+html body .cys-modal-kpi-v2__val--menta {
+  color: var(--azul-claro);
+}
+
+/* Resumen Diario (tarjetas laterales) */
+html body .cys-rd-stat-card--verde,
+html body .cys-rd-stat-card--amarillo {
+  border-left-color: var(--azul-claro);
+}
+html body .cys-rd-stat-card__icon--verde,
+html body .cys-rd-stat-card__icon--amarillo {
+  background: color-mix(in srgb, var(--azul-claro) 15%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-rd-stat-card__val--verde,
+html body .cys-rd-stat-card__val--amarillo {
+  color: var(--azul-claro);
+}
+
+/* Análisis de Ventas (KPIs) */
+html body .cys-av-kpi-card--verde,
+html body .cys-av-kpi-card--amarillo {
+  border-color: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+  border-top-color: var(--azul-claro);
+}
+html body .cys-av-kpi-card--verde .cys-av-kpi-card__icon,
+html body .cys-av-kpi-card--amarillo .cys-av-kpi-card__icon {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-av-kpi-card--verde .cys-av-kpi-card__val,
+html body .cys-av-kpi-card--amarillo .cys-av-kpi-card__val {
+  color: var(--azul-claro);
+}
+html body .cys-av-table-card__star {
+  color: var(--azul-claro);
+}
+
+/* Proveedores (KPI único + icono del modal) */
+html body .cys-modal__kpi-single {
+  border-color: color-mix(in srgb, var(--azul-claro) 25%, transparent);
+}
+html body .cys-modal__kpi-single-icon {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}
+html body .cys-modal__kpi-single-val {
+  color: var(--azul-claro);
+}
+html body .cys-modal__icon--prov {
+  background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  color: var(--azul-claro);
+}

@@ -1,185 +1,62 @@
 /**
  * REPORTES.JS — Reportes y Análisis
- * DataTables (historial + tablas de modales) con buscador y filtros,
- * filtros de fecha, gráficas en tarjetas
+ * DataTables (historial + tablas de modales) con buscador,
+ * filtros de fecha del historial, gráficas en tarjetas
  */
 
 /* ══════════════════════════════════════════════
-   CONFIGURACIÓN DE FILTROS POR TABLA
-   - search : texto del placeholder. Crea un buscador en la barra de filtros
-              (solo en tablas que NO tienen un buscador propio en el HTML).
-   - selects: lista desplegable por columna (col = índice desde 0).
-              Las opciones se generan solas con los valores de la columna.
-   - date   : índice de la columna de fecha para filtrar por rango Desde/Hasta
-              (usa el atributo data-order="Y-m-d H:i:s" de la celda).
+   BUSCADORES DE LAS TABLAS DE MODALES
+   Solo las tablas que NO tienen un buscador en el HTML
+   (data-dt-search) reciben uno creado aquí, con el mismo
+   estilo del buscador del Historial de Ventas.
+   Valor = texto del placeholder.
 ══════════════════════════════════════════════ */
-var CYS_DT_FILTROS = {
-    // Inventario
-    'tabla-modal-stock':          { selects: [{ col: 3, label: 'Estado' }] },
-    'tabla-modal-entradas':       { search: 'Buscar producto, orden...', date: 6 },
-
-    // Proveedores
-    'tabla-modal-proveedores':    { selects: [{ col: 2, label: 'Tipo' }] },
-
-    // Compras
-    'tabla-modal-compras':        { search: 'Buscar proveedor, producto...', selects: [{ col: 1, label: 'Proveedor' }], date: 5 },
-
-    // Resumen diario
-    'tabla-modal-rd-ventas':      { selects: [{ col: 1, label: 'Cliente' }] },
-    'tabla-modal-rd-top':         { search: 'Buscar producto...' },
-
-    // Análisis de ventas
-    'tabla-modal-av-recientes':   { search: 'Buscar producto, cliente...', date: 0 },
-    'tabla-modal-av-top-resumen': { search: 'Buscar producto...' },
-    'tabla-modal-av-ventas':      { selects: [{ col: 1, label: 'Cliente' }], date: 0 },
-
-    // Devoluciones
-    'tabla-modal-devoluciones':   { selects: [{ col: 5, label: 'Estado' }], date: 0 }
+var CYS_DT_BUSCADORES = {
+    'tabla-modal-entradas':       'Buscar producto, orden...',
+    'tabla-modal-compras':        'Buscar proveedor, producto...',
+    'tabla-modal-rd-top':         'Buscar producto...',
+    'tabla-modal-av-recientes':   'Buscar producto, cliente...',
+    'tabla-modal-av-top-resumen': 'Buscar producto...'
 };
 
-/* ── Estilos de la barra de filtros (inyectados una sola vez) ── */
-(function inyectarEstilosFiltros() {
+/* ── Estilo mínimo de la barra del buscador (inyectado una sola vez) ── */
+(function inyectarEstilosBuscador() {
     if (document.getElementById('cys-dt-toolbar-css')) return;
-    var css =
-        '.cys-dt-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:12px 20px;}' +
-        '.cys-dt-field{display:flex;flex-direction:column;gap:4px;min-width:130px;}' +
-        '.cys-dt-field--grow{flex:1 1 220px;}' +
-        '.cys-dt-label{font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#8FA3B1;}' +
-        '.cys-dt-input,.cys-dt-select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);' +
-        'color:#EAF3FA;border-radius:8px;padding:7px 10px;font-size:.82rem;outline:none;width:100%;}' +
-        '.cys-dt-input:focus,.cys-dt-select:focus{border-color:#A78BFA;}' +
-        '.cys-dt-select option{background:#02224a;color:#EAF3FA;}' +
-        '.cys-dt-input[type=date]{color-scheme:dark;}' +
-        '.cys-dt-clear{background:transparent;border:1px solid rgba(255,255,255,.18);color:#EAF3FA;' +
-        'border-radius:8px;padding:7px 12px;font-size:.8rem;cursor:pointer;}' +
-        '.cys-dt-clear:hover{border-color:#A78BFA;color:#A78BFA;}';
     var st = document.createElement('style');
     st.id = 'cys-dt-toolbar-css';
-    st.textContent = css;
+    st.textContent = '.cys-dt-toolbar{padding:12px 20px;}';
     document.head.appendChild(st);
 })();
 
 /* ══════════════════════════════════════════════
-   HELPER: barra de filtros (buscador + listas + rango de fechas)
+   HELPER: buscador con el estilo del Historial de Ventas
 ══════════════════════════════════════════════ */
-function cysBuildToolbar($, $tabla, table, filtros, tieneBuscadorExterno, searchIdExterno) {
-    var tieneBuscador = !!filtros.search && !tieneBuscadorExterno;
-    var tieneSelects = filtros.selects && filtros.selects.length;
-    var tieneFecha = typeof filtros.date === 'number';
+function cysBuildSearch($, $tabla, table, placeholder) {
+    var $bar = $(
+        '<div class="cys-hv-filters cys-dt-toolbar">' +
+        '<div class="cys-hv-date-group">' +
+        '<div class="cys-hv-search-wrap">' +
+        '<i class="bi bi-search cys-hv-search-icon"></i>' +
+        '<input type="text" class="cys-hv-search-input">' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+    );
 
-    if (!tieneBuscador && !tieneSelects && !tieneFecha) return;
-
-    var estado = { selects: {}, desde: '', hasta: '' };
-    var $bar = $('<div class="cys-dt-toolbar"></div>');
-    var $buscador = null;
-
-    function limpiarTexto(v) {
-        return $('<div>').html(v == null ? '' : String(v)).text().replace(/\s+/g, ' ').trim();
-    }
-
-    /* Buscador propio (solo si la tabla no tiene uno en el HTML) */
-    if (tieneBuscador) {
-        var $f = $('<div class="cys-dt-field cys-dt-field--grow"><span class="cys-dt-label">Buscar</span></div>');
-        $buscador = $('<input type="text" class="cys-dt-input">').attr('placeholder', filtros.search);
-        $buscador.on('input', function () { table.search(this.value).draw(); });
-        $f.append($buscador);
-        $bar.append($f);
-    }
-
-    /* Listas desplegables por columna */
-    var $selects = [];
-    (filtros.selects || []).forEach(function (s) {
-        var valores = {};
-        table.column(s.col).data().toArray().forEach(function (v) {
-            var t = limpiarTexto(v);
-            if (t) valores[t] = true;
-        });
-        var lista = Object.keys(valores).sort(function (a, b) { return a.localeCompare(b, 'es'); });
-
-        var $f = $('<div class="cys-dt-field"><span class="cys-dt-label"></span></div>');
-        $f.find('.cys-dt-label').text(s.label);
-        var $sel = $('<select class="cys-dt-select"></select>');
-        $sel.append($('<option value="">Todos</option>'));
-        lista.forEach(function (v) { $sel.append($('<option></option>').val(v).text(v)); });
-
-        $sel.on('change', function () {
-            estado.selects[s.col] = this.value;
-            table.draw();
-        });
-        $f.append($sel);
-        $bar.append($f);
-        $selects.push($sel);
+    var $input = $bar.find('input');
+    $input.attr('placeholder', placeholder || 'Buscar...');
+    $input.on('input', function () {
+        table.search(this.value).draw();
     });
 
-    /* Rango de fechas */
-    var $desde = null, $hasta = null;
-    if (tieneFecha) {
-        var $fd = $('<div class="cys-dt-field"><span class="cys-dt-label">Desde</span></div>');
-        var $fh = $('<div class="cys-dt-field"><span class="cys-dt-label">Hasta</span></div>');
-        $desde = $('<input type="date" class="cys-dt-input">');
-        $hasta = $('<input type="date" class="cys-dt-input">');
-
-        $desde.on('change', function () {
-            estado.desde = this.value;
-            if (this.value) $hasta.attr('min', this.value); else $hasta.removeAttr('min');
-            table.draw();
-        });
-        $hasta.on('change', function () {
-            estado.hasta = this.value;
-            if (this.value) $desde.attr('max', this.value); else $desde.removeAttr('max');
-            table.draw();
-        });
-        $fd.append($desde);
-        $fh.append($hasta);
-        $bar.append($fd, $fh);
-    }
-
-    /* Botón limpiar */
-    var $limpiar = $('<button type="button" class="cys-dt-clear"><i class="bi bi-x-circle me-1"></i>Limpiar</button>');
-    $limpiar.on('click', function () {
-        estado = { selects: {}, desde: '', hasta: '' };
-        $selects.forEach(function ($s) { $s.val(''); });
-        if ($desde) { $desde.val('').removeAttr('max'); }
-        if ($hasta) { $hasta.val('').removeAttr('min'); }
-        if ($buscador) $buscador.val('');
-        if (searchIdExterno) $('#' + searchIdExterno).val('');
-        table.search('').draw();
-    });
-    $bar.append($('<div class="cys-dt-field" style="min-width:auto"></div>').append($limpiar));
-
-    /* Insertar la barra encima de la tabla */
     var $wrap = $tabla.closest('.table-responsive');
     if (!$wrap.length) $wrap = $tabla;
     $wrap.before($bar);
-
-    /* Filtro personalizado (solo afecta a ESTA tabla) */
-    var nodoTabla = table.table().node();
-    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        if (settings.nTable !== nodoTabla) return true;
-
-        // Listas desplegables
-        for (var col in estado.selects) {
-            var buscado = estado.selects[col];
-            if (buscado && limpiarTexto(data[col]) !== buscado) return false;
-        }
-
-        // Rango de fechas
-        if (tieneFecha && (estado.desde || estado.hasta)) {
-            var fila = settings.aoData[dataIndex];
-            var celda = fila && fila.anCells ? fila.anCells[filtros.date] : null;
-            var orden = celda ? (celda.getAttribute('data-order') || '') : '';
-            var dia = orden.substring(0, 10);   // "YYYY-MM-DD"
-            if (!dia) return true;
-            if (estado.desde && dia < estado.desde) return false;
-            if (estado.hasta && dia > estado.hasta) return false;
-        }
-        return true;
-    });
 }
 
 /* ══════════════════════════════════════════════
    HELPER: inicializar un DataTable con pie propio
-   (info + paginación estilo píldoras), buscador y filtros
+   (info + paginación estilo píldoras) y buscador
 ══════════════════════════════════════════════ */
 function cysInitDataTable($, $tabla, cfg) {
     cfg = cfg || {};
@@ -309,11 +186,11 @@ function cysInitDataTable($, $tabla, cfg) {
         }
     }
 
-    /* ── Barra de filtros (buscador propio + listas + fechas) ── */
+    /* ── Buscador propio (solo si la tabla no tiene uno en el HTML) ── */
     var idTabla = $tabla.attr('id');
-    var filtros = cfg.filtros || CYS_DT_FILTROS[idTabla];
-    if (filtros) {
-        cysBuildToolbar($, $tabla, table, filtros, tieneBuscadorExterno, cfg.searchId);
+    var placeholder = cfg.buscador || CYS_DT_BUSCADORES[idTabla];
+    if (placeholder && !tieneBuscadorExterno) {
+        cysBuildSearch($, $tabla, table, placeholder);
     }
 
     return table;
@@ -347,7 +224,6 @@ function cysInitDataTable($, $tabla, cfg) {
                     emptyMsg: msgVacio,
                     pageLength: 10,
                     searchId: 'buscar-historial',
-                    filtros: null,                 // sin barra extra
                     $info: $('#cys-dt-info'),
                     $pag: $('#cys-dt-pagination')
                 });
@@ -495,7 +371,13 @@ function avSetTab(tab) {
 /* ══════════════════════════════════════════════
    GRÁFICAS EN TARJETAS
 ══════════════════════════════════════════════ */
-var CYS_CHART_PALETTE = ['#A78BFA', '#3ECF8E'];
+var CYS_CHART_PALETTE = ['#A78BFA', '#3ECF8E']; // se reemplaza abajo por el color del tema
+
+function cysColorAcento() {
+    var c = getComputedStyle(document.documentElement)
+        .getPropertyValue('--azul-claro').trim();
+    return c || '#B3271C';
+}
 
 /**
  * Convierte el texto de una estadística ("$1.234.567", "1,234", "12.5%", "+8")
@@ -576,6 +458,7 @@ function renderReportCardChart(wrap, card) {
     var colors = [];
 
     var colorIndex = 0;
+        CYS_CHART_PALETTE = ['#A78BFA', cysColorAcento()];
     statItems.forEach(function (item) {
         var numEl = item.querySelector('.cys-report-card__stat-num');
         var labelEl = item.querySelector('.cys-report-card__stat-label');
