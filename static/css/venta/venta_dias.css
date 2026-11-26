@@ -52,6 +52,143 @@
     margin-top: 4px;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   DISEÑO MINIMALISTA Y LIMPIO — VENTAS DEL DÍA
+   ════════════════════════════════════════════════════════════════ */
+
+.cys-kpi-card-mini {
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde, rgba(0,0,0,0.08));
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+}
+.cys-kpi-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.cys-kpi-title-mini {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-muted);
+}
+.cys-kpi-icon-mini {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.cys-kpi-num-mini {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--texto);
+  line-height: 1.15;
+  margin-bottom: 0.25rem;
+}
+.cys-kpi-sub-mini {
+  font-size: 0.74rem;
+  color: var(--texto-muted);
+}
+
+/* Card Minimalista de Análisis */
+.cys-card-mini {
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde, rgba(0,0,0,0.08));
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  height: 100%;
+}
+.cys-card-mini-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 6%, transparent);
+}
+.cys-card-mini-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Fila minimalista de ranking */
+.cys-mini-rank-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);
+}
+.cys-mini-rank-item:last-child {
+  border-bottom: none;
+}
+.cys-mini-rank-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #15803d;
+  border: 1px solid #86efac;
+  font-weight: 800;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Fila minimalista de franja horaria */
+.cys-mini-franja-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);
+}
+.cys-mini-franja-row:last-child {
+  border-bottom: none;
+}
+
+/* Tabla limpia minimalista */
+.cys-table-clean {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.cys-table-clean thead th {
+  background: color-mix(in srgb, var(--fondo) 80%, var(--fondo-card));
+  color: var(--texto-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--azul-borde, rgba(0,0,0,0.08));
+  border-top: none;
+}
+.cys-table-clean tbody td {
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 6%, transparent);
+  vertical-align: middle;
+}
+.cys-table-clean tbody tr:hover td {
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+}
+
 /* BOTONES OVALADOS — acción normal del módulo (acento del tema) */
 .cys-btn-oval-cyan {
     background-color: var(--azul-claro) !important;
