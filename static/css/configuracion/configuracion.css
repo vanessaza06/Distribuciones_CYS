@@ -153,7 +153,7 @@
 .cfg-btn-mini:active { transform: scale(.97); }
 .cfg-btn-mini:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ── OPCIONES (tema, página de inicio) ── */
+/* ── OPCIONES (tema, página de inicio, lado del aside) ── */
 .cfg-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -186,9 +186,44 @@
 }
 .cfg-opt i { display: block; font-size: 1.4rem; margin-bottom: .4rem; }
 
+/* Dos opciones iguales (posición de la barra lateral) */
+.cfg-options--dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 @media (max-width: 576px) {
   .cfg-options { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── PREVIEW DE LADO DEL ASIDE ── */
+.cfg-lado-preview {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  height: 56px;
+  padding: 4px;
+  margin-bottom: .5rem;
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s;
+}
+.cfg-lado-preview--der { flex-direction: row-reverse; }
+.cfg-lado-preview__aside {
+  flex: 0 0 26%;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--azul-claro) 55%, transparent);
+  transition: background .2s;
+}
+.cfg-lado-preview__main {
+  flex: 1;
+  border-radius: 5px;
+  background: var(--fondo-card2);
+}
+.cfg-opt:hover .cfg-lado-preview { transform: scale(1.03); }
+.cfg-opt.activo .cfg-lado-preview { border-color: var(--azul-claro); }
+.cfg-opt.activo .cfg-lado-preview__aside { background: var(--azul-claro); }
 
 /* ── PREVIEW DE TEMA ── */
 .tema-preview {
@@ -1090,4 +1125,48 @@ input:checked + .slider-sw::before { transform: translateX(18px); }
 }
 .cfg-a11y-mini .cfg-toggle-row:last-of-type { border-bottom: 1px solid var(--azul-borde); }
 .cfg-a11y-mini .cfg-toggle-label { font-size: .78rem; }
-.cfg-a11y-mini .cfg-toggle-label span { font-size: .66rem; }  
+.cfg-a11y-mini .cfg-toggle-label span { font-size: .66rem; }
+
+/* ============================================================
+   AJUSTE DE ESPACIO — Configuración
+   ============================================================ */
+
+/* Márgenes laterales y ancho máximo: el contenido ya no queda
+   pegado al borde y se reparte bien en pantallas anchas */
+.cfg-page {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding: 0 clamp(1rem, 2.5vw, 2rem) 2rem;
+  box-sizing: border-box;
+}
+
+/* Las pestañas (Apariencia, Accesibilidad, ...) se reparten en
+   el ancho disponible y bajan de línea en vez de cortarse */
+.cfg-nav {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  gap: .6rem;
+}
+.cfg-nav__btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+/* Los grupos usan todo el ancho y las tarjetas se igualan en alto */
+.cfg-group { width: 100%; }
+.cfg-group .row { --bs-gutter-x: 1.25rem; --bs-gutter-y: 1.25rem; }
+.cfg-group .row > [class*="col"] { display: flex; }
+.cfg-group .row > [class*="col"] > .cfg-section,
+.cfg-group .row > [class*="col"] > .cfg-knob-card { width: 100%; }
+
+/* Cuadrículas internas: se adaptan sin dejar huecos */
+.cfg-options { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.cfg-options--dos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cfg-toggle-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.cfg-actions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+
+@media (max-width: 576px) {
+  .cfg-page { padding-inline: .75rem; }
+  .cfg-nav__btn { flex: 1 1 calc(50% - .6rem); }
+}

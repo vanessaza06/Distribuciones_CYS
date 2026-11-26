@@ -180,6 +180,16 @@ a.cys-btn[href*="entrada" i]:hover {
   max-width: 100%;
 }
 
+/* Versión compacta (resumen por categoría, ahora en media pantalla) */
+.cys-stat-card--compact {
+  min-height: 104px;
+  padding: calc(1rem * var(--density-scale, 1)) calc(.6rem * var(--density-scale, 1));
+}
+
+.cys-stat-card--compact .cys-stat-card__val {
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+}
+
 /* ============================================================
    TÍTULO DE SECCIÓN
    ============================================================ */
@@ -242,10 +252,6 @@ a.cys-btn[href*="entrada" i]:hover {
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tb-icono) 40%, transparent));
 }
 
-.cys-carousel-pad {
-  padding: 8px 0 12px;
-}
-
 /* ============================================================
    FIX: bordes rojos → dorado en las 3 secciones grandes
    (Resumen inventario / Semana / Resumen del año)
@@ -263,18 +269,733 @@ a.cys-btn[href*="entrada" i]:hover {
 }
 
 /* ============================================================
-   FIX: transición suave de altura al cambiar de slide
-   (carrusel de categorías). NO poner min-height fijo en
-   .carousel-item — el alto lo controla el JS dinámicamente.
+   CARRUSEL DE CATEGORÍAS — LLENA TODA LA ALTURA DE SU TARJETA
+   La tarjeta de la izquierda mide lo mismo que la de la derecha
+   (Vistazo rápido). Aquí las tarjetas de categorías se estiran
+   para ocupar ese espacio, sin importar cuánto crezca la otra.
+
+   Cadena: tarjeta → carrusel → carousel-inner → slide activo
+           → .cys-carousel-pad → .row → columnas → tarjetas.
+
+   La altura la manda este CSS (height:auto !important pisa el
+   alto en px que pone principal.js).
    ============================================================ */
+.cys-card:has(> #inventarioCarousel) {
+  display: flex;
+  flex-direction: column;
+}
+
+#inventarioCarousel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 #inventarioCarousel .carousel-inner {
-  transition: height .35s ease;
+  flex: 1 1 auto;
+  height: auto !important;
+  display: flex;
   overflow: hidden;
   position: relative;
 }
 
+/* Solo los slides visibles pasan a flex (los demás siguen ocultos) */
 #inventarioCarousel .carousel-item {
   min-height: unset;
+}
+
+#inventarioCarousel .carousel-item.active,
+#inventarioCarousel .carousel-item-next,
+#inventarioCarousel .carousel-item-prev {
+  display: flex;
+  flex-direction: column;
+}
+
+.cys-carousel-pad {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 12px;
+}
+
+/* Las filas de tarjetas se reparten el alto disponible por igual */
+#inventarioCarousel .cys-carousel-pad > .row {
+  flex: 1 1 auto;
+  align-content: stretch;
+}
+
+/* Cada columna estira su tarjeta hasta abajo */
+#inventarioCarousel .cys-carousel-pad > .row > [class*="col-"] {
+  display: flex;
+}
+
+#inventarioCarousel .cys-stat-card--compact {
+  flex: 1 1 auto;
+}
+/* ============================================================
+   PESTAÑAS DEL "VISTAZO RÁPIDO"
+   (usan las pestañas de Bootstrap; aquí solo el estilo)
+   ============================================================ */
+.cys-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;             /* ← Añadido: alinea el ancho con el resto */
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--azul-claro) 6%, transparent);
+  border: 1px solid var(--azul-borde);
+}
+
+/* Añadido: hace que cada <li> de Bootstrap se reparta el ancho por igual */
+.cys-tabs > li {
+  flex: 1;
+  display: flex;
+}
+
+.cys-tabs .cys-tab {
+  flex: 1;                 /* ← Añadido: estira el botón dentro del <li> */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* ← Añadido: centra texto e ícono en su espacio */
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: transparent;
+  font-family: 'Outfit', sans-serif;
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--tb-label);
+  cursor: pointer;
+  transition: var(--trans);
+}
+
+.cys-tabs .cys-tab:hover,
+.cys-tabs .cys-tab:focus {
+  color: var(--tb-titulo);
+}
+
+.cys-tabs .cys-tab.active {
+  background: var(--cys-dorado);
+  color: var(--tb-btn-dorado-texto);
+  box-shadow: 0 2px 10px var(--cys-dorado-glow);
+}
+
+.cys-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  font-size: .65rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: #dc3545;
+}
+
+.cys-tabs .cys-tab.active .cys-tab__badge {
+  background: rgba(0, 0, 0, .22);
+  color: inherit;
+}
+
+/* Paneles: el activo se estira para llenar la tarjeta */
+.cys-tabpanes {
+  display: flex;
+  flex-direction: column;
+}
+
+.cys-tabpanes > .tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ============================================================
+   RESUMEN MINI (contadores arriba de cada pestaña)
+   Se adapta a 2 o 3 contadores.
+   ============================================================ */
+.cys-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.cys-mini__item {
+  min-width: 0;
+  padding: 10px 6px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--fondo-card2);
+  border: 1px solid var(--azul-borde);
+}
+
+.cys-mini__val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--tb-num);
+  overflow-wrap: anywhere;
+}
+
+.cys-mini__val--rojo {
+  color: #dc3545;
+}
+
+.cys-mini__val--oro {
+  color: var(--cys-dorado);
+}
+
+.cys-mini__lbl {
+  margin-top: 2px;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tb-sub);
+}
+
+/* ============================================================
+   PRODUCTO ESTRELLA (el #1 de más vendidos)
+   ============================================================ */
+.cys-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(
+    135deg,
+    var(--cys-dorado-dim),
+    color-mix(in srgb, var(--cys-dorado) 4%, transparent)
+  );
+  border: 1px solid var(--cys-dorado-borde);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--cys-dorado) 14%, transparent);
+}
+
+.cys-hero__medalla {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  color: var(--tb-btn-dorado-texto);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cys-dorado) 65%, white),
+    var(--cys-dorado)
+  );
+  box-shadow: 0 0 18px var(--cys-dorado-glow);
+}
+
+.cys-hero__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cys-hero__etiqueta {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--cys-dorado);
+}
+
+.cys-hero__nombre {
+  margin: 1px 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tb-titulo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cys-hero__datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: .74rem;
+  color: var(--tb-label);
+}
+
+.cys-hero__datos span {
+  overflow-wrap: anywhere;
+}
+
+.cys-hero__datos i {
+  margin-right: 5px;
+  color: var(--cys-dorado);
+}
+
+.cys-hero__pct {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.cys-hero__pct strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tb-num);
+}
+
+.cys-hero__pct span {
+  font-size: .58rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tb-sub);
+}
+
+/* ============================================================
+   FILAS EN TARJETA (más vendidos 2-5 / stock bajo / por vencer)
+   ============================================================ */
+.cys-rows {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.cys-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: var(--fondo-card2);
+  border: 1px solid var(--azul-borde);
+  transition: var(--trans);
+}
+
+.cys-row:hover {
+  transform: translateX(3px);
+  border-color: var(--cys-dorado-borde);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .16);
+}
+
+/* Número de posición (2, 3, 4, 5) */
+.cys-row__pos,
+.cys-row__icono {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--tb-label);
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde);
+}
+
+/* Íconos de stock bajo */
+.cys-row__icono--critico {
+  color: var(--cys-dorado);
+  background: var(--cys-dorado-dim);
+  border-color: var(--cys-dorado-borde);
+}
+
+.cys-row__icono--agotado {
+  color: #dc3545;
+  background: rgba(220, 53, 69, .12);
+  border-color: rgba(220, 53, 69, .35);
+}
+
+.cys-row__cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cys-row__linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cys-row__nombre {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--tb-titulo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cys-row__sub {
+  margin-top: 1px;
+  font-size: .7rem;
+  color: var(--tb-sub);
+  overflow-wrap: anywhere;
+}
+
+.cys-row__cuerpo .cys-barra {
+  margin-top: 8px;
+}
+
+/* Etiquetas redondeadas (Agotado / 3 und / Vence en 5 días / 20%) */
+.cys-pill {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  white-space: nowrap;
+  color: var(--cys-dorado);
+  background: var(--cys-dorado-dim);
+  border: 1px solid var(--cys-dorado-borde);
+}
+
+.cys-pill--agotado,
+.cys-pill--vencido,
+.cys-pill--urgente {
+  color: #dc3545;
+  background: rgba(220, 53, 69, .12);
+  border-color: rgba(220, 53, 69, .35);
+}
+
+/* Medidor de 5 segmentos (stock bajo) */
+.cys-meter {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.cys-seg {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--tb-sub) 22%, transparent);
+}
+
+.cys-meter--critico .cys-seg--on {
+  background: var(--cys-dorado);
+}
+
+.cys-meter--agotado .cys-seg {
+  background: rgba(220, 53, 69, .28);
+}
+
+/* Mini calendario (por vencer) */
+.cys-fecha {
+  width: 46px;
+  flex-shrink: 0;
+  padding: 6px 0 5px;
+  text-align: center;
+  line-height: 1;
+  border-radius: 12px;
+  color: var(--cys-dorado);
+  background: var(--cys-dorado-dim);
+  border: 1px solid var(--cys-dorado-borde);
+}
+
+.cys-fecha--vencido,
+.cys-fecha--urgente {
+  color: #dc3545;
+  background: rgba(220, 53, 69, .12);
+  border-color: rgba(220, 53, 69, .35);
+}
+
+.cys-fecha__dia {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.cys-fecha__mes {
+  display: block;
+  margin-top: 4px;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* "+ N más ..." y línea al pie de cada pestaña */
+.cys-mas {
+  margin-bottom: 4px;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: .72rem;
+  color: var(--tb-sub);
+}
+
+.cys-pie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: .7rem;
+  color: var(--tb-sub);
+}
+
+.cys-pie i {
+  color: var(--cys-dorado);
+}
+
+/* Barra de progreso (<progress> nativo, sin JS ni estilos inline) */
+.cys-barra {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 99px;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+  background: color-mix(in srgb, var(--tb-sub) 22%, transparent);
+}
+
+/* Los pseudo-elementos de cada navegador van en reglas separadas:
+   si se juntan, el navegador descarta toda la regla. */
+.cys-barra::-webkit-progress-bar {
+  background: transparent;
+}
+
+.cys-barra::-webkit-progress-value {
+  background: var(--cys-dorado);
+  border-radius: 99px;
+}
+
+.cys-barra::-moz-progress-bar {
+  background: var(--cys-dorado);
+  border-radius: 99px;
+}
+
+/* Barra roja (por cobrar) */
+.cys-barra--rojo::-webkit-progress-value {
+  background: #dc3545;
+}
+
+.cys-barra--rojo::-moz-progress-bar {
+  background: #dc3545;
+}
+
+/* ============================================================
+   ESTADO VACÍO (aro con brillo + título + texto)
+   ============================================================ */
+.cys-vacio {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 1.2rem .5rem;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.cys-vacio__aro {
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  font-size: 1.9rem;
+  color: var(--cys-dorado);
+  background: radial-gradient(circle, var(--cys-dorado-dim), transparent 72%);
+  border: 1px dashed var(--cys-dorado-borde);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--cys-dorado) 18%, transparent);
+}
+
+.cys-vacio__titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tb-titulo);
+}
+
+.cys-vacio__texto {
+  max-width: 280px;
+  font-size: .8rem;
+  color: var(--tb-sub);
+}
+
+.cys-vacio .cys-chip {
+  margin-top: 10px;
+  max-width: 100%;
+  text-align: left;
+}
+
+/* ============================================================
+   CHIP (ej. "Total cobrado $...")
+   ============================================================ */
+.cys-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: 'Outfit', sans-serif;
+  font-size: .78rem;
+  color: var(--cys-dorado);
+  background: var(--cys-dorado-dim);
+  border: 1px solid var(--cys-dorado-borde);
+}
+
+.cys-chip strong {
+  font-weight: 700;
+}
+
+/* ============================================================
+   MÉTODOS DE PAGO (efectivo / transferencias / descuentos / por cobrar)
+   ============================================================ */
+.cys-pago {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--fondo-card2);
+  border: 1px solid var(--azul-borde);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
+  transition: var(--trans);
+  font-family: 'Outfit', sans-serif;
+}
+
+.cys-pago:hover {
+  transform: translateY(-3px);
+  border-color: var(--cys-dorado-borde);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .3), 0 0 20px var(--cys-dorado-glow);
+}
+
+.cys-pago__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cys-pago__icono {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  color: var(--cys-dorado);
+  background: var(--cys-dorado-dim);
+  border: 1px solid var(--cys-dorado-borde);
+}
+
+.cys-pago__datos {
+  flex: 1;
+  min-width: 0;
+}
+
+.cys-pago__nombre {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--tb-label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cys-pago__monto {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--tb-num);
+  overflow-wrap: anywhere;
+}
+
+.cys-pago__pct {
+  flex-shrink: 0;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--cys-dorado);
+}
+
+/* Nota pequeña al pie de la tarjeta */
+.cys-pago__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: auto;
+  font-size: .72rem;
+  line-height: 1.35;
+  color: var(--tb-sub);
+}
+
+.cys-pago__nota i {
+  margin-top: 1px;
+  color: var(--cys-dorado);
+}
+
+/* Desglose de medios digitales (Nequi, Daviplata...) */
+.cys-pago__chips {
+  list-style: none;
+  margin: auto 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cys-pago__chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: .72rem;
+  color: var(--tb-label);
+  background: var(--fondo-card);
+  border: 1px solid var(--azul-borde);
+}
+
+.cys-pago__chip i {
+  margin-right: 6px;
+  color: var(--cys-dorado);
+}
+
+.cys-pago__chip strong {
+  font-weight: 700;
+  color: var(--tb-titulo);
+}
+
+/* Variante roja (por cobrar) */
+.cys-pago--alerta .cys-pago__icono {
+  color: #dc3545;
+  background: rgba(220, 53, 69, .12);
+  border-color: rgba(220, 53, 69, .35);
+}
+
+.cys-pago--alerta .cys-pago__pct,
+.cys-pago--alerta .cys-pago__nota i {
+  color: #dc3545;
 }
 
 /* ============================================================
@@ -291,5 +1012,13 @@ a.cys-btn[href*="entrada" i]:hover {
   .cys-stat-card {
     min-height: 110px;
     padding: 1rem .75rem;
+  }
+
+  .cys-tabs .cys-tab {
+    padding: 6px 10px;
+  }
+
+  .cys-hero {
+    flex-wrap: wrap;
   }
 }

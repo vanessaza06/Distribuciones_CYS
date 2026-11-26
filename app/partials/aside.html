@@ -330,6 +330,25 @@
   </div>
 </div>
 
+<!-- Lado del aside (izquierda / derecha): se aplica YA, antes de pintar, para evitar parpadeo -->
+<script>
+(function () {
+  try {
+    var lado = localStorage.getItem('cys_aside_lado');
+    if (lado !== 'izquierda' && lado !== 'derecha') {
+      var c = JSON.parse(localStorage.getItem('cys_config') || '{}') || {};
+      lado = c.asideLado === 'izquierda' ? 'izquierda' : 'derecha';
+    }
+    document.documentElement.setAttribute('data-aside-lado', lado);
+    var el = document.getElementById('sidebarRight');
+    if (el) {
+      el.classList.toggle('offcanvas-end', lado === 'derecha');
+      el.classList.toggle('offcanvas-start', lado === 'izquierda');
+    }
+  } catch (e) {}
+})();
+</script>
+
 <!-- Overlay animación de cierre de sesión -->
 <div id="cysLogoutOverlay" class="cys-logout-overlay" hx-preserve="true">
   <div class="cys-logout-box">
