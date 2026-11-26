@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/cuerpo/fonts.css' %}" />
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}">
 
-<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261125c">
+<link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261126a">
 
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
@@ -816,7 +816,7 @@
                     </h5>
                     <small>Completa los datos de pago para esta compra</small>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <form id="formPago" method="POST" action="{% url 'registrar_pago_compra' %}">
@@ -894,16 +894,16 @@
                     <!-- Tarjeta de Estado Financiero de la Compra -->
                     <div class="p-3 mb-4 rounded cmp-tarjeta-financiera">
                         <div class="row g-2 text-center">
-                            <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="col-4 border-end">
                                 <small class="text-muted d-block cmp-text-mini">Total Compra</small>
-                                <span class="fw-bold text-light fs-6" id="resumenMontoTotal">$0</span>
+                                <span class="fw-bold fs-6" id="resumenMontoTotal">$0</span>
                             </div>
-                            <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="col-4 border-end">
                                 <small class="text-muted d-block cmp-text-mini">Ya Pagado</small>
                                 <span class="fw-bold text-success fs-6" id="resumenMontoPagado">$0</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block text-warning fw-semibold cmp-text-mini">Saldo pendiente</small>
+                                <small class="text-muted d-block fw-semibold cmp-text-mini">Saldo pendiente</small>
                                 <span class="fw-bold text-danger fs-5" id="resumenSaldoPendiente">$0</span>
                             </div>
                         </div>

@@ -3,6 +3,7 @@ import re
 import glob
 import shutil
 import subprocess
+import unicodedata
 from datetime import datetime
 
 from django.conf import settings
@@ -16,12 +17,240 @@ from app.models import BackupRegistro
 
 MAX_UPLOAD_MB = 500
 
+_LETRAS_INICIO_RE = re.compile(r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{3}")
+_NOMBRE_RESPALDO_RE = re.compile(
+    r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{3}[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 _.-]*$"
+)
+_SQL_DATA_RE = re.compile(
+    r"\b(?:"
+    r"INSERT\s+(?:LOW_PRIORITY\s+|DELAYED\s+|HIGH_PRIORITY\s+)?(?:IGNORE\s+)?INTO\s+[`\"'\w.]+"
+    r"(?:\s*\([^)]*\))?\s+(?:(?:VALUES|VALUE)\s*\(\s*[^)\s]|SET\s+\S|SELECT\s+\S)"
+    r"|REPLACE\s+(?:LOW_PRIORITY\s+|DELAYED\s+)?INTO\s+[`\"'\w.]+"
+    r"(?:\s*\([^)]*\))?\s+(?:(?:VALUES|VALUE)\s*\(\s*[^)\s]|SET\s+\S|SELECT\s+\S)"
+    r"|LOAD\s+DATA\s+(?:LOW_PRIORITY\s+|CONCURRENT\s+)?(?:LOCAL\s+)?INFILE\s+\S"
+    r")",
+    re.IGNORECASE,
+)
+_SQL_ESTRUCTURA_RE = re.compile(
+    r"\b(?:CREATE|DROP|ALTER|TRUNCATE|LOCK|UNLOCK|SET|USE)\s+(?:TABLE|DATABASE|SCHEMA|VIEW|INDEX|TRIGGER|TABLES|NAMES)\b",
+    re.IGNORECASE,
+)
+
+
+def _validar_nombre_respaldo(texto, obligatorio=False):
+    """Valida que el nombre del respaldo inicie con 3 letras (sin números ni puntos al principio).
+
+    Devuelve un mensaje de error o None si es válido.
+    """
+    raw = (texto or "").strip()
+    if not raw:
+        if obligatorio:
+            return "El nombre de la copia de seguridad es obligatorio."
+        return None
+
+    if "/" in raw or "\\" in raw:
+        return "El nombre no puede contener barras (/ o \\)."
+
+    base = raw[:-4] if raw.lower().endswith(".sql") else raw
+
+    if len(base) > 80:
+        return "El nombre de la copia de seguridad no puede superar 80 caracteres."
+
+    if not _LETRAS_INICIO_RE.match(base):
+        return (
+            "El nombre de la copia de seguridad debe comenzar con 3 letras "
+            "(no se permiten números, puntos ni símbolos al principio)."
+        )
+
+    if ".." in base or base.endswith("."):
+        return "El nombre no puede contener puntos seguidos (..) ni terminar en punto."
+
+    if not _NOMBRE_RESPALDO_RE.fullmatch(base):
+        return (
+            "El nombre contiene caracteres no permitidos. "
+            "Usa solo letras, números, espacios, puntos, guiones (-) o guion bajo (_)."
+        )
+
+    return None
+
+
+def _quitar_comentarios_sql(texto, estado):
+    """Elimina comentarios SQL (-- ..., # ..., /* ... */) preservando el estado entre fragmentos."""
+    out = []
+    i = 0
+    n = len(texto)
+    en_bloque = estado["en_bloque"]
+    en_linea = estado["en_linea"]
+    comilla = estado["comilla"]
+    escape = estado["escape"]
+
+    while i < n:
+        ch = texto[i]
+
+        if en_linea:
+            if ch == "\n":
+                en_linea = False
+                out.append("\n")
+            i += 1
+            continue
+
+        if en_bloque:
+            if ch == "*" and i + 1 < n and texto[i + 1] == "/":
+                en_bloque = False
+                out.append(" ")
+                i += 2
+            elif ch == "*" and i + 1 == n:
+                estado["pendiente"] = "*"
+                i += 1
+            else:
+                i += 1
+            continue
+
+        if comilla:
+            out.append(ch)
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == comilla:
+                comilla = None
+            i += 1
+            continue
+
+        if ch in ("'", '"'):
+            comilla = ch
+            out.append(ch)
+            i += 1
+            continue
+
+        if ch == "#":
+            en_linea = True
+            out.append(" ")
+            i += 1
+            continue
+
+        if ch == "-":
+            if i + 1 < n:
+                if texto[i + 1] == "-":
+                    if i + 2 >= n or texto[i + 2] in (" ", "\t", "\r", "\n", "-"):
+                        en_linea = True
+                        out.append(" ")
+                        i += 2
+                        continue
+            else:
+                estado["pendiente"] = "-"
+                i += 1
+                continue
+
+        if ch == "/":
+            if i + 1 < n:
+                if texto[i + 1] == "*":
+                    en_bloque = True
+                    out.append(" ")
+                    i += 2
+                    continue
+            else:
+                estado["pendiente"] = "/"
+                i += 1
+                continue
+
+        out.append(ch)
+        i += 1
+
+    estado["en_bloque"] = en_bloque
+    estado["en_linea"] = en_linea
+    estado["comilla"] = comilla
+    estado["escape"] = escape
+    return "".join(out)
+
+
+def _validar_contenido_sql(archivo):
+    """Verifica que el archivo .sql no esté vacío, sea texto válido y contenga datos SQL.
+
+    Devuelve un mensaje de error o None si el archivo es válido.
+    """
+    if getattr(archivo, "size", 0) == 0:
+        return "El archivo seleccionado está vacío."
+
+    estado = {
+        "en_bloque": False,
+        "en_linea": False,
+        "comilla": None,
+        "escape": False,
+        "pendiente": "",
+    }
+    tiene_contenido = False
+    tiene_estructura = False
+    tiene_datos = False
+    ventana = ""
+    es_primer_chunk = True
+
+    try:
+        archivo.seek(0)
+        for chunk in archivo.chunks():
+            if not chunk:
+                continue
+
+            if b"\x00" in chunk:
+                return "El archivo no es un archivo .sql de texto válido."
+
+            if tiene_datos:
+                # Ya se encontraron datos válidos; solo seguimos verificando que no sea binario
+                continue
+
+            if es_primer_chunk:
+                es_primer_chunk = False
+                if chunk.startswith(b"\xef\xbb\xbf"):
+                    chunk = chunk[3:]
+
+            try:
+                texto = chunk.decode("utf-8")
+            except UnicodeDecodeError:
+                texto = chunk.decode("latin-1", errors="ignore")
+
+            if estado["pendiente"]:
+                texto = estado["pendiente"] + texto
+                estado["pendiente"] = ""
+
+            limpio = _quitar_comentarios_sql(texto, estado)
+            if limpio.strip():
+                tiene_contenido = True
+
+            ventana = (ventana + limpio)[-8192:]
+            if _SQL_DATA_RE.search(ventana):
+                tiene_datos = True
+            elif not tiene_estructura and _SQL_ESTRUCTURA_RE.search(ventana):
+                tiene_estructura = True
+
+        if not tiene_datos and estado["pendiente"]:
+            limpio = estado["pendiente"]
+            if limpio.strip():
+                tiene_contenido = True
+            ventana = (ventana + limpio)[-8192:]
+            if _SQL_DATA_RE.search(ventana):
+                tiene_datos = True
+    finally:
+        try:
+            archivo.seek(0)
+        except Exception:
+            pass
+
+    if not tiene_contenido:
+        return "El archivo .sql está vacío o solo contiene comentarios, sin datos."
+    if not tiene_datos:
+        if tiene_estructura:
+            return "El archivo .sql solo contiene estructura y no tiene datos (registros INSERT) para restaurar."
+        return "El archivo .sql no contiene datos ni sentencias SQL válidas para restaurar."
+    return None
+
 
 def _sanitizar_nombre(texto, fallback="backup_cys"):
     """Deja solo caracteres seguros para nombres de archivo (evita path traversal)."""
     base = os.path.basename((texto or "").strip())
     if base.lower().endswith(".sql"):
         base = base[:-4]
+    base = unicodedata.normalize("NFKD", base)
+    base = "".join(ch for ch in base if unicodedata.category(ch) != "Mn")
     limpio = re.sub(r"[^A-Za-z0-9._\- ]+", "", base).strip().replace(" ", "_")
     limpio = re.sub(r"_+", "_", limpio).strip("._-")
     return (limpio[:80] or fallback)
@@ -154,6 +383,14 @@ def respaldos_index(request):
 @require_POST
 def respaldo_crear(request):
     """Genera un nuevo respaldo completo de la base de datos."""
+    nombre_custom = request.POST.get("nombre", "").strip()
+    descripcion = request.POST.get("descripcion", "").strip()[:500]
+
+    err_nombre = _validar_nombre_respaldo(nombre_custom, obligatorio=False)
+    if err_nombre:
+        messages.error(request, err_nombre)
+        return redirect("respaldos_index")
+
     try:
         bin_dump = _obtener_binario("mysqldump")
         if not bin_dump:
@@ -166,9 +403,6 @@ def respaldo_crear(request):
         db_info = _obtener_datos_db()
         backup_dir = os.path.join(settings.BASE_DIR, "backups")
         os.makedirs(backup_dir, exist_ok=True)
-
-        nombre_custom = request.POST.get("nombre", "").strip()
-        descripcion = request.POST.get("descripcion", "").strip()[:500]
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         if nombre_custom:
@@ -232,30 +466,33 @@ def respaldo_editar(request, pk):
     nuevo_nombre_raw = request.POST.get("nombre", "").strip()
     nueva_desc = request.POST.get("descripcion", "").strip()[:500]
 
-    if nuevo_nombre_raw:
-        base_segura = _sanitizar_nombre(nuevo_nombre_raw, fallback=f"backup_{registro.pk}")
-        nuevo_nombre = f"{base_segura}.sql"
+    err_nombre = _validar_nombre_respaldo(nuevo_nombre_raw, obligatorio=True)
+    if err_nombre:
+        messages.error(request, err_nombre)
+        return redirect("respaldos_index")
 
-        if nuevo_nombre != registro.nombre and registro.ruta and os.path.exists(registro.ruta):
-            backup_dir = os.path.dirname(registro.ruta)
-            nueva_ruta = os.path.join(backup_dir, nuevo_nombre)
-            if os.path.exists(nueva_ruta):
-                messages.error(
-                    request,
-                    f"Ya existe un archivo llamado '{nuevo_nombre}'. Elige otro nombre.",
-                )
-                return redirect("respaldos_index")
-            try:
-                os.rename(registro.ruta, nueva_ruta)
-                registro.ruta = nueva_ruta
-            except Exception as e:
-                messages.warning(
-                    request,
-                    f"Se actualizó el registro pero no se pudo renombrar en disco: {e}",
-                )
+    base_segura = _sanitizar_nombre(nuevo_nombre_raw, fallback=f"backup_{registro.pk}")
+    nuevo_nombre = f"{base_segura}.sql"
 
-        registro.nombre = nuevo_nombre
+    if nuevo_nombre != registro.nombre and registro.ruta and os.path.exists(registro.ruta):
+        backup_dir = os.path.dirname(registro.ruta)
+        nueva_ruta = os.path.join(backup_dir, nuevo_nombre)
+        if os.path.exists(nueva_ruta):
+            messages.error(
+                request,
+                f"Ya existe un archivo llamado '{nuevo_nombre}'. Elige otro nombre.",
+            )
+            return redirect("respaldos_index")
+        try:
+            os.rename(registro.ruta, nueva_ruta)
+            registro.ruta = nueva_ruta
+        except Exception as e:
+            messages.warning(
+                request,
+                f"Se actualizó el registro pero no se pudo renombrar en disco: {e}",
+            )
 
+    registro.nombre = nuevo_nombre
     registro.descripcion = nueva_desc
     registro.save()
 
@@ -371,12 +608,22 @@ def respaldo_subir(request):
         messages.error(request, "El archivo debe tener extensión .sql")
         return redirect("respaldos_index")
 
+    err_nombre = _validar_nombre_respaldo(os.path.basename(archivo.name), obligatorio=True)
+    if err_nombre:
+        messages.error(request, err_nombre)
+        return redirect("respaldos_index")
+
     if archivo.size == 0:
         messages.error(request, "El archivo seleccionado está vacío.")
         return redirect("respaldos_index")
 
     if archivo.size > MAX_UPLOAD_MB * 1024 * 1024:
         messages.error(request, f"El archivo supera el límite permitido de {MAX_UPLOAD_MB} MB.")
+        return redirect("respaldos_index")
+
+    err_contenido = _validar_contenido_sql(archivo)
+    if err_contenido:
+        messages.error(request, err_contenido)
         return redirect("respaldos_index")
 
     try:
