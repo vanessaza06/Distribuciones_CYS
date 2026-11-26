@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="{% static 'css/proveedores/proveedores.css' %}?v=20261125g">
 <link rel="stylesheet" href="{% static 'css/proveedores/compras.css' %}?v=20261125g">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
-<link rel="stylesheet" href="{% static 'css/proveedores/detalle_compra.css' %}?v=20261125g">
+<link rel="stylesheet" href="{% static 'css/proveedores/detalle_compra.css' %}?v=20261126b">
 {% endblock %}
 
 {% block content %}
@@ -112,13 +112,13 @@
 
       <div class="dc-metric-card">
         <span class="dc-metric-card__label">Monto pagado</span>
-        <span class="dc-metric-card__value text-success">{{ compra.monto_pagado|default:0|cop }}</span>
+        <span class="dc-metric-card__value">{{ compra.monto_pagado|default:0|cop }}</span>
         <span class="dc-metric-card__sub">Abonos aplicados</span>
       </div>
 
       <div class="dc-metric-card">
         <span class="dc-metric-card__label">Saldo pendiente</span>
-        <span class="dc-metric-card__value {% if compra.saldo <= 0 %}text-success{% else %}text-danger{% endif %}">
+        <span class="dc-metric-card__value">
           {{ compra.saldo|default:0|cop }}
         </span>
         <span class="dc-metric-card__sub">{% if compra.saldo <= 0 %}Al día{% else %}Por pagar{% endif %}</span>

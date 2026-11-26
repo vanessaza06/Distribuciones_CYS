@@ -1,15 +1,18 @@
 /* ============================================================================
    DETALLE DE DEVOLUCIÓN (Cliente & Proveedor) — CYS Ltda
-   Diseño limpio, sobrio y espacioso, adaptable a los 5 temas de base.js
+   Diseño limpio, moderno y con acentos de color equilibrados (5 temas base.js)
    ============================================================================ */
 
 .dev-detail-page {
   --dd-accent: var(--azul-claro);
-  --dd-border: color-mix(in srgb, var(--texto) 10%, transparent);
+  --dd-gold: var(--dorado, #CF9C48);
+  --dd-green: var(--verde, #16a34a);
+  --dd-red: var(--rojo, #dc2626);
+  --dd-border: color-mix(in srgb, var(--texto) 11%, transparent);
   --dd-border-soft: color-mix(in srgb, var(--texto) 7%, transparent);
-  --dd-surface: color-mix(in srgb, var(--texto) 3%, var(--fondo-card));
+  --dd-surface: color-mix(in srgb, var(--texto) 3.5%, var(--fondo-card));
   --dd-card: var(--fondo-card);
-  --dd-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+  --dd-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.04);
   color: var(--texto);
   background: var(--fondo);
   padding: 1.75rem 2rem 3.25rem;
@@ -31,12 +34,12 @@
   border: 1px solid var(--dd-border) !important;
   border-radius: 16px !important;
   box-shadow: var(--dd-shadow) !important;
-  transition: border-color 0.2s ease !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .dev-detail-page .dev-card:hover {
-  box-shadow: var(--dd-shadow) !important;
-  border-color: color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07) !important;
+  border-color: color-mix(in srgb, var(--dd-gold) 32%, var(--dd-border)) !important;
 }
 
 /* ── Barra superior (volver + exportar) ── */
@@ -46,28 +49,38 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.4rem;
 }
 
 .dd-back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.52rem 1.05rem;
   border-radius: 999px;
   font-size: 0.86rem;
   font-weight: 600;
-  color: var(--texto-muted);
+  color: var(--texto);
   background: var(--dd-card);
   border: 1px solid var(--dd-border);
   text-decoration: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
+.dd-back-link i {
+  color: var(--dd-accent) !important;
+  transition: transform 0.18s ease;
+}
+
 .dd-back-link:hover {
-  color: var(--texto);
-  border-color: color-mix(in srgb, var(--texto) 24%, transparent);
-  background: var(--dd-surface);
+  color: var(--dd-accent);
+  border-color: color-mix(in srgb, var(--dd-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--dd-accent) 7%, var(--dd-card));
+}
+
+.dd-back-link:hover i {
+  transform: translateX(-2px);
 }
 
 /* ── Dropdown Exportar ── */
@@ -81,10 +94,10 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 0.5rem !important;
-  padding: 0.5rem 1.15rem !important;
+  padding: 0.52rem 1.15rem !important;
   border-radius: 999px !important;
-  background: var(--dd-card) !important;
-  border: 1px solid var(--dd-border) !important;
+  background: color-mix(in srgb, var(--dd-accent) 9%, var(--dd-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 36%, transparent) !important;
   color: var(--texto) !important;
   font-size: 0.86rem !important;
   font-weight: 600 !important;
@@ -95,7 +108,7 @@
 }
 
 .dd-btn-exportar > i {
-  color: var(--texto-muted) !important;
+  color: var(--dd-accent) !important;
   font-size: 0.95rem;
 }
 
@@ -107,7 +120,7 @@
   margin-left: 0.15rem;
   font-size: 0.7rem;
   font-weight: 700 !important;
-  color: var(--texto-muted);
+  color: var(--dd-accent);
   transition: transform 0.2s ease;
 }
 
@@ -118,8 +131,8 @@
 .dd-btn-exportar:hover,
 .dd-btn-exportar:focus,
 .dd-btn-exportar[aria-expanded="true"] {
-  background: var(--dd-surface) !important;
-  border-color: color-mix(in srgb, var(--texto) 26%, transparent) !important;
+  background: color-mix(in srgb, var(--dd-accent) 16%, var(--dd-card)) !important;
+  border-color: var(--dd-accent) !important;
   color: var(--texto) !important;
   box-shadow: none !important;
 }
@@ -150,15 +163,15 @@
 
 .dd-dropdown-export .dropdown-item:hover,
 .dd-dropdown-export .dropdown-item:focus {
-  background: var(--dd-surface) !important;
+  background: color-mix(in srgb, var(--dd-accent) 10%, transparent) !important;
   color: var(--texto) !important;
 }
 
 .dd-dropdown-export .bi-file-earmark-excel { color: #16a34a !important; font-size: 1.05rem; }
 .dd-dropdown-export .bi-file-earmark-pdf   { color: #dc2626 !important; font-size: 1.05rem; }
-.dd-dropdown-export .bi-printer            { color: var(--texto-muted) !important; font-size: 1.05rem; }
+.dd-dropdown-export .bi-printer            { color: var(--dd-accent) !important; font-size: 1.05rem; }
 
-/* ── Encabezado Hero (limpio, sin gradientes ni barras gruesas) ── */
+/* ── Encabezado Hero limpio con acento de color equilibrado ── */
 .dd-hero,
 .dev-detail-page .dpv-hero {
   display: flex;
@@ -166,21 +179,31 @@
   justify-content: space-between;
   gap: 1.75rem;
   flex-wrap: wrap;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.55rem;
   padding: 1.75rem 2rem;
-  border: 1px solid var(--dd-border);
+  border: 1px solid color-mix(in srgb, var(--dd-gold) 24%, var(--dd-border));
+  border-left: 4px solid var(--dd-gold);
   border-radius: 16px;
-  background: var(--dd-card);
+  background: linear-gradient(
+    135deg,
+    var(--dd-card) 0%,
+    color-mix(in srgb, var(--dd-gold) 6%, var(--dd-card)) 62%,
+    color-mix(in srgb, var(--dd-accent) 6%, var(--dd-card)) 100%
+  );
   box-shadow: var(--dd-shadow);
   position: relative;
   overflow: visible;
 }
 
+.dev-detail-page .dpv-hero--aplicada  { border-left-color: var(--dd-green); }
+.dev-detail-page .dpv-hero--aprobada  { border-left-color: var(--dd-accent); }
+.dev-detail-page .dpv-hero--rechazada { border-left-color: var(--dd-red); }
+
 .dd-hero__left,
 .dev-detail-page .dpv-hero__main {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
   min-width: 0;
   flex: 1 1 340px;
 }
@@ -189,11 +212,16 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.72rem;
+  width: fit-content;
+  padding: 0.22rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--texto-muted);
+  color: color-mix(in srgb, var(--dd-gold) 78%, var(--texto));
+  background: color-mix(in srgb, var(--dd-gold) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dd-gold) 30%, transparent);
 }
 
 .dd-hero__title-row,
@@ -207,7 +235,7 @@
 .dd-hero__num,
 .dev-detail-page .dpv-hero__title h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-size: clamp(1.5rem, 2.2vw, 1.95rem);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--texto);
@@ -227,9 +255,9 @@
 
 .dd-hero__sub i,
 .dev-detail-page .dpv-hero__sub i {
-  color: var(--texto-muted) !important;
+  color: var(--dd-gold) !important;
   font-size: 0.88rem;
-  margin-right: 0.2rem;
+  margin-right: 0.24rem;
 }
 
 .dd-hero__total-box,
@@ -239,19 +267,16 @@
   justify-content: center;
   align-items: flex-end;
   text-align: right;
-  padding: 0.25rem 0 0.25rem 1.75rem;
-  border-left: 1px solid var(--dd-border);
-  background: transparent;
-  border-top: 0;
-  border-right: 0;
-  border-bottom: 0;
-  border-radius: 0;
-  min-width: 210px;
+  padding: 1rem 1.45rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--dd-accent) 8%, var(--dd-card));
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 24%, transparent);
+  min-width: 225px;
 }
 
 .dd-hero__total-box span,
 .dev-detail-page .dpv-hero__total span {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -263,7 +288,7 @@
   font-size: clamp(1.55rem, 2.3vw, 2rem);
   line-height: 1.2;
   font-weight: 800;
-  color: var(--texto);
+  color: var(--dd-accent);
   margin-top: 0.15rem;
 }
 
@@ -274,41 +299,41 @@
   margin-top: 0.2rem;
 }
 
-/* ── Badges de estado (único acento semántico en encabezado) ── */
+/* ── Badges de estado semánticos ── */
 .dd-estado {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.78rem;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 0.3rem 0.82rem;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 0.78rem;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .dd-estado--completada {
-  background: rgba(34, 197, 94, 0.11);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.26);
+  background: color-mix(in srgb, var(--dd-green) 14%, transparent);
+  color: var(--dd-green);
+  border: 1px solid color-mix(in srgb, var(--dd-green) 34%, transparent);
 }
 
 .dd-estado--pendiente {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.14);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.28);
+  border: 1px solid rgba(245, 158, 11, 0.34);
 }
 
 .dd-estado--rechazada {
-  background: rgba(220, 53, 69, 0.11);
-  color: #dc2626;
-  border: 1px solid rgba(220, 53, 69, 0.26);
+  background: color-mix(in srgb, var(--dd-red) 14%, transparent);
+  color: var(--dd-red);
+  border: 1px solid color-mix(in srgb, var(--dd-red) 34%, transparent);
 }
 
 .dd-estado--activo {
-  background: var(--dd-surface);
-  color: var(--texto);
-  border: 1px solid var(--dd-border);
+  background: color-mix(in srgb, var(--dd-accent) 12%, transparent);
+  color: var(--dd-accent);
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 30%, transparent);
 }
 
 /* ── Layout 2 columnas con respiración amplia ── */
@@ -316,7 +341,7 @@
 .dev-detail-page .dpv-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 1.75rem;
+  gap: 1.6rem;
   align-items: start;
 }
 
@@ -324,7 +349,7 @@
 .dev-detail-page .dpv-main {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.6rem;
   min-width: 0;
 }
 
@@ -332,17 +357,23 @@
 .dev-detail-page .dpv-side {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.45rem;
   min-width: 0;
 }
 
-/* ── Cards limpias y espaciosas ── */
+/* ── Cards limpias con encabezado suave e ícono acentuado ── */
 .dd-card {
   border: 1px solid var(--dd-border);
   border-radius: 16px;
   background: var(--dd-card);
   box-shadow: var(--dd-shadow);
   overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dd-card:hover {
+  border-color: color-mix(in srgb, var(--dd-gold) 32%, var(--dd-border));
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07);
 }
 
 .dd-card__head,
@@ -351,102 +382,107 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  padding: 1.2rem 1.75rem;
+  padding: 1.1rem 1.6rem;
   border-bottom: 1px solid var(--dd-border-soft);
-  background: transparent;
+  background: color-mix(in srgb, var(--dd-gold) 4%, var(--dd-card));
 }
 
 .dd-card__head h3,
 .dev-detail-page .dpv-panel__title {
   margin: 0;
-  font-size: 0.96rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: normal;
   text-transform: none;
   color: var(--texto);
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.65rem;
 }
 
 .dd-card__head h3 i,
 .dev-detail-page .dpv-panel__title i {
-  color: var(--texto-muted) !important;
-  font-size: 1rem;
-  width: auto;
-  height: auto;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dd-gold) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dd-gold) 28%, transparent);
+  color: var(--dd-gold) !important;
+  font-size: 0.92rem;
+  flex-shrink: 0;
 }
 
 .dd-card__head .dd-badge,
 .dev-detail-page .dpv-panel__head .dd-badge {
   font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--texto-muted);
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border);
+  font-weight: 700;
+  color: var(--dd-accent);
+  background: color-mix(in srgb, var(--dd-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 28%, transparent);
   border-radius: 999px;
-  padding: 0.22rem 0.72rem;
+  padding: 0.24rem 0.78rem;
   white-space: nowrap;
 }
 
 .dd-card__body,
 .dev-detail-page .dpv-panel__body {
-  padding: 1.5rem 1.75rem;
+  padding: 1.45rem 1.6rem;
 }
 
 .dd-card__body--compact {
   padding: 1.25rem 1.5rem;
 }
 
-/* ── Info grid limpio (sin cajas dentro de cajas) ── */
+/* ── Info grid limpio y legible ── */
 .dd-info-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem 2rem;
+  gap: 1rem;
 }
 
 .dd-info-item {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 0.9rem 1.05rem;
+  border: 1px solid var(--dd-border-soft);
+  border-radius: 12px;
+  background: var(--dd-surface);
 }
 
 .dd-info-label {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--texto-muted);
-  margin-bottom: 0.38rem;
+  margin-bottom: 0.34rem;
 }
 
 .dd-info-label i {
-  color: var(--texto-muted) !important;
+  color: var(--dd-gold) !important;
   font-size: 0.82rem;
-  opacity: 0.85;
 }
 
 .dd-info-value {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--texto);
   line-height: 1.35;
   word-break: break-word;
 }
 
 .dd-info-sub {
-  font-size: 0.8rem;
-  font-weight: 400;
+  font-size: 0.79rem;
+  font-weight: 500;
   color: var(--texto-muted);
-  margin-top: 0.22rem;
+  margin-top: 0.2rem;
 }
 
-/* ── Tabla de productos (colores .prod-table + espaciado amplio) ── */
+/* ── Tabla de productos (limpia con acentos) ── */
 .dd-prod-table {
   width: 100%;
   border-collapse: collapse;
@@ -454,7 +490,7 @@
 }
 
 .dd-prod-table thead {
-  background: color-mix(in srgb, var(--azul-claro) 7%, transparent);
+  background: color-mix(in srgb, var(--azul-claro) 9%, transparent);
 }
 
 .dd-prod-table th {
@@ -465,7 +501,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--azul-claro);
-  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 12%, transparent);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--azul-claro) 20%, transparent);
   white-space: nowrap;
 }
 
@@ -486,7 +522,7 @@
 }
 
 .dd-prod-table tbody tr:hover td {
-  background: color-mix(in srgb, var(--azul-claro) 3.5%, transparent);
+  background: color-mix(in srgb, var(--azul-claro) 4.5%, transparent);
 }
 
 .dd-prod-table td.dd-money {
@@ -513,22 +549,22 @@
   align-items: center;
   justify-content: center;
   min-width: 34px;
-  height: 26px;
+  height: 27px;
   padding: 0 0.55rem;
-  border-radius: 7px;
+  border-radius: 8px;
   font-weight: 700;
   font-size: 0.84rem;
-  color: var(--texto);
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border);
+  color: var(--dd-accent);
+  background: color-mix(in srgb, var(--dd-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 28%, transparent);
 }
 
 .dd-total-row td,
 .dev-detail-page .dpv-panel tfoot td {
   padding: 15px 18px !important;
   font-weight: 700 !important;
-  border-top: 1px solid var(--dd-border) !important;
-  background: var(--dd-surface) !important;
+  border-top: 1.5px solid color-mix(in srgb, var(--dd-accent) 20%, var(--dd-border)) !important;
+  background: color-mix(in srgb, var(--dd-accent) 6%, var(--dd-card)) !important;
   color: var(--texto) !important;
 }
 
@@ -541,19 +577,20 @@
 
 .dd-table-subtotal-val,
 .dev-detail-page .dpv-panel tfoot td.dev-money {
-  font-size: 1.05rem !important;
-  color: var(--texto) !important;
-  -webkit-text-fill-color: var(--texto) !important;
+  font-size: 1.08rem !important;
+  color: var(--dd-accent) !important;
+  -webkit-text-fill-color: var(--dd-accent) !important;
 }
 
-/* ── Observaciones (sutil, sin barra de color fuerte) ── */
+/* ── Observaciones (acento cálido dorado sutil) ── */
 .dd-obs {
   display: flex;
   gap: 0.85rem;
-  padding: 1.1rem 1.25rem;
-  margin-top: 1.5rem;
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border);
+  padding: 1.05rem 1.25rem;
+  margin-top: 1.25rem;
+  background: color-mix(in srgb, var(--dd-gold) 8%, var(--dd-card));
+  border: 1px solid color-mix(in srgb, var(--dd-gold) 24%, transparent);
+  border-left: 3.5px solid var(--dd-gold);
   border-radius: 12px;
   font-size: 0.87rem;
   color: var(--texto);
@@ -561,27 +598,27 @@
 }
 
 .dd-obs i {
-  color: var(--texto-muted) !important;
-  font-size: 1rem;
+  color: var(--dd-gold) !important;
+  font-size: 1.05rem;
   flex-shrink: 0;
-  margin-top: 0.15rem;
+  margin-top: 0.12rem;
 }
 
 .dd-obs-title {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.71rem;
   font-weight: 700;
-  color: var(--texto-muted);
+  color: color-mix(in srgb, var(--dd-gold) 76%, var(--texto));
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .dd-obs-text {
-  margin: 0.3rem 0 0;
+  margin: 0.25rem 0 0;
   color: var(--texto);
 }
 
-/* ── Timeline (sobrio y espaciado) ── */
+/* ── Timeline (limpio con iconos coloreados) ── */
 .dd-timeline {
   display: flex;
   flex-direction: column;
@@ -619,30 +656,30 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border);
-  color: var(--texto-muted);
+  background: rgba(245, 158, 11, 0.13);
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  color: #d97706;
   z-index: 1;
 }
 
 .dd-tl-icon i { font-size: 0.85rem; }
 
 .dd-tl-icon--done {
-  background: var(--dd-surface);
-  border-color: color-mix(in srgb, var(--texto) 24%, transparent);
-  color: var(--texto);
+  background: color-mix(in srgb, var(--dd-gold) 14%, transparent);
+  border-color: color-mix(in srgb, var(--dd-gold) 38%, transparent);
+  color: var(--dd-gold);
 }
 
 .dd-tl-icon--ok {
-  background: rgba(34, 197, 94, 0.11);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #16a34a;
+  background: color-mix(in srgb, var(--dd-green) 14%, transparent);
+  border-color: color-mix(in srgb, var(--dd-green) 40%, transparent);
+  color: var(--dd-green);
 }
 
 .dd-tl-icon--bad {
-  background: rgba(220, 53, 69, 0.11);
-  border-color: rgba(220, 53, 69, 0.35);
-  color: #dc2626;
+  background: color-mix(in srgb, var(--dd-red) 14%, transparent);
+  border-color: color-mix(in srgb, var(--dd-red) 40%, transparent);
+  color: var(--dd-red);
 }
 
 .dd-tl-text strong {
@@ -674,19 +711,22 @@
 .dd-resumen-item:last-child  { border-bottom: none; padding-bottom: 0; }
 .dd-resumen-item span   { color: var(--texto-muted); }
 .dd-resumen-item strong { color: var(--texto); font-weight: 600; text-align: right; }
-.dd-resumen-item .dd-money { color: var(--texto); font-weight: 800; }
+.dd-resumen-item .dd-money { color: var(--dd-accent); font-weight: 800; }
 
 .dd-resumen-total-item {
-  border-top: 1px solid var(--dd-border) !important;
-  margin-top: 0.4rem !important;
-  padding-top: 1rem !important;
+  border-top: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 24%, transparent) !important;
+  background: color-mix(in srgb, var(--dd-accent) 8%, var(--dd-card));
+  border-radius: 12px;
+  margin-top: 0.75rem !important;
+  padding: 0.85rem 1rem !important;
 }
 
 .dd-font-bold { font-weight: 700; color: var(--texto) !important; }
-.dd-money-lg  { font-size: 1.15rem; }
+.dd-money-lg  { font-size: 1.18rem; }
 .dd-text-muted { color: var(--texto-muted); }
 
-/* ── Venta vinculada (limpia y sin duplicación) ── */
+/* ── Venta vinculada (acento sutil) ── */
 .dd-venta-link {
   display: flex;
   align-items: center;
@@ -695,33 +735,36 @@
   border-radius: 12px;
   text-decoration: none;
   color: var(--texto);
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border);
-  transition: border-color 0.18s ease, background 0.18s ease;
+  background: color-mix(in srgb, var(--dd-accent) 5%, var(--dd-card));
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 20%, var(--dd-border));
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.16s ease;
 }
 
 .dd-venta-link:hover {
-  border-color: color-mix(in srgb, var(--texto) 24%, transparent);
+  border-color: var(--dd-accent);
+  background: color-mix(in srgb, var(--dd-accent) 10%, var(--dd-card));
+  transform: translateY(-1px);
   color: var(--texto);
 }
 
 .dd-venta-link__icon {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  background: var(--dd-card);
-  border: 1px solid var(--dd-border);
-  color: var(--texto-muted);
+  background: color-mix(in srgb, var(--dd-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dd-accent) 28%, transparent);
+  color: var(--dd-accent);
   flex-shrink: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
 .dd-venta-link strong { display: block; font-size: 0.92rem; font-weight: 700; color: var(--texto); }
 .dd-venta-link small  { display: block; font-size: 0.78rem; color: var(--texto-muted); margin-top: 2px; }
-.dd-venta-total       { color: var(--texto) !important; font-weight: 700; margin-top: 4px !important; }
-.dd-venta-link .dd-arr { margin-left: auto; color: var(--texto-muted); font-size: 0.9rem; }
+.dd-venta-total       { color: var(--dd-green) !important; font-weight: 700; margin-top: 4px !important; }
+.dd-venta-link .dd-arr { margin-left: auto; color: var(--dd-accent); font-size: 0.95rem; transition: transform 0.18s ease; }
+.dd-venta-link:hover .dd-arr { transform: translate(2px, -2px); }
 
 /* ── Botones píldora limpios ── */
 .dd-actions {
@@ -755,7 +798,7 @@
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.16s ease, box-shadow 0.18s ease;
 }
 
 .dd-btn--block,
@@ -770,24 +813,27 @@
   color: var(--fondo);
   border-color: var(--azul-claro);
   font-weight: 700;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--azul-claro) 26%, transparent);
 }
 
 .dd-btn--primary:hover,
 .dev-detail-page .dev-btn--primary:hover {
-  opacity: 0.9;
+  opacity: 0.93;
+  transform: translateY(-1px);
   color: var(--fondo);
 }
 
 .dd-btn--secondary,
 .dev-detail-page .dev-btn--secondary {
-  background: var(--dd-surface);
+  background: color-mix(in srgb, var(--dd-gold) 10%, var(--dd-card));
   color: var(--texto);
-  border-color: var(--dd-border);
+  border-color: color-mix(in srgb, var(--dd-gold) 32%, transparent);
 }
 
 .dd-btn--secondary:hover,
 .dev-detail-page .dev-btn--secondary:hover {
-  border-color: color-mix(in srgb, var(--texto) 26%, transparent);
+  background: color-mix(in srgb, var(--dd-gold) 18%, var(--dd-card));
+  border-color: var(--dd-gold);
   color: var(--texto);
 }
 
@@ -890,13 +936,13 @@
 }
 
 .dev-detail-page .dpv-steps li.is-done > span {
-  background: rgba(34, 197, 94, 0.11);
-  border-color: rgba(34, 197, 94, 0.45);
-  color: #16a34a;
+  background: color-mix(in srgb, var(--dd-green) 14%, transparent);
+  border-color: color-mix(in srgb, var(--dd-green) 48%, transparent);
+  color: var(--dd-green);
 }
 
 .dev-detail-page .dpv-steps li.is-done:not(:last-child)::after {
-  background: rgba(34, 197, 94, 0.4);
+  background: color-mix(in srgb, var(--dd-green) 45%, transparent);
 }
 
 .dev-detail-page .dpv-steps li.is-done strong,
@@ -906,14 +952,15 @@
 
 .dev-detail-page .dpv-steps li.is-current:not(.is-bad):not(.is-done) > span {
   border-color: var(--azul-claro);
-  background: color-mix(in srgb, var(--azul-claro) 10%, var(--dd-card));
+  background: color-mix(in srgb, var(--azul-claro) 14%, var(--dd-card));
   color: var(--azul-claro);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--azul-claro) 14%, transparent);
 }
 
 .dev-detail-page .dpv-steps li.is-bad > span {
-  border-color: rgba(220, 53, 69, 0.5);
-  background: rgba(220, 53, 69, 0.11);
-  color: #dc2626;
+  border-color: color-mix(in srgb, var(--dd-red) 55%, transparent);
+  background: color-mix(in srgb, var(--dd-red) 14%, transparent);
+  color: var(--dd-red);
 }
 
 /* ── Banner de confirmación (Detalle proveedor) ── */
@@ -921,13 +968,18 @@
   display: flex;
   gap: 1.15rem;
   align-items: flex-start;
-  margin: 0 0 1.75rem;
+  margin: 0 0 1.6rem;
   padding: 1.4rem 1.75rem;
   border-radius: 16px;
   border: 1px solid var(--dd-border);
+  border-left: 4px solid var(--dd-gold);
   background: var(--dd-card);
   box-shadow: var(--dd-shadow);
 }
+
+.dev-detail-page .dpv-confirm--ok    { border-left-color: var(--dd-green); }
+.dev-detail-page .dpv-confirm--no    { border-left-color: var(--dd-red); }
+.dev-detail-page .dpv-confirm--apply { border-left-color: var(--dd-accent); }
 
 .dev-detail-page .dpv-confirm__icon {
   flex: 0 0 42px;
@@ -940,9 +992,9 @@
   color: var(--texto);
 }
 
-.dev-detail-page .dpv-confirm--ok .dpv-confirm__icon { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
-.dev-detail-page .dpv-confirm--no .dpv-confirm__icon { background: rgba(220, 53, 69, 0.12); color: #dc2626; }
-.dev-detail-page .dpv-confirm--apply .dpv-confirm__icon { background: color-mix(in srgb, var(--azul-claro) 12%, transparent); color: var(--azul-claro); }
+.dev-detail-page .dpv-confirm--ok .dpv-confirm__icon { background: color-mix(in srgb, var(--dd-green) 14%, transparent); color: var(--dd-green); }
+.dev-detail-page .dpv-confirm--no .dpv-confirm__icon { background: color-mix(in srgb, var(--dd-red) 14%, transparent); color: var(--dd-red); }
+.dev-detail-page .dpv-confirm--apply .dpv-confirm__icon { background: color-mix(in srgb, var(--azul-claro) 14%, transparent); color: var(--azul-claro); }
 
 .dev-detail-page .dpv-confirm h3 {
   margin: 0 0 0.3rem;
@@ -970,16 +1022,20 @@
 
 .dev-detail-page .dpv-note {
   margin: 0;
-  padding: 1.05rem 1.2rem;
+  padding: 1.05rem 1.25rem;
   border-radius: 12px;
-  background: var(--dd-surface);
-  border: 1px solid var(--dd-border-soft);
+  background: color-mix(in srgb, var(--dd-gold) 7%, var(--dd-card));
+  border: 1px solid color-mix(in srgb, var(--dd-gold) 22%, transparent);
+  border-left: 3.5px solid var(--dd-gold);
   color: var(--texto);
   font-size: 0.89rem;
   line-height: 1.6;
 }
 
 .dev-detail-page .dpv-note--empty {
+  background: var(--dd-surface);
+  border-color: var(--dd-border-soft);
+  border-left: 1px solid var(--dd-border-soft);
   color: var(--texto-muted);
   font-style: italic;
 }
@@ -993,7 +1049,7 @@
 .dev-detail-page .dpv-inv strong {
   font-size: 1.85rem;
   font-weight: 800;
-  color: var(--texto);
+  color: var(--dd-accent);
 }
 
 .dev-detail-page .dpv-inv span,
@@ -1104,9 +1160,7 @@
     align-items: flex-start;
     text-align: left;
     width: 100%;
-    padding: 1rem 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--dd-border-soft);
+    padding: 0.9rem 1.15rem;
   }
   .dev-detail-page .dpv-steps {
     flex-wrap: wrap;
