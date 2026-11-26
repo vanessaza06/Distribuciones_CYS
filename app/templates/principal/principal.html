@@ -40,53 +40,275 @@
   </div>
 
   <!-- ══════════════════════════════════
-       INVENTARIO POR CATEGORÍA
+       INVENTARIO + VISTAZO RÁPIDO (pestañas)
   ══════════════════════════════════ -->
-  <section class="cys-card mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div class="cys-card__title mb-0">Resumen de Inventario por Categoría</div>
-      <div class="d-flex gap-2">
-        <button class="cys-carousel-btn"
-                data-bs-target="#inventarioCarousel"
-                data-bs-slide="prev">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button class="cys-carousel-btn"
-                data-bs-target="#inventarioCarousel"
-                data-bs-slide="next">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </div>
+  <div class="row gx-4 gy-4 mb-4 align-items-stretch">
 
-    <div id="inventarioCarousel" class="carousel slide" data-bs-ride="false">
-      <div class="carousel-inner">
-        {% for grupo in grupos_categorias %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-          <div class="cys-carousel-pad">
-            <div class="row gx-3 gy-3">
-              {% for cat in grupo %}
-              <div class="col-md-4">
-                <div class="cys-stat-card text-center">
-                  <div class="cys-stat-card__label">{{ cat.nombre }}</div>
-                  <div class="cys-stat-card__val">{{ cat.total }}</div>
-                  <div style="font-size:.65rem; color:var(--texto-muted);">tipos de producto</div>
+    <!-- IZQUIERDA: RESUMEN POR CATEGORÍA -->
+    <div class="col-12 col-lg-7">
+      <section class="cys-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="cys-card__title mb-0">Resumen de Inventario por Categoría</div>
+          <div class="d-flex gap-2">
+            <button class="cys-carousel-btn"
+                    data-bs-target="#inventarioCarousel"
+                    data-bs-slide="prev">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button class="cys-carousel-btn"
+                    data-bs-target="#inventarioCarousel"
+                    data-bs-slide="next">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="inventarioCarousel" class="carousel slide" data-bs-ride="false">
+          <div class="carousel-inner">
+            {% for grupo in grupos_categorias %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="cys-carousel-pad">
+                <div class="row gx-3 gy-3">
+                  {% for cat in grupo %}
+                  <div class="col-6 col-md-4">
+                    <div class="cys-stat-card cys-stat-card--compact text-center">
+                      <div class="cys-stat-card__label">{{ cat.nombre }}</div>
+                      <div class="cys-stat-card__val">{{ cat.total }}</div>
+                      <div style="font-size:.65rem; color:var(--texto-muted);">tipos de producto</div>
+                    </div>
+                  </div>
+                  {% endfor %}
                 </div>
               </div>
-              {% endfor %}
             </div>
+            {% empty %}
+            <div class="carousel-item active">
+              <div class="text-center py-4" style="color:var(--texto-muted);">
+                No hay categorías registradas
+              </div>
+            </div>
+            {% endfor %}
           </div>
         </div>
-        {% empty %}
-        <div class="carousel-item active">
-          <div class="text-center py-4" style="color:var(--texto-muted);">
-            No hay categorías registradas
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+      </section>
     </div>
-  </section>
+
+    <!-- DERECHA: VISTAZO RÁPIDO (3 pestañas) -->
+    <div class="col-12 col-lg-5">
+      <section class="cys-card h-100 d-flex flex-column">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div class="cys-card__title mb-0">Vistazo Rápido</div>
+
+          <ul class="nav cys-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link cys-tab active" type="button" role="tab"
+                      data-bs-toggle="pill" data-bs-target="#tab-vendidos"
+                      aria-controls="tab-vendidos" aria-selected="true">
+                <i class="bi bi-trophy-fill"></i> Más vendidos
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link cys-tab" type="button" role="tab"
+                      data-bs-toggle="pill" data-bs-target="#tab-stock"
+                      aria-controls="tab-stock" aria-selected="false">
+                <i class="bi bi-box-seam"></i> Stock bajo
+                {% if stock_bajo.total %}<span class="cys-tab__badge">{{ stock_bajo.total }}</span>{% endif %}
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link cys-tab" type="button" role="tab"
+                      data-bs-toggle="pill" data-bs-target="#tab-vencer"
+                      aria-controls="tab-vencer" aria-selected="false">
+                <i class="bi bi-hourglass-split"></i> Por vencer
+                {% if por_vencer.total %}<span class="cys-tab__badge">{{ por_vencer.total }}</span>{% endif %}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tab-content cys-tabpanes flex-grow-1">
+
+          <!-- ═══ PESTAÑA 1: MÁS VENDIDOS DE LA SEMANA ═══ -->
+          <div class="tab-pane active" id="tab-vendidos" role="tabpanel">
+            {% if vendidos.lista %}
+
+            <div class="cys-mini">
+              <div class="cys-mini__item">
+                <div class="cys-mini__val">{{ vendidos.unidades|intcomma }}</div>
+                <div class="cys-mini__lbl">Unidades</div>
+              </div>
+              <div class="cys-mini__item">
+                <div class="cys-mini__val">${{ vendidos.ingresos|floatformat:0|intcomma }}</div>
+                <div class="cys-mini__lbl">Ingresos</div>
+              </div>
+              <div class="cys-mini__item">
+                <div class="cys-mini__val">{{ vendidos.productos }}</div>
+                <div class="cys-mini__lbl">Productos</div>
+              </div>
+            </div>
+
+            {% with top=vendidos.lista.0 %}
+            <div class="cys-hero">
+              <div class="cys-hero__medalla"><i class="bi bi-trophy-fill"></i></div>
+              <div class="cys-hero__info">
+                <div class="cys-hero__etiqueta">Producto estrella</div>
+                <div class="cys-hero__nombre">{{ top.nombre }}</div>
+                <div class="cys-hero__datos">
+                  <span><i class="bi bi-box-seam"></i>{{ top.cantidad }} und</span>
+                  <span><i class="bi bi-cash-coin"></i>${{ top.ingreso|floatformat:0|intcomma }}</span>
+                </div>
+              </div>
+              <div class="cys-hero__pct">
+                <strong>{{ top.pct }}%</strong>
+                <span>de las unidades</span>
+              </div>
+            </div>
+            {% endwith %}
+
+            {% if vendidos.lista|length > 1 %}
+            <ol class="cys-rows">
+              {% for p in vendidos.lista|slice:"1:" %}
+              <li class="cys-row">
+                <span class="cys-row__pos">{{ forloop.counter|add:1 }}</span>
+                <div class="cys-row__cuerpo">
+                  <div class="cys-row__linea">
+                    <span class="cys-row__nombre">{{ p.nombre }}</span>
+                    <span class="cys-pill">{{ p.pct }}%</span>
+                  </div>
+                  <div class="cys-row__sub">{{ p.cantidad }} und · ${{ p.ingreso|floatformat:0|intcomma }}</div>
+                  <progress class="cys-barra" value="{{ p.cantidad }}" max="{{ p.maximo }}"></progress>
+                </div>
+              </li>
+              {% endfor %}
+            </ol>
+            {% endif %}
+
+            <div class="cys-pie"><i class="bi bi-calendar-week"></i> Semana actual · de lunes a domingo</div>
+
+            {% else %}
+            <div class="cys-vacio">
+              <div class="cys-vacio__aro"><i class="bi bi-receipt"></i></div>
+              <div class="cys-vacio__titulo">Sin ventas esta semana</div>
+              <div class="cys-vacio__texto">Cuando registres ventas, aquí aparecerán los productos que más salen.</div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- ═══ PESTAÑA 2: STOCK BAJO ═══ -->
+          <div class="tab-pane" id="tab-stock" role="tabpanel">
+            {% if stock_bajo.lista %}
+
+            <div class="cys-mini">
+              <div class="cys-mini__item">
+                <div class="cys-mini__val cys-mini__val--rojo">{{ stock_bajo.agotados }}</div>
+                <div class="cys-mini__lbl">Agotados</div>
+              </div>
+              <div class="cys-mini__item">
+                <div class="cys-mini__val cys-mini__val--oro">{{ stock_bajo.criticos }}</div>
+                <div class="cys-mini__lbl">Críticos</div>
+              </div>
+            </div>
+
+            <ul class="cys-rows">
+              {% for p in stock_bajo.lista %}
+              <li class="cys-row">
+                <span class="cys-row__icono cys-row__icono--{{ p.nivel }}"><i class="bi bi-box-seam"></i></span>
+                <div class="cys-row__cuerpo">
+                  <div class="cys-row__linea">
+                    <span class="cys-row__nombre">{{ p.nombre }}</span>
+                    <span class="cys-pill cys-pill--{{ p.nivel }}">
+                      {% if p.stock <= 0 %}Agotado{% else %}{{ p.stock }} und{% endif %}
+                    </span>
+                  </div>
+                  <div class="cys-row__sub">{{ p.categoria }}</div>
+                  <div class="cys-meter cys-meter--{{ p.nivel }}">
+                    {% for on in p.segmentos %}<span class="cys-seg{% if on %} cys-seg--on{% endif %}"></span>{% endfor %}
+                  </div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+
+            {% if stock_bajo.extra > 0 %}
+            <div class="cys-mas">+ {{ stock_bajo.extra }} más con stock bajo</div>
+            {% endif %}
+
+            <div class="cys-pie"><i class="bi bi-info-circle"></i> Alerta cuando quedan {{ stock_bajo.umbral }} unidades o menos</div>
+
+            {% else %}
+            <div class="cys-vacio">
+              <div class="cys-vacio__aro"><i class="bi bi-check2-circle"></i></div>
+              <div class="cys-vacio__titulo">Inventario saludable</div>
+              <div class="cys-vacio__texto">Ningún producto tiene {{ stock_bajo.umbral }} unidades o menos.</div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- ═══ PESTAÑA 3: POR VENCER ═══ -->
+          <div class="tab-pane" id="tab-vencer" role="tabpanel">
+            {% if por_vencer.lista %}
+
+            <div class="cys-mini">
+              <div class="cys-mini__item">
+                <div class="cys-mini__val cys-mini__val--rojo">{{ por_vencer.vencidos }}</div>
+                <div class="cys-mini__lbl">Vencidos</div>
+              </div>
+              <div class="cys-mini__item">
+                <div class="cys-mini__val cys-mini__val--rojo">{{ por_vencer.urgentes }}</div>
+                <div class="cys-mini__lbl">Esta semana</div>
+              </div>
+              <div class="cys-mini__item">
+                <div class="cys-mini__val cys-mini__val--oro">{{ por_vencer.proximos }}</div>
+                <div class="cys-mini__lbl">Próximos</div>
+              </div>
+            </div>
+
+            <ul class="cys-rows">
+              {% for p in por_vencer.lista %}
+              <li class="cys-row">
+                <div class="cys-fecha cys-fecha--{{ p.nivel }}">
+                  <span class="cys-fecha__dia">{{ p.fecha|date:"d" }}</span>
+                  <span class="cys-fecha__mes">{{ p.fecha|date:"M" }}</span>
+                </div>
+                <div class="cys-row__cuerpo">
+                  <div class="cys-row__linea">
+                    <span class="cys-row__nombre">{{ p.nombre }}</span>
+                    <span class="cys-pill cys-pill--{{ p.nivel }}">{{ p.texto }}</span>
+                  </div>
+                  <div class="cys-row__sub">{{ p.fecha|date:"d/m/Y" }} · {{ p.stock }} und en stock</div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+
+            {% if por_vencer.extra > 0 %}
+            <div class="cys-mas">+ {{ por_vencer.extra }} más por vencer</div>
+            {% endif %}
+
+            <div class="cys-pie"><i class="bi bi-info-circle"></i> Ventana de {{ por_vencer.dias }} días · solo productos con stock</div>
+
+            {% else %}
+            <div class="cys-vacio">
+              <div class="cys-vacio__aro"><i class="bi bi-calendar2-check"></i></div>
+              <div class="cys-vacio__titulo">Sin vencimientos cercanos</div>
+              <div class="cys-vacio__texto">Ningún producto con stock vence en los próximos {{ por_vencer.dias }} días.</div>
+              {% if por_vencer.proximo %}
+              <div class="cys-chip">
+                <i class="bi bi-hourglass-split"></i>
+                Próximo: <strong>{{ por_vencer.proximo.nombre }}</strong>
+                · {{ por_vencer.proximo.fecha|date:"d/m/Y" }} ({{ por_vencer.proximo.texto }})
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+  </div>
 
   <!-- ══════════════════════════════════
        ESTADÍSTICAS
@@ -177,6 +399,116 @@
               role="img"
               aria-label="Ventas de la semana en pesos y número de transacciones">
       </canvas>
+    </div>
+  </section>
+
+  <!-- MÉTODOS DE PAGO DE LA SEMANA -->
+  <section class="cys-card mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div class="cys-card__title mb-0">Métodos de Pago · Esta Semana</div>
+      <div class="cys-chip">
+        <i class="bi bi-cash-stack"></i>
+        Total cobrado <strong>${{ metodos_pago.total|floatformat:0|intcomma }}</strong>
+        · {{ metodos_pago.ventas }} venta{{ metodos_pago.ventas|pluralize }}
+      </div>
+    </div>
+
+    <div class="row gx-3 gy-3">
+
+      <!-- EFECTIVO -->
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="cys-pago">
+          <div class="cys-pago__head">
+            <span class="cys-pago__icono"><i class="bi bi-cash-coin"></i></span>
+            <div class="cys-pago__datos">
+              <div class="cys-pago__nombre">Efectivo</div>
+              <div class="cys-pago__monto">${{ metodos_pago.efectivo.monto|floatformat:0|intcomma }}</div>
+            </div>
+            <span class="cys-pago__pct">{{ metodos_pago.efectivo.pct }}%</span>
+          </div>
+          <progress class="cys-barra" value="{{ metodos_pago.efectivo.pct }}" max="100"></progress>
+          <div class="cys-pago__nota">
+            <i class="bi bi-info-circle"></i> {{ metodos_pago.efectivo.pct }}% de lo cobrado fue en efectivo
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSFERENCIAS (todo lo digital) -->
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="cys-pago">
+          <div class="cys-pago__head">
+            <span class="cys-pago__icono"><i class="bi bi-bank"></i></span>
+            <div class="cys-pago__datos">
+              <div class="cys-pago__nombre">Transferencias</div>
+              <div class="cys-pago__monto">${{ metodos_pago.digital.monto|floatformat:0|intcomma }}</div>
+            </div>
+            <span class="cys-pago__pct">{{ metodos_pago.digital.pct }}%</span>
+          </div>
+          <progress class="cys-barra" value="{{ metodos_pago.digital.pct }}" max="100"></progress>
+          {% if metodos_pago.digital.desglose %}
+          <ul class="cys-pago__chips">
+            {% for d in metodos_pago.digital.desglose %}
+            <li class="cys-pago__chip">
+              <span><i class="bi {{ d.icono }}"></i>{{ d.nombre }}</span>
+              <strong>${{ d.monto|floatformat:0|intcomma }}</strong>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="cys-pago__nota">
+            <i class="bi bi-info-circle"></i> Sin pagos digitales esta semana
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- DESCUENTOS OTORGADOS -->
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="cys-pago">
+          <div class="cys-pago__head">
+            <span class="cys-pago__icono"><i class="bi bi-tag-fill"></i></span>
+            <div class="cys-pago__datos">
+              <div class="cys-pago__nombre">Descuentos</div>
+              <div class="cys-pago__monto">${{ metodos_pago.descuentos.monto|floatformat:0|intcomma }}</div>
+            </div>
+            <span class="cys-pago__pct">{{ metodos_pago.descuentos.pct }}%</span>
+          </div>
+          <progress class="cys-barra" value="{{ metodos_pago.descuentos.pct }}" max="100"></progress>
+          <div class="cys-pago__nota">
+            {% if metodos_pago.descuentos.ventas %}
+            <i class="bi bi-percent"></i>
+            {{ metodos_pago.descuentos.ventas }} venta{{ metodos_pago.descuentos.ventas|pluralize }} con descuento
+            · promedio {{ metodos_pago.descuentos.promedio }}%
+            {% else %}
+            <i class="bi bi-info-circle"></i> Sin descuentos esta semana
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- POR COBRAR -->
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="cys-pago cys-pago--alerta">
+          <div class="cys-pago__head">
+            <span class="cys-pago__icono"><i class="bi bi-hourglass-split"></i></span>
+            <div class="cys-pago__datos">
+              <div class="cys-pago__nombre">Por cobrar</div>
+              <div class="cys-pago__monto">${{ metodos_pago.pendiente.monto|floatformat:0|intcomma }}</div>
+            </div>
+            <span class="cys-pago__pct">{{ metodos_pago.pendiente.pct }}%</span>
+          </div>
+          <progress class="cys-barra cys-barra--rojo" value="{{ metodos_pago.pendiente.pct }}" max="100"></progress>
+          <div class="cys-pago__nota">
+            {% if metodos_pago.pendiente.ventas %}
+            <i class="bi bi-receipt"></i>
+            {{ metodos_pago.pendiente.ventas }} venta{{ metodos_pago.pendiente.ventas|pluralize }} con saldo pendiente
+            {% else %}
+            <i class="bi bi-check2-circle"></i> Todo cobrado
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
