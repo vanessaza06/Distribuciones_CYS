@@ -413,7 +413,7 @@ def registrar_pago_compra(request, id=None):
     return redirect(destino)
 
 
-# ── DETALLE ────────────────────────────────────────────────────────────────────
+# ── DETALLE (también atiende ?export=excel|pdf|imprimir) ───────────────────────
 @login_required
 def detalle_compra(request, id):
     """Detalle completo de una compra."""
@@ -422,6 +422,16 @@ def detalle_compra(request, id):
         .prefetch_related('detalles__producto__categoria', 'detalles__lote'),
         pk=id,
     )
+
+    # ---- Exportación: el JS llama a esta misma URL con ?export=... ----
+    tipo = request.GET.get('export')
+    if tipo == 'excel':
+        return exportar_detalle_excel(request, compra)
+    if tipo == 'pdf':
+        return exportar_detalle_pdf(request, compra)
+    if tipo == 'imprimir':
+        return exportar_detalle_imprimir(request, compra)
+
     url_lista = _url_lista(compra.proveedor_id)
     context = {
         'compra': compra,
@@ -453,21 +463,21 @@ def ultima_compra(request):
 # ---------------------------------------------------------------------------
 # Identidad visual (colores tomados del logo de CYS Ltda)
 # ---------------------------------------------------------------------------
-NAVY = "0B1B30"
-GOLD = "C48F3C"
-CREAM = "F0E7DA"
-ZEBRA = "FAF5EA"
-BORDE = "E3D3B5"
+NAVY = "0B1B30"      # azul noche del logo
+GOLD = "C48F3C"      # dorado del logo
+CREAM = "F0E7DA"     # crema del texto "CYS"
+ZEBRA = "FAF5EA"     # fila alterna suave
+BORDE = "E3D3B5"     # bordes finos dorados claros
 VERDE = "1E8449"
 ROJO = "B03A2E"
 
-XL_NAVY = "061B3A"
-XL_GOLD = "E8A317"
-XL_ZEBRA = "EDF0F5"
-XL_BORDE = "AEB9CC"
-XL_ROJO = "9B1C1C"
-XL_VERDE = "1E8449"
-XL_AMBAR = "B7791F"
+XL_NAVY = "061B3A"       # títulos, encabezado de tabla y texto
+XL_GOLD = "E8A317"       # divisor y barrita dorada
+XL_ZEBRA = "EDF0F5"      # fila alterna
+XL_BORDE = "AEB9CC"      # líneas verticales de la tabla
+XL_ROJO = "9B1C1C"       # estado cancelada
+XL_VERDE = "1E8449"      # estado recibida
+XL_AMBAR = "B7791F"      # estado pendiente
 XL_FUENTE = "Calibri"
 
 # Color del texto de estado según el estado de la compra
@@ -617,7 +627,7 @@ def _texto_totales(filas):
 
 
 # ---------------------------------------------------------------------------
-# EXCEL
+# EXCEL  (diseño "Reporte de Marcas": logo + título, tabla azul marino)
 # ---------------------------------------------------------------------------
 def _xl_fill(hex_):
     return PatternFill("solid", start_color=hex_, end_color=hex_)
@@ -660,7 +670,8 @@ def exportar_compras_excel(request, proveedor):
     ws.sheet_properties.tabColor = XL_NAVY
     ws.sheet_view.showGridLines = False
 
-    anchos = [10, 20, 50, 12, 18, 18, 18, 18]
+    # A+B dan el mismo espacio de banner que en Marcas (logo centrado + divisor dorado)
+    anchos = [12, 24, 46, 12, 18, 18, 18, 18]
     for idx, ancho in enumerate(anchos, start=1):
         ws.column_dimensions[get_column_letter(idx)].width = ancho
 
@@ -668,6 +679,7 @@ def exportar_compras_excel(request, proveedor):
     for r, h in {1: 30, 2: 34, 3: 30}.items():
         ws.row_dimensions[r].height = h
 
+    # Logo circular (columnas A:B, centrado)
     logo = _logo_png(300)
     if logo:
         tam = 112
@@ -679,10 +691,12 @@ def exportar_compras_excel(request, proveedor):
         ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
         ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
+    # Divisor dorado vertical
     lado_oro = Side(style="medium", color=XL_GOLD)
     for r in (1, 2, 3):
         ws.cell(r, 3).border = Border(left=lado_oro)
 
+    # Título y lema
     ws.merge_cells(f"C1:{ultima}2")
     ws["C1"] = "Reporte de Compras"
     ws["C1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
@@ -692,6 +706,7 @@ def exportar_compras_excel(request, proveedor):
     ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
     ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
 
+    # Barrita dorada corta bajo el lema
     ws.row_dimensions[4].height = 10
     barra = _barra_dorada(140, 5)
     if barra:
@@ -759,7 +774,7 @@ def exportar_compras_excel(request, proveedor):
         p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
         p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
 
-    # ---------- Extras ----------
+    # ---------- Extras (sin freeze_panes para que el banner no se repita) ----------
     if filas:
         ws.auto_filter.ref = f"A{fila_enc}:{ultima}{fila_enc + len(filas)}"
     ws.page_setup.orientation = "landscape"
@@ -781,7 +796,8 @@ def exportar_compras_excel(request, proveedor):
 
 
 # ---------------------------------------------------------------------------
-# PDF
+# PDF  (mismo diseño que el Excel: banner blanco con logo + título,
+#       tabla azul marino con esquinas redondeadas)
 # ---------------------------------------------------------------------------
 class _BannerPDF(Flowable):
     """Banner: logo circular | divisor dorado | título | lema | barrita dorada."""
@@ -801,6 +817,7 @@ class _BannerPDF(Flowable):
         navy = colors.HexColor("#" + XL_NAVY)
         oro = colors.HexColor("#" + XL_GOLD)
 
+        # Logo circular
         diam = 84
         x_logo, y_logo = 14, (self.height - diam) / 2
         if self.logo_bytes:
@@ -813,19 +830,23 @@ class _BannerPDF(Flowable):
             c.setFont("Helvetica-Bold", 20)
             c.drawCentredString(x_logo + diam / 2, y_logo + diam / 2 - 6, "CYS")
 
+        # Divisor dorado vertical
         x_div = x_logo + diam + 26
         c.setStrokeColor(oro)
         c.setLineWidth(2.5)
         c.line(x_div, 8, x_div, self.height - 8)
 
+        # Título
         x_txt = x_div + 26
         c.setFillColor(navy)
         c.setFont("Helvetica-Bold", 34)
         c.drawString(x_txt, self.height - 46, self.titulo)
 
+        # Lema en cursiva
         c.setFont("Helvetica-Oblique", 15)
         c.drawString(x_txt, self.height - 70, "Calidad que llega más lejos")
 
+        # Barrita dorada corta
         c.setFillColor(oro)
         c.roundRect(x_txt, 8, 72, 4.5, 2, stroke=0, fill=1)
 
@@ -853,7 +874,7 @@ def exportar_compras_pdf(request, proveedor):
 
     estilos = getSampleStyleSheet()
     st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
-                             fontSize=10, leading=12.5, textColor=c_texto)
+                             fontSize=10.5, leading=13, textColor=c_texto)
     st_prod = ParagraphStyle("prod", parent=st_base, fontName="Helvetica-Bold",
                              textColor=c_navy, leftIndent=8)
     st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
@@ -867,14 +888,17 @@ def exportar_compras_pdf(request, proveedor):
     st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
                             textColor=c_navy, fontSize=10.5)
 
+    # --- Banner ---
     elementos = [
         _BannerPDF(ancho_util, _logo_png(300)),
         Spacer(1, 14),
     ]
 
+    # --- Tabla ---
     data = [[Paragraph(h, st_head) for h in encabezados]]
     for f in filas:
         color = "#" + COLOR_ESTADO.get(f[8], XL_NAVY)
+        # El punto "●" se dibuja con ZapfDingbats (Helvetica no trae ese símbolo)
         estado_html = (
             f'<font color="{color}"><font name="ZapfDingbats" size="9">l</font>'
             f'&nbsp;&nbsp;{escape(f[7])}</font>'
@@ -899,15 +923,18 @@ def exportar_compras_pdf(request, proveedor):
     tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
 
     estilo = [
+        # Encabezado azul marino
         ("BACKGROUND", (0, 0), (-1, 0), c_navy),
         ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
         ("TOPPADDING", (0, 0), (-1, 0), 10),
         ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        # Filas con cebra y líneas verticales
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
         ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
         ("TOPPADDING", (0, 1), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        # Contorno azul marino con esquinas redondeadas
         ("BOX", (0, 0), (-1, -1), 1, c_navy),
         ("ROUNDEDCORNERS", [10, 10, 10, 10]),
     ]
@@ -916,6 +943,7 @@ def exportar_compras_pdf(request, proveedor):
     tabla.setStyle(TableStyle(estilo))
     elementos.append(tabla)
 
+    # --- Totales y filtros (discretos, debajo de la tabla) ---
     n, valor, pagado, saldo = _resumen(filas)
     elementos += [
         Spacer(1, 10),
@@ -992,7 +1020,7 @@ def exportar_compras_imprimir(request, proveedor):
   .banner h1 {{ margin: 0; font: bold 24px Georgia, 'Times New Roman', serif; color: #{GOLD}; letter-spacing: 1px; }}
   .banner p {{ margin: 3px 0 0; font-size: 14px; color: #{CREAM}; }}
   .meta {{ font-size: 11px; color: #6b6b6b; margin: 10px 2px 12px; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
   th {{ background: #{NAVY}; color: #{GOLD}; padding: 9px 10px; border-bottom: 3px solid #{GOLD}; text-align: center; }}
   td {{ padding: 8px 10px; border: 1px solid #{BORDE}; }}
   td.c {{ text-align: center; }}
@@ -1015,6 +1043,481 @@ def exportar_compras_imprimir(request, proveedor):
   <div class="meta">{escape(_texto_filtros(filtros))} &nbsp;·&nbsp; Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}</div>
   <table><thead><tr>{encabezados}</tr></thead><tbody>{filas_html}</tbody></table>
   <div class="total">Total: {n} compras &nbsp;·&nbsp; Valor: {cop(valor)} &nbsp;·&nbsp; Pagado: {cop(pagado)} &nbsp;·&nbsp; Saldo: {cop(saldo)}</div>
+  <div class="pie">CYS Ltda · Distribuciones</div>
+  <script>window.onload = function () {{ window.print(); }};</script>
+</body></html>"""
+    return HttpResponse(html)
+
+
+# ===========================================================================
+# EXPORTACIONES DEL DETALLE DE UNA COMPRA (mismo diseño de Marcas)
+# Excel / PDF / Imprimir  ->  /compras/<id>/?export=excel|pdf|imprimir
+# ===========================================================================
+def _dc_primero(obj, nombres, defecto=None):
+    """Devuelve el primer atributo no vacío de `obj` entre `nombres`."""
+    for nombre in nombres:
+        valor = getattr(obj, nombre, None)
+        if valor not in (None, ''):
+            return valor
+    return defecto
+
+
+def _dc_lote(detalle):
+    lote = getattr(detalle, 'lote', None)
+    if not lote:
+        return "—"
+    valor = _dc_primero(lote, ('codigo_lote', 'numero_lote', 'nombre', 'lote'))
+    return str(valor if valor is not None else lote)
+
+
+def _dc_encabezados():
+    return ["#", "Producto", "Categoría", "Lote", "Cantidad", "Precio unitario", "Subtotal"]
+
+
+def _dc_filas(compra):
+    """Una fila por ítem: [#, producto, categoría, lote, cantidad, precio unitario, subtotal]."""
+    filas = []
+    for i, d in enumerate(compra.detalles.all(), start=1):
+        producto = getattr(d, 'producto', None)
+        nombre = producto.nombre if producto else "Producto eliminado"
+        categoria = getattr(producto, 'categoria', None) if producto else None
+        cat_txt = str(_dc_primero(categoria, ('nombre',), categoria)) if categoria else "—"
+        cantidad = d.cantidad or 0
+
+        precio = _dc_primero(d, ('precio_unitario', 'precio'))
+        subtotal = _dc_primero(d, ('subtotal', 'valor', 'total'))
+        if precio is None and subtotal is not None and cantidad:
+            precio = Decimal(subtotal) / Decimal(cantidad)
+        precio = Decimal(precio) if precio is not None else CERO
+        subtotal = Decimal(subtotal) if subtotal is not None else precio * cantidad
+
+        filas.append([i, nombre, cat_txt, _dc_lote(d), cantidad, precio, subtotal])
+    return filas
+
+
+def _dc_pagos(compra):
+    """Historial de abonos: [fecha, método, referencia, monto]."""
+    pagos = []
+    for p in compra.metodopago_set.order_by('fecha', 'codigo_metodo'):
+        fecha = getattr(p, 'fecha', None)
+        fecha_txt = timezone.localtime(fecha).strftime("%d/%m/%Y %H:%M") if fecha else "—"
+        metodo = str(_dc_primero(p, ('metodo_pago', 'metodo', 'tipo'), '—')).replace('_', ' ').capitalize()
+        referencia = str(_dc_primero(p, ('referencia', 'numero_factura'), '—'))
+        monto = Decimal(_dc_primero(p, ('monto', 'valor', 'monto_pagado', 'cantidad'), CERO))
+        pagos.append([fecha_txt, metodo, referencia, monto])
+    return pagos
+
+
+def _dc_info(compra):
+    """Datos generales de la compra como lista de (etiqueta, valor)."""
+    u = getattr(compra, 'usuario', None)
+    usuario = " ".join(filter(None, [getattr(u, 'nombre', ''), getattr(u, 'apellido', '')])) if u else "—"
+    fecha = timezone.localtime(compra.fecha).strftime("%d/%m/%Y %H:%M") if compra.fecha else "—"
+    return [
+        ("Proveedor", compra.proveedor.nombre_empresa if compra.proveedor_id else "—"),
+        ("Fecha", fecha),
+        ("Registrado por", usuario or "—"),
+        ("Estado", compra.get_estado_display()),
+    ]
+
+
+def _dc_totales(compra):
+    valor = compra.valor or CERO
+    saldo = compra.saldo or CERO
+    return valor, valor - saldo, saldo
+
+
+def _dc_texto_totales(compra):
+    valor, pagado, saldo = _dc_totales(compra)
+    return (f"Valor total: {cop(valor)}   ·   Pagado: {cop(pagado)}   ·   Saldo: {cop(saldo)}")
+
+
+def _dc_sello(compra):
+    return f"compra_{compra.codigo_compra}_{_sello()}"
+
+
+# ---------------------------------------------------------------------------
+# EXCEL
+# ---------------------------------------------------------------------------
+def _dc_tabla_excel(ws, fila_enc, encabezados, filas, aligns, dinero=(), negrita=(), n_total=None):
+    """Dibuja una tabla azul marino con cebra. `aligns`: 'l', 'c' o 'r' por columna. Devuelve la fila siguiente libre."""
+    n = len(encabezados)
+    ws.row_dimensions[fila_enc].height = 34
+    blanco = Side(style="thin", color="FFFFFF")
+    for i, texto in enumerate(encabezados, start=1):
+        c = ws.cell(fila_enc, i, texto)
+        c.font = Font(name=XL_FUENTE, size=15, bold=True, color="FFFFFF")
+        c.fill = _xl_fill(XL_NAVY)
+        c.alignment = Alignment(horizontal="center", vertical="center")
+        c.border = Border(left=blanco if i > 1 else None)
+
+    vertical = Side(style="thin", color=XL_BORDE)
+    for k, fila in enumerate(filas):
+        r = fila_enc + 1 + k
+        ws.row_dimensions[r].height = 26
+        bg = "FFFFFF" if k % 2 == 0 else XL_ZEBRA
+        ultima_fila = (k == len(filas) - 1)
+        for i, valor in enumerate(fila, start=1):
+            if i in dinero:
+                valor = float(valor)
+            c = ws.cell(r, i, valor)
+            c.fill = _xl_fill(bg)
+            c.border = Border(
+                left=vertical,
+                right=vertical if i == n else None,
+                bottom=Side(style="thin", color=XL_NAVY) if ultima_fila else None,
+            )
+            c.font = Font(name=XL_FUENTE, size=13, color="1F2937", bold=(i in negrita))
+            alin = aligns[i - 1]
+            c.alignment = Alignment(
+                horizontal={'l': 'left', 'r': 'right'}.get(alin, 'center'),
+                vertical="center",
+                indent=1 if alin in ('l', 'r') else 0,
+                wrap_text=(alin == 'l'),
+            )
+            if i in dinero:
+                c.number_format = '"$"#,##0'
+    return fila_enc + len(filas) + 1
+
+
+def exportar_detalle_excel(request, compra):
+    filas = _dc_filas(compra)
+    pagos = _dc_pagos(compra)
+    encabezados = _dc_encabezados()
+    n = len(encabezados)
+    ultima = get_column_letter(n)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Detalle compra"
+    ws.sheet_properties.tabColor = XL_NAVY
+    ws.sheet_view.showGridLines = False
+
+    anchos = [10, 40, 24, 20, 18, 18, 18]
+    for idx, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = ancho
+
+    # ---------- Banner (filas 1-3) ----------
+    for r, h in {1: 30, 2: 34, 3: 30}.items():
+        ws.row_dimensions[r].height = h
+
+    logo = _logo_png(300)
+    if logo:
+        tam = 112
+        ancho_ab = int((anchos[0] + anchos[1]) * 7 + 10)
+        _poner_imagen(ws, logo, 0, 0, tam, tam, off_x=max((ancho_ab - tam) // 2, 0), off_y=6)
+    else:
+        ws.merge_cells("A1:B3")
+        ws["A1"] = "CYS LTDA"
+        ws["A1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+        ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    lado_oro = Side(style="medium", color=XL_GOLD)
+    for r in (1, 2, 3):
+        ws.cell(r, 3).border = Border(left=lado_oro)
+
+    ws.merge_cells(f"C1:{ultima}2")
+    ws["C1"] = f"Detalle de Compra #{compra.codigo_compra}"
+    ws["C1"].font = Font(name=XL_FUENTE, size=30, bold=True, color=XL_NAVY)
+    ws["C1"].alignment = Alignment(horizontal="left", vertical="center", indent=2)
+    ws.merge_cells(f"C3:{ultima}3")
+    ws["C3"] = "Calidad que llega más lejos"
+    ws["C3"].font = Font(name=XL_FUENTE, size=16, italic=True, color=XL_NAVY)
+    ws["C3"].alignment = Alignment(horizontal="left", vertical="top", indent=2)
+
+    ws.row_dimensions[4].height = 10
+    barra = _barra_dorada(140, 5)
+    if barra:
+        _poner_imagen(ws, barra, 2, 3, 140, 5, off_x=22, off_y=2)
+    ws.row_dimensions[5].height = 16
+
+    # ---------- Datos generales (filas 6-7) ----------
+    info = _dc_info(compra)
+    mitad = (len(info) + 1) // 2
+    for j, grupo in enumerate((info[:mitad], info[mitad:])):
+        rr = 6 + j
+        ws.row_dimensions[rr].height = 24
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        celda = ws.cell(rr, 1, "   ·   ".join(f"{e}: {v}" for e, v in grupo))
+        celda.font = Font(name=XL_FUENTE, size=13, bold=True, color=XL_NAVY)
+        celda.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws.row_dimensions[8].height = 10
+
+    # ---------- Tabla de ítems ----------
+    fila_enc = 9
+    sig = _dc_tabla_excel(
+        ws, fila_enc, encabezados, filas,
+        aligns=['c', 'l', 'l', 'c', 'c', 'r', 'r'],
+        dinero=(6, 7), negrita=(2,),
+    )
+
+    # ---------- Pagos / abonos ----------
+    if pagos:
+        ws.row_dimensions[sig].height = 14
+        ws.row_dimensions[sig + 1].height = 26
+        ws.merge_cells(start_row=sig + 1, start_column=1, end_row=sig + 1, end_column=n)
+        t = ws.cell(sig + 1, 1, "Historial de pagos")
+        t.font = Font(name=XL_FUENTE, size=16, bold=True, color=XL_NAVY)
+        t.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        filas_pagos = [[k] + p for k, p in enumerate(pagos, start=1)]
+        sig = _dc_tabla_excel(
+            ws, sig + 2, ["#", "Fecha", "Método", "Referencia", "Monto"], filas_pagos,
+            aligns=['c', 'c', 'c', 'c', 'r'], dinero=(5,),
+        )
+
+    # ---------- Pie ----------
+    r = sig
+    ws.row_dimensions[r].height = 8
+    textos_pie = [
+        _dc_texto_totales(compra),
+        f"Compra #{compra.codigo_compra}   ·   Generado el {timezone.localtime():%d/%m/%Y %H:%M}",
+    ]
+    for j, texto in enumerate(textos_pie, start=1):
+        rr = r + j
+        ws.row_dimensions[rr].height = 22
+        ws.merge_cells(start_row=rr, start_column=1, end_row=rr, end_column=n)
+        p = ws.cell(rr, 1, texto)
+        p.font = Font(name=XL_FUENTE, size=11, bold=(j == 1), italic=(j == 2), color=XL_NAVY)
+        p.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_options.horizontalCentered = True
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+
+    resp = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = f'attachment; filename="{_dc_sello(compra)}.xlsx"'
+    return resp
+
+
+# ---------------------------------------------------------------------------
+# PDF
+# ---------------------------------------------------------------------------
+def exportar_detalle_pdf(request, compra):
+    filas = _dc_filas(compra)
+    pagos = _dc_pagos(compra)
+    encabezados = _dc_encabezados()
+    valor, pagado, saldo = _dc_totales(compra)
+
+    c_navy = colors.HexColor("#" + XL_NAVY)
+    c_borde = colors.HexColor("#" + XL_BORDE)
+    c_zebra = colors.HexColor("#" + XL_ZEBRA)
+    c_texto = colors.HexColor("#1F2937")
+
+    pagina = landscape(A4)
+    margen = 30
+    ancho_util = pagina[0] - 2 * margen
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=pagina,
+        leftMargin=margen, rightMargin=margen, topMargin=22, bottomMargin=40,
+        title=f"Detalle de compra #{compra.codigo_compra} — CYS Ltda",
+    )
+
+    estilos = getSampleStyleSheet()
+    st_base = ParagraphStyle("base", parent=estilos["BodyText"], fontName="Helvetica",
+                             fontSize=10.5, leading=13, textColor=c_texto)
+    st_prod = ParagraphStyle("prod", parent=st_base, fontName="Helvetica-Bold",
+                             textColor=c_navy, leftIndent=8)
+    st_izq = ParagraphStyle("izq", parent=st_base, leftIndent=8)
+    st_centro = ParagraphStyle("centro", parent=st_base, alignment=TA_CENTER)
+    st_der = ParagraphStyle("der", parent=st_base, alignment=TA_RIGHT, rightIndent=8)
+    st_head = ParagraphStyle("head", parent=st_base, fontName="Helvetica-Bold", fontSize=12,
+                             textColor=colors.white, alignment=TA_CENTER, leading=15)
+    st_meta = ParagraphStyle("meta", parent=st_base, fontSize=8.5,
+                             textColor=colors.HexColor("#6B7280"), leading=12)
+    st_tot = ParagraphStyle("tot", parent=st_base, fontName="Helvetica-Bold",
+                            textColor=c_navy, fontSize=10.5)
+    st_info = ParagraphStyle("info", parent=st_base, fontSize=11.5, leading=16, textColor=c_navy)
+    st_sub = ParagraphStyle("sub", parent=st_base, fontName="Helvetica-Bold", fontSize=14,
+                            textColor=c_navy, leading=18)
+
+    def construir_tabla(data, anchos, hay_filas):
+        escala = ancho_util / sum(anchos)
+        tabla = Table(data, colWidths=[a * escala for a in anchos], repeatRows=1)
+        estilo = [
+            ("BACKGROUND", (0, 0), (-1, 0), c_navy),
+            ("LINEBEFORE", (1, 0), (-1, 0), 0.6, colors.HexColor("#3B4F6B")),
+            ("TOPPADDING", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_zebra]),
+            ("LINEBEFORE", (1, 1), (-1, -1), 0.6, c_borde),
+            ("TOPPADDING", (0, 1), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("BOX", (0, 0), (-1, -1), 1, c_navy),
+            ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+        ]
+        if not hay_filas:
+            estilo.append(("SPAN", (0, 1), (-1, 1)))
+        tabla.setStyle(TableStyle(estilo))
+        return tabla
+
+    # --- Banner ---
+    elementos = [
+        _BannerPDF(ancho_util, _logo_png(300), titulo=f"Detalle de Compra #{compra.codigo_compra}"),
+        Spacer(1, 8),
+    ]
+
+    # --- Datos generales ---
+    info = _dc_info(compra)
+    elementos.append(Paragraph(
+        " &nbsp;·&nbsp; ".join(f"<b>{escape(e)}:</b> {escape(str(v))}" for e, v in info),
+        st_info))
+    elementos.append(Spacer(1, 10))
+
+    # --- Tabla de ítems ---
+    data = [[Paragraph(h, st_head) for h in encabezados]]
+    for f in filas:
+        data.append([
+            Paragraph(str(f[0]), st_centro),
+            Paragraph(escape(f[1]), st_prod),
+            Paragraph(escape(f[2]), st_izq),
+            Paragraph(escape(f[3]), st_centro),
+            Paragraph(str(f[4]), st_centro),
+            Paragraph(cop(f[5]), st_der),
+            Paragraph(cop(f[6]), st_der),
+        ])
+    if not filas:
+        data.append([Paragraph("Esta compra no tiene ítems.", st_centro)]
+                    + [""] * (len(encabezados) - 1))
+    elementos.append(construir_tabla(data, [40, 220, 120, 100, 70, 100, 100], bool(filas)))
+
+    # --- Totales ---
+    elementos += [
+        Spacer(1, 10),
+        Paragraph(
+            f"Valor total: {cop(valor)} &nbsp;·&nbsp; Pagado: {cop(pagado)} &nbsp;·&nbsp; "
+            f"Saldo: {cop(saldo)}", st_tot),
+    ]
+
+    # --- Historial de pagos ---
+    if pagos:
+        elementos += [Spacer(1, 16), Paragraph("Historial de pagos", st_sub), Spacer(1, 6)]
+        data_p = [[Paragraph(h, st_head) for h in ["#", "Fecha", "Método", "Referencia", "Monto"]]]
+        for k, p in enumerate(pagos, start=1):
+            data_p.append([
+                Paragraph(str(k), st_centro),
+                Paragraph(escape(p[0]), st_centro),
+                Paragraph(escape(p[1]), st_centro),
+                Paragraph(escape(p[2]), st_centro),
+                Paragraph(cop(p[3]), st_der),
+            ])
+        elementos.append(construir_tabla(data_p, [40, 150, 130, 180, 110], True))
+
+    elementos += [
+        Spacer(1, 8),
+        Paragraph(f"Compra #{compra.codigo_compra} &nbsp;·&nbsp; Generado el "
+                  + timezone.localtime().strftime("%d/%m/%Y %H:%M"), st_meta),
+    ]
+
+    def pie(canvas, documento):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(margen, 20, "CYS Ltda · Distribuciones")
+        canvas.drawRightString(pagina[0] - margen, 20, f"Página {documento.page}")
+        canvas.restoreState()
+
+    doc.build(elementos, onFirstPage=pie, onLaterPages=pie)
+
+    resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{_dc_sello(compra)}.pdf"'
+    return resp
+
+
+# ---------------------------------------------------------------------------
+# IMPRIMIR
+# ---------------------------------------------------------------------------
+def exportar_detalle_imprimir(request, compra):
+    filas = _dc_filas(compra)
+    pagos = _dc_pagos(compra)
+    valor, pagado, saldo = _dc_totales(compra)
+    encabezados = "".join(f"<th>{h}</th>" for h in _dc_encabezados())
+
+    filas_html = "".join(
+        "<tr>"
+        f"<td class='c'>{f[0]}</td>"
+        f"<td class='prod'>{escape(f[1])}</td>"
+        f"<td>{escape(f[2])}</td>"
+        f"<td class='c'>{escape(f[3])}</td>"
+        f"<td class='c'>{f[4]}</td>"
+        f"<td class='d'>{cop(f[5])}</td>"
+        f"<td class='d'>{cop(f[6])}</td>"
+        "</tr>"
+        for f in filas
+    ) or "<tr><td colspan='7' class='c'>Esta compra no tiene ítems.</td></tr>"
+
+    pagos_html = ""
+    if pagos:
+        filas_p = "".join(
+            "<tr>"
+            f"<td class='c'>{k}</td>"
+            f"<td class='c'>{escape(p[0])}</td>"
+            f"<td class='c'>{escape(p[1])}</td>"
+            f"<td class='c'>{escape(p[2])}</td>"
+            f"<td class='d'>{cop(p[3])}</td>"
+            "</tr>"
+            for k, p in enumerate(pagos, start=1)
+        )
+        pagos_html = (
+            "<h2>Historial de pagos</h2>"
+            "<table><thead><tr><th>#</th><th>Fecha</th><th>Método</th><th>Referencia</th><th>Monto</th></tr></thead>"
+            f"<tbody>{filas_p}</tbody></table>"
+        )
+
+    info_html = " &nbsp;·&nbsp; ".join(
+        f"<b>{escape(e)}:</b> {escape(str(v))}" for e, v in _dc_info(compra)
+    )
+
+    logo = _logo_png(300)
+    logo_html = ""
+    if logo:
+        logo_html = f"<img class='logo' src='data:image/png;base64,{base64.b64encode(logo).decode()}' alt='CYS Ltda'>"
+
+    html = f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Detalle de compra #{compra.codigo_compra} — CYS Ltda</title>
+<style>
+  @page {{ margin: 14mm; }}
+  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+  body {{ font-family: Arial, sans-serif; margin: 0; color: #1f2937; }}
+  .banner {{ background: #{NAVY}; border-bottom: 4px solid #{GOLD}; padding: 14px 20px;
+            display: flex; align-items: center; gap: 18px; border-radius: 6px 6px 0 0; }}
+  .logo {{ width: 70px; height: 70px; }}
+  .banner h1 {{ margin: 0; font: bold 24px Georgia, 'Times New Roman', serif; color: #{GOLD}; letter-spacing: 1px; }}
+  .banner p {{ margin: 3px 0 0; font-size: 14px; color: #{CREAM}; }}
+  .info {{ font-size: 13px; color: #{NAVY}; margin: 12px 2px; line-height: 1.7; }}
+  .meta {{ font-size: 11px; color: #6b6b6b; margin: 10px 2px 12px; }}
+  h2 {{ font: bold 16px Georgia, 'Times New Roman', serif; color: #{NAVY}; margin: 22px 2px 8px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  th {{ background: #{NAVY}; color: #{GOLD}; padding: 9px 10px; border-bottom: 3px solid #{GOLD}; text-align: center; }}
+  td {{ padding: 8px 10px; border: 1px solid #{BORDE}; }}
+  td.c {{ text-align: center; }}
+  td.d {{ text-align: right; white-space: nowrap; }}
+  td.prod {{ font-weight: bold; color: #{NAVY}; }}
+  tr:nth-child(even) td {{ background: #{ZEBRA}; }}
+  .total {{ margin-top: 8px; background: #{CREAM}; border-top: 3px solid #{GOLD}; padding: 9px 14px;
+           text-align: right; font-weight: bold; color: #{NAVY}; font-size: 13px; }}
+  .pie {{ margin-top: 14px; font-size: 10px; color: #888; text-align: center; }}
+</style></head>
+<body>
+  <div class="banner">
+    {logo_html}
+    <div><h1>CYS LTDA · DISTRIBUCIONES</h1><p>Detalle de compra #{compra.codigo_compra}</p></div>
+  </div>
+  <div class="info">{info_html}</div>
+  <table><thead><tr>{encabezados}</tr></thead><tbody>{filas_html}</tbody></table>
+  <div class="total">Valor total: {cop(valor)} &nbsp;·&nbsp; Pagado: {cop(pagado)} &nbsp;·&nbsp; Saldo: {cop(saldo)}</div>
+  {pagos_html}
+  <div class="meta">Compra #{compra.codigo_compra} &nbsp;·&nbsp; Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}</div>
   <div class="pie">CYS Ltda · Distribuciones</div>
   <script>window.onload = function () {{ window.print(); }};</script>
 </body></html>"""

@@ -7,9 +7,9 @@
 {% block nav_metodos_pago %}active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
-<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=2">
 <style>
   /* ── Estilos limpios y adaptables al tema (Oscuro / Claro) ── */
   .mp-header-bar {
@@ -295,13 +295,15 @@
 
   <!-- ── BARRA SUPERIOR UNIFICADA: PESTAÑAS + ACCIONES RÁPIDAS ── -->
   <div class="mp-header-bar">
-    <div class="mp-tabs-nav" role="tablist">
-      <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}">
+    <div class="mp-tabs-nav" role="tablist" style="border-radius:999px !important; background:rgba(0,0,0,0.04); border:1px solid #cbd5e1; padding:4px;">
+      <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}"
+         style="{% if tab != 'compras' %}background:#a82315 !important; color:#ffffff !important; border-radius:999px !important; font-weight:700; box-shadow:0 2px 6px rgba(168,35,21,0.25);{% else %}background:transparent !important; color:#475569 !important; border-radius:999px !important; font-weight:600;{% endif %}">
         <i class="bi bi-wallet2"></i>
         <span>Ventas y Caja</span>
         <span class="mp-tab-count">{{ ventas_count }}</span>
       </a>
-      <a href="?tab=compras" class="mp-tab-btn {% if tab == 'compras' %}active{% endif %}">
+      <a href="?tab=compras" class="mp-tab-btn {% if tab == 'compras' %}active{% endif %}"
+         style="{% if tab == 'compras' %}background:#a82315 !important; color:#ffffff !important; border-radius:999px !important; font-weight:700; box-shadow:0 2px 6px rgba(168,35,21,0.25);{% else %}background:transparent !important; color:#475569 !important; border-radius:999px !important; font-weight:600;{% endif %}">
         <i class="bi bi-truck"></i>
         <span>Pagos a Proveedores</span>
         <span class="mp-tab-count">{{ total_registros_compras }}</span>
@@ -310,14 +312,17 @@
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
       {% if tab == 'compras' %}
-      <button type="button" class="btn btn-sm prod-btn-primary px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoPago">
+      <button type="button" class="btn btn-sm fw-bold cys-btn-primary px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoPago"
+              style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important;">
         <i class="bi bi-plus-lg me-1"></i> Registrar Pago
       </button>
       {% endif %}
-      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-secondary" title="Ir a Caja">
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-ghost-soft" title="Ir a Caja"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important;">
         <i class="bi bi-cash-stack me-1"></i> Caja
       </a>
-      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Ir a POS">
+      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Ir a POS"
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important;">
         <i class="bi bi-cart-check me-1"></i> Punto de Venta
       </a>
     </div>
@@ -424,12 +429,12 @@
         <span class="small text-muted">—</span>
         <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;" title="Hasta">
 
-        <button type="submit" class="btn btn-sm prod-btn-primary px-3">
+        <button type="submit" class="btn btn-sm fw-bold cys-btn-primary px-3">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
         {% if q or selected_caja or selected_metodo or fecha_inicio or fecha_fin %}
-        <a href="?tab=ventas" class="btn btn-sm prod-btn-outline px-2.5" title="Limpiar filtros">
+        <a href="?tab=ventas" class="btn btn-sm fw-bold cys-btn-ghost-soft px-2.5" title="Limpiar filtros">
           <i class="bi bi-x-lg"></i>
         </a>
         {% endif %}
@@ -600,12 +605,12 @@
         <span class="small text-muted">—</span>
         <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;">
 
-        <button type="submit" class="btn btn-sm prod-btn-primary px-3">
+        <button type="submit" class="btn btn-sm fw-bold cys-btn-primary px-3">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
         {% if q or fecha_inicio or fecha_fin %}
-        <a href="?tab=compras" class="btn btn-sm prod-btn-outline px-2.5" title="Limpiar filtros">
+        <a href="?tab=compras" class="btn btn-sm fw-bold cys-btn-ghost-soft px-2.5" title="Limpiar filtros">
           <i class="bi bi-x-lg"></i>
         </a>
         {% endif %}
@@ -673,10 +678,10 @@
                         ¿Eliminar el registro de pago <strong>#{{ p.codigo_metodo }}</strong> por <strong>${{ p.valor|floatformat:0|intcomma }}</strong>?
                       </div>
                       <div class="modal-footer prod-modal-footer p-2.5 d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-sm prod-btn-outline" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm fw-bold cys-btn-ghost-soft" data-bs-dismiss="modal">Cancelar</button>
                         <form method="POST" action="{% url 'eliminar_metodo_pago' p.codigo_metodo %}">
                           {% csrf_token %}
-                          <button type="submit" class="btn btn-sm btn-danger px-3">Eliminar</button>
+                          <button type="submit" class="btn btn-sm fw-bold cys-btn-danger-soft px-3">Eliminar</button>
                         </form>
                       </div>
                     </div>
@@ -757,8 +762,8 @@
           </div>
         </div>
         <div class="modal-footer prod-modal-footer p-3 px-4 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-sm prod-btn-outline px-3" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-sm prod-btn-primary px-3"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
+          <button type="button" class="btn btn-sm fw-bold cys-btn-ghost-soft px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm fw-bold cys-btn-primary px-3"><i class="bi bi-check-lg me-1"></i>Guardar Pago</button>
         </div>
       </form>
     </div>

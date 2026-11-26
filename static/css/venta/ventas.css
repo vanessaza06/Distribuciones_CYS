@@ -194,7 +194,7 @@ body,
 .cys-kpi-card {
   background: var(--cys-bg-card);
   border: 1px solid var(--cys-borde);
-  border-left: 3px solid var(--cys-acento);
+  border-left: 3.5px solid var(--dorado, #CF9C48) !important;
   border-radius: 12px;
   padding: 1.1rem 1.25rem;
   height: 100%;

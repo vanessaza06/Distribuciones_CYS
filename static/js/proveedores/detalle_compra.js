@@ -92,6 +92,7 @@
   }
 
   // Asegurar disponibilidad del helper de exportación unificado
+  // (el detalle de compra ya NO lo usa: exporta desde el servidor, ver initExportacionServidor)
   if (typeof window.cysCrearDropdownExportar !== 'function') {
     window.cysCrearDropdownExportar = function(dt, containerOrId) {
       if (!dt) return;
@@ -183,6 +184,44 @@
     };
   }
 
+  /* ── Exportación desde el servidor (Excel / PDF / Imprimir) ─────────────────
+     Llama a esta misma URL con ?export=excel|pdf|imprimir y la vista
+     detalle_compra genera el archivo con el diseño de Marcas. */
+  function urlExportacion(tipo) {
+    var params = new URLSearchParams(window.location.search);
+    params.set('export', tipo);
+    return window.location.pathname + '?' + params.toString();
+  }
+
+  function initExportacionServidor() {
+    var contenedor = document.getElementById('cys-dt-export-compra');
+    if (!contenedor) return;
+
+    contenedor.querySelectorAll('[data-cys-export]').forEach(function(btn) {
+      if (btn.dataset.cysExportBound) return;
+      btn.dataset.cysExportBound = 'true';   // evita que otro helper lo vuelva a enlazar
+
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var tipo = btn.getAttribute('data-cys-export');
+        var url = urlExportacion(tipo);
+
+        if (tipo === 'imprimir') {
+          window.open(url, '_blank');          // se abre y lanza el diálogo de impresión
+        } else {
+          window.location.href = url;          // descarga del archivo (no cambia de página)
+        }
+
+        // Cierra el menú desplegable
+        var toggle = contenedor.querySelector('[data-bs-toggle="dropdown"]');
+        if (toggle && window.bootstrap && bootstrap.Dropdown) {
+          var inst = bootstrap.Dropdown.getInstance(toggle);
+          if (inst) inst.hide();
+        }
+      });
+    });
+  }
+
   function initTablaDetalleCompra() {
     if (!window.jQuery || !jQuery.fn.DataTable) return;
     const tableEl = document.getElementById('tablaDetalleCompra');
@@ -196,7 +235,7 @@
     const codigo = (tableEl && tableEl.dataset.codigo) || (modal ? modal.dataset.codigo : '');
     const fecha = (tableEl && tableEl.dataset.fecha) || (modal ? modal.dataset.fecha : '');
 
-    const dtCompra = jQuery(tableEl).DataTable({
+    jQuery(tableEl).DataTable({
       paging: true,
       pageLength: 5,
       searching: false,
@@ -243,11 +282,6 @@
         }
       ]
     });
-
-    const exportContainer = document.getElementById('cys-dt-export-compra');
-    if (exportContainer && typeof window.cysCrearDropdownExportar === 'function') {
-      window.cysCrearDropdownExportar(dtCompra, exportContainer);
-    }
   }
 
   function initProgressBar() {
@@ -258,6 +292,7 @@
 
   function initPage() {
     initPagoModal();
+    initExportacionServidor();   // primero: así ningún otro script se queda con los botones
     initTablaDetalleCompra();
     initProgressBar();
   }

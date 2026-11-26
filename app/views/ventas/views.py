@@ -209,6 +209,24 @@ def nueva_venta(request):
     total_pagado = pago_efectivo + pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
     saldo_pendiente = Decimal('0')
 
+    # ══ VALIDACIÓN DE MONTOS MÁXIMOS Y PAGOS EXCESIVOS ══
+    total_electronico = pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata
+    if total_electronico > total_final and total_final > 0:
+        messages.error(
+            request,
+            f"Los pagos electrónicos (Tarjeta, Transferencia, Nequi, Daviplata) suman ${total_electronico:,.0f} y no pueden superar el total a cobrar (${total_final:,.0f}).".replace(',', '.')
+        )
+        return redirect('ventas')
+
+    saldo_cubrir_efectivo = max(Decimal('0'), total_final - total_electronico)
+    # En Colombia el billete de mayor denominación es de $100.000 COP, por lo que el cambio no puede superar $100.000
+    if pago_efectivo > (saldo_cubrir_efectivo + Decimal('100000')) and total_final > 0:
+        messages.error(
+            request,
+            f"El valor de pago en efectivo (${pago_efectivo:,.0f}) es excesivo. Para una venta de ${total_final:,.0f}, los vueltos no pueden superar $100.000 (billete máximo en Colombia). Verifique el monto ingresado.".replace(',', '.')
+        )
+        return redirect('ventas')
+
     if total_pagado < total_final:
         # Pago parcial o en $0 (saldo pendiente / fiado): requiere obligatoriamente motivo
         saldo_pendiente = total_final - total_pagado
@@ -303,12 +321,12 @@ def nueva_venta(request):
                 total_val=subtotal_item,
             )
 
-        # Actualizar totales en caja únicamente con lo efectivamente recaudado
-        if pago_efectivo > 0:
-            caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + pago_efectivo
-        if pago_tarjeta > 0 or pago_transferencia > 0 or pago_nequi > 0 or pago_daviplata > 0:
-            monto_trans = (pago_tarjeta + pago_transferencia + pago_nequi + pago_daviplata)
-            caja_actual.total_transferencias = (caja_actual.total_transferencias or Decimal('0')) + monto_trans
+        # Actualizar totales en caja únicamente con lo efectivamente recaudado (neto real ingresado a caja)
+        efectivo_a_caja = min(pago_efectivo, saldo_cubrir_efectivo)
+        if efectivo_a_caja > 0:
+            caja_actual.total_efectivo = (caja_actual.total_efectivo or Decimal('0')) + efectivo_a_caja
+        if total_electronico > 0:
+            caja_actual.total_transferencias = (caja_actual.total_transferencias or Decimal('0')) + total_electronico
         caja_actual.save(update_fields=['total_efectivo', 'total_transferencias'])
 
     if saldo_pendiente > 0:
@@ -333,6 +351,14 @@ def eliminar_venta(request, pk):
 
     venta = get_object_or_404(Venta, pk=pk)
     if request.method == 'POST':
+        motivo = request.POST.get('motivo_eliminacion', '').strip()
+        if not motivo:
+            messages.error(
+                request,
+                "No se puede eliminar la venta: debes ingresar obligatoriamente la razón o motivo de la eliminación."
+            )
+            return redirect('ventas')
+
         with transaction.atomic():
             # Restaurar stock a los lotes asociados
             for det in venta.detalles.all():
@@ -350,7 +376,7 @@ def eliminar_venta(request, pk):
                 caja_actual.save(update_fields=['total_efectivo', 'total_transferencias'])
 
             venta.delete()
-            messages.success(request, f"Venta #{pk} eliminada exitosamente y stock restituido a bodega.")
+            messages.success(request, f"Venta #{pk} eliminada exitosamente. Motivo registrado: \"{motivo}\". Stock restituido a bodega.")
     return redirect('ventas')
 
 

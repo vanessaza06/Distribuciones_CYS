@@ -13,14 +13,23 @@ const byId = (id) => document.getElementById(id);
 
 function init() {
   if (!byId('formNuevaCompra') && !byId('chartComprasMes')) return;
-  initNuevaCompra();
-  initModalPago();
-  initBusquedaProveedores();
-  initAccesibilidad();
-  initAccionesDropdown();
-  initTabla();
-  initExportar();
-  initializeCharts();
+
+  // Cada parte se ejecuta por separado: si una falla, las demás siguen funcionando
+  [
+    initNuevaCompra,
+    initModalPago,
+    initBusquedaProveedores,
+    initAccesibilidad,
+    initTabla,
+    initExportar,
+    initializeCharts
+  ].forEach((fn) => {
+    try {
+      fn();
+    } catch (err) {
+      console.error('[Compras] Error en ' + fn.name + ':', err);
+    }
+  });
 
   const params = new URLSearchParams(window.location.search);
   const modalProv = byId('modalProveedores');
@@ -79,30 +88,28 @@ function initExportar() {
       params.delete('modal');
       params.delete('page');
 
-      // Sincroniza con los valores actuales del formulario de filtros
+      // Si el usuario escribió filtros en el formulario sin pulsar "Filtrar",
+      // también se exportan (así lo exportado coincide con lo que ve en los campos).
       const formFiltros = byId('filtrosCompras');
       if (formFiltros) {
-        const leerCampo = (id) => {
-          const el = byId(id);
-          return el ? el.value.trim() : '';
-        };
-        const qVal = leerCampo('cmp-buscar-input');
-        const desdeVal = leerCampo('filtroComprasDesde');
-        const hastaVal = leerCampo('filtroComprasHasta');
-        const estadoVal = leerCampo('filtroComprasEstado');
-        const pagoVal = leerCampo('filtroComprasPago');
-
-        if (qVal) params.set('q', qVal); else params.delete('q');
-        if (desdeVal) params.set('desde', desdeVal); else params.delete('desde');
-        if (hastaVal) params.set('hasta', hastaVal); else params.delete('hasta');
-        if (estadoVal && estadoVal !== 'todos') params.set('estado', estadoVal); else params.delete('estado');
-        if (pagoVal && pagoVal !== 'todos') params.set('pago', pagoVal); else params.delete('pago');
+        ['q', 'desde', 'hasta', 'estado'].forEach((nombre) => {
+          const campo = formFiltros.elements[nombre];
+          if (!campo) return;
+          const valor = (campo.value || '').trim();
+          if (valor && !(nombre === 'estado' && valor === 'todos')) {
+            params.set(nombre, valor);
+          } else {
+            params.delete(nombre);
+          }
+        });
       }
 
-      // Si el proveedor no está en la URL, toma el del selector del modal
+      // Si el proveedor no está en la URL, toma el del formulario o el del selector del modal
       if (!params.get('proveedor')) {
+        const hidden = formFiltros && formFiltros.elements['proveedor'];
         const sel = byId('proveedorSeleccionado');
-        if (sel && sel.value) params.set('proveedor', sel.value);
+        const prov = (hidden && hidden.value) || (sel && sel.value);
+        if (prov) params.set('proveedor', prov);
       }
 
       params.set('export', tipo);
@@ -123,7 +130,8 @@ function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
-  const dt = jQuery(tabla).DataTable({
+
+  jQuery(tabla).DataTable({
     paging: true,
     searching: true,
     info: true,
@@ -147,153 +155,8 @@ function initTabla() {
       bottomEnd: 'paging'
     }
   });
-
-  // Filtro en vivo por fecha, estado y pago (solo se registra una vez)
-  if (!window._cysComprasExtSearchBound) {
-    window._cysComprasExtSearchBound = true;
-    jQuery.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-      if (settings.sTableId !== 'tablaHistorialCompras') return true;
-      const rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
-      if (!rowNode) return true;
-
-      const desdeEl = byId('filtroComprasDesde');
-      const hastaEl = byId('filtroComprasHasta');
-      const estadoEl = byId('filtroComprasEstado');
-      const pagoEl = byId('filtroComprasPago');
-
-      const desde = desdeEl ? desdeEl.value : '';
-      const hasta = hastaEl ? hastaEl.value : '';
-      const estado = estadoEl ? estadoEl.value : 'todos';
-      const pago = pagoEl ? pagoEl.value : 'todos';
-
-      const fechaRow = rowNode.getAttribute('data-fecha') || '';
-      const estadoRow = rowNode.getAttribute('data-estado') || '';
-      const pagoRow = rowNode.getAttribute('data-pago') || '';
-
-      if (desde && fechaRow && fechaRow < desde) return false;
-      if (hasta && fechaRow && fechaRow > hasta) return false;
-      if (estado && estado !== 'todos' && estadoRow !== estado) return false;
-      if (pago && pago !== 'todos' && pagoRow !== pago) return false;
-      return true;
-    });
-  }
-
-  const inputBuscar = byId('cmp-buscar-input');
-  const desdeEl = byId('filtroComprasDesde');
-  const hastaEl = byId('filtroComprasHasta');
-  const estadoEl = byId('filtroComprasEstado');
-  const pagoEl = byId('filtroComprasPago');
-  const btnLimpiar = byId('cmp-btn-limpiar');
-
-  if (inputBuscar && !inputBuscar.dataset.dtBound) {
-    inputBuscar.dataset.dtBound = 'true';
-    inputBuscar.addEventListener('input', function () {
-      const api = jQuery('#tablaHistorialCompras').DataTable();
-      api.search(this.value.trim()).draw();
-    });
-  }
-
-  [desdeEl, hastaEl, estadoEl, pagoEl].forEach((el) => {
-    if (el && !el.dataset.dtBound) {
-      el.dataset.dtBound = 'true';
-      el.addEventListener('change', function () {
-        const api = jQuery('#tablaHistorialCompras').DataTable();
-        api.draw();
-      });
-    }
-  });
-
-  if (btnLimpiar && !btnLimpiar.dataset.dtBound) {
-    btnLimpiar.dataset.dtBound = 'true';
-    btnLimpiar.addEventListener('click', function (e) {
-      const params = new URLSearchParams(window.location.search);
-      const tieneFiltrosUrl =
-        params.get('q') ||
-        params.get('desde') ||
-        params.get('hasta') ||
-        (params.get('estado') && params.get('estado') !== 'todos') ||
-        (params.get('pago') && params.get('pago') !== 'todos');
-
-      if (!tieneFiltrosUrl) {
-        e.preventDefault();
-        if (inputBuscar) inputBuscar.value = '';
-        if (desdeEl) desdeEl.value = '';
-        if (hastaEl) hastaEl.value = '';
-        if (estadoEl) estadoEl.value = 'todos';
-        if (pagoEl) pagoEl.value = 'todos';
-        const api = jQuery('#tablaHistorialCompras').DataTable();
-        api.search('').draw();
-      }
-    });
-  }
-
-  dt.on('draw.dt', function () {
-    document.querySelectorAll('.dd-menu.open').forEach((m) => m.classList.remove('open'));
-    document.querySelectorAll('.dd-btn[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
-  });
-}
-
-function initAccionesDropdown() {
-  const cerrarMenus = () => {
-    document.querySelectorAll('#tablaHistorialCompras .dd-menu.open').forEach((m) => m.classList.remove('open'));
-    document.querySelectorAll('#tablaHistorialCompras .dd-btn[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
-  };
-
-  if (!window._cysComprasDdBound) {
-    window._cysComprasDdBound = true;
-
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('#tablaHistorialCompras .dd-btn');
-      if (btn) {
-        e.stopPropagation();
-        const wrap = btn.closest('.dd-wrap');
-        const menu = wrap && wrap.querySelector('.dd-menu');
-        if (!menu) return;
-        const yaAbierto = menu.classList.contains('open');
-        cerrarMenus();
-        if (!yaAbierto) {
-          menu.classList.add('open');
-          btn.setAttribute('aria-expanded', 'true');
-          const rect = btn.getBoundingClientRect();
-          const menuH = menu.offsetHeight || 160;
-          let top = rect.bottom + 4;
-          if (top + menuH > window.innerHeight - 8 && rect.top - menuH - 4 > 8) {
-            top = rect.top - menuH - 4;
-          }
-          menu.style.top = top + 'px';
-          menu.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
-        }
-        return;
-      }
-
-      if (e.target.closest('#tablaHistorialCompras .dd-item')) {
-        setTimeout(cerrarMenus, 0);
-        return;
-      }
-
-      if (!e.target.closest('#tablaHistorialCompras .dd-wrap')) {
-        cerrarMenus();
-      }
-    });
-
-    window.addEventListener('scroll', cerrarMenus, true);
-    window.addEventListener('resize', cerrarMenus);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') cerrarMenus();
-    });
-  }
-
-  if (!window._cysComprasConfirmBound) {
-    window._cysComprasConfirmBound = true;
-    document.addEventListener('submit', function (e) {
-      const form = e.target.closest('.form-confirm-action');
-      if (!form) return;
-      const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
-      if (!window.confirm(msg)) {
-        e.preventDefault();
-      }
-    });
-  }
+  // Nota: la exportación la hace el servidor (initExportar). Ya no se llama a
+  // cysCrearDropdownExportar, que usaba una variable `dt` inexistente y rompía el script.
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -305,6 +168,10 @@ function initNuevaCompra() {
   const precio = byId('formCompraPrecio');
   const pago = byId('formCompraPago');
   if (!hiddenProducto || !cantidad || !precio) return;
+
+  // Evita enlazar los mismos eventos dos veces si init() se ejecuta de nuevo (htmx)
+  if (hiddenProducto.dataset.cmpBound === 'true') return;
+  hiddenProducto.dataset.cmpBound = 'true';
 
   const btnTotal = byId('btnPagarTotalNueva');
   const btnCredito = byId('btnCreditoNueva');
@@ -868,6 +735,10 @@ function initModalPago() {
   const monto = byId('montoPagado');
   if (!form || !monto) return;
 
+  // Evita enlazar los mismos eventos dos veces
+  if (form.dataset.pagoBound === 'true') return;
+  form.dataset.pagoBound = 'true';
+
   const saldoActual = () => parseFloat(byId('saldoActual').value) || 0;
 
   function actualizar() {
@@ -929,18 +800,18 @@ function initModalPago() {
     });
   }
 
-  byId('btnPagarTodoSaldo').addEventListener('click', () => {
-    monto.value = saldoActual().toFixed(2);
-    actualizar();
-  });
-  monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
-
   function mostrarError(texto) {
     const box = byId('montoPagadoError');
     if (!box) return;
     box.querySelector('span').textContent = texto;
     box.classList.toggle('d-none', !texto);
   }
+
+  byId('btnPagarTodoSaldo').addEventListener('click', () => {
+    monto.value = saldoActual().toFixed(2);
+    actualizar();
+  });
+  monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
 
   form.addEventListener('submit', function (e) {
     const valor = parseFloat(monto.value);
@@ -982,14 +853,19 @@ function initBusquedaProveedores() {
     layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' }
   });
   // El buscador existente del modal filtra la tabla (nombre, NIT, tipo, teléfono, correo)
-  input.addEventListener('input', function () {
-    dt.search(this.value.trim()).draw();
-  });
+  if (input.dataset.provBound !== 'true') {
+    input.dataset.provBound = 'true';
+    input.addEventListener('input', function () {
+      dt.search(this.value.trim()).draw();
+    });
+  }
 }
 
 // ── Accesibilidad: Enter/Espacio activan elementos role="button" ─
 function initAccesibilidad() {
   document.querySelectorAll('[role="button"][data-bs-toggle]').forEach((el) => {
+    if (el.dataset.a11yBound === 'true') return;
+    el.dataset.a11yBound = 'true';
     el.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
