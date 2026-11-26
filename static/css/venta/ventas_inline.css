@@ -3028,16 +3028,36 @@ html[data-cys-tema="claro"] {
     color: #b91c1c !important;
   }
 
-  /* 6. BOTONES DE CIERRE: Registrar Venta (VERDE) y Cancelar Venta (ROJO) */
-  #btnRegistrar,
-  .cys-btn-checkout {
+  /* 6. BOTONES DE CIERRE: Registrar Venta (ROJO CON LETRA BLANCA) y Cancelar Venta */
+  #btnRegistrar {
+    background: #a82315 !important;
+    border: 1px solid #a82315 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(168, 35, 21, 0.28) !important;
+    font-weight: 700 !important;
+  }
+  #btnRegistrar:hover:not(:disabled) {
+    background: #8e1c10 !important;
+    border-color: #8e1c10 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(168, 35, 21, 0.38) !important;
+  }
+  #btnRegistrar:disabled {
+    background: rgba(168, 35, 21, 0.45) !important;
+    border-color: rgba(168, 35, 21, 0.3) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 0.65 !important;
+  }
+
+  .cys-btn-checkout:not(#btnRegistrar) {
     background: linear-gradient(135deg, #16a34a, #15803d) !important;
     border: 1px solid #16a34a !important;
     color: #ffffff !important;
     box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25) !important;
   }
-  #btnRegistrar:hover,
-  .cys-btn-checkout:hover {
+  .cys-btn-checkout:not(#btnRegistrar):hover {
     background: #15803d !important;
     box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35) !important;
   }

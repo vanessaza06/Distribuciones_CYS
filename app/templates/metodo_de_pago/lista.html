@@ -295,15 +295,13 @@
 
   <!-- ── BARRA SUPERIOR UNIFICADA: PESTAÑAS + ACCIONES RÁPIDAS ── -->
   <div class="mp-header-bar">
-    <div class="mp-tabs-nav" role="tablist" style="border-radius:999px !important; background:rgba(0,0,0,0.04); border:1px solid #cbd5e1; padding:4px;">
-      <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}"
-         style="{% if tab != 'compras' %}background:#a82315 !important; color:#ffffff !important; border-radius:999px !important; font-weight:700; box-shadow:0 2px 6px rgba(168,35,21,0.25);{% else %}background:transparent !important; color:#475569 !important; border-radius:999px !important; font-weight:600;{% endif %}">
+    <div class="mp-tabs-nav" role="tablist">
+      <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}">
         <i class="bi bi-wallet2"></i>
         <span>Ventas y Caja</span>
         <span class="mp-tab-count">{{ ventas_count }}</span>
       </a>
-      <a href="?tab=compras" class="mp-tab-btn {% if tab == 'compras' %}active{% endif %}"
-         style="{% if tab == 'compras' %}background:#a82315 !important; color:#ffffff !important; border-radius:999px !important; font-weight:700; box-shadow:0 2px 6px rgba(168,35,21,0.25);{% else %}background:transparent !important; color:#475569 !important; border-radius:999px !important; font-weight:600;{% endif %}">
+      <a href="?tab=compras" class="mp-tab-btn {% if tab == 'compras' %}active{% endif %}">
         <i class="bi bi-truck"></i>
         <span>Pagos a Proveedores</span>
         <span class="mp-tab-count">{{ total_registros_compras }}</span>
@@ -317,8 +315,8 @@
         <i class="bi bi-plus-lg me-1"></i> Registrar Pago
       </button>
       {% endif %}
-      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-ghost-soft" title="Ir a Caja"
-         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important;">
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-danger-soft" title="Ir a Caja"
+         style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-cash-stack me-1"></i> Caja
       </a>
       <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Ir a POS"
