@@ -1,314 +1,194 @@
 ﻿{% extends 'base.html' %}
 {% load static %}
 {% block title %}Categorías — CYS Ltda{% endblock %}
-{% block page_title %}Categorías{% endblock %}
+{% block page_title %}Gestión de categorías{% endblock %}
 {% block nav_categorias %}active{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/categorias/categorias.css' %}?v=1" />
+<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=5" />
 {% endblock %}
 {% block content %}
 
 <div
   class="container-fluid p-0 cys-categorias-page"
-  data-url-crear="{% url 'categoria_crear' %}"
   data-url-excel="{% url 'categoria_exportar_excel' %}"
   data-url-pdf="{% url 'categoria_exportar_pdf' %}"
 >
-  <!-- Encabezado de página -->
-  <section class="cys-page-header cys-no-print">
-    <div class="cys-page-header__left">
-      <div class="cys-page-icon"><i class="bi bi-tags"></i></div>
-      <div>
-        <h1 class="cys-page-title">Categorías</h1>
-        <p class="cys-page-subtitle">
-          Gestiona las categorías de productos de la licorera
-        </p>
-      </div>
-    </div>
-
-    <div class="cys-page-header__right">
-      <!-- Exportar -->
-      <div class="cys-export" id="cysExport">
-        <button class="cys-btn cys-btn--export" id="cysExportTrigger" type="button" aria-haspopup="true">
-          <i class="bi bi-box-arrow-up"></i>
-          <span id="cysExportLabel">Exportar</span>
-          <i class="bi bi-chevron-down cys-export__chevron"></i>
-        </button>
-        <ul class="cys-export__menu" id="cysExportMenu">
-          <li data-export="excel">
-            <i class="bi bi-file-earmark-excel" style="color: var(--cys-green)"></i> Excel
-          </li>
-          <li data-export="pdf">
-            <i class="bi bi-file-earmark-pdf" style="color: var(--cys-red)"></i> PDF
-          </li>
-          <li data-export="imprimir">
-            <i class="bi bi-printer" style="color: #4da8da"></i> Imprimir
-          </li>
-        </ul>
-      </div>
-
-      <!-- Botón Nueva categoría -->
-      <button
-        class="cys-btn cys-btn--primary"
-        id="btnNuevaCategoria"
-        type="button"
-        data-tooltip="Crear nueva categoría"
-        aria-label="Crear nueva categoría"
-      >
-        <i class="bi bi-plus-lg"></i>
-        Nueva categoría
-      </button>
-    </div>
-  </section>
-
   {% if messages %}
   {% for message in messages %}
   <div class="cys-alert cys-alert--{{ message.tags }} cys-no-print">{{ message }}</div>
   {% endfor %}
   {% endif %}
 
-  <!-- Tarjetas de resumen -->
-  <section class="cys-stats cys-no-print" id="cysStats">
-    <article class="cys-kpi cys-kpi--total">
-      <div class="cys-kpi__body">
-        <p class="cys-kpi__label">Categorías</p>
-        <p class="cys-kpi__value">{{ total_categorias }}</p>
-      </div>
-      <i class="bi bi-tags cys-kpi__icon"></i>
-    </article>
+  <div class="cys-cat-layout">
 
-    <article class="cys-kpi cys-kpi--active">
-      <div class="cys-kpi__body">
-        <p class="cys-kpi__label">Activas</p>
-        <p class="cys-kpi__value">{{ total_activas }}</p>
-      </div>
-      <i class="bi bi-check-circle cys-kpi__icon"></i>
-    </article>
+    <!-- ===== Nueva categoría ===== -->
+    <section class="cys-cat-panel cys-no-print">
+      <h2 class="cys-cat-panel__title"><i class="bi bi-plus-circle"></i> Nueva Categoría</h2>
 
-    <article class="cys-kpi cys-kpi--inactive">
-      <div class="cys-kpi__body">
-        <p class="cys-kpi__label">Inactivas</p>
-        <p class="cys-kpi__value">{{ total_inactivas }}</p>
-      </div>
-      <i class="bi bi-x-circle cys-kpi__icon"></i>
-    </article>
-  </section>
+      <form method="post" action="{% url 'categoria_crear' %}" id="cysCrearForm" novalidate>
+        {% csrf_token %}
 
-  <!-- Búsqueda y filtros (GET real al servidor) -->
-  <form class="cys-toolbar cys-no-print" id="cysFiltroForm" method="get">
-    <div class="cys-search">
-      <span class="cys-search__icon"><i class="bi bi-search"></i></span>
-      <input
-        type="text"
-        id="inputBuscar"
-        name="q"
-        placeholder="Buscar categoría o código..."
-        value="{{ query }}"
-        autocomplete="off"
-      />
-    </div>
+        <label class="cys-field">
+          <span>Nombre <em>*</em></span>
+          <input type="text" id="cNombre" name="nombre" class="cys-cat-input" placeholder="Ej: Vinos" required />
+        </label>
 
-    <button
-      type="button"
-      class="cys-btn cys-btn--filtros"
-      id="cysFiltrosBtn"
-      aria-expanded="{% if estado_filtro == 'activo' or estado_filtro == 'inactivo' %}true{% else %}false{% endif %}"
-      aria-controls="cysFiltrosPanel"
-    >
-      <i class="bi bi-funnel"></i>
-      Filtros
-      {% if estado_filtro == "activo" or estado_filtro == "inactivo" %}<span class="cys-filtros-badge">1</span>{% endif %}
-      <i class="bi bi-chevron-down cys-filtro-chevron"></i>
-    </button>
+        <label class="cys-field">
+          <span>Código <em>*</em></span>
+          <input type="text" id="cCodigo" name="codigo" class="cys-cat-input cys-input-codigo" placeholder="EJ: VIN" maxlength="20" required />
+        </label>
 
-    <div
-      class="cys-filtros-panel"
-      id="cysFiltrosPanel"
-      {% if estado_filtro != "activo" and estado_filtro != "inactivo" %}hidden{% endif %}
-    >
-      <div class="cys-filtros-grid">
-        <!-- Estado -->
-        <div class="cys-filtro-item">
-          <span class="cys-filtro-label">Estado</span>
-          <div class="cys-select" id="cysEstadoSelect">
-            <button class="cys-select__trigger" id="cysEstadoTrigger" type="button">
-              {# IMPORTANTE: cada {% ... %} debe ir completo en UNA sola línea #}
-              <span id="cysEstadoLabel">{% if estado_filtro == "activo" %}Activa{% elif estado_filtro == "inactivo" %}Inactiva{% else %}Todos los estados{% endif %}</span>
-              <i class="bi bi-chevron-down"></i>
+        <label class="cys-field">
+          <span>Descripción</span>
+          <textarea id="cDescripcion" name="descripcion" class="cys-cat-input" rows="3" maxlength="200" placeholder="Opcional..."></textarea>
+        </label>
+
+        <button type="submit" class="cys-btn cys-btn--primary cys-btn--block">
+          <i class="bi bi-check-circle"></i> Crear Categoría
+        </button>
+      </form>
+    </section>
+
+    <!-- ===== Listado ===== -->
+    <section class="cys-cat-panel" id="seccionListaCategorias">
+      <div class="cys-cat-panel__head">
+        <h2 class="cys-cat-panel__title"><i class="bi bi-tags"></i> Categorías</h2>
+
+        <div class="cys-cat-panel__tools cys-no-print">
+          <div class="cys-export" id="cysExport">
+            <button class="cys-btn cys-btn--export" id="cysExportTrigger" type="button" aria-haspopup="true">
+              <i class="bi bi-box-arrow-up"></i>
+              <span>Exportar</span>
+              <i class="bi bi-chevron-down cys-export__chevron"></i>
             </button>
-            <ul class="cys-select__menu" id="cysEstadoMenu">
-              <li data-value="todos">Todos los estados</li>
-              <li data-value="activo">Activa</li>
-              <li data-value="inactivo">Inactiva</li>
+            <ul class="cys-export__menu" id="cysExportMenu">
+              <li data-export="excel"><i class="bi bi-file-earmark-excel cys-ico-excel"></i> Excel</li>
+              <li data-export="pdf"><i class="bi bi-file-earmark-pdf cys-ico-pdf"></i> PDF</li>
+              <li data-export="imprimir"><i class="bi bi-printer cys-ico-print"></i> Imprimir</li>
             </ul>
-            <input type="hidden" name="estado" id="fieldEstadoFiltro" value="{{ estado_filtro }}" />
           </div>
-        </div>
 
-        <!-- Limpiar filtros -->
-        <div class="cys-filtro-item cys-filtro-item--accion">
-          <a class="cys-btn cys-btn--limpiar" href="{{ request.path }}">
-            <i class="bi bi-x-circle"></i> Limpiar filtros
-          </a>
+          <button class="cys-btn cys-btn--primary" id="btnNuevaCategoria" type="button">
+            <i class="bi bi-plus-lg"></i> Nueva categoría
+          </button>
         </div>
       </div>
-    </div>
-  </form>
 
-  <!-- Tabla -->
-  <section
-    class="cys-table-card {% if not categorias %}cys-table-card--empty{% endif %}"
-    id="cysTableCard"
-  >
-    <table class="cys-table" id="tablaCategorias">
-      <thead>
-        <tr>
-          <th class="cys-col-num">#</th>
-          <th class="cys-sortable" data-col="1" data-type="text">Categoría</th>
-          <th class="cys-sortable" data-col="2" data-type="text">Código</th>
-          <th class="cys-sortable" data-col="3" data-type="text">Descripción</th>
-          <th class="cys-sortable cys-col-center" data-col="4" data-type="num">Productos</th>
-          <th class="cys-sortable" data-col="5" data-type="text">Estado</th>
-          <th class="cys-col-actions cys-no-print">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="cysTableBody">
+      <ul class="cys-cat-list">
         {% for cat in categorias %}
-        <tr data-id="{{ cat.pk }}">
-          <td class="cys-col-num">{{ page_obj.start_index|add:forloop.counter0 }}</td>
-          <td class="cys-cat-name">{{ cat.nombre }}</td>
-          <td><span class="cys-codigo">{{ cat.codigo }}</span></td>
-          <td class="cys-cat-desc">{{ cat.descripcion|default:"—"|truncatechars:70 }}</td>
-          <td class="cys-col-center">{{ cat.total_productos }}</td>
-          <td>
-            {% if cat.activo %}
-            <span class="cys-status"><i class="bi bi-check-circle"></i>Activa</span>
-            {% else %}
-            <span class="cys-status cys-status--inactiva"><i class="bi bi-x-circle"></i>Inactiva</span>
-            {% endif %}
-          </td>
-          <td class="cys-no-print">
-            <div class="cys-row-actions">
-              <div class="cys-row-menu">
-                <button class="cys-row-menu__trigger" type="button" aria-haspopup="true" aria-label="Acciones">
-                  <i class="bi bi-three-dots"></i>
-                </button>
+        <li class="cys-cat-item {% if not cat.activo %}cys-cat-item--off{% endif %}" data-id="{{ cat.pk }}">
+          <i class="bi bi-tag-fill cys-cat-item__icon"></i>
 
-                <ul class="cys-row-menu__list">
-                  <li>
-                    <button
-                      class="cys-menu-item cys-action-btn cys-action-btn--edit"
-                      type="button"
-                      data-id="{{ cat.pk }}"
-                      data-url="{% url 'categoria_editar' cat.pk %}"
-                      data-nombre="{{ cat.nombre }}"
-                      data-codigo="{{ cat.codigo }}"
-                      data-descripcion="{{ cat.descripcion|default_if_none:'' }}"
-                    >
-                      <i class="bi bi-pencil"></i>
-                      <span>Editar</span>
-                    </button>
-                  </li>
-                  <li>
-                    <form
-                      method="post"
-                      action="{% url 'categoria_toggle_activo' cat.pk %}"
-                      class="cys-form-toggle"
-                      data-nombre="{{ cat.nombre }}"
-                    >
-                      {% csrf_token %}
-                      {% if cat.activo %}
-                      <button
-                        class="cys-menu-item cys-menu-item--danger cys-action-btn cys-action-btn--deactivate cys-btn-confirmar-toggle"
-                        type="button"
-                      >
-                        <i class="bi bi-pause-circle"></i>
-                        <span>Desactivar</span>
-                      </button>
-                      {% else %}
-                      <button
-                        class="cys-menu-item cys-menu-item--success cys-action-btn cys-action-btn--activate"
-                        type="submit"
-                      >
-                        <i class="bi bi-play-circle"></i>
-                        <span>Activar</span>
-                      </button>
-                      {% endif %}
-                    </form>
-                  </li>
-                </ul>
-              </div>
+          <div class="cys-cat-item__info">
+            <div class="cys-cat-item__name">
+              {{ cat.nombre }}
+              <span class="cys-cat-badge">{{ cat.codigo }}</span>
+              {% if not cat.activo %}<span class="cys-cat-badge cys-cat-badge--off">Inactiva</span>{% endif %}
             </div>
-          </td>
-        </tr>
+            <div class="cys-cat-item__count"><i class="bi bi-box-seam"></i> {{ cat.total_productos }} productos</div>
+          </div>
+
+          <!-- Menú de acciones (⋯) -->
+          <div class="cys-cat-item__actions cys-no-print">
+            <div class="cys-cat-menu">
+              <button
+                class="cys-cat-menu__trigger"
+                type="button"
+                title="Acciones"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Acciones de {{ cat.nombre }}"
+              >
+                <i class="bi bi-three-dots"></i>
+              </button>
+
+              <ul class="cys-cat-menu__list" role="menu">
+                <li role="none">
+                  <button
+                    class="cys-cat-menu__item cys-action-btn--edit"
+                    type="button"
+                    role="menuitem"
+                    data-url="{% url 'categoria_editar' cat.pk %}"
+                    data-nombre="{{ cat.nombre }}"
+                    data-codigo="{{ cat.codigo }}"
+                    data-descripcion="{{ cat.descripcion|default_if_none:'' }}"
+                  >
+                    <i class="bi bi-pencil"></i> Editar
+                  </button>
+                </li>
+
+                <li class="cys-cat-menu__sep" role="separator"></li>
+
+                <li role="none">
+                  <form method="post" action="{% url 'categoria_toggle_activo' cat.pk %}" class="cys-form-toggle" data-nombre="{{ cat.nombre }}">
+                    {% csrf_token %}
+                    {% if cat.activo %}
+                    <button class="cys-cat-menu__item cys-cat-menu__item--danger cys-btn-confirmar-toggle" type="button" role="menuitem">
+                      <i class="bi bi-pause-circle"></i> Desactivar
+                    </button>
+                    {% else %}
+                    <button class="cys-cat-menu__item cys-cat-menu__item--success" type="submit" role="menuitem">
+                      <i class="bi bi-play-circle"></i> Activar
+                    </button>
+                    {% endif %}
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </li>
+        {% empty %}
+        <li class="cys-cat-empty">No hay categorías registradas.</li>
         {% endfor %}
-      </tbody>
-    </table>
+      </ul>
 
-    <p class="cys-empty" id="cysEmptyState">No hay categorías para mostrar.</p>
-  </section>
+      {% if paginator.num_pages > 1 %}
+      <div class="cys-cat-footer cys-no-print">
+        <p class="cys-table-count">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ paginator.count }} categorías</p>
+        <div class="cys-pagination">
+          {% if page_obj.has_previous %}
+          <a class="cys-page-btn" aria-label="Página anterior" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
+          {% else %}
+          <button class="cys-page-btn" disabled aria-label="Página anterior" type="button"><i class="bi bi-chevron-left"></i></button>
+          {% endif %}
 
-  <!-- Pie: resumen + paginación -->
-  <section class="cys-table-footer cys-no-print">
-    {# Importante: cada {{ ... }} y {% ... %} debe ir completo en UNA sola línea #}
-    <p class="cys-table-count">{% if categorias %}Mostrando {{ page_obj.start_index }} de {{ paginator.count }} categorías{% else %}Mostrando 0 categorías{% endif %}</p>
-    <div class="cys-pagination">
-      {% if page_obj.has_previous %}
-      <a class="cys-page-btn" aria-label="Página anterior"
-        href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.previous_page_number }}">
-        <i class="bi bi-chevron-left"></i>
-      </a>
-      {% else %}
-      <button class="cys-page-btn" disabled aria-label="Página anterior" type="button">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-      {% endif %}
+          <div class="cys-page-numbers">
+            {% for num in page_range %}
+            {% if num == paginator.ELLIPSIS %}
+            <span class="cys-page-ellipsis">…</span>
+            {% else %}
+            <a class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+          </div>
 
-      <div class="cys-page-numbers">
-        {% for num in page_range %}
-        {% if num == paginator.ELLIPSIS %}
-        <span class="cys-page-ellipsis">…</span>
-        {% else %}
-        <a
-          class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}"
-          href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ num }}"
-          >{{ num }}</a
-        >
-        {% endif %}
-        {% endfor %}
+          {% if page_obj.has_next %}
+          <a class="cys-page-btn" aria-label="Página siguiente" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
+          {% else %}
+          <button class="cys-page-btn" disabled aria-label="Página siguiente" type="button"><i class="bi bi-chevron-right"></i></button>
+          {% endif %}
+        </div>
       </div>
-
-      {% if page_obj.has_next %}
-      <a class="cys-page-btn" aria-label="Página siguiente"
-        href="?q={{ query|urlencode }}&estado={{ estado_filtro|urlencode }}&page={{ page_obj.next_page_number }}">
-        <i class="bi bi-chevron-right"></i>
-      </a>
-      {% else %}
-      <button class="cys-page-btn" disabled aria-label="Página siguiente" type="button">
-        <i class="bi bi-chevron-right"></i>
-      </button>
       {% endif %}
-    </div>
-  </section>
+    </section>
+  </div>
 </div>
 
-<!-- ===== MODAL: Nueva / Editar categoría ===== -->
+<!-- ===== MODAL: Editar categoría ===== -->
 <div class="cys-modal-overlay" id="cysModalOverlay">
   <div class="cys-modal">
     <header class="cys-modal__header">
       <div class="cys-modal__header-left">
-        <div class="cys-modal-icon"><i class="bi bi-tags-fill"></i></div>
+        <div class="cys-modal-icon"><i class="bi bi-pencil-square"></i></div>
         <div>
-          <h2 id="cysModalTitle">Nueva categoría</h2>
-          <p class="cys-modal-subtitle" id="cysModalSubtitle">Registra una nueva categoría de productos</p>
+          <h2>Editar categoría</h2>
+          <p class="cys-modal-subtitle">Modifica los datos de la categoría</p>
         </div>
       </div>
-      <button class="cys-icon-btn" id="cysModalClose" aria-label="Cerrar" type="button">
-        <i class="bi bi-x-lg"></i>
-      </button>
+      <button class="cys-icon-btn" id="cysModalClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
     </header>
 
-    <form class="cys-modal__body" id="cysCategoriaForm" method="post" action="{% url 'categoria_crear' %}">
+    <form class="cys-modal__body" id="cysEditarForm" method="post" action="" novalidate>
       {% csrf_token %}
 
       <label class="cys-field">
@@ -329,21 +209,13 @@
 
       <label class="cys-field">
         <span>Descripción</span>
-        <textarea
-          id="fieldDescripcion"
-          name="descripcion"
-          maxlength="200"
-          placeholder="Ej. Vinos tintos, blancos y espumosos. (Opcional)"
-        ></textarea>
+        <textarea id="fieldDescripcion" name="descripcion" maxlength="200" placeholder="Opcional"></textarea>
         <span class="cys-char-count" id="cysCharCount">0/200</span>
       </label>
 
       <footer class="cys-modal__footer">
         <button type="button" class="cys-btn cys-btn--ghost" id="cysCancelBtn">Cancelar</button>
-        <button type="submit" class="cys-btn cys-btn--primary" id="cysGuardarBtn">
-          <i class="bi bi-save"></i>
-          <span id="cysGuardarLabel">Crear categoría</span>
-        </button>
+        <button type="submit" class="cys-btn cys-btn--primary"><i class="bi bi-save"></i> Guardar cambios</button>
       </footer>
     </form>
   </div>
@@ -357,9 +229,7 @@
         <div class="cys-modal-icon cys-modal-icon--warn"><i class="bi bi-exclamation-triangle"></i></div>
         <h2>Desactivar categoría</h2>
       </div>
-      <button class="cys-icon-btn" id="cysConfirmClose" aria-label="Cerrar" type="button">
-        <i class="bi bi-x-lg"></i>
-      </button>
+      <button class="cys-icon-btn" id="cysConfirmClose" aria-label="Cerrar" type="button"><i class="bi bi-x-lg"></i></button>
     </header>
     <div class="cys-modal__body">
       <p class="cys-confirm-text" id="cysConfirmText">
@@ -373,7 +243,56 @@
   </div>
 </div>
 
-{% endblock %}
-{% block extra_js %}
-<script src="{% static 'js/categorias/categorias.js' %}?v=1"></script>
+<script src="{% static 'js/categorias/categorias.js' %}?v=3"></script>
+
+<!-- Menú de acciones (⋯): abrir / cerrar / posicionar -->
+<script>
+(function () {
+  var openMenu = null;
+
+  function closeMenu() {
+    if (!openMenu) return;
+    openMenu.classList.remove('is-open');
+    var t = openMenu.querySelector('.cys-cat-menu__trigger');
+    if (t) t.setAttribute('aria-expanded', 'false');
+    openMenu = null;
+  }
+
+  function openIt(menu) {
+    closeMenu();
+    var trigger = menu.querySelector('.cys-cat-menu__trigger');
+    var list = menu.querySelector('.cys-cat-menu__list');
+    menu.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+
+    var r = trigger.getBoundingClientRect();
+    var w = list.offsetWidth, h = list.offsetHeight;
+    var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+    var top = r.bottom + 8;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+    list.style.left = left + 'px';
+    list.style.top = top + 'px';
+    openMenu = menu;
+  }
+
+  document.addEventListener('click', function (e) {
+    var trigger = e.target.closest('.cys-cat-menu__trigger');
+    if (trigger) {
+      e.preventDefault();
+      var menu = trigger.closest('.cys-cat-menu');
+      if (menu === openMenu) closeMenu(); else openIt(menu);
+      return;
+    }
+    if (!openMenu) return;
+    // Al elegir una opción, se cierra el menú (después de que la acción se ejecute)
+    if (e.target.closest('.cys-cat-menu__item')) { setTimeout(closeMenu, 0); return; }
+    if (!e.target.closest('.cys-cat-menu__list')) closeMenu();
+  });
+
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+  window.addEventListener('resize', closeMenu);
+  window.addEventListener('scroll', closeMenu, true);
+})();
+</script>
+
 {% endblock %}
