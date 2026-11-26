@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 MESES_ABREV = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 CERO = Decimal('0.00')
 ESTADOS_COMPRA = ('pendiente', 'confirmada', 'recibida', 'cancelada')
+ESTADOS_PAGO = ('pagada', 'parcial', 'pendiente')
 
 
 # ── Utilidades ─────────────────────────────────────────────────────────────────
@@ -224,6 +225,7 @@ def _estadisticas(compras_validas):
 def _filtrar_compras(request, proveedor):
     query = request.GET.get('q', '').strip()
     estado_filtro = request.GET.get('estado', 'todos')
+    pago_filtro = request.GET.get('pago', 'todos')
     desde = request.GET.get('desde', '').strip()
     hasta = request.GET.get('hasta', '').strip()
 
@@ -250,6 +252,13 @@ def _filtrar_compras(request, proveedor):
     if estado_filtro in ESTADOS_COMPRA:
         compras = compras.filter(estado=estado_filtro)
 
+    if pago_filtro == 'pagada':
+        compras = compras.filter(saldo__lte=CERO)
+    elif pago_filtro == 'parcial':
+        compras = compras.filter(saldo__gt=CERO, saldo__lt=F('valor'))
+    elif pago_filtro == 'pendiente':
+        compras = compras.filter(saldo__gt=CERO, saldo__gte=F('valor'))
+
     f_desde = parse_date(desde) if desde else None
     f_hasta = parse_date(hasta) if hasta else None
     if f_desde:
@@ -260,6 +269,7 @@ def _filtrar_compras(request, proveedor):
     filtros = {
         'q': query,
         'estado': estado_filtro,
+        'pago': pago_filtro,
         'desde': desde,
         'hasta': hasta,
         'proveedor': proveedor.nombre_empresa if proveedor else '',
@@ -588,6 +598,8 @@ def _texto_filtros(f):
         partes.append(f"Búsqueda: {f['q']}")
     if f["estado"] in ESTADOS_COMPRA:
         partes.append(f"Estado: {f['estado'].capitalize()}")
+    if f.get("pago") in ESTADOS_PAGO:
+        partes.append(f"Pago: {f['pago'].capitalize()}")
     if f["desde"]:
         partes.append(f"Desde: {f['desde']}")
     if f["hasta"]:

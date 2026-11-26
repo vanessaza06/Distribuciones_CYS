@@ -219,39 +219,81 @@
         <!-- Contenido desplegable -->
         <div class="collapse show" id="collapseHistorial">
           {% if proveedor %}
-          <form method="get" class="px-3 pt-3" id="filtrosCompras">
-            <input type="hidden" name="proveedor" value="{{ proveedor.pk }}">
-            <div class="dev-search-wrapper">
-              <i class="dev-search-icon bi bi-search"></i>
-              <input type="text" name="q" value="{{ request.GET.q }}" class="form-control dev-search-input" placeholder="Buscar por producto, usuario o # de compra..." title="Busca en el historial de compras">
+          <div class="px-3 pt-3 pb-2">
+            <div class="cmp-bp-card" id="cmp-bp-container">
+              <form method="get" id="filtrosCompras">
+                <input type="hidden" name="proveedor" value="{{ proveedor.pk }}">
+
+                <div class="input-group position-relative">
+                  <input type="text" name="q" id="cmp-buscar-input" value="{{ request.GET.q }}"
+                         class="form-control cmp-bp-input" autocomplete="off"
+                         placeholder="Buscar compra por producto, usuario o # de compra…"
+                         title="Busca en el historial de compras">
+
+                  <!-- Botón que despliega/oculta los filtros -->
+                  <button class="btn cmp-bp-btn-outline cmp-bp-btn-filtro" type="button" id="cmp-btn-filtro"
+                          data-bs-toggle="collapse" data-bs-target="#cmp-filtros"
+                          aria-expanded="{% if request.GET.desde or request.GET.hasta or request.GET.estado and request.GET.estado != 'todos' or request.GET.pago and request.GET.pago != 'todos' %}true{% else %}false{% endif %}"
+                          aria-controls="cmp-filtros"
+                          title="Filtrar compras">
+                    <i class="bi bi-funnel"></i>
+                    <i class="bi bi-chevron-down cmp-bp-filtro-chevron ms-1"></i>
+                  </button>
+
+                  <button class="btn cmp-bp-btn-primary" type="submit" id="cmp-btn-buscar" title="Buscar compras">
+                    <i class="bi bi-search"></i>
+                  </button>
+                </div>
+
+                <!-- ═══ PANEL DE FILTROS (se despliega debajo de la barra) ═══ -->
+                <div class="collapse {% if request.GET.desde or request.GET.hasta or request.GET.estado and request.GET.estado != 'todos' or request.GET.pago and request.GET.pago != 'todos' %}show{% endif %}" id="cmp-filtros">
+                  <div class="cmp-bp-filtros-panel">
+                    <div class="row g-2 align-items-end">
+                      <div class="col-md-3">
+                        <label class="form-label cmp-bp-label" for="filtroComprasDesde">Desde</label>
+                        <input type="date" id="filtroComprasDesde" name="desde" value="{{ request.GET.desde }}"
+                               class="form-control cmp-bp-field" title="Compras desde esta fecha">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label cmp-bp-label" for="filtroComprasHasta">Hasta</label>
+                        <input type="date" id="filtroComprasHasta" name="hasta" value="{{ request.GET.hasta }}"
+                               class="form-control cmp-bp-field" title="Compras hasta esta fecha">
+                      </div>
+                      <div class="col-md-2">
+                        <label class="form-label cmp-bp-label" for="filtroComprasEstado">Estado</label>
+                        <select id="filtroComprasEstado" name="estado" class="form-select cmp-bp-field">
+                          <option value="todos">Todos</option>
+                          <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                          <option value="confirmada" {% if request.GET.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+                          <option value="recibida" {% if request.GET.estado == 'recibida' %}selected{% endif %}>Recibida</option>
+                          <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <label class="form-label cmp-bp-label" for="filtroComprasPago">Pago</label>
+                        <select id="filtroComprasPago" name="pago" class="form-select cmp-bp-field">
+                          <option value="todos">Todos</option>
+                          <option value="pagada" {% if request.GET.pago == 'pagada' %}selected{% endif %}>Pagada</option>
+                          <option value="parcial" {% if request.GET.pago == 'parcial' %}selected{% endif %}>Parcial</option>
+                          <option value="pendiente" {% if request.GET.pago == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <a href="?proveedor={{ proveedor.pk }}" id="cmp-btn-limpiar"
+                           class="btn cmp-bp-btn-outline w-100" title="Quitar todos los filtros">
+                          <i class="bi bi-x-circle me-1"></i> Limpiar
+                        </a>
+                      </div>
+                    </div>
+                    <p class="cmp-bp-label small mb-0 mt-2">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Estos filtros se aplican a la tabla del historial de compras del proveedor seleccionado.
+                    </p>
+                  </div>
+                </div>
+              </form>
             </div>
-            <div class="d-flex flex-wrap align-items-end gap-2 mt-2">
-              <div>
-                <label for="filtroComprasDesde" class="form-label small mb-1">Desde</label>
-                <input type="date" id="filtroComprasDesde" name="desde" value="{{ request.GET.desde }}" class="form-control form-control-sm" title="Compras desde esta fecha">
-              </div>
-              <div>
-                <label for="filtroComprasHasta" class="form-label small mb-1">Hasta</label>
-                <input type="date" id="filtroComprasHasta" name="hasta" value="{{ request.GET.hasta }}" class="form-control form-control-sm" title="Compras hasta esta fecha">
-              </div>
-              <div>
-                <label for="filtroComprasEstado" class="form-label small mb-1">Estado</label>
-                <select id="filtroComprasEstado" name="estado" class="form-select form-select-sm">
-                  <option value="todos">Todos</option>
-                  <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                  <option value="confirmada" {% if request.GET.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
-                  <option value="recibida" {% if request.GET.estado == 'recibida' %}selected{% endif %}>Recibida</option>
-                  <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
-                </select>
-              </div>
-              <button type="submit" class="btn btn-sm btn-primary fw-bold" title="Aplicar filtros">
-                <i class="bi bi-funnel me-1"></i>Filtrar
-              </button>
-              <a href="?proveedor={{ proveedor.pk }}" class="btn btn-sm btn-outline-secondary" title="Quitar todos los filtros">
-                <i class="bi bi-x-circle me-1"></i>Limpiar
-              </a>
-            </div>
-          </form>
+          </div>
           {% endif %}
           <div class="table-responsive table-scroll">
             {% if compras %}
@@ -340,69 +382,60 @@
                     </td>
                     <td class="text-center small text-muted" data-order="{{ compra.fecha_registro|date:'c' }}">{{ compra.fecha_registro|date:"d/m H:i" }}</td>
                     <td class="text-center">
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-link text-cyan p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
-                          <i class="bi bi-three-dots-vertical"></i>
+                      <div class="dd-wrap">
+                        <button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Acciones de compra #{{ compra.codigo_compra }}" title="Acciones">
+                          <i class="bi bi-three-dots"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                          <li>
-                            <a class="dropdown-item" href="{% url 'detalle_compra' compra.id %}" title="Ver toda la información de esta compra">
-                              <i class="bi bi-eye me-2 text-primary"></i>Ver detalles
-                            </a>
-                          </li>
-                          <li><hr class="dropdown-divider"></li>
-                          <li>
-                            {% if compra.estado_pago == 'pagada' %}
-                              <button type="button" class="dropdown-item text-muted" disabled title="Esta compra ya fue pagada completamente">
-                                <i class="bi bi-check-circle-fill me-2 text-success"></i>Pagada ($0 pendiente)
-                              </button>
-                            {% else %}
-                              <button type="button" class="dropdown-item btn-abrir-pago text-success" 
-                                data-compra-id="{{ compra.id }}" 
-                                data-compra-codigo="{{ compra.codigo_compra }}"
-                                data-compra-total="{{ compra.total|stringformat:'.2f' }}" 
-                                data-compra-pagado="{{ compra.monto_pagado|stringformat:'.2f' }}" 
-                                data-compra-saldo="{{ compra.saldo|stringformat:'.2f' }}"
-                                data-bs-toggle="modal" data-bs-target="#modalPago">
-                                <i class="bi bi-credit-card me-2"></i>Registrar Pago
-                              </button>
-                            {% endif %}
-                          </li>
-                          <li><hr class="dropdown-divider"></li>
+                        <div class="dd-menu" role="menu">
+                          <a class="dd-item" href="{% url 'detalle_compra' compra.id %}" title="Ver toda la información de esta compra">
+                            <i class="bi bi-eye"></i> Ver detalles
+                          </a>
+                          <div class="dd-sep"></div>
+                          {% if compra.estado_pago == 'pagada' %}
+                            <span class="dd-item is-disabled" title="Esta compra ya fue pagada completamente">
+                              <i class="bi bi-check-circle"></i> Pagada ($0 pendiente)
+                            </span>
+                          {% else %}
+                            <button type="button" class="dd-item btn-abrir-pago"
+                              data-compra-id="{{ compra.id }}"
+                              data-compra-codigo="{{ compra.codigo_compra }}"
+                              data-compra-total="{{ compra.total|stringformat:'.2f' }}"
+                              data-compra-pagado="{{ compra.monto_pagado|stringformat:'.2f' }}"
+                              data-compra-saldo="{{ compra.saldo|stringformat:'.2f' }}"
+                              data-bs-toggle="modal" data-bs-target="#modalPago">
+                              <i class="bi bi-credit-card"></i> Registrar Pago
+                            </button>
+                          {% endif %}
                           {% if compra.estado == 'pendiente' %}
-                            <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="estado" value="confirmada">
-                                <button type="submit" class="dropdown-item text-info" title="Cambiar a Confirmada">
-                                  <i class="bi bi-check2-circle me-2"></i>Confirmar
-                                </button>
-                              </form>
-                            </li>
+                            <div class="dd-sep"></div>
+                            <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}">
+                              {% csrf_token %}
+                              <input type="hidden" name="estado" value="confirmada">
+                              <button type="submit" class="dd-item" title="Cambiar a Confirmada">
+                                <i class="bi bi-check2-circle"></i> Confirmar
+                              </button>
+                            </form>
                           {% elif compra.estado == 'confirmada' %}
-                            <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="estado" value="recibida">
-                                <button type="submit" class="dropdown-item text-success" title="Cambiar a Recibida">
-                                  <i class="bi bi-box-seam me-2"></i>Marcar como Recibida
-                                </button>
-                              </form>
-                            </li>
+                            <div class="dd-sep"></div>
+                            <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}">
+                              {% csrf_token %}
+                              <input type="hidden" name="estado" value="recibida">
+                              <button type="submit" class="dd-item" title="Cambiar a Recibida">
+                                <i class="bi bi-box-seam"></i> Marcar como Recibida
+                              </button>
+                            </form>
                           {% endif %}
-
                           {% if compra.estado != 'recibida' and compra.estado != 'cancelada' %}
-                            <li>
-                              <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="d-inline form-confirm-action" data-confirm="¿Seguro que deseas cancelar esta compra?">
-                                {% csrf_token %}
-                                <input type="hidden" name="estado" value="cancelada">
-                                <button type="submit" class="dropdown-item text-danger" title="Cancelar compra">
-                                  <i class="bi bi-x-circle me-2"></i>Cancelar
-                                </button>
-                              </form>
-                            </li>
+                            <div class="dd-sep"></div>
+                            <form method="POST" action="{% url 'cambiar_estado_compra_id' compra.id %}" class="form-confirm-action" data-confirm="¿Seguro que deseas cancelar esta compra?">
+                              {% csrf_token %}
+                              <input type="hidden" name="estado" value="cancelada">
+                              <button type="submit" class="dd-item danger" title="Cancelar compra">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                              </button>
+                            </form>
                           {% endif %}
-                        </ul>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -783,7 +816,7 @@
                     </h5>
                     <small>Completa los datos de pago para esta compra</small>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <form id="formPago" method="POST" action="{% url 'registrar_pago_compra' %}">
@@ -861,16 +894,16 @@
                     <!-- Tarjeta de Estado Financiero de la Compra -->
                     <div class="p-3 mb-4 rounded cmp-tarjeta-financiera">
                         <div class="row g-2 text-center">
-                            <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="col-4 border-end">
                                 <small class="text-muted d-block cmp-text-mini">Total Compra</small>
-                                <span class="fw-bold text-light fs-6" id="resumenMontoTotal">$0</span>
+                                <span class="fw-bold fs-6" id="resumenMontoTotal">$0</span>
                             </div>
-                            <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="col-4 border-end">
                                 <small class="text-muted d-block cmp-text-mini">Ya Pagado</small>
                                 <span class="fw-bold text-success fs-6" id="resumenMontoPagado">$0</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block text-warning fw-semibold cmp-text-mini">Saldo pendiente</small>
+                                <small class="text-muted d-block fw-semibold cmp-text-mini">Saldo pendiente</small>
                                 <span class="fw-bold text-danger fs-5" id="resumenSaldoPendiente">$0</span>
                             </div>
                         </div>
@@ -955,5 +988,5 @@
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/compras.js' %}?v=20261126a"></script>
+<script src="{% static 'js/proveedores/compras.js' %}?v=20261119d"></script>
 {% endblock %}

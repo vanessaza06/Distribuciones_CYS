@@ -161,7 +161,7 @@ $(document).ready(function() {
 
   var table = $('#tablaProveedores').DataTable({
     paging: true,
-    searching: false,
+    searching: true,
     info: true,
     lengthChange: false,
     pageLength: 10,
@@ -226,65 +226,54 @@ $(document).ready(function() {
     window.cysCrearDropdownExportar(table, 'cys-dt-export-proveedores');
   }
 
-  // Conectar input personalizado de búsqueda
+  // Conectar input principal de búsqueda y botón lupa
   $('#buscar-proveedores').on('input', function() {
-    table.search(this.value).draw();
+    table.search(this.value.trim()).draw();
   });
 
-  // Variables para filtros
-  var filtroEstadoActual = 'todos';
-  var filtroTipoActual = 'todos';
-
-  // Filtro por estado (Activo, Inactivo, Sancionado)
-  $.fn.dataTable.ext.search.push(
-    function(settings, data, dataIndex) {
-      if (settings.sTableId !== 'tablaProveedores') return true;
-      if (filtroEstadoActual === 'todos') return true;
-      try {
-        var node = table.row(dataIndex).node();
-        if (node) {
-          var estado = $(node).attr('data-estado');
-          return estado === filtroEstadoActual;
-        }
-      } catch(e) {}
-      return true;
-    }
-  );
-
-  // Filtro por tipo de proveedor (Distribuidor, Fabricante, Importador)
-  $.fn.dataTable.ext.search.push(
-    function(settings, data, dataIndex) {
-      if (settings.sTableId !== 'tablaProveedores') return true;
-      if (filtroTipoActual === 'todos') return true;
-      try {
-        var node = table.row(dataIndex).node();
-        if (node) {
-          var tipo = $(node).attr('data-tipo');
-          return tipo === filtroTipoActual;
-        }
-      } catch(e) {}
-      return true;
-    }
-  );
-
-  // Manejador para filtro de estado
-  document.querySelectorAll('.filtro-estado-item').forEach(function (a) {
-    a.addEventListener('click', function (e) {
+  $('#buscar-proveedores').on('keydown', function(e) {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      document.getElementById('filtroEstado-label').textContent = this.textContent.trim();
-      filtroEstadoActual = this.dataset.estado;
-      table.draw();
-    });
+      table.search(this.value.trim()).draw();
+    }
   });
 
-  // Manejador para filtro de tipo
-  document.querySelectorAll('.filtro-tipo-item').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.getElementById('filtroTipo-label').textContent = this.textContent.trim();
-      filtroTipoActual = this.dataset.tipo;
-      table.draw();
+  $('#prov-btn-buscar').on('click', function() {
+    table.search($('#buscar-proveedores').val().trim()).draw();
+  });
+
+  // Filtro por NIT (columna 2)
+  $('#prov-f-nit').on('input', function() {
+    table.column(2).search(this.value.trim()).draw();
+  });
+
+  // Filtro por estado y tipo (solo se registra una vez en DataTables)
+  if (!window._cysProvExtSearchBound) {
+    window._cysProvExtSearchBound = true;
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+      if (settings.sTableId !== 'tablaProveedores') return true;
+      var estadoSel = $('#prov-f-estado').val() || 'todos';
+      var tipoSel = $('#prov-f-tipo').val() || 'todos';
+      var rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
+      if (!rowNode) return true;
+      if (estadoSel !== 'todos' && $(rowNode).attr('data-estado') !== estadoSel) return false;
+      if (tipoSel !== 'todos' && $(rowNode).attr('data-tipo') !== tipoSel) return false;
+      return true;
     });
+  }
+
+  $('#prov-f-estado, #prov-f-tipo').on('change', function() {
+    table.draw();
+  });
+
+  // Botón Limpiar filtros
+  $('#prov-btn-limpiar').on('click', function() {
+    $('#buscar-proveedores').val('');
+    $('#prov-f-nit').val('');
+    $('#prov-f-tipo').val('todos');
+    $('#prov-f-estado').val('todos');
+    table.search('').columns().search('').draw();
+    syncExportProv();
   });
 
   // Sincronizar export (si se usan filtros)
@@ -411,168 +400,215 @@ $(document).ready(function() {
   }
 
   // ============================================
-  // MANEJO DE ACCIONES CON MODALES
+  // MENÚ DE ACCIONES (⋯) CON POSICIONAMIENTO FIJO
+  // ============================================
+  function cerrarDropdownsProv() {
+    document.querySelectorAll('#tablaProveedores .dd-menu.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('#tablaProveedores .dd-btn[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  }
+
+  table.on('draw.dt', cerrarDropdownsProv);
+
+  if (!window._cysProvDdBound) {
+    window._cysProvDdBound = true;
+
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('#tablaProveedores .dd-btn');
+      if (btn) {
+        e.stopPropagation();
+        const wrap = btn.closest('.dd-wrap');
+        const menu = wrap && wrap.querySelector('.dd-menu');
+        if (!menu) return;
+        const yaAbierto = menu.classList.contains('open');
+        cerrarDropdownsProv();
+        if (!yaAbierto) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          const rect = btn.getBoundingClientRect();
+          const menuH = menu.offsetHeight || 160;
+          let top = rect.bottom + 4;
+          if (top + menuH > window.innerHeight - 8 && rect.top - menuH - 4 > 8) {
+            top = rect.top - menuH - 4;
+          }
+          menu.style.top = top + 'px';
+          menu.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
+        }
+        return;
+      }
+
+      if (e.target.closest('#tablaProveedores .dd-item')) {
+        setTimeout(cerrarDropdownsProv, 0);
+        return;
+      }
+
+      if (!e.target.closest('#tablaProveedores .dd-wrap')) {
+        cerrarDropdownsProv();
+      }
+    });
+
+    window.addEventListener('scroll', cerrarDropdownsProv, true);
+    window.addEventListener('resize', cerrarDropdownsProv);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarDropdownsProv();
+    });
+  }
+
+  // ============================================
+  // MANEJO DE ACCIONES CON MODALES (delegado para paginación DataTables)
   // ============================================
 
-  // Desactivar proveedor - Llenar modal y manejar envío
-  document.querySelectorAll('.btn-desactivar').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const providerId = this.dataset.providerId;
-      const providerName = this.dataset.providerName;
+  if (!window._cysProvActionsBound) {
+    window._cysProvActionsBound = true;
 
-      // Llenar datos del modal
-      document.getElementById('proveedorDesactivarNombre').textContent = providerName;
+    document.addEventListener('click', function(e) {
+      // Desactivar proveedor
+      const btnDesactivar = e.target.closest('.btn-desactivar');
+      if (btnDesactivar) {
+        const providerId = btnDesactivar.dataset.providerId;
+        const providerName = btnDesactivar.dataset.providerName;
 
-      // Abrir modal
-      const modalElement = document.getElementById('modalDesactivarGeneral');
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
+        document.getElementById('proveedorDesactivarNombre').textContent = providerName;
+        const modalElement = document.getElementById('modalDesactivarGeneral');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
 
-      // Manejar submit del formulario
-      const form = document.getElementById('formDesactivarProveedor');
-      form.onsubmit = function(e) {
-        e.preventDefault();
-
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch(`/proveedores/modal/desactivar/${providerId}/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              modal.hide();
-              showToast(data.message, 'success');
-              setTimeout(() => location.reload(), 1500);
-            } else {
-              showToast(data.error || 'Error al desactivar', 'error');
+        const form = document.getElementById('formDesactivarProveedor');
+        form.onsubmit = function(ev) {
+          ev.preventDefault();
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          fetch(`/proveedores/modal/desactivar/${providerId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
             }
           })
-          .catch(error => {
-            console.error('Error:', error);
-            showToast('Error en la solicitud', 'error');
-          });
-      };
-    });
-  });
-
-  // Reactivar proveedor
-  document.querySelectorAll('.btn-reactivar').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const providerId = this.dataset.providerId;
-      const providerName = this.dataset.providerName;
-
-      if (confirm(`¿Deseas reactivar a ${providerName}?`)) {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch(`/proveedores/modal/reactivar/${providerId}/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              showToast(data.message, 'success');
-              setTimeout(() => location.reload(), 1500);
-            } else {
-              showToast(data.error || 'Error al reactivar', 'error');
-            }
-          })
-          .catch(error => console.error('Error:', error));
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                modal.hide();
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast(data.error || 'Error al desactivar', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showToast('Error en la solicitud', 'error');
+            });
+        };
+        return;
       }
-    });
-  });
 
-  // Sancionar proveedor - Llenar modal y manejar envío
-  document.querySelectorAll('.btn-sancionar').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const providerId = this.dataset.providerId;
-      const providerName = this.dataset.providerName;
+      // Reactivar proveedor
+      const btnReactivar = e.target.closest('.btn-reactivar');
+      if (btnReactivar) {
+        const providerId = btnReactivar.dataset.providerId;
+        const providerName = btnReactivar.dataset.providerName;
 
-      // Llenar datos del modal
-      document.getElementById('proveedorSancionarNombre').textContent = providerName;
-
-      // Limpiar textarea
-      document.getElementById('motivoSancion').value = '';
-
-      // Abrir modal
-      const modalElement = document.getElementById('modalSancionarGeneral');
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
-
-      // Manejar submit del formulario
-      const form = document.getElementById('formSancionar');
-      form.onsubmit = function(e) {
-        e.preventDefault();
-
-        const observacion = document.getElementById('motivoSancion').value;
-
-        if (!observacion.trim()) {
-          showToast('Debes indicar el motivo de la sanción', 'error');
-          return;
+        if (confirm(`¿Deseas reactivar a ${providerName}?`)) {
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          fetch(`/proveedores/modal/reactivar/${providerId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast(data.error || 'Error al reactivar', 'error');
+              }
+            })
+            .catch(error => console.error('Error:', error));
         }
+        return;
+      }
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const formData = new FormData();
-        formData.append('observacion', observacion);
-        formData.append('csrfmiddlewaretoken', csrfToken);
+      // Sancionar proveedor
+      const btnSancionar = e.target.closest('.btn-sancionar');
+      if (btnSancionar) {
+        const providerId = btnSancionar.dataset.providerId;
+        const providerName = btnSancionar.dataset.providerName;
 
-        fetch(`/proveedores/modal/sancionar/${providerId}/`, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+        document.getElementById('proveedorSancionarNombre').textContent = providerName;
+        document.getElementById('motivoSancion').value = '';
+
+        const modalElement = document.getElementById('modalSancionarGeneral');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
+
+        const form = document.getElementById('formSancionar');
+        form.onsubmit = function(ev) {
+          ev.preventDefault();
+          const observacion = document.getElementById('motivoSancion').value;
+          if (!observacion.trim()) {
+            showToast('Debes indicar el motivo de la sanción', 'error');
+            return;
           }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              modal.hide();
-              showToast(data.message, 'success');
-              setTimeout(() => location.reload(), 1500);
-            } else {
-              showToast(data.error || 'Error al sancionar', 'error');
+
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          const formData = new FormData();
+          formData.append('observacion', observacion);
+          formData.append('csrfmiddlewaretoken', csrfToken);
+
+          fetch(`/proveedores/modal/sancionar/${providerId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
             }
           })
-          .catch(error => {
-            console.error('Error:', error);
-            showToast('Error en la solicitud', 'error');
-          });
-      };
-    });
-  });
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                modal.hide();
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast(data.error || 'Error al sancionar', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showToast('Error en la solicitud', 'error');
+            });
+        };
+        return;
+      }
 
-  // Levantar sanción
-  document.querySelectorAll('.btn-levantar-sancion').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const providerId = this.dataset.providerId;
-      const providerName = this.dataset.providerName;
+      // Levantar sanción
+      const btnLevantar = e.target.closest('.btn-levantar-sancion');
+      if (btnLevantar) {
+        const providerId = btnLevantar.dataset.providerId;
+        const providerName = btnLevantar.dataset.providerName;
 
-      if (confirm(`¿Deseas levantar la sanción a ${providerName}?`)) {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch(`/proveedores/modal/levantar-sancion/${providerId}/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              showToast(data.message, 'success');
-              setTimeout(() => location.reload(), 1500);
-            } else {
-              showToast(data.error || 'Error al levantar sanción', 'error');
+        if (confirm(`¿Deseas levantar la sanción a ${providerName}?`)) {
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          fetch(`/proveedores/modal/levantar-sancion/${providerId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
             }
           })
-          .catch(error => console.error('Error:', error));
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast(data.error || 'Error al levantar sanción', 'error');
+              }
+            })
+            .catch(error => console.error('Error:', error));
+        }
       }
     });
-  });
+  }
 });

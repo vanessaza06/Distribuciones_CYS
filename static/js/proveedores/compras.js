@@ -47,18 +47,6 @@ function init() {
       bsModal.show();
     }
   }
-
-  document.querySelectorAll('.form-confirm-action').forEach(form => {
-    if (!form.dataset.confirmBound) {
-      form.dataset.confirmBound = 'true';
-      form.addEventListener('submit', function(e) {
-        const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
-        if (!window.confirm(msg)) {
-          e.preventDefault();
-        }
-      });
-    }
-  });
 }
 
 function leerDatos() {
@@ -137,7 +125,7 @@ function initExportar() {
   });
 }
 
-// ── Tabla del historial (DataTables) ───────────────────────────
+// ── Tabla del historial (DataTables) + Filtros desplegables ────
 function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
@@ -781,29 +769,36 @@ function initModalPago() {
     }
   }
 
-  document.querySelectorAll('.btn-abrir-pago').forEach((btn) => {
-    btn.addEventListener('click', function () {
-      const total = parseFloat(this.dataset.compraTotal) || 0;
-      const pagado = parseFloat(this.dataset.compraPagado) || 0;
-      const saldo = parseFloat(this.dataset.compraSaldo);
+  if (!window._cysComprasPagoDelegated) {
+    window._cysComprasPagoDelegated = true;
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn-abrir-pago');
+      if (!btn) return;
+      const total = parseFloat(btn.dataset.compraTotal) || 0;
+      const pagado = parseFloat(btn.dataset.compraPagado) || 0;
+      const saldo = parseFloat(btn.dataset.compraSaldo);
       const saldoFinal = isNaN(saldo) ? Math.max(0, total - pagado) : saldo;
 
-      byId('compraId').value = this.dataset.compraId;
+      const f = byId('formPago');
+      const m = byId('montoPagado');
+      if (!f || !m) return;
+
+      byId('compraId').value = btn.dataset.compraId;
       byId('saldoActual').value = saldoFinal;
       byId('resumenMontoTotal').textContent = fmtCOP(total);
       byId('resumenMontoPagado').textContent = fmtCOP(pagado);
       byId('resumenSaldoPendiente').textContent = fmtCOP(saldoFinal);
 
-      monto.value = '';
-      monto.max = saldoFinal;
+      m.value = '';
+      m.max = saldoFinal;
       byId('btnPagarTodoSaldo').innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar todo (${fmtCOP(saldoFinal)})`;
 
       const pagada = saldoFinal <= 0;
       byId('alertaPagada').classList.toggle('d-none', !pagada);
-      form.querySelector('button[type="submit"]').disabled = pagada;
-      actualizar();
+      f.querySelector('button[type="submit"]').disabled = pagada;
+      m.dispatchEvent(new Event('input'));
     });
-  });
+  }
 
   function mostrarError(texto) {
     const box = byId('montoPagadoError');
