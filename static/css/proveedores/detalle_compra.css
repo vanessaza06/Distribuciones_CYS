@@ -1,14 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════════════════
    DETALLE COMPRA — CYS Ltda
-   Diseño limpio, sobrio y espacioso, adaptable a los 5 temas de base.js
+   Diseño limpio, moderno y con acentos de color equilibrados (5 temas base.js)
    ══════════════════════════════════════════════════════════════════════════════ */
 
 .dc-page {
   --dc-accent: var(--azul-claro);
-  --dc-border: color-mix(in srgb, var(--texto) 10%, transparent);
+  --dc-gold: var(--dorado, #CF9C48);
+  --dc-green: var(--verde, #16a34a);
+  --dc-red: var(--rojo, #dc2626);
+  --dc-border: color-mix(in srgb, var(--texto) 11%, transparent);
   --dc-border-soft: color-mix(in srgb, var(--texto) 7%, transparent);
-  --dc-surface: color-mix(in srgb, var(--texto) 3%, var(--fondo-card));
-  --dc-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+  --dc-surface: color-mix(in srgb, var(--texto) 3.5%, var(--fondo-card));
+  --dc-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.04);
   color: var(--texto);
   padding: 1.75rem 2rem 3.25rem !important;
 }
@@ -25,31 +28,41 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.4rem;
 }
 
 .dc-back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.52rem 1.05rem;
   border-radius: 999px;
   font-size: 0.86rem;
   font-weight: 600;
-  color: var(--texto-muted);
+  color: var(--texto);
   background: var(--fondo-card);
   border: 1px solid var(--dc-border);
   text-decoration: none;
-  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.dc-back-link i {
+  color: var(--dc-accent) !important;
+  transition: transform 0.18s ease;
 }
 
 .dc-back-link:hover {
-  color: var(--texto);
-  border-color: color-mix(in srgb, var(--texto) 24%, transparent);
-  background: var(--dc-surface);
+  color: var(--dc-accent);
+  border-color: color-mix(in srgb, var(--dc-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--dc-accent) 7%, var(--fondo-card));
 }
 
-/* ── Encabezado Hero limpio (misma jerarquía que Detalle de Devolución) ── */
+.dc-back-link:hover i {
+  transform: translateX(-2px);
+}
+
+/* ── Encabezado Hero limpio con acento de marca ── */
 .dc-hero {
   display: flex;
   align-items: center;
@@ -57,9 +70,15 @@
   gap: 1.75rem;
   flex-wrap: wrap;
   padding: 1.75rem 2rem;
-  margin-bottom: 1.75rem;
-  background: var(--fondo-card);
-  border: 1px solid var(--dc-border);
+  margin-bottom: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    var(--fondo-card) 0%,
+    color-mix(in srgb, var(--dc-gold) 6%, var(--fondo-card)) 62%,
+    color-mix(in srgb, var(--dc-accent) 6%, var(--fondo-card)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 24%, var(--dc-border));
+  border-left: 4px solid var(--dc-gold);
   border-radius: 16px;
   box-shadow: var(--dc-shadow);
   position: relative;
@@ -69,17 +88,24 @@
 .dc-hero__left {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
   min-width: 0;
   flex: 1 1 360px;
 }
 
 .dc-hero__eyebrow {
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.22rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--texto-muted);
+  color: color-mix(in srgb, var(--dc-gold) 78%, var(--texto));
+  background: color-mix(in srgb, var(--dc-gold) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 30%, transparent);
 }
 
 .dc-hero__title-row {
@@ -91,7 +117,7 @@
 
 .dc-hero__title {
   margin: 0;
-  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-size: clamp(1.5rem, 2.2vw, 1.95rem);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--texto);
@@ -109,8 +135,8 @@
 }
 
 .dc-hero__meta i {
-  color: var(--texto-muted) !important;
-  margin-right: 0.25rem;
+  color: var(--dc-gold) !important;
+  margin-right: 0.28rem;
 }
 
 .dc-hero__total {
@@ -118,13 +144,15 @@
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
-  padding: 0.25rem 0 0.25rem 1.75rem;
-  border-left: 1px solid var(--dc-border);
-  min-width: 210px;
+  padding: 1rem 1.45rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--dc-accent) 8%, var(--fondo-card));
+  border: 1px solid color-mix(in srgb, var(--dc-accent) 24%, transparent);
+  min-width: 225px;
 }
 
 .dc-hero__total span {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -135,7 +163,7 @@
   font-size: clamp(1.55rem, 2.3vw, 2rem);
   line-height: 1.2;
   font-weight: 800;
-  color: var(--texto);
+  color: var(--dc-accent);
   margin-top: 0.15rem;
 }
 
@@ -145,35 +173,44 @@
   margin-top: 0.2rem;
 }
 
-/* ── Banda de métricas sobria (reemplaza 4 KPIs multicolores sobrecargados) ── */
+/* ── Banda de métricas limpias con acento superior sutil ── */
 .dc-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
+  gap: 1.15rem;
+  margin-bottom: 1.6rem;
 }
 
 .dc-metric-card {
   background: var(--fondo-card);
-  border: 1px solid var(--dc-border);
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 30%, var(--dc-border));
+  border-top: 3px solid var(--dc-gold);
   border-radius: 14px;
-  padding: 1.25rem 1.45rem;
+  padding: 1.15rem 1.35rem;
   box-shadow: var(--dc-shadow);
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.dc-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--dc-gold) 55%, transparent);
+  border-top-color: var(--dc-gold);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .dc-metric-card__label {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.71rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--texto-muted);
 }
 
 .dc-metric-card__value {
-  font-size: clamp(1.2rem, 1.75vw, 1.55rem);
+  font-size: clamp(1.2rem, 1.75vw, 1.52rem);
   font-weight: 800;
   color: var(--texto);
   line-height: 1.2;
@@ -189,25 +226,25 @@
 .dc-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 1.75rem;
+  gap: 1.6rem;
   align-items: start;
 }
 
 .dc-main {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.6rem;
   min-width: 0;
 }
 
 .dc-side {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.45rem;
   min-width: 0;
 }
 
-/* ── Tarjetas neutras y espaciosas (anula bordes dorados/colores de compras.css) ── */
+/* ── Tarjetas limpias con encabezado sutil e ícono acentuado ── */
 .dc-page .card-dev {
   background-color: var(--fondo-card) !important;
   border: 1px solid var(--dc-border) !important;
@@ -216,40 +253,49 @@
   color: var(--texto) !important;
   box-shadow: var(--dc-shadow) !important;
   overflow: hidden;
-  transition: border-color 0.2s ease !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .dc-page .card-dev:hover {
-  border-color: color-mix(in srgb, var(--texto) 16%, transparent) !important;
-  border-left-color: color-mix(in srgb, var(--texto) 16%, transparent) !important;
-  box-shadow: var(--dc-shadow) !important;
+  border-color: color-mix(in srgb, var(--dc-gold) 32%, var(--dc-border)) !important;
+  border-left-color: color-mix(in srgb, var(--dc-gold) 32%, var(--dc-border)) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07) !important;
 }
 
 .dc-page .card-dev .card-header {
-  background: transparent !important;
+  background: color-mix(in srgb, var(--dc-gold) 4%, var(--fondo-card)) !important;
   border-bottom: 1px solid var(--dc-border-soft) !important;
-  padding: 1.2rem 1.75rem !important;
+  padding: 1.1rem 1.6rem !important;
   border-radius: 16px 16px 0 0 !important;
 }
 
 .dc-page .card-dev .card-header h5 {
-  font-size: 0.96rem !important;
+  font-size: 0.95rem !important;
   font-weight: 700 !important;
   color: var(--texto) !important;
   margin: 0 !important;
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.65rem;
 }
 
 .dc-page .card-dev .card-header h5 i {
-  color: var(--texto-muted) !important;
-  font-size: 1rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dc-gold) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 28%, transparent);
+  color: var(--dc-gold) !important;
+  font-size: 0.92rem !important;
+  flex-shrink: 0;
 }
 
 .dc-page .card-dev .card-body {
   background: transparent !important;
-  padding: 1.5rem 1.75rem !important;
+  padding: 1.45rem 1.6rem !important;
 }
 
 .dc-page .card-dev .card-body.dc-table-body {
@@ -258,24 +304,24 @@
 
 .dc-count-pill {
   font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--texto-muted);
-  background: var(--dc-surface);
-  border: 1px solid var(--dc-border);
+  font-weight: 700;
+  color: var(--dc-accent);
+  background: color-mix(in srgb, var(--dc-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-accent) 28%, transparent);
   border-radius: 999px;
-  padding: 0.22rem 0.72rem;
+  padding: 0.24rem 0.78rem;
   white-space: nowrap;
 }
 
-/* ── Badges de estado semánticos (sobrios) ── */
+/* ── Badges de estado semánticos ── */
 .dc-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.75rem;
-  border-radius: 8px;
+  gap: 0.38rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
   font-size: 0.77rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -286,48 +332,48 @@
 }
 
 .dc-status--pendiente {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.14);
   color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.28);
+  border: 1px solid rgba(245, 158, 11, 0.34);
 }
 
 .dc-status--confirmada {
-  background: rgba(59, 130, 246, 0.11);
+  background: rgba(59, 130, 246, 0.13);
   color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.26);
+  border: 1px solid rgba(59, 130, 246, 0.32);
 }
 
 .dc-status--recibida {
-  background: rgba(34, 197, 94, 0.11);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.26);
+  background: color-mix(in srgb, var(--dc-green) 14%, transparent);
+  color: var(--dc-green);
+  border: 1px solid color-mix(in srgb, var(--dc-green) 34%, transparent);
 }
 
 .dc-status--cancelada {
-  background: rgba(220, 53, 69, 0.11);
-  color: #dc2626;
-  border: 1px solid rgba(220, 53, 69, 0.26);
+  background: color-mix(in srgb, var(--dc-red) 14%, transparent);
+  color: var(--dc-red);
+  border: 1px solid color-mix(in srgb, var(--dc-red) 34%, transparent);
 }
 
-/* ── Badges neutros (categoría, lote, cantidad) ── */
+/* ── Badges de tabla (categoría, lote, cantidad) ── */
 .dc-tag-neutral {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.22rem 0.65rem;
-  border-radius: 7px;
-  font-size: 0.77rem;
+  padding: 0.24rem 0.68rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: var(--texto-muted);
-  background: var(--dc-surface);
-  border: 1px solid var(--dc-border);
+  color: color-mix(in srgb, var(--dc-gold) 78%, var(--texto));
+  background: color-mix(in srgb, var(--dc-gold) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 28%, transparent);
 }
 
 .dc-lote-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.22rem 0.62rem;
+  padding: 0.22rem 0.65rem;
   border-radius: 7px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.78rem;
@@ -341,15 +387,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 26px;
-  padding: 0 0.5rem;
-  border-radius: 7px;
+  min-width: 34px;
+  height: 27px;
+  padding: 0 0.55rem;
+  border-radius: 8px;
   font-weight: 700;
   font-size: 0.84rem;
-  color: var(--texto);
-  background: var(--dc-surface);
-  border: 1px solid var(--dc-border);
+  color: var(--dc-accent);
+  background: color-mix(in srgb, var(--dc-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-accent) 28%, transparent);
 }
 
 /* ── Filas de información lateral ── */
@@ -483,12 +529,19 @@
 .dc-fin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.4rem 2rem;
+  gap: 1rem;
+}
+
+.dc-fin-grid > div {
+  padding: 0.95rem 1.15rem;
+  border-radius: 12px;
+  background: var(--dc-surface);
+  border: 1px solid var(--dc-border-soft);
 }
 
 .dc-fin-item__label {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.71rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--texto-muted);
@@ -496,23 +549,28 @@
 }
 
 .dc-fin-item__value {
-  font-size: 1.25rem;
+  font-size: 1.22rem;
   font-weight: 800;
   color: var(--texto);
   line-height: 1.2;
 }
 
 .dc-progress-wrap {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
+  margin-top: 1.35rem;
+  padding-top: 1.2rem;
   border-top: 1px solid var(--dc-border-soft);
 }
 
 .dc-progress-wrap .progress {
   background-color: color-mix(in srgb, var(--texto) 9%, transparent);
   border-radius: 999px;
-  height: 8px;
+  height: 10px;
   overflow: hidden;
+}
+
+.dc-progress-wrap .dc-progress-bar-fill {
+  background: linear-gradient(90deg, var(--dc-green), color-mix(in srgb, var(--dc-green) 72%, var(--dc-accent))) !important;
+  border-radius: 999px;
 }
 
 /* ── Pagos registrados ── */
@@ -528,7 +586,7 @@
 .dc-pago-row:first-child { padding-top: 0; }
 .dc-pago-row:last-child  { border-bottom: none; padding-bottom: 0; }
 
-/* ── Timeline de Auditoría (sobrio) ── */
+/* ── Timeline de Auditoría ── */
 .dc-timeline {
   display: flex;
   flex-direction: column;
@@ -563,12 +621,12 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--dc-surface);
-  border: 1px solid var(--dc-border);
+  background: color-mix(in srgb, var(--dc-gold) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dc-gold) 36%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--texto-muted);
+  color: var(--dc-gold);
   font-size: 0.82rem;
   flex-shrink: 0;
   z-index: 1;
@@ -591,10 +649,10 @@
   font-size: 0.78rem;
 }
 
-.dc-tl-blue   { background: rgba(59, 130, 246, 0.11) !important; border-color: rgba(59, 130, 246, 0.35) !important; color: #2563eb !important; }
-.dc-tl-green  { background: rgba(34, 197, 94, 0.11) !important;  border-color: rgba(34, 197, 94, 0.35) !important;  color: #16a34a !important; }
-.dc-tl-red    { background: rgba(220, 53, 69, 0.11) !important;  border-color: rgba(220, 53, 69, 0.35) !important;  color: #dc2626 !important; }
-.dc-tl-purple { background: var(--dc-surface) !important; border-color: var(--dc-border) !important; color: var(--texto-muted) !important; }
+.dc-tl-blue   { background: rgba(59, 130, 246, 0.13) !important; border-color: rgba(59, 130, 246, 0.38) !important; color: #2563eb !important; }
+.dc-tl-green  { background: color-mix(in srgb, var(--dc-green) 14%, transparent) !important; border-color: color-mix(in srgb, var(--dc-green) 40%, transparent) !important; color: var(--dc-green) !important; }
+.dc-tl-red    { background: color-mix(in srgb, var(--dc-red) 14%, transparent) !important; border-color: color-mix(in srgb, var(--dc-red) 40%, transparent) !important; color: var(--dc-red) !important; }
+.dc-tl-purple { background: color-mix(in srgb, var(--dc-accent) 13%, transparent) !important; border-color: color-mix(in srgb, var(--dc-accent) 34%, transparent) !important; color: var(--dc-accent) !important; }
 
 /* ── Botones píldora limpios ── */
 .dc-btn-pill {
@@ -609,7 +667,7 @@
   line-height: 1.2 !important;
   white-space: nowrap;
   text-decoration: none !important;
-  transition: background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease !important;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.16s ease, box-shadow 0.18s ease !important;
 }
 
 .dc-btn-pill--primary {
@@ -617,6 +675,7 @@
   color: var(--fondo) !important;
   border: 1px solid var(--azul-claro) !important;
   font-weight: 700 !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--azul-claro) 26%, transparent) !important;
 }
 
 .dc-btn-pill--primary i {
@@ -624,23 +683,24 @@
 }
 
 .dc-btn-pill--primary:hover {
-  opacity: 0.9;
+  opacity: 0.93;
+  transform: translateY(-1px);
   color: var(--fondo) !important;
 }
 
 .dc-btn-pill--success {
-  background: rgba(34, 197, 94, 0.12) !important;
-  color: #16a34a !important;
-  border: 1px solid rgba(34, 197, 94, 0.36) !important;
+  background: color-mix(in srgb, var(--dc-green) 14%, transparent) !important;
+  color: var(--dc-green) !important;
+  border: 1px solid color-mix(in srgb, var(--dc-green) 40%, transparent) !important;
 }
 
 .dc-btn-pill--success i {
-  color: #16a34a !important;
+  color: var(--dc-green) !important;
 }
 
 .dc-btn-pill--success:hover {
-  background: rgba(34, 197, 94, 0.2) !important;
-  color: #15803d !important;
+  background: color-mix(in srgb, var(--dc-green) 22%, transparent) !important;
+  color: var(--dc-green) !important;
 }
 
 .dc-btn-pill--ghost {
@@ -651,12 +711,12 @@
 }
 
 .dc-btn-pill--ghost i {
-  color: var(--texto-muted) !important;
+  color: var(--dc-accent) !important;
 }
 
 .dc-btn-pill--ghost:hover {
-  background: var(--dc-surface) !important;
-  border-color: color-mix(in srgb, var(--texto) 24%, transparent) !important;
+  background: color-mix(in srgb, var(--dc-accent) 8%, var(--fondo-card)) !important;
+  border-color: color-mix(in srgb, var(--dc-accent) 36%, transparent) !important;
   color: var(--texto) !important;
 }
 
@@ -670,7 +730,12 @@
 
 #modalPagoDetalle .modal-header,
 #modalPagoDetalle .modal-footer {
+  background: var(--fondo-card2) !important;
   border-color: var(--dc-border-soft) !important;
+}
+
+#modalPagoDetalle .modal-title i {
+  color: var(--dc-gold) !important;
 }
 
 #modalPagoDetalle .btn-close {
@@ -678,19 +743,39 @@
 }
 
 #modalPagoDetalle .dc-modal-summary {
-  background: var(--dc-surface) !important;
+  background: var(--fondo-card2) !important;
   border: 1px solid var(--dc-border) !important;
+  border-left: 4px solid var(--dc-gold) !important;
   border-radius: 12px;
 }
 
 #modalPagoDetalle .dc-modal-sep {
-  border-right: 1px solid var(--dc-border-soft);
+  border-right: 1px solid var(--dc-border);
+}
+
+#modalPagoDetalle #btnPagarTodoDetalle {
+  background: color-mix(in srgb, var(--dc-green) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--dc-green) 42%, transparent) !important;
+  color: var(--dc-green) !important;
+}
+
+#modalPagoDetalle #btnPagarTodoDetalle i {
+  color: var(--dc-green) !important;
+}
+
+#modalPagoDetalle #btnPagarTodoDetalle:hover {
+  background: color-mix(in srgb, var(--dc-green) 22%, transparent) !important;
 }
 
 #modalPagoDetalle .input-group-text {
-  background: var(--dc-surface) !important;
+  background: color-mix(in srgb, var(--texto) 5%, var(--fondo-card2)) !important;
   border-color: var(--dc-border) !important;
   color: var(--texto-muted) !important;
+  border-radius: 8px 0 0 8px !important;
+}
+
+#modalPagoDetalle .input-group > .cmp-input {
+  border-radius: 0 8px 8px 0 !important;
 }
 
 #modalPagoDetalle .cmp-input {
@@ -700,8 +785,8 @@
 }
 
 #modalPagoDetalle .cmp-input:focus {
-  border-color: var(--azul-claro) !important;
-  box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--azul-claro) 14%, transparent) !important;
+  border-color: var(--dc-gold) !important;
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--dc-gold) 18%, transparent) !important;
 }
 
 #modalPagoDetalle select.cmp-input option {
@@ -710,7 +795,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════════
-   BOTÓN EXPORTAR + MENÚ (sobrio, nunca cortado)
+   BOTÓN EXPORTAR + MENÚ (acento sutil, nunca cortado)
    ════════════════════════════════════════════════════════════════ */
 #cys-dt-export-compra .dropdown {
   position: relative;
@@ -724,8 +809,8 @@
   gap: 0.5rem !important;
   padding: 0.52rem 1.15rem !important;
   border-radius: 999px !important;
-  background: var(--fondo-card) !important;
-  border: 1px solid var(--dc-border) !important;
+  background: color-mix(in srgb, var(--dc-accent) 9%, var(--fondo-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--dc-accent) 36%, transparent) !important;
   color: var(--texto) !important;
   font-size: 0.86rem !important;
   font-weight: 600 !important;
@@ -737,7 +822,7 @@
 }
 
 #cys-dt-export-compra .cat-btn-exportar i {
-  color: var(--texto-muted) !important;
+  color: var(--dc-accent) !important;
   font-size: 0.95rem;
   margin: 0 !important;
 }
@@ -751,7 +836,7 @@
   font-size: 0.7rem;
   font-weight: 700 !important;
   line-height: 1;
-  color: var(--texto-muted);
+  color: var(--dc-accent);
   transition: transform 0.2s ease;
 }
 
@@ -762,8 +847,8 @@
 #cys-dt-export-compra .cat-btn-exportar:hover,
 #cys-dt-export-compra .cat-btn-exportar:focus,
 #cys-dt-export-compra .cat-btn-exportar[aria-expanded="true"] {
-  background: var(--dc-surface) !important;
-  border-color: color-mix(in srgb, var(--texto) 26%, transparent) !important;
+  background: color-mix(in srgb, var(--dc-accent) 16%, var(--fondo-card)) !important;
+  border-color: var(--dc-accent) !important;
   color: var(--texto) !important;
   box-shadow: none !important;
   transform: none !important;
@@ -840,9 +925,7 @@
     align-items: flex-start;
     text-align: left;
     width: 100%;
-    padding: 1rem 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--dc-border-soft);
+    padding: 0.9rem 1.15rem;
   }
 }
 
