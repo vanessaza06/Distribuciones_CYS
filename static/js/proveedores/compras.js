@@ -13,13 +13,23 @@ const byId = (id) => document.getElementById(id);
 
 function init() {
   if (!byId('formNuevaCompra') && !byId('chartComprasMes')) return;
-  initNuevaCompra();
-  initModalPago();
-  initBusquedaProveedores();
-  initAccesibilidad();
-  initTabla();
-  initExportar();
-  initializeCharts();
+
+  // Cada parte se ejecuta por separado: si una falla, las demás siguen funcionando
+  [
+    initNuevaCompra,
+    initModalPago,
+    initBusquedaProveedores,
+    initAccesibilidad,
+    initTabla,
+    initExportar,
+    initializeCharts
+  ].forEach((fn) => {
+    try {
+      fn();
+    } catch (err) {
+      console.error('[Compras] Error en ' + fn.name + ':', err);
+    }
+  });
 
   const params = new URLSearchParams(window.location.search);
   const modalProv = byId('modalProveedores');
@@ -90,10 +100,28 @@ function initExportar() {
       params.delete('modal');
       params.delete('page');
 
-      // Si el proveedor no está en la URL, toma el del selector del modal
+      // Si el usuario escribió filtros en el formulario sin pulsar "Filtrar",
+      // también se exportan (así lo exportado coincide con lo que ve en los campos).
+      const formFiltros = byId('filtrosCompras');
+      if (formFiltros) {
+        ['q', 'desde', 'hasta', 'estado'].forEach((nombre) => {
+          const campo = formFiltros.elements[nombre];
+          if (!campo) return;
+          const valor = (campo.value || '').trim();
+          if (valor && !(nombre === 'estado' && valor === 'todos')) {
+            params.set(nombre, valor);
+          } else {
+            params.delete(nombre);
+          }
+        });
+      }
+
+      // Si el proveedor no está en la URL, toma el del formulario o el del selector del modal
       if (!params.get('proveedor')) {
+        const hidden = formFiltros && formFiltros.elements['proveedor'];
         const sel = byId('proveedorSeleccionado');
-        if (sel && sel.value) params.set('proveedor', sel.value);
+        const prov = (hidden && hidden.value) || (sel && sel.value);
+        if (prov) params.set('proveedor', prov);
       }
 
       params.set('export', tipo);
@@ -114,6 +142,7 @@ function initTabla() {
   const tabla = byId('tablaHistorialCompras');
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
+
   jQuery(tabla).DataTable({
     paging: true,
     searching: true,
@@ -138,11 +167,8 @@ function initTabla() {
       bottomEnd: 'paging'
     }
   });
-
-
-  if (typeof window.cysCrearDropdownExportar === 'function') {
-    window.cysCrearDropdownExportar(dt, 'cys-dt-export-compras-historial');
-  }
+  // Nota: la exportación la hace el servidor (initExportar). Ya no se llama a
+  // cysCrearDropdownExportar, que usaba una variable `dt` inexistente y rompía el script.
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -154,6 +180,10 @@ function initNuevaCompra() {
   const precio = byId('formCompraPrecio');
   const pago = byId('formCompraPago');
   if (!hiddenProducto || !cantidad || !precio) return;
+
+  // Evita enlazar los mismos eventos dos veces si init() se ejecuta de nuevo (htmx)
+  if (hiddenProducto.dataset.cmpBound === 'true') return;
+  hiddenProducto.dataset.cmpBound = 'true';
 
   const btnTotal = byId('btnPagarTotalNueva');
   const btnCredito = byId('btnCreditoNueva');
@@ -717,6 +747,10 @@ function initModalPago() {
   const monto = byId('montoPagado');
   if (!form || !monto) return;
 
+  // Evita enlazar los mismos eventos dos veces
+  if (form.dataset.pagoBound === 'true') return;
+  form.dataset.pagoBound = 'true';
+
   const saldoActual = () => parseFloat(byId('saldoActual').value) || 0;
 
   function actualizar() {
@@ -771,18 +805,18 @@ function initModalPago() {
     });
   });
 
-  byId('btnPagarTodoSaldo').addEventListener('click', () => {
-    monto.value = saldoActual().toFixed(2);
-    actualizar();
-  });
-  monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
-
   function mostrarError(texto) {
     const box = byId('montoPagadoError');
     if (!box) return;
     box.querySelector('span').textContent = texto;
     box.classList.toggle('d-none', !texto);
   }
+
+  byId('btnPagarTodoSaldo').addEventListener('click', () => {
+    monto.value = saldoActual().toFixed(2);
+    actualizar();
+  });
+  monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
 
   form.addEventListener('submit', function (e) {
     const valor = parseFloat(monto.value);
@@ -824,14 +858,19 @@ function initBusquedaProveedores() {
     layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' }
   });
   // El buscador existente del modal filtra la tabla (nombre, NIT, tipo, teléfono, correo)
-  input.addEventListener('input', function () {
-    dt.search(this.value.trim()).draw();
-  });
+  if (input.dataset.provBound !== 'true') {
+    input.dataset.provBound = 'true';
+    input.addEventListener('input', function () {
+      dt.search(this.value.trim()).draw();
+    });
+  }
 }
 
 // ── Accesibilidad: Enter/Espacio activan elementos role="button" ─
 function initAccesibilidad() {
   document.querySelectorAll('[role="button"][data-bs-toggle]').forEach((el) => {
+    if (el.dataset.a11yBound === 'true') return;
+    el.dataset.a11yBound = 'true';
     el.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
