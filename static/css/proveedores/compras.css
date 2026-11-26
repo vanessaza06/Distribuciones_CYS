@@ -3201,22 +3201,191 @@ table.dataTable thead > tr > th.dt-type-numeric div.dt-column-header, table.data
   font-size: 0.95rem;
 }
 .cmp-tarjeta-financiera {
-  background: rgba(2, 34, 74, 0.6) !important;
-  border: 1px solid rgba(77, 168, 218, 0.2) !important;
+  background: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent) !important;
+  border-left: 4px solid var(--cp-dorado) !important;
+  border-radius: 10px !important;
+}
+.cmp-tarjeta-financiera .border-end {
+  border-color: color-mix(in srgb, var(--texto) 12%, transparent) !important;
+}
+.cmp-tarjeta-financiera small.cmp-text-mini {
+  color: var(--texto-muted) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.cmp-tarjeta-financiera #resumenMontoTotal {
+  color: var(--texto) !important;
+  font-weight: 800 !important;
+}
+.cmp-tarjeta-financiera #resumenMontoPagado {
+  color: var(--verde) !important;
+  font-weight: 800 !important;
+}
+.cmp-tarjeta-financiera #resumenSaldoPendiente {
+  color: var(--rojo) !important;
+  font-weight: 800 !important;
 }
 .cmp-text-mini {
-  font-size: 0.75rem !important;
+  font-size: 0.72rem !important;
 }
 .cmp-btn-pagar-todo-saldo {
   font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  padding: 0.28rem 0.75rem !important;
+  border-radius: 8px !important;
+  background: color-mix(in srgb, var(--verde) 12%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, transparent) !important;
+  transition: all 0.2s ease !important;
+}
+.cmp-btn-pagar-todo-saldo i {
+  color: currentColor !important;
+}
+.cmp-btn-pagar-todo-saldo:hover,
+.cmp-btn-pagar-todo-saldo:focus {
+  background: color-mix(in srgb, var(--verde) 22%, transparent) !important;
+  border-color: var(--verde) !important;
+  color: var(--verde) !important;
 }
 .cmp-input-saldo-pendiente {
-  background-color: rgba(231, 76, 60, 0.1) !important;
+  background-color: color-mix(in srgb, var(--rojo) 7%, var(--fondo-card2)) !important;
+  border-color: color-mix(in srgb, var(--rojo) 28%, transparent) !important;
   cursor: not-allowed !important;
-  color: #e74c3c !important;
+  color: var(--rojo) !important;
 }
 .cmp-badge-nuevo-estado {
-  font-size: 0.95rem !important;
+  font-size: 0.9rem !important;
+}
+
+/* ── Armonía de colores en #modalPago (compatible con todos los temas) ── */
+#modalPago .modal-content {
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 14%, transparent) !important;
+}
+#modalPago .modal-header {
+  background: var(--fondo-card2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .modal-header .modal-title {
+  color: var(--texto) !important;
+}
+#modalPago .modal-header .modal-title i {
+  color: var(--cp-dorado) !important;
+}
+#modalPago .modal-footer.modal-custom-footer {
+  background: var(--fondo-card2) !important;
+  border-top: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .btn-modal-secondary {
+  border: 1px solid color-mix(in srgb, var(--texto) 20%, transparent) !important;
+  color: var(--texto) !important;
+}
+#modalPago .btn-modal-secondary:hover {
+  background: color-mix(in srgb, var(--texto) 6%, transparent) !important;
+  border-color: color-mix(in srgb, var(--texto) 32%, transparent) !important;
+}
+
+#modalPago .metodos-pago-container {
+  background: var(--fondo-card) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 14%, transparent) !important;
+  border-radius: 10px !important;
+}
+#modalPago .metodos-pago-header {
+  background: var(--fondo-card2) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 10%, transparent) !important;
+}
+#modalPago .metodos-pago-header:hover {
+  background: color-mix(in srgb, var(--texto) 5%, var(--fondo-card2)) !important;
+}
+#modalPago .metodos-pago-header span {
+  color: var(--texto) !important;
+  font-weight: 600;
+}
+#modalPago .metodos-pago-header > i {
+  color: var(--texto-muted) !important;
+}
+#modalPago .metodos-pago-list {
+  padding: 4px 0 !important;
+}
+#modalPago .metodo-pago-item {
+  border-bottom: 1px solid color-mix(in srgb, var(--texto) 8%, transparent) !important;
+  color: var(--texto) !important;
+}
+#modalPago .metodo-pago-item:hover {
+  background: color-mix(in srgb, var(--texto) 4%, transparent) !important;
+}
+#modalPago .metodo-pago-item:has(input:checked) {
+  background: color-mix(in srgb, var(--cp-dorado) 12%, transparent) !important;
+}
+#modalPago .metodo-pago-item input[type="radio"] {
+  background-color: var(--fondo-card) !important;
+  border: 1.5px solid color-mix(in srgb, var(--texto) 28%, transparent) !important;
+  accent-color: var(--cp-dorado) !important;
+}
+#modalPago .metodo-pago-item input[type="radio"]:checked {
+  background-color: var(--cp-dorado) !important;
+  border-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cp-dorado) 22%, transparent) !important;
+}
+
+#modalPago .form-control {
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+}
+#modalPago .form-control:focus {
+  border-color: var(--cp-dorado) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cp-dorado) 20%, transparent) !important;
+}
+#modalPago .input-group > .input-group-text {
+  background-color: color-mix(in srgb, var(--texto) 5%, var(--fondo-card2)) !important;
+  color: var(--texto-muted) !important;
+  border: 1px solid color-mix(in srgb, var(--texto) 16%, transparent) !important;
+  border-right: none !important;
+  border-radius: 8px 0 0 8px !important;
+  font-weight: 700 !important;
+}
+#modalPago .input-group > .form-control {
+  border-radius: 0 8px 8px 0 !important;
+}
+#modalPago input.cmp-input-saldo-pendiente {
+  background-color: color-mix(in srgb, var(--rojo) 7%, var(--fondo-card2)) !important;
+  border-color: color-mix(in srgb, var(--rojo) 28%, transparent) !important;
+  color: var(--rojo) !important;
+}
+
+#modalPago #badgeNuevoEstado {
+  border-radius: 8px !important;
+  padding: 0.5rem 0.85rem !important;
+  min-height: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+}
+#modalPago #badgeNuevoEstado i {
+  color: currentColor !important;
+}
+#modalPago #badgeNuevoEstado.badge-pending-custom,
+#modalPago #badgeNuevoEstado.badge-warning-custom {
+  background: color-mix(in srgb, var(--cp-dorado) 16%, var(--fondo-card2)) !important;
+  color: color-mix(in srgb, var(--cp-dorado) 70%, var(--texto)) !important;
+  border: 1px solid color-mix(in srgb, var(--cp-dorado) 42%, transparent) !important;
+}
+#modalPago #badgeNuevoEstado.badge-success-custom {
+  background: color-mix(in srgb, var(--verde) 14%, transparent) !important;
+  color: var(--verde) !important;
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, transparent) !important;
+}
+#modalPago #badgeNuevoEstado.bg-danger {
+  background: color-mix(in srgb, var(--rojo) 14%, transparent) !important;
+  color: var(--rojo) !important;
+  border: 1px solid color-mix(in srgb, var(--rojo) 45%, transparent) !important;
 }
 
 

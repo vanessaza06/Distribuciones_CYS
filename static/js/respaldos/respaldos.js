@@ -169,10 +169,18 @@
         var formE = byId('formEditarRespaldo');
         var inNom = byId('editRespaldoNombre');
         var inDesc = byId('editRespaldoDesc');
+        var errEdit = byId('respEditarError');
         var modalE = byId('modalEditarRespaldo');
         if (formE) formE.action = btnEditar.dataset.url || '';
-        if (inNom) inNom.value = btnEditar.dataset.nombre || '';
+        if (inNom) {
+          inNom.value = btnEditar.dataset.nombre || '';
+          inNom.classList.remove('is-invalid');
+        }
         if (inDesc) inDesc.value = btnEditar.dataset.desc || '';
+        if (errEdit) {
+          errEdit.textContent = '';
+          errEdit.classList.add('d-none');
+        }
         if (modalE && window.bootstrap) {
           bootstrap.Modal.getOrCreateInstance(modalE).show();
         }
@@ -241,6 +249,145 @@
     });
   }
 
+  // ── Validaciones de nombre de respaldo y contenido .sql ──
+  var RE_LETRAS_INICIO = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{3}/;
+  var RE_NOMBRE_RESPALDO = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{3}[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 _.-]*$/;
+  var RE_SQL_DATA = /\b(?:INSERT\s+(?:LOW_PRIORITY\s+|DELAYED\s+|HIGH_PRIORITY\s+)?(?:IGNORE\s+)?INTO\s+[`"'\w.]+(?:\s*\([^)]*\))?\s+(?:(?:VALUES|VALUE)\s*\(\s*[^)\s]|SET\s+\S|SELECT\s+\S)|REPLACE\s+(?:LOW_PRIORITY\s+|DELAYED\s+)?INTO\s+[`"'\w.]+(?:\s*\([^)]*\))?\s+(?:(?:VALUES|VALUE)\s*\(\s*[^)\s]|SET\s+\S|SELECT\s+\S)|LOAD\s+DATA\s+(?:LOW_PRIORITY\s+|CONCURRENT\s+)?(?:LOCAL\s+)?INFILE\s+\S)/i;
+  var RE_SQL_ESTRUCTURA = /\b(?:CREATE|DROP|ALTER|TRUNCATE|LOCK|UNLOCK|SET|USE)\s+(?:TABLE|DATABASE|SCHEMA|VIEW|INDEX|TRIGGER|TABLES|NAMES)\b/i;
+
+  function validarNombreRespaldo(valor, obligatorio) {
+    var raw = (valor || '').trim();
+    if (!raw) {
+      return obligatorio ? 'El nombre de la copia de seguridad es obligatorio.' : '';
+    }
+    if (raw.indexOf('/') !== -1 || raw.indexOf('\\') !== -1) {
+      return 'El nombre no puede contener barras (/ o \\).';
+    }
+    var base = raw.toLowerCase().endsWith('.sql') ? raw.slice(0, -4) : raw;
+    if (base.length > 80) {
+      return 'El nombre de la copia de seguridad no puede superar 80 caracteres.';
+    }
+    if (!RE_LETRAS_INICIO.test(base)) {
+      return 'El nombre de la copia de seguridad debe comenzar con 3 letras (no se permiten números, puntos ni símbolos al principio).';
+    }
+    if (base.indexOf('..') !== -1 || base.endsWith('.')) {
+      return 'El nombre no puede contener puntos seguidos (..) ni terminar en punto.';
+    }
+    if (!RE_NOMBRE_RESPALDO.test(base)) {
+      return 'El nombre contiene caracteres no permitidos. Usa solo letras, números, espacios, puntos, guiones (-) o guion bajo (_).';
+    }
+    return '';
+  }
+
+  function quitarComentariosSql(texto) {
+    var out = [];
+    var i = 0;
+    var n = texto.length;
+    var enBloque = false;
+    var enLinea = false;
+    var comilla = null;
+    var escape = false;
+
+    while (i < n) {
+      var ch = texto[i];
+      if (enLinea) {
+        if (ch === '\n') {
+          enLinea = false;
+          out.push('\n');
+        }
+        i += 1;
+        continue;
+      }
+      if (enBloque) {
+        if (ch === '*' && i + 1 < n && texto[i + 1] === '/') {
+          enBloque = false;
+          out.push(' ');
+          i += 2;
+        } else {
+          i += 1;
+        }
+        continue;
+      }
+      if (comilla) {
+        out.push(ch);
+        if (escape) {
+          escape = false;
+        } else if (ch === '\\') {
+          escape = true;
+        } else if (ch === comilla) {
+          comilla = null;
+        }
+        i += 1;
+        continue;
+      }
+      if (ch === "'" || ch === '"') {
+        comilla = ch;
+        out.push(ch);
+        i += 1;
+        continue;
+      }
+      if (ch === '#') {
+        enLinea = true;
+        out.push(' ');
+        i += 1;
+        continue;
+      }
+      if (ch === '-' && i + 1 < n && texto[i + 1] === '-') {
+        var sig = i + 2 < n ? texto[i + 2] : '\n';
+        if (sig === ' ' || sig === '\t' || sig === '\r' || sig === '\n' || sig === '-') {
+          enLinea = true;
+          out.push(' ');
+          i += 2;
+          continue;
+        }
+      }
+      if (ch === '/' && i + 1 < n && texto[i + 1] === '*') {
+        enBloque = true;
+        out.push(' ');
+        i += 2;
+        continue;
+      }
+      out.push(ch);
+      i += 1;
+    }
+    return out.join('');
+  }
+
+  function validarContenidoSqlTexto(texto, esMuestraParcial) {
+    if (!texto) {
+      return 'El archivo seleccionado está vacío.';
+    }
+    if (texto.indexOf('\u0000') !== -1) {
+      return 'El archivo no es un archivo .sql de texto válido.';
+    }
+    var sinBom = texto.charCodeAt(0) === 0xFEFF ? texto.slice(1) : texto;
+    var limpio = quitarComentariosSql(sinBom);
+    if (!limpio.trim()) {
+      return 'El archivo .sql está vacío o solo contiene comentarios, sin datos.';
+    }
+    if (RE_SQL_DATA.test(limpio)) {
+      return '';
+    }
+    // Si el archivo supera 5 MB y solo leímos el inicio, el servidor validará el resto
+    if (esMuestraParcial) {
+      return '';
+    }
+    if (RE_SQL_ESTRUCTURA.test(limpio)) {
+      return 'El archivo .sql solo contiene estructura y no tiene datos (registros INSERT) para restaurar.';
+    }
+    return 'El archivo .sql no contiene datos ni sentencias SQL válidas para restaurar.';
+  }
+
+  function mostrarErrorCampo(input, errBox, msg) {
+    if (errBox) {
+      errBox.textContent = msg || '';
+      errBox.classList.toggle('d-none', !msg);
+    }
+    if (input) {
+      input.classList.toggle('is-invalid', Boolean(msg));
+    }
+  }
+
   // ── Formularios de modales y Dropzone .sql ──
   function initModalesYDropzone() {
     var chkConfirm = byId('chkConfirmRestore');
@@ -264,15 +411,80 @@
       });
     }
 
+    // Modal Crear copia de seguridad
     var formCrear = byId('formCrearRespaldo');
+    var inCrearNom = byId('crearRespaldoNombre');
+    var errCrear = byId('respCrearError');
+    var modalCrear = byId('modalCrearRespaldo');
+
+    if (inCrearNom && !inCrearNom.dataset.bound) {
+      inCrearNom.dataset.bound = '1';
+      inCrearNom.addEventListener('input', function () {
+        var val = this.value.trim();
+        var msg = val ? validarNombreRespaldo(val, false) : '';
+        mostrarErrorCampo(inCrearNom, errCrear, msg);
+      });
+    }
+
+    if (modalCrear && !modalCrear.dataset.bound) {
+      modalCrear.dataset.bound = '1';
+      modalCrear.addEventListener('hidden.bs.modal', function () {
+        if (formCrear) formCrear.reset();
+        mostrarErrorCampo(inCrearNom, errCrear, '');
+      });
+    }
+
     if (formCrear && !formCrear.dataset.bound) {
       formCrear.dataset.bound = '1';
-      formCrear.addEventListener('submit', function () {
+      formCrear.addEventListener('submit', function (e) {
+        var msg = validarNombreRespaldo(inCrearNom ? inCrearNom.value : '', false);
+        if (msg) {
+          e.preventDefault();
+          mostrarErrorCampo(inCrearNom, errCrear, msg);
+          if (inCrearNom) inCrearNom.focus();
+          return;
+        }
+        mostrarErrorCampo(inCrearNom, errCrear, '');
         var btn = byId('btnSubmitCrear');
         if (btn) {
           btn.disabled = true;
           btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generando respaldo...';
         }
+      });
+    }
+
+    // Modal Editar copia de seguridad
+    var formEditar = byId('formEditarRespaldo');
+    var inEditarNom = byId('editRespaldoNombre');
+    var errEditar = byId('respEditarError');
+    var modalEditar = byId('modalEditarRespaldo');
+
+    if (inEditarNom && !inEditarNom.dataset.bound) {
+      inEditarNom.dataset.bound = '1';
+      inEditarNom.addEventListener('input', function () {
+        var msg = validarNombreRespaldo(this.value, true);
+        mostrarErrorCampo(inEditarNom, errEditar, msg);
+      });
+    }
+
+    if (modalEditar && !modalEditar.dataset.bound) {
+      modalEditar.dataset.bound = '1';
+      modalEditar.addEventListener('hidden.bs.modal', function () {
+        mostrarErrorCampo(inEditarNom, errEditar, '');
+      });
+    }
+
+    if (formEditar && !formEditar.dataset.bound) {
+      formEditar.dataset.bound = '1';
+      formEditar.addEventListener('submit', function (e) {
+        var msg = validarNombreRespaldo(inEditarNom ? inEditarNom.value : '', true);
+        if (msg) {
+          e.preventDefault();
+          mostrarErrorCampo(inEditarNom, errEditar, msg);
+          if (inEditarNom) inEditarNom.focus();
+          return;
+        }
+        mostrarErrorCampo(inEditarNom, errEditar, '');
       });
     }
 
@@ -283,6 +495,14 @@
     var dzSub = byId('respDropzoneSub');
     var errBox = byId('respSubirError');
     var formSubir = byId('formSubirRespaldo');
+    var btnSubmitSubir = byId('btnSubmitSubir');
+    var MAX_CLIENT_READ_BYTES = 5 * 1024 * 1024;
+    var estadoArchivo = {
+      valido: false,
+      validando: false,
+      seq: 0,
+      error: ''
+    };
 
     function mostrarErrorSubida(msg) {
       if (!errBox) return;
@@ -290,35 +510,101 @@
       errBox.classList.toggle('d-none', !msg);
     }
 
-    function actualizarVistaArchivo(file) {
+    function resetDropzoneVisual() {
+      if (dropzone) dropzone.classList.remove('has-file');
+      if (dzTitle) dzTitle.textContent = 'Haz clic o arrastra tu archivo .sql aquí';
+      if (dzSub) dzSub.textContent = 'Solo archivos .sql · Máximo 500 MB';
+    }
+
+    function invalidarArchivoSubida(msg) {
+      estadoArchivo.valido = false;
+      estadoArchivo.validando = false;
+      estadoArchivo.error = msg || '';
+      mostrarErrorSubida(msg);
+      if (fileInput) fileInput.value = '';
+      resetDropzoneVisual();
+      if (btnSubmitSubir) btnSubmitSubir.disabled = false;
+    }
+
+    function actualizarVistaArchivo(file, onDone) {
+      estadoArchivo.seq += 1;
+      var mySeq = estadoArchivo.seq;
       mostrarErrorSubida('');
+
       if (!file) {
-        if (dropzone) dropzone.classList.remove('has-file');
-        if (dzTitle) dzTitle.textContent = 'Haz clic o arrastra tu archivo .sql aquí';
-        if (dzSub) dzSub.textContent = 'Solo archivos .sql · Máximo 500 MB';
-        return true;
+        estadoArchivo.valido = false;
+        estadoArchivo.validando = false;
+        estadoArchivo.error = '';
+        resetDropzoneVisual();
+        if (btnSubmitSubir) btnSubmitSubir.disabled = false;
+        if (onDone) onDone(false);
+        return false;
       }
+
       if (!file.name.toLowerCase().endsWith('.sql')) {
-        mostrarErrorSubida('El archivo debe tener extensión .sql.');
-        if (fileInput) fileInput.value = '';
-        if (dropzone) dropzone.classList.remove('has-file');
+        invalidarArchivoSubida('El archivo debe tener extensión .sql.');
+        if (onDone) onDone(false);
         return false;
       }
+
+      var errNomArchivo = validarNombreRespaldo(file.name, true);
+      if (errNomArchivo) {
+        invalidarArchivoSubida(errNomArchivo);
+        if (onDone) onDone(false);
+        return false;
+      }
+
       if (file.size === 0) {
-        mostrarErrorSubida('El archivo seleccionado está vacío.');
-        if (fileInput) fileInput.value = '';
-        if (dropzone) dropzone.classList.remove('has-file');
+        invalidarArchivoSubida('El archivo seleccionado está vacío.');
+        if (onDone) onDone(false);
         return false;
       }
+
       if (file.size > 500 * 1024 * 1024) {
-        mostrarErrorSubida('El archivo supera el límite permitido de 500 MB.');
-        if (fileInput) fileInput.value = '';
-        if (dropzone) dropzone.classList.remove('has-file');
+        invalidarArchivoSubida('El archivo supera el límite permitido de 500 MB.');
+        if (onDone) onDone(false);
         return false;
       }
+
+      // Inspección de contenido del archivo .sql (evitar archivos vacíos, solo comentarios o sin datos)
+      estadoArchivo.valido = false;
+      estadoArchivo.validando = true;
+      estadoArchivo.error = '';
       if (dropzone) dropzone.classList.add('has-file');
       if (dzTitle) dzTitle.textContent = file.name;
-      if (dzSub) dzSub.textContent = formatBytes(file.size) + ' · Listo para subir';
+      if (dzSub) dzSub.textContent = formatBytes(file.size) + ' · Verificando contenido SQL...';
+      if (btnSubmitSubir) btnSubmitSubir.disabled = true;
+
+      var esParcial = file.size > MAX_CLIENT_READ_BYTES;
+      var blob = esParcial ? file.slice(0, MAX_CLIENT_READ_BYTES) : file;
+      var reader = new FileReader();
+
+      reader.onload = function () {
+        if (mySeq !== estadoArchivo.seq) return;
+        var texto = typeof reader.result === 'string' ? reader.result : '';
+        var errSql = validarContenidoSqlTexto(texto, esParcial);
+        if (errSql) {
+          invalidarArchivoSubida(errSql);
+          if (onDone) onDone(false);
+          return;
+        }
+        estadoArchivo.valido = true;
+        estadoArchivo.validando = false;
+        estadoArchivo.error = '';
+        if (dropzone) dropzone.classList.add('has-file');
+        if (dzTitle) dzTitle.textContent = file.name;
+        if (dzSub) dzSub.textContent = formatBytes(file.size) + ' · Listo para subir';
+        if (btnSubmitSubir) btnSubmitSubir.disabled = false;
+        if (onDone) onDone(true);
+      };
+
+      reader.onerror = function () {
+        if (mySeq !== estadoArchivo.seq) return;
+        invalidarArchivoSubida('No se pudo leer el archivo seleccionado.');
+        if (onDone) onDone(false);
+      };
+
+      reader.readAsText(blob, 'UTF-8');
       return true;
     }
 
@@ -348,13 +634,16 @@
       dropzone.addEventListener('drop', function (e) {
         var files = e.dataTransfer && e.dataTransfer.files;
         if (files && files.length && fileInput) {
-          if (actualizarVistaArchivo(files[0])) {
-            try {
-              var dtFiles = new DataTransfer();
-              dtFiles.items.add(files[0]);
-              fileInput.files = dtFiles.files;
-            } catch (err) {}
-          }
+          var dropped = files[0];
+          actualizarVistaArchivo(dropped, function (ok) {
+            if (ok) {
+              try {
+                var dtFiles = new DataTransfer();
+                dtFiles.items.add(dropped);
+                fileInput.files = dtFiles.files;
+              } catch (err) {}
+            }
+          });
         }
       });
     }
@@ -372,9 +661,19 @@
       formSubir.dataset.bound = '1';
       formSubir.addEventListener('submit', function (e) {
         var f = fileInput && fileInput.files && fileInput.files[0];
-        if (!f || !actualizarVistaArchivo(f)) {
+        if (!f) {
           e.preventDefault();
-          if (!f) mostrarErrorSubida('Selecciona un archivo .sql antes de subir.');
+          mostrarErrorSubida('Selecciona un archivo .sql antes de subir.');
+          return;
+        }
+        if (estadoArchivo.validando) {
+          e.preventDefault();
+          mostrarErrorSubida('Espera un momento mientras se valida el archivo .sql...');
+          return;
+        }
+        if (!estadoArchivo.valido) {
+          e.preventDefault();
+          mostrarErrorSubida(estadoArchivo.error || 'El archivo .sql seleccionado no es válido.');
           return;
         }
         var btn = byId('btnSubmitSubir');
