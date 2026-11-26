@@ -26,7 +26,7 @@
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <div id="cys-dt-export-compra" class="d-flex align-items-center">
           <div class="dropdown d-inline-block">
-            <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
+            <button class="btn cat-btn-exportar dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" aria-label="Exportar">
               <i class="bi bi-box-arrow-up"></i> Exportar
             </button>
             <ul class="dropdown-menu dropdown-menu-end cat-dropdown-export shadow-sm">
@@ -38,6 +38,11 @@
               <li>
                 <button class="dropdown-item d-flex align-items-center" type="button" data-cys-export="pdf">
                   <i class="bi bi-file-earmark-pdf"></i> PDF
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item d-flex align-items-center" type="button" data-cys-export="imprimir">
+                  <i class="bi bi-printer"></i> Imprimir
                 </button>
               </li>
             </ul>
@@ -471,5 +476,5 @@
 {% block extra_js %}
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.js' %}"></script>
-<script src="{% static 'js/proveedores/detalle_compra.js' %}?v=20261125g"></script>
+<script src="{% static 'js/proveedores/detalle_compra.js' %}?v=20261126f"></script>
 {% endblock %}
