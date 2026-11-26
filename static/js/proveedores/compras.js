@@ -1,29 +1,37 @@
 // ════════════════════════════════════════════════════════════════
 // COMPRAS: modal de nueva compra, modal de pago, búsqueda de proveedores,
-// exportación (Excel / PDF / Imprimir desde el servidor) y gráficos
+// menú de acciones de la tabla, exportación (Excel / PDF / Imprimir) y gráficos
 // ════════════════════════════════════════════════════════════════
 
 (function () {
 'use strict';
 
-// La página se carga por htmx (hx-boost): el DOMContentLoaded no se repite al navegar,
-// así que el HTML de compras llama a ComprasPage.init() cuando su contenido ya está en el DOM.
 const fmtCOP = (n) => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO');
 const byId = (id) => document.getElementById(id);
+const esc = (str) => String(str == null ? '' : str).replace(/[&<>"']/g, (m) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+}[m]));
 
 function init() {
   const raiz = byId('formNuevaCompra') || byId('chartComprasMes');
   if (!raiz) return;
-  // Evita inicializar dos veces el mismo DOM (DOMContentLoaded + htmx:afterSettle)
   if (raiz.dataset.cmpInit === 'true') return;
   raiz.dataset.cmpInit = 'true';
 
-  // Cada bloque va aislado: si uno falla, los demás (p. ej. Exportar) siguen funcionando
+  // Si venimos de una navegación htmx con un modal abierto, libera el scroll bloqueado
+  if (!document.querySelector('.modal.show')) {
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+
   const pasos = [
+    initGlobales,
     initNuevaCompra,
     initModalPago,
     initBusquedaProveedores,
     initAccesibilidad,
+    initAccionesTabla,
     initTabla,
     initExportar,
     initializeCharts
@@ -49,17 +57,35 @@ function init() {
     }
   }
 
-  document.querySelectorAll('.form-confirm-action').forEach(form => {
+  document.querySelectorAll('.form-confirm-action').forEach((form) => {
     if (!form.dataset.confirmBound) {
       form.dataset.confirmBound = 'true';
-      form.addEventListener('submit', function(e) {
+      form.addEventListener('submit', function (e) {
         const msg = form.dataset.confirm || '¿Estás seguro de realizar esta acción?';
-        if (!window.confirm(msg)) {
-          e.preventDefault();
-        }
+        if (!window.confirm(msg)) e.preventDefault();
       });
     }
   });
+}
+
+// Listeners de document/window: se registran UNA sola vez aunque htmx recargue el script
+function initGlobales() {
+  if (window.__cmpGlobales) return;
+  window.__cmpGlobales = true;
+
+  document.addEventListener('click', (e) => {
+    // Cerrar lista de sugerencias de producto al hacer clic fuera
+    const wrap = byId('cmpProductoWrapper');
+    const sug = byId('cmpSugerenciasList');
+    if (wrap && sug && !wrap.contains(e.target)) sug.classList.add('d-none');
+
+    // Cerrar menús de acciones (⋯) al hacer clic fuera o en una opción
+    const t = e.target;
+    if (t && t.closest && (t.closest('.dd-item') || !t.closest('.dd-wrap'))) cerrarMenusAcciones();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarMenusAcciones(); });
+  window.addEventListener('resize', cerrarMenusAcciones);
+  document.addEventListener('scroll', cerrarMenusAcciones, true);
 }
 
 function leerDatos() {
@@ -80,7 +106,66 @@ function leerDatos() {
   }
 }
 
-// ── Aviso flotante (toast) para las descargas ──────────────────
+// ── Menú de acciones (⋯) de cada fila ──────────────────────────
+// Se posiciona con "fixed" para que no lo recorte el scroll de la tabla.
+function cerrarMenusAcciones() {
+  document.querySelectorAll('.dd-menu').forEach((m) => {
+    if (m.dataset.abierto === 'true') {
+      m.dataset.abierto = '';
+      m.style.cssText = '';
+      m.classList.remove('show', 'open', 'is-open');
+      if (m.parentElement) m.parentElement.classList.remove('show', 'open', 'is-open');
+    }
+  });
+  document.querySelectorAll('.dd-btn[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+}
+
+function abrirMenuAcciones(btn) {
+  const wrap = btn.closest('.dd-wrap');
+  const menu = wrap && wrap.querySelector('.dd-menu');
+  if (!menu) return;
+  const yaAbierto = menu.dataset.abierto === 'true';
+  cerrarMenusAcciones();
+  if (yaAbierto) return;
+
+  menu.dataset.abierto = 'true';
+  menu.classList.add('show', 'open', 'is-open');
+  wrap.classList.add('show', 'open', 'is-open');
+  btn.setAttribute('aria-expanded', 'true');
+  menu.style.cssText = [
+    'position:fixed', 'display:block', 'opacity:1', 'visibility:visible',
+    'transform:none', 'pointer-events:auto', 'z-index:2100', 'margin:0',
+    'right:auto', 'bottom:auto', 'top:0', 'left:0'
+  ].join(';');
+
+  const r = btn.getBoundingClientRect();
+  const mw = menu.offsetWidth;
+  const mh = menu.offsetHeight;
+  let left = r.right - mw;
+  let top = r.bottom + 4;
+  if (left < 8) left = 8;
+  if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+  if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+function initAccionesTabla() {
+  const cont = byId('collapseHistorial');
+  if (!cont || cont.dataset.ddBound) return;
+  cont.dataset.ddBound = 'true';
+  // Fase de captura + stopPropagation: este es el único manejador de los ⋯
+  // (evita que otro script lo abra y lo cierre en el mismo clic).
+  cont.addEventListener('click', (e) => {
+    const btn = e.target.closest('.dd-btn');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    abrirMenuAcciones(btn);
+  }, true);
+}
+
+// ── Aviso flotante (toast) ─────────────────────────────────────
 let toastTimer = null;
 function mostrarToast(texto, tipo) {
   let t = byId('cmp-toast-descarga');
@@ -90,7 +175,7 @@ function mostrarToast(texto, tipo) {
     t.setAttribute('role', 'status');
     t.setAttribute('aria-live', 'polite');
     t.style.cssText = [
-      'position:fixed', 'top:16px', 'right:16px', 'z-index:2000',
+      'position:fixed', 'top:16px', 'right:16px', 'z-index:3000',
       'min-width:260px', 'max-width:380px', 'padding:12px 16px',
       'border-radius:12px', 'color:#fff', 'font-size:14px', 'font-weight:600',
       'box-shadow:0 8px 24px rgba(0,0,0,.45)', 'display:flex', 'gap:10px',
@@ -108,15 +193,12 @@ function mostrarToast(texto, tipo) {
   t.querySelector('span').textContent = texto;
   requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
   clearTimeout(toastTimer);
-  if (k !== 'info') {
-    toastTimer = setTimeout(() => {
-      t.style.opacity = '0';
-      t.style.transform = 'translateY(-8px)';
-    }, 4000);
-  }
+  toastTimer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(-8px)';
+  }, k === 'info' ? 8000 : 4500);
 }
 
-// Saca el nombre del archivo del header Content-Disposition
 function nombreDesdeHeader(resp, respaldo) {
   const cd = resp.headers.get('Content-Disposition') || '';
   let m = cd.match(/filename\*=UTF-8''([^;]+)/i);
@@ -126,13 +208,91 @@ function nombreDesdeHeader(resp, respaldo) {
   return respaldo;
 }
 
-// Descarga real: el navegador la registra en su panel "Descargas"
+function guardarBlob(blob, nombre) {
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = nombre;
+  a.setAttribute('hx-boost', 'false');
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+}
+
+const selloFecha = () => new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+
+// ── Exportación local (respaldo si el servidor no responde un archivo) ──
+function datosTabla() {
+  const tabla = byId('tablaHistorialCompras');
+  if (!tabla) return null;
+  let nodos;
+  if (window.jQuery && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable(tabla)) {
+    nodos = jQuery(tabla).DataTable().rows({ search: 'applied', order: 'applied' }).nodes().toArray();
+  } else {
+    nodos = tabla.tBodies[0] ? Array.from(tabla.tBodies[0].rows) : [];
+  }
+  const txt = (tr, i) => (tr.cells[i] ? tr.cells[i].textContent.replace(/\s+/g, ' ').trim() : '');
+  const filas = nodos.map((tr, i) => [i + 1, txt(tr, 1), txt(tr, 2), txt(tr, 3), txt(tr, 4), txt(tr, 5), txt(tr, 6), txt(tr, 7)]);
+  const subtotalEl = byId('subtotal-formatted');
+  return {
+    cabecera: ['#', 'Producto', 'Cant.', 'Precio', 'Total', 'Pago', 'Estado', 'Fecha'],
+    filas,
+    subtotal: subtotalEl ? subtotalEl.textContent.trim() : ''
+  };
+}
+
+function nombreProveedor() {
+  const el = document.querySelector('.proveedor-nombre');
+  return el ? el.textContent.trim() : 'Proveedor';
+}
+
+function htmlTabla(d, conEstilos) {
+  const estilos = conEstilos
+    ? '<style>body{font-family:Arial,sans-serif;padding:16px}h2{margin:0 0 4px}p{margin:0 0 12px;color:#555;font-size:12px}' +
+      'table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #999;padding:5px 7px;text-align:left}' +
+      'th{background:#eee}tfoot td{font-weight:bold}</style>'
+    : '';
+  let h = '<table><thead><tr>' + d.cabecera.map((c) => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>';
+  d.filas.forEach((f) => { h += '<tr>' + f.map((c) => '<td>' + esc(c) + '</td>').join('') + '</tr>'; });
+  h += '</tbody><tfoot><tr><td colspan="4">Subtotal</td><td colspan="4">' + esc(d.subtotal) + '</td></tr></tfoot></table>';
+  return estilos + h;
+}
+
+function exportarExcelLocal() {
+  const d = datosTabla();
+  if (!d || !d.filas.length) { mostrarToast('No hay compras para exportar.', 'error'); return false; }
+  const html = '<html><head><meta charset="utf-8"></head><body><h3>Compras - ' + esc(nombreProveedor()) + '</h3>' +
+    htmlTabla(d, false) + '</body></html>';
+  const blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  guardarBlob(blob, 'compras_' + selloFecha() + '.xls');
+  return true;
+}
+
+function imprimirLocal() {
+  const d = datosTabla();
+  if (!d || !d.filas.length) { mostrarToast('No hay compras para imprimir.', 'error'); return false; }
+  const html = '<!doctype html><html><head><meta charset="utf-8"><title>Compras</title></head><body>' +
+    '<h2>Compras - ' + esc(nombreProveedor()) + '</h2><p>Generado: ' + esc(new Date().toLocaleString('es-CO')) + '</p>' +
+    htmlTabla(d, true) + '</body></html>';
+  const f = document.createElement('iframe');
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  document.body.appendChild(f);
+  const doc = f.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  setTimeout(() => {
+    try { f.contentWindow.focus(); f.contentWindow.print(); }
+    catch (err) { mostrarToast('No se pudo abrir la impresión.', 'error'); }
+    setTimeout(() => f.remove(), 60000);
+  }, 300);
+  return true;
+}
+
+// Intenta que el servidor genere el archivo; si falla, lo genera desde la tabla
 async function descargarArchivo(url, tipo, btn) {
   const ext = tipo === 'excel' ? 'xlsx' : 'pdf';
-  const etiqueta = tipo === 'excel' ? 'Excel' : 'PDF';
-  const sello = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
-  const respaldo = 'compras_' + sello + '.' + ext;
-
+  const respaldo = 'compras_' + selloFecha() + '.' + ext;
   if (btn) btn.disabled = true;
 
   try {
@@ -141,37 +301,25 @@ async function descargarArchivo(url, tipo, btn) {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
     if (!resp.ok) throw new Error('El servidor respondió ' + resp.status);
-
     const ct = (resp.headers.get('Content-Type') || '').toLowerCase();
-    if (ct.includes('text/html')) {
-      throw new Error('El servidor no devolvió un archivo. Revisa que views.py atienda ?export=' + tipo);
-    }
+    if (ct.includes('text/html')) throw new Error('El servidor no devolvió un archivo');
 
     const nombre = nombreDesdeHeader(resp, respaldo);
     const blob = await resp.blob();
-    const blobUrl = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = nombre;
-    a.setAttribute('hx-boost', 'false');
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+    guardarBlob(blob, nombre);
   } catch (err) {
-    console.error('[Compras] Error al exportar:', err);
-    mostrarToast('No se pudo exportar ' + etiqueta + '. ' + (err.message || ''), 'error');
+    console.warn('[Compras] Exportación del servidor falló, usando respaldo local:', err);
+    if (tipo === 'excel') {
+      if (exportarExcelLocal()) mostrarToast('Excel generado desde la tabla (formato .xls).', 'ok');
+    } else {
+      if (imprimirLocal()) mostrarToast('En la ventana de impresión elige "Guardar como PDF".', 'info');
+    }
   } finally {
     if (btn) btn.disabled = false;
   }
 }
 
 // ── Exportar: Excel / PDF / Imprimir ───────────────────────────
-// Llama a la misma URL de la página con ?export=excel|pdf|imprimir.
-// views.py aplica el mismo filtro (proveedor, q, estado, pago, desde, hasta)
-// que usa el listado, así que lo exportado coincide con lo que ves.
 function initExportar() {
   const contenedor = byId('cys-export-compras');
   if (!contenedor) return;
@@ -184,28 +332,20 @@ function initExportar() {
       e.preventDefault();
       const tipo = btn.dataset.export;
 
-      // Parte de los parámetros actuales (proveedor, filtros...)
+      if (tipo === 'imprimir') {
+        imprimirLocal();
+        return;
+      }
+
       const params = new URLSearchParams(window.location.search);
       params.delete('modal');
       params.delete('page');
-
-      // Si el proveedor no está en la URL, toma el del selector del modal
       if (!params.get('proveedor')) {
         const sel = byId('proveedorSeleccionado');
         if (sel && sel.value) params.set('proveedor', sel.value);
       }
-
       params.set('export', tipo);
-      const url = window.location.pathname + '?' + params.toString();
-
-      if (tipo === 'imprimir') {
-        const w = window.open(url, '_blank');
-        if (!w) {
-          mostrarToast('El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes.', 'error');
-        }
-      } else {
-        descargarArchivo(url, tipo, btn);
-      }
+      descargarArchivo(window.location.pathname + '?' + params.toString(), tipo, btn);
     });
   });
 }
@@ -239,9 +379,6 @@ function initTabla() {
       bottomEnd: 'paging'
     }
   });
-  // (Antes aquí se llamaba a cysCrearDropdownExportar(dt, ...) con "dt" sin definir:
-  //  eso lanzaba un error y dejaba sin funcionar los botones de Exportar.
-  //  El menú Exportar ya está en el HTML y lo maneja initExportar.)
 }
 
 // ── Modal "Nueva compra" ───────────────────────────────────────
@@ -253,6 +390,9 @@ function initNuevaCompra() {
   const precio = byId('formCompraPrecio');
   const pago = byId('formCompraPago');
   if (!hiddenProducto || !cantidad || !precio) return;
+
+  // Permite abonos con decimales sin que el navegador bloquee el envío
+  if (pago) pago.step = 'any';
 
   const btnTotal = byId('btnPagarTotalNueva');
   const btnCredito = byId('btnCreditoNueva');
@@ -270,13 +410,6 @@ function initNuevaCompra() {
   const normalizar = (str) =>
     (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
-  function escapeHtml(str) {
-    return (str || '').replace(/[&<>"']/g, (m) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[m]));
-  }
-
-  // Cargar catálogo de productos en memoria para búsquedas instantáneas
   const productosData = sourceSelect
     ? Array.from(sourceSelect.options)
         .filter((opt) => opt.value)
@@ -291,33 +424,41 @@ function initNuevaCompra() {
     : [];
 
   const totalProds = productosData.length;
+  const valorInicialProducto = hiddenProducto.value;
 
-  // Modalidad de pago: 'credito' ($0) | 'total' (100% total automático) | 'manual'
+  // Modalidad de pago: 'credito' ($0) | 'total' (100%) | 'manual' | 'invalido'
   let modoPago = 'credito';
 
   const total = () => (parseInt(cantidad.value, 10) || 0) * (parseFloat(precio.value) || 0);
 
+  function inferirModo() {
+    const t = total();
+    const val = parseFloat(pago && pago.value) || 0;
+    if (val > t) modoPago = 'invalido';
+    else if (t > 0 && Math.abs(val - t) < 0.01) modoPago = 'total';
+    else if (val === 0) modoPago = 'credito';
+    else modoPago = 'manual';
+  }
+
   function actualizarBotonesModoPago() {
     const t = total();
     const val = parseFloat(pago && pago.value) || 0;
+    if (!btnTotal || !btnCredito) return;
 
-    if (btnTotal && btnCredito) {
-      if (t > 0 && val > t) {
-        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
-        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
-        return;
-      }
-
-      if (modoPago === 'total' || (t > 0 && Math.abs(val - t) < 0.01)) {
-        btnTotal.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-total';
-        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
-      } else if (modoPago === 'credito' || val === 0) {
-        btnCredito.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-credito';
-        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
-      } else {
-        btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
-        btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
-      }
+    if (t > 0 && val > t) {
+      btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+      btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+      return;
+    }
+    if (modoPago === 'total' || (t > 0 && Math.abs(val - t) < 0.01)) {
+      btnTotal.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-total';
+      btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
+    } else if (modoPago === 'credito' || val === 0) {
+      btnCredito.className = 'btn btn-sm py-1 px-3 fw-bold btn-modo-pago is-active-credito';
+      btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+    } else {
+      btnTotal.className = 'btn btn-sm btn-outline-info py-1 px-3 fw-bold btn-modo-pago';
+      btnCredito.className = 'btn btn-sm btn-outline-secondary py-1 px-3 fw-bold btn-modo-pago';
     }
   }
 
@@ -330,9 +471,7 @@ function initNuevaCompra() {
     if (txt) txt.textContent = `${cant} und. × ${fmtCOP(p)}`;
     if (disp) disp.textContent = fmtCOP(t);
 
-    if (pago) {
-      pago.max = t > 0 ? t : 0;
-    }
+    if (pago) pago.max = t > 0 ? t : 0;
 
     if (modoPago === 'total') {
       if (pago) pago.value = t > 0 ? (Number.isInteger(t) ? t : t.toFixed(2)) : 0;
@@ -356,30 +495,24 @@ function initNuevaCompra() {
       fb.innerHTML = '<span class="text-muted"><i class="bi bi-info-circle me-1"></i>Ingresa producto, cantidad y precio.</span>';
       return;
     }
-
     if (val < 0) {
       if (pago) pago.classList.add('is-invalid');
       fb.innerHTML = '<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Monto inválido</span> El abono no puede ser negativo.';
       return;
     }
-
     if (val > t) {
       if (pago) pago.classList.add('is-invalid');
-      const exceso = val - t;
-      fb.innerHTML = `<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el total</span> El abono de <strong>${fmtCOP(val)}</strong> supera el total de la compra (<strong>${fmtCOP(t)}</strong>). Exceso: <strong class="text-danger">${fmtCOP(exceso)}</strong>`;
+      fb.innerHTML = `<span class="badge bg-danger me-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supera el total</span> El abono de <strong>${fmtCOP(val)}</strong> supera el total de la compra (<strong>${fmtCOP(t)}</strong>). Exceso: <strong class="text-danger">${fmtCOP(val - t)}</strong>`;
       return;
     }
-
     if (Math.abs(val - t) < 0.01) {
       fb.innerHTML = '<span class="badge bg-success me-1"><i class="bi bi-check-circle-fill me-1"></i>Pagada completa</span> Saldo restante: <strong class="text-success">$0</strong>';
       return;
     }
-
     if (val === 0) {
       fb.innerHTML = `<span class="badge bg-secondary me-1"><i class="bi bi-hourglass-split me-1"></i>A crédito</span> Falta por pagar: <strong class="text-warning">${fmtCOP(t)}</strong>`;
       return;
     }
-
     fb.innerHTML = `<span class="badge bg-warning text-dark me-1"><i class="bi bi-dash-circle me-1"></i>Pago parcial</span> Falta por pagar: <strong class="text-danger">${fmtCOP(t - val)}</strong>`;
   }
 
@@ -398,43 +531,18 @@ function initNuevaCompra() {
     actualizarBotonesModoPago();
   }
 
-  if (btnTotal) {
-    btnTotal.addEventListener('click', (e) => {
-      e.preventDefault();
-      aplicarModoTotal();
-    });
-  }
-
-  if (btnCredito) {
-    btnCredito.addEventListener('click', (e) => {
-      e.preventDefault();
-      aplicarModoCredito();
-    });
-  }
+  if (btnTotal) btnTotal.addEventListener('click', (e) => { e.preventDefault(); aplicarModoTotal(); });
+  if (btnCredito) btnCredito.addEventListener('click', (e) => { e.preventDefault(); aplicarModoCredito(); });
 
   [cantidad, precio].forEach((el) => el.addEventListener('input', recalcular));
 
   if (pago) {
     pago.addEventListener('focus', () => {
-      if (pago.value === '0' || pago.value === '0.00' || parseFloat(pago.value) === 0) {
-        pago.select();
-      }
+      if (pago.value === '0' || pago.value === '0.00' || parseFloat(pago.value) === 0) pago.select();
     });
 
     pago.addEventListener('input', () => {
-      const val = parseFloat(pago.value) || 0;
-      const t = total();
-
-      if (val > t) {
-        modoPago = 'invalido';
-      } else if (t > 0 && Math.abs(val - t) < 0.01) {
-        modoPago = 'total';
-      } else if (val === 0) {
-        modoPago = 'credito';
-      } else {
-        modoPago = 'manual';
-      }
-
+      inferirModo();
       recalcularSaldo();
       actualizarBotonesModoPago();
     });
@@ -445,53 +553,46 @@ function initNuevaCompra() {
         modoPago = 'credito';
       } else {
         const num = parseFloat(pago.value);
-        if (!isNaN(num)) {
-          pago.value = Number.isInteger(num) ? num : num.toFixed(2);
-        }
+        if (!isNaN(num)) pago.value = Number.isInteger(num) ? num : num.toFixed(2);
       }
       recalcularSaldo();
       actualizarBotonesModoPago();
     });
   }
 
-  // ── Selección y Limpieza de Producto ──
-  function seleccionarProducto(id) {
+  // ── Selección y limpieza de producto ──
+  // conservar = true: no pisa el precio ni el lote (se usa al reabrir el modal con errores)
+  function seleccionarProducto(id, conservar) {
     const p = productosData.find((item) => item.id === String(id));
     if (!p) return;
 
     hiddenProducto.value = p.id;
     if (searchWrap) searchWrap.classList.remove('has-error');
 
-    // Actualizar tarjeta visual de producto seleccionado
     if (selectedNombre) selectedNombre.textContent = p.nombre;
-    if (selectedCat) selectedCat.innerHTML = `<i class="bi bi-tag me-1 text-info"></i>${escapeHtml(p.categoria)}`;
+    if (selectedCat) selectedCat.innerHTML = `<i class="bi bi-tag me-1 text-info"></i>${esc(p.categoria)}`;
     if (selectedStock) {
       selectedStock.textContent = `Stock actual: ${p.stock} und.`;
       selectedStock.className = p.stock > 0 ? 'text-success fw-semibold' : 'text-warning';
     }
     if (selectedCard) selectedCard.classList.remove('d-none');
 
-    // Sincronizar input de búsqueda con el producto seleccionado
     if (searchInput) searchInput.value = p.nombre;
     if (btnLimpiar) btnLimpiar.classList.remove('d-none');
 
-    // Pre-cargar precio sugerido
-    if (p.precio > 0) {
-      precio.value = Math.round(p.precio);
-    }
+    if (!conservar && p.precio > 0) precio.value = Math.round(p.precio);
 
-    // Filtrar lotes asociados a este producto
     if (lote) {
+      const loteActual = lote.value;
       Array.from(lote.options).forEach((o, i) => {
         if (i === 0) return;
         const visible = !o.dataset.producto || o.dataset.producto === p.id;
         o.hidden = !visible;
         o.disabled = !visible;
       });
-      lote.value = '';
+      lote.value = conservar ? loteActual : '';
     }
 
-    // Cerrar menú flotante
     if (sugList) {
       sugList.innerHTML = '';
       sugList.classList.add('d-none');
@@ -523,7 +624,7 @@ function initNuevaCompra() {
     recalcular();
   }
 
-  // ── Renderizado del Menú de Sugerencias ──
+  // ── Menú de sugerencias ──
   function renderizarSugerencias(q) {
     if (!sugList) return;
     const query = normalizar(q);
@@ -558,7 +659,7 @@ function initNuevaCompra() {
       sugList.innerHTML = `
         <div class="p-4 text-center text-muted">
           <i class="bi bi-search fs-3 d-block mb-2 text-warning opacity-75"></i>
-          <div>No se encontraron productos para "<strong>${escapeHtml(q)}</strong>"</div>
+          <div>No se encontraron productos para "<strong>${esc(q)}</strong>"</div>
           <small class="text-white-50">Intenta buscar por otra palabra o marca.</small>
         </div>
       `;
@@ -579,11 +680,11 @@ function initNuevaCompra() {
       html += `
         <button type="button"
                 class="cmp-dropdown-item ${esSeleccionado ? 'active' : ''}"
-                data-val="${p.id}"
+                data-val="${esc(p.id)}"
                 tabindex="0">
           <div class="text-truncate pe-2">
-            <div class="fw-bold text-white text-truncate">${escapeHtml(p.nombre)}</div>
-            <small class="text-muted"><i class="bi bi-tag me-1 text-info"></i>${escapeHtml(p.categoria)}</small>
+            <div class="fw-bold text-white text-truncate">${esc(p.nombre)}</div>
+            <small class="text-muted"><i class="bi bi-tag me-1 text-info"></i>${esc(p.categoria)}</small>
           </div>
           <div class="text-end text-nowrap ms-2">
             ${stockBadge}
@@ -605,11 +706,9 @@ function initNuevaCompra() {
     sugList.classList.remove('d-none');
   }
 
-  // Eventos del buscador
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       if (searchWrap) searchWrap.classList.remove('has-error');
-      // Si el usuario edita el texto y ya no coincide con el producto seleccionado, deseleccionar
       if (hiddenProducto.value) {
         const prodActual = productosData.find((p) => p.id === hiddenProducto.value);
         if (prodActual && normalizar(searchInput.value) !== normalizar(prodActual.nombre)) {
@@ -630,9 +729,7 @@ function initNuevaCompra() {
       } else if (e.key === 'Enter') {
         e.preventDefault();
         const primero = sugList ? sugList.querySelector('.cmp-dropdown-item') : null;
-        if (primero) {
-          seleccionarProducto(primero.dataset.val);
-        }
+        if (primero) seleccionarProducto(primero.dataset.val);
       }
     });
 
@@ -646,9 +743,7 @@ function initNuevaCompra() {
   if (sugList) {
     sugList.addEventListener('click', (e) => {
       const btn = e.target.closest('.cmp-dropdown-item');
-      if (btn && btn.dataset.val) {
-        seleccionarProducto(btn.dataset.val);
-      }
+      if (btn && btn.dataset.val) seleccionarProducto(btn.dataset.val);
     });
 
     sugList.addEventListener('keydown', (e) => {
@@ -660,16 +755,11 @@ function initNuevaCompra() {
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         const prev = actual.previousElementSibling;
-        if (prev && prev.classList.contains('cmp-dropdown-item')) {
-          prev.focus();
-        } else if (searchInput) {
-          searchInput.focus();
-        }
+        if (prev && prev.classList.contains('cmp-dropdown-item')) prev.focus();
+        else if (searchInput) searchInput.focus();
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        if (actual && actual.dataset.val) {
-          seleccionarProducto(actual.dataset.val);
-        }
+        if (actual && actual.dataset.val) seleccionarProducto(actual.dataset.val);
       } else if (e.key === 'Escape') {
         sugList.classList.add('d-none');
         if (searchInput) searchInput.focus();
@@ -677,31 +767,20 @@ function initNuevaCompra() {
     });
   }
 
-  if (btnLimpiar) {
-    btnLimpiar.addEventListener('click', (e) => {
-      e.preventDefault();
-      limpiarSeleccion(true);
-    });
-  }
-
-  if (btnCambiar) {
-    btnCambiar.addEventListener('click', (e) => {
-      e.preventDefault();
-      limpiarSeleccion(true);
-    });
-  }
-
-  // Cerrar lista flotante al hacer clic fuera
-  document.addEventListener('click', (e) => {
-    const wrap = byId('cmpProductoWrapper');
-    if (wrap && !wrap.contains(e.target)) {
-      if (sugList) sugList.classList.add('d-none');
-    }
-  });
+  if (btnLimpiar) btnLimpiar.addEventListener('click', (e) => { e.preventDefault(); limpiarSeleccion(true); });
+  if (btnCambiar) btnCambiar.addEventListener('click', (e) => { e.preventDefault(); limpiarSeleccion(true); });
 
   const modal = byId('modalNuevaCompra');
   if (modal) {
     modal.addEventListener('show.bs.modal', () => {
+      // Si el modal se abre solo por errores del servidor, conserva lo que el usuario escribió
+      if (modal.dataset.autoOpen === 'true' && !modal.dataset.restaurado) {
+        modal.dataset.restaurado = 'true';
+        if (valorInicialProducto) seleccionarProducto(valorInicialProducto, true);
+        inferirModo();
+        recalcular();
+        return;
+      }
       modoPago = 'credito';
       if (pago) pago.value = 0;
       limpiarSeleccion(false);
@@ -709,7 +788,7 @@ function initNuevaCompra() {
     });
     modal.addEventListener('shown.bs.modal', () => {
       recalcular();
-      if (searchInput) searchInput.focus();
+      if (searchInput && !hiddenProducto.value) searchInput.focus();
     });
   }
 
@@ -746,7 +825,7 @@ function initNuevaCompra() {
     });
 
     form.addEventListener('submit', (e) => {
-      // 1. Validar selección de producto antes de enviar
+      // 1. Producto seleccionado
       if (!hiddenProducto.value) {
         e.preventDefault();
         if (searchWrap) {
@@ -760,27 +839,18 @@ function initNuevaCompra() {
         return;
       }
 
-      // 2. Validar cantidad y precio
+      // 2. Cantidad y precio
       const cant = parseInt(cantidad.value, 10) || 0;
       const p = parseFloat(precio.value) || 0;
       const t = total();
 
-      if (cant <= 0) {
-        e.preventDefault();
-        cantidad.focus();
-        return;
-      }
-      if (p <= 0 || t <= 0) {
-        e.preventDefault();
-        precio.focus();
-        return;
-      }
+      if (cant <= 0) { e.preventDefault(); cantidad.focus(); return; }
+      if (p <= 0 || t <= 0) { e.preventDefault(); precio.focus(); return; }
 
-      // 3. Validar abono inicial
-      const rawAbono = pago ? pago.value.trim() : '0';
-      const abono = parseFloat(rawAbono) || 0;
+      // 3. Abono
+      const abono = parseFloat(pago ? pago.value.trim() : '0') || 0;
 
-      if (abono < 0) {
+      if (abono < 0 || abono > t) {
         e.preventDefault();
         pago.classList.add('is-invalid');
         pago.focus();
@@ -788,21 +858,10 @@ function initNuevaCompra() {
         return;
       }
 
-      // Validación estricta: el abono no puede superar el total
-      if (abono > t) {
-        e.preventDefault();
-        pago.classList.add('is-invalid');
-        pago.focus();
-        recalcularSaldo();
-        return;
-      }
+      // 4. Crédito, pago total o ya confirmado: enviar
+      if (confirmado || abono <= 0 || modoPago === 'total' || Math.abs(abono - t) < 0.01) return;
 
-      // 4. Si el abono es 0 (crédito) o cubre el total (100% Total), o ya confirmó: enviar directamente
-      if (confirmado || abono <= 0 || modoPago === 'total' || Math.abs(abono - t) < 0.01) {
-        return;
-      }
-
-      // 5. Abono parcial: solicitar confirmación amigable
+      // 5. Abono parcial: pedir confirmación
       e.preventDefault();
       mostrarConfirmacion(abono, t);
     });
@@ -816,7 +875,16 @@ function initModalPago() {
   const monto = byId('montoPagado');
   if (!form || !monto) return;
 
+  monto.step = 'any'; // el botón "Pagar todo" puede poner decimales
+
   const saldoActual = () => parseFloat(byId('saldoActual').value) || 0;
+
+  function mostrarError(texto) {
+    const box = byId('montoPagadoError');
+    if (!box) return;
+    box.querySelector('span').textContent = texto;
+    box.classList.toggle('d-none', !texto);
+  }
 
   function actualizar() {
     const saldo = saldoActual();
@@ -846,42 +914,39 @@ function initModalPago() {
     }
   }
 
-  document.querySelectorAll('.btn-abrir-pago').forEach((btn) => {
-    btn.addEventListener('click', function () {
-      const total = parseFloat(this.dataset.compraTotal) || 0;
-      const pagado = parseFloat(this.dataset.compraPagado) || 0;
-      const saldo = parseFloat(this.dataset.compraSaldo);
-      const saldoFinal = isNaN(saldo) ? Math.max(0, total - pagado) : saldo;
+  // Delegado: funciona aunque DataTables cambie de página o redibuje las filas
+  const cont = byId('collapseHistorial') || document;
+  cont.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.btn-abrir-pago');
+    if (!btn) return;
+    const total = parseFloat(btn.dataset.compraTotal) || 0;
+    const pagado = parseFloat(btn.dataset.compraPagado) || 0;
+    const saldo = parseFloat(btn.dataset.compraSaldo);
+    const saldoFinal = isNaN(saldo) ? Math.max(0, total - pagado) : saldo;
 
-      byId('compraId').value = this.dataset.compraId;
-      byId('saldoActual').value = saldoFinal;
-      byId('resumenMontoTotal').textContent = fmtCOP(total);
-      byId('resumenMontoPagado').textContent = fmtCOP(pagado);
-      byId('resumenSaldoPendiente').textContent = fmtCOP(saldoFinal);
+    byId('compraId').value = btn.dataset.compraId;
+    byId('saldoActual').value = saldoFinal;
+    byId('resumenMontoTotal').textContent = fmtCOP(total);
+    byId('resumenMontoPagado').textContent = fmtCOP(pagado);
+    byId('resumenSaldoPendiente').textContent = fmtCOP(saldoFinal);
 
-      monto.value = '';
-      monto.max = saldoFinal;
-      byId('btnPagarTodoSaldo').innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar todo (${fmtCOP(saldoFinal)})`;
+    monto.value = '';
+    monto.max = saldoFinal;
+    mostrarError('');
+    byId('btnPagarTodoSaldo').innerHTML = `<i class="bi bi-check2-all me-1"></i>Pagar todo (${fmtCOP(saldoFinal)})`;
 
-      const pagada = saldoFinal <= 0;
-      byId('alertaPagada').classList.toggle('d-none', !pagada);
-      form.querySelector('button[type="submit"]').disabled = pagada;
-      actualizar();
-    });
+    const pagada = saldoFinal <= 0;
+    byId('alertaPagada').classList.toggle('d-none', !pagada);
+    form.querySelector('button[type="submit"]').disabled = pagada;
+    actualizar();
   });
 
   byId('btnPagarTodoSaldo').addEventListener('click', () => {
-    monto.value = saldoActual().toFixed(2);
+    monto.value = Number.isInteger(saldoActual()) ? saldoActual() : saldoActual().toFixed(2);
+    mostrarError('');
     actualizar();
   });
   monto.addEventListener('input', () => { mostrarError(''); actualizar(); });
-
-  function mostrarError(texto) {
-    const box = byId('montoPagadoError');
-    if (!box) return;
-    box.querySelector('span').textContent = texto;
-    box.classList.toggle('d-none', !texto);
-  }
 
   form.addEventListener('submit', function (e) {
     const valor = parseFloat(monto.value);
@@ -889,7 +954,7 @@ function initModalPago() {
       e.preventDefault();
       mostrarError('Debes ingresar un monto válido.');
       monto.focus();
-    } else if (valor > saldoActual()) {
+    } else if (valor > saldoActual() + 0.01) {
       e.preventDefault();
       mostrarError(`El monto supera el saldo pendiente (${fmtCOP(saldoActual())}).`);
       monto.focus();
@@ -922,7 +987,6 @@ function initBusquedaProveedores() {
     },
     layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' }
   });
-  // El buscador existente del modal filtra la tabla (nombre, NIT, tipo, teléfono, correo)
   input.addEventListener('input', function () {
     dt.search(this.value.trim()).draw();
   });
@@ -955,30 +1019,26 @@ function initializeCharts() {
 
   if (!window.Chart) return;
   const datos = leerDatos();
-  const meseslabels = datos.meses_labels || [];
-  const mesesa = datos.meses_data || [];
+  const mesesLabels = datos.meses_labels || [];
+  const mesesData = datos.meses_data || [];
   const productosLabels = datos.productos_labels || [];
   const productosData = datos.productos_data || [];
 
-  const coloresGraficos = [
-    colores.principal,
-    colores.secundario,
-    colores.terciario,
-    colores.cuartario,
-    colores.quinto
-  ];
+  const coloresGraficos = [colores.principal, colores.secundario, colores.terciario, colores.cuartario, colores.quinto];
 
-  // Gráfico de línea: Compras por mes
-  const ctxComprasMes = document.getElementById('chartComprasMes');
-  if (ctxComprasMes && meseslabels.length > 0) {
+  const ejeTicks = (size) => ({ color: '#FFFFFF', font: { size, weight: 'bold' } });
+  const rejilla = { color: 'rgba(77, 168, 218, 0.1)', drawBorder: false };
+
+  const ctxComprasMes = byId('chartComprasMes');
+  if (ctxComprasMes && mesesLabels.length > 0) {
     Chart.getChart(ctxComprasMes)?.destroy();
     new Chart(ctxComprasMes, {
       type: 'line',
       data: {
-        labels: meseslabels,
+        labels: mesesLabels,
         datasets: [{
           label: 'Compras',
-          data: mesesa,
+          data: mesesData,
           borderColor: colores.principal,
           backgroundColor: 'rgba(77, 168, 218, 0.1)',
           borderWidth: 2,
@@ -994,46 +1054,16 @@ function initializeCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(77, 168, 218, 0.1)',
-              drawBorder: false
-            },
-            ticks: {
-              color: '#FFFFFF',
-              font: {
-                size: 12,
-                weight: 'bold'
-              }
-            }
-          },
-          x: {
-            grid: {
-              display: false,
-              drawBorder: false
-            },
-            ticks: {
-              color: '#FFFFFF',
-              font: {
-                size: 12,
-                weight: 'bold'
-              }
-            }
-          }
+          y: { beginAtZero: true, grid: rejilla, ticks: ejeTicks(12) },
+          x: { grid: { display: false, drawBorder: false }, ticks: ejeTicks(12) }
         }
       }
     });
   }
 
-  // Gráfico de barras: Productos más comprados
-  const ctxProductosTop = document.getElementById('chartProductosTop');
+  const ctxProductosTop = byId('chartProductosTop');
   if (ctxProductosTop && productosLabels.length > 0) {
     Chart.getChart(ctxProductosTop)?.destroy();
     new Chart(ctxProductosTop, {
@@ -1052,40 +1082,10 @@ function initializeCharts() {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          x: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(77, 168, 218, 0.1)',
-              drawBorder: false
-            },
-            ticks: {
-              color: '#FFFFFF',
-              font: {
-                size: 12,
-                weight: 'bold'
-              }
-            }
-          },
-          y: {
-            grid: {
-              display: false,
-              drawBorder: false
-            },
-            ticks: {
-              color: '#FFFFFF',
-              font: {
-                size: 13,
-                weight: 'bold'
-              },
-              padding: 10
-            }
-          }
+          x: { beginAtZero: true, grid: rejilla, ticks: ejeTicks(12) },
+          y: { grid: { display: false, drawBorder: false }, ticks: Object.assign(ejeTicks(13), { padding: 10 }) }
         }
       }
     });
