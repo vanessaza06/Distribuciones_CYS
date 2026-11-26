@@ -21,22 +21,24 @@
       <p class="small text-muted mb-0">Consolidado de transacciones, recaudos y flujo horario</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold cys-btn-secondary" title="Volver al POS">
+      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold" title="Volver al POS"
+         style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; padding:.45rem 1.15rem;">
         <i class="bi bi-arrow-left me-1"></i> Volver al POS
       </a>
-      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Control de Caja">
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold" title="Control de Caja"
+         style="background:#ecfdf5; border:1px solid #86efac; color:#15803d; border-radius:999px; padding:.45rem 1.15rem;">
         <i class="bi bi-cash-stack me-1"></i> Ir a Caja
       </a>
     </div>
   </div>
 
-  <!-- KPI Cards Grid Unificado con Altura Idéntica -->
+  <!-- KPI Cards Grid Unificado con Altura Idéntica (SOLO VERDE Y ROJO) -->
   <div class="row gx-3 gy-3 mb-4 align-items-stretch">
 
     <div class="col-12 col-md-4">
       <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon cys-kpi-icon--primary">
+          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-receipt"></i>
           </div>
           <div style="min-width:0; flex:1;">
@@ -51,18 +53,18 @@
     <div class="col-12 col-md-4">
       <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon cys-kpi-icon--success">
+          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-cash-stack"></i>
           </div>
           <div style="min-width:0; flex:1;">
             <span class="cys-kpi-label" style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; min-height:1.8em; display:flex; align-items:center;">Total Recaudado</span>
-            <span style="font-size:1.75rem; font-weight:800; color:var(--verde, #2ed573); line-height:1.1;">${{ total_cobrado_dia|floatformat:0|intcomma }}</span>
+            <span style="font-size:1.75rem; font-weight:800; color:#16a34a; line-height:1.1;">${{ total_cobrado_dia|floatformat:0|intcomma }}</span>
             {% if total_pendiente_dia > 0 %}
-            <span style="font-size:.72rem; color:#fbbf24; font-weight:700; display:block;">
+            <span style="font-size:.72rem; color:#dc2626; font-weight:700; display:block;">
               Pendiente: ${{ total_pendiente_dia|floatformat:0|intcomma }} &bull; Facturado: ${{ total_dia|floatformat:0|intcomma }}
             </span>
             {% else %}
-            <span style="font-size:.72rem; color:#4ade80; font-weight:600; display:block;">100% Recaudado al día</span>
+            <span style="font-size:.72rem; color:#16a34a; font-weight:600; display:block;">100% Recaudado al día</span>
             {% endif %}
           </div>
         </div>
@@ -72,7 +74,7 @@
     <div class="col-12 col-md-4">
       <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon cys-kpi-icon--warning">
+          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-box-seam"></i>
           </div>
           <div style="min-width:0; flex:1;">
@@ -86,14 +88,14 @@
 
   </div>
 
-  <!-- ── FLUJO DE VENTAS POR FRANJA HORARIA DEL DÍA ── -->
+  <!-- ── FLUJO DE VENTAS POR FRANJA HORARIA DEL DÍA (VERDE Y ROJO) ── -->
   <section class="cys-pos-card p-3 mb-4">
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
       <div class="cys-pos-card-title">
-        <i class="bi bi-clock-history me-2" style="color:var(--azul-claro,#4DA8DA);"></i>Flujo de Ventas por Franja Horaria
+        <i class="bi bi-clock-history me-2" style="color:#16a34a;"></i>Flujo de Ventas por Franja Horaria
       </div>
       <span style="font-size:.78rem; color:var(--texto-muted); font-weight:600;">
-        Hora Pico de Facturación: <strong style="color:#ffab00; font-size:1.05rem;">{{ hora_pico_nombre }}</strong>
+        Hora Pico de Facturación: <strong style="color:#16a34a; font-size:1.05rem;">{{ hora_pico_nombre }}</strong>
       </span>
     </div>
 
@@ -104,10 +106,10 @@
           <div>
             <div class="d-flex align-items-center justify-content-between mb-2.5">
               <div class="rounded-circle d-flex align-items-center justify-content-center"
-                   style="width:38px; height:38px; background:{{ item.badge_bg }}; color:{{ item.color }}; border:1px solid {{ item.color }}; flex-shrink:0;">
+                   style="width:38px; height:38px; background:#ecfdf5; color:#15803d; border:1px solid #86efac; flex-shrink:0;">
                 <i class="bi {{ item.icon }} fs-6"></i>
               </div>
-              <span class="badge" style="background:{{ item.badge_bg }}; color:{{ item.color }}; border:1px solid {{ item.color }}; font-size:.72rem; font-weight:700; border-radius:20px; padding:0.3rem 0.65rem; white-space:nowrap;">
+              <span class="badge" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac; font-size:.72rem; font-weight:700; border-radius:999px; padding:0.3rem 0.65rem; white-space:nowrap;">
                 {{ item.cantidad }} vent{{ item.cantidad|pluralize:"a,as" }}
               </span>
             </div>
@@ -124,7 +126,7 @@
 
           <div>
             <div class="my-2">
-              <div style="font-size:1.55rem; font-weight:800; color:{{ item.color }}; line-height:1.1;">
+              <div style="font-size:1.55rem; font-weight:800; color:#15803d; line-height:1.1;">
                 ${{ item.monto|floatformat:0|intcomma }}
               </div>
             </div>
@@ -132,10 +134,10 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:.68rem; color:var(--texto-muted);">
                 <span>Participación diaria</span>
-                <span style="font-weight:700; color:{{ item.color }};">{{ item.porcentaje }}%</span>
+                <span style="font-weight:700; color:#15803d;">{{ item.porcentaje }}%</span>
               </div>
               <div class="progress" style="height:6px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden;">
-                <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje }}%; background-color: {{ item.color }};"></div>
+                <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje }}%; background-color: #16a34a;"></div>
               </div>
             </div>
           </div>
@@ -145,7 +147,7 @@
     </div>
   </section>
 
-  <!-- ── SECCIÓN DOBLE: PRODUCTOS MÁS VENDIDOS & VENTAS TOPE DEL DÍA ── -->
+  <!-- ── SECCIÓN DOBLE: PRODUCTOS MÁS VENDIDOS & VENTAS TOPE DEL DÍA (VERDE Y ROJO) ── -->
   <div class="row g-4 mb-4 align-items-stretch">
     <!-- LEFT CARD: PRODUCTOS MÁS VENDIDOS -->
     <div class="col-12 col-md-6">
@@ -153,9 +155,9 @@
         <div>
           <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
             <h6 class="fw-bold mb-0 text-uppercase d-flex align-items-center gap-2" style="color:var(--texto); font-size:0.92rem; letter-spacing: 0.5px;">
-              <i class="bi bi-trophy-fill text-warning fs-5"></i> Productos Más Vendidos
+              <i class="bi bi-trophy-fill text-success fs-5"></i> Productos Más Vendidos
             </h6>
-            <span class="badge" style="background:rgba(255,193,7,0.15); color:#ffc107; border:1px solid rgba(255,193,7,0.3); border-radius:20px; font-size:0.75rem; font-weight:600; padding:0.35rem 0.75rem;">
+            <span class="badge" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac; border-radius:999px; font-size:0.75rem; font-weight:700; padding:0.35rem 0.75rem;">
               Top {{ productos_top|length }} del día
             </span>
           </div>
@@ -163,17 +165,17 @@
           <div class="cys-productos-top-list mt-2">
             {% if productos_top %}
               {% for p in productos_top|slice:":5" %}
-              <div class="py-2.5 border-bottom" style="border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;">
+              <div class="py-2.5 border-bottom" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
                 <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-2">
                   <div class="d-flex align-items-center gap-2" style="min-width:0; flex:1;">
-                    <div class="cys-rank-badge {% if forloop.counter == 1 %}cys-rank-1{% elif forloop.counter == 2 %}cys-rank-2{% elif forloop.counter == 3 %}cys-rank-3{% else %}cys-rank-other{% endif %}">
+                    <div class="cys-rank-badge" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac; border-radius:999px;">
                       {{ forloop.counter }}
                     </div>
                     <span class="fw-bold text-truncate" style="color:var(--texto); font-size: 0.9rem;" title="{{ p.nombre }}">{{ p.nombre }}</span>
                   </div>
                   <div class="text-end d-flex align-items-center gap-2">
-                    <span class="fw-bold fs-6" style="color: var(--verde, #2ed573);">${{ p.recaudo|floatformat:0|intcomma }}</span>
-                    <span class="badge" style="background:color-mix(in srgb, var(--azul-claro) 15%, transparent); color:var(--azul-claro); border:1px solid color-mix(in srgb, var(--azul-claro) 25%, transparent); border-radius:12px; font-weight:600; font-size:0.75rem;">
+                    <span class="fw-bold fs-6" style="color: #15803d;">${{ p.recaudo|floatformat:0|intcomma }}</span>
+                    <span class="badge" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac; border-radius:999px; font-weight:700; font-size:0.75rem;">
                       {{ p.cantidad }} unid{% if p.cantidad != 1 %}es{% endif %}
                     </span>
                   </div>
@@ -181,7 +183,7 @@
                 <div class="d-flex align-items-center gap-2">
                   <div class="progress flex-grow-1" style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow:hidden;">
                     <div class="progress-bar" role="progressbar"
-                         style="width: {{ p.relativo }}%; background: linear-gradient(90deg, var(--azul-claro), #2ed573); border-radius: 4px;"
+                         style="width: {{ p.relativo }}%; background: #16a34a; border-radius: 4px;"
                          aria-valuenow="{{ p.relativo }}" aria-valuemin="0" aria-valuemax="100">
                     </div>
                   </div>
@@ -200,7 +202,7 @@
           </div>
         </div>
 
-        <div class="mt-3 pt-2 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; font-size: 0.78rem; color: var(--texto-muted);">
+        <div class="mt-3 pt-2 border-top" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important; font-size: 0.78rem; color: var(--texto-muted);">
           Total ítems despachados: <strong style="color:var(--texto);">{{ total_productos }} unidades</strong>
         </div>
       </div>
@@ -212,9 +214,9 @@
         <div>
           <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
             <h6 class="fw-bold mb-0 text-uppercase d-flex align-items-center gap-2" style="color:var(--texto); font-size:0.92rem; letter-spacing: 0.5px;">
-              <i class="bi bi-graph-up-arrow text-info fs-5"></i> Ventas Tope del Día
+              <i class="bi bi-graph-up-arrow text-success fs-5"></i> Ventas Tope del Día
             </h6>
-            <span class="badge" style="background:color-mix(in srgb, var(--azul-claro) 15%, transparent); color:var(--azul-claro); border:1px solid color-mix(in srgb, var(--azul-claro) 30%, transparent); border-radius:20px; font-size:0.75rem; font-weight:600; padding:0.35rem 0.75rem;">
+            <span class="badge" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac; border-radius:999px; font-size:0.75rem; font-weight:700; padding:0.35rem 0.75rem;">
               Mayores Transacciones
             </span>
           </div>
@@ -227,7 +229,7 @@
 
                 {% if ventas_tope_data %}
                   {% for v in ventas_tope_data %}
-                  <circle cx="50" cy="50" r="{{ v.r }}" stroke="{{ v.color }}" stroke-width="7" fill="transparent"
+                  <circle cx="50" cy="50" r="{{ v.r }}" stroke="#16a34a" stroke-width="7" fill="transparent"
                           stroke-dasharray="{{ v.c }}" stroke-dashoffset="{{ v.dash_offset }}" stroke-linecap="round" />
                   {% endfor %}
                 {% else %}
@@ -243,16 +245,16 @@
             <div class="d-flex flex-column gap-2 flex-grow-1 w-100" style="min-width: 0;">
               {% if ventas_tope_data %}
                 {% for v in ventas_tope_data %}
-                <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="background: color-mix(in srgb, var(--texto) 3%, transparent); border: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent);">
+                <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="background: color-mix(in srgb, var(--texto) 3%, transparent); border: 1px solid #bbf7d0;">
                   <div class="d-flex align-items-center gap-2" style="min-width:0; flex:1;">
-                    <span style="width: 12px; height: 12px; background-color: {{ v.color }}; border-radius: 3px; display: inline-block; flex-shrink: 0;"></span>
+                    <span style="width: 12px; height: 12px; background-color: #16a34a; border-radius: 3px; display: inline-block; flex-shrink: 0;"></span>
                     <div class="text-truncate">
                       <div class="fw-bold text-truncate" style="color:var(--texto); font-size: 0.85rem;">Venta #{{ v.codigo }}</div>
                       <div class="text-muted text-truncate" style="font-size: 0.72rem;">{{ v.cliente }} &bull; {{ v.metodo_pago|capfirst }}</div>
                     </div>
                   </div>
                   <div class="text-end ps-2 flex-shrink-0">
-                    <div class="fw-bold" style="color: {{ v.color }}; font-size: 0.95rem;">${{ v.monto|floatformat:0|intcomma }}</div>
+                    <div class="fw-bold" style="color: #15803d; font-size: 0.95rem;">${{ v.monto|floatformat:0|intcomma }}</div>
                     <div class="text-muted" style="font-size: 0.72rem; font-weight: 600;">{{ v.porcentaje }}% del día</div>
                   </div>
                 </div>
@@ -264,7 +266,7 @@
           </div>
         </div>
 
-        <div class="mt-3 pt-2 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 10%, transparent) !important; font-size: 0.78rem; color: var(--texto-muted);">
+        <div class="mt-3 pt-2 border-top" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important; font-size: 0.78rem; color: var(--texto-muted);">
           Total recaudado hoy: <strong style="color:var(--texto);">${{ total_dia|floatformat:0|intcomma }}</strong>
         </div>
       </div>
@@ -276,31 +278,33 @@
 
     <div class="cys-pos-card-header">
       <div class="cys-pos-card-title">
-        <i class="bi bi-clock-history me-1"></i>Detalle de Transacciones del Día
+        <i class="bi bi-clock-history me-1" style="color:#16a34a;"></i>Detalle de Transacciones del Día
       </div>
     </div>
 
-    <form method="GET" class="cys-filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;">
+    <form method="GET" class="cys-filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
       <div class="d-flex flex-wrap align-items-center gap-2">
         <span style="font-size:.75rem; font-weight:700; color:var(--texto); text-transform:uppercase; letter-spacing:0.5px;">
           Rango de fechas:
         </span>
 
         <input type="date" name="fecha_inicio" id="filtroFechaIni" value="{{ fecha_inicio }}"
-               class="form-control form-control-sm prod-input" style="width: auto; border-radius:8px;">
+               class="form-control form-control-sm prod-input" style="width: auto; border-radius:999px;">
 
         <span style="color:var(--texto-muted); font-size:0.85rem; font-weight:700; padding:0 4px;">a</span>
 
         <input type="date" name="fecha_fin" id="filtroFechaFin" value="{{ fecha_fin }}"
-               class="form-control form-control-sm prod-input" style="width: auto; border-radius:8px;">
+               class="form-control form-control-sm prod-input" style="width: auto; border-radius:999px;">
 
-        <button type="submit" class="btn btn-sm prod-btn-primary px-3"
-                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas">
+        <button type="submit" class="btn btn-sm px-3"
+                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Filtrar Fechas"
+                style="background:#16a34a; border:1px solid #16a34a; color:#fff; border-radius:999px; font-weight:700;">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
-        <a href="?" class="btn btn-sm prod-btn-outline px-3"
-           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros">
+        <a href="?" class="btn btn-sm px-3"
+           data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"
+           style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700;">
           <i class="bi bi-x-circle me-1"></i> Limpiar
         </a>
       </div>
@@ -308,9 +312,9 @@
       <!-- Buscador en tiempo real + botón Exportar -->
       <div class="d-flex flex-wrap align-items-center gap-2">
         <div class="cys-search-group" style="min-width:220px;">
-          <i class="bi bi-search"></i>
+          <i class="bi bi-search" style="color:#16a34a;"></i>
           <input type="text" id="buscadorTablaVentasDia" class="form-control form-control-sm cys-search-input"
-                 placeholder="Buscar cliente, ítem..." style="padding-left:36px !important;">
+                 placeholder="Buscar cliente, ítem..." style="padding-left:36px !important; border-radius:999px;">
         </div>
 
         <div class="dropdown">
@@ -344,19 +348,19 @@
     {% if ventas_pendientes_count > 0 %}
     <div class="px-3 pt-3 pb-1">
       <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 flex-wrap gap-2"
-           style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); color:#fbbf24;">
+           style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626;">
         <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-exclamation-triangle-fill fs-5" style="color:#f59e0b;"></i>
+          <i class="bi bi-exclamation-triangle-fill fs-5" style="color:#dc2626;"></i>
           <div>
-            <div style="font-size:0.86rem; font-weight:800; color:#fef3c7;">
+            <div style="font-size:0.86rem; font-weight:800; color:#991b1b;">
               Atención Arqueo / Cierre: Hay {{ ventas_pendientes_count }} venta{{ ventas_pendientes_count|pluralize }} con saldo pendiente
             </div>
-            <div style="font-size:0.75rem; color:#fde68a;">
-              Total pendiente por cobrar: <strong>${{ total_pendiente_dia|floatformat:0|intcomma }}</strong> (resaltadas en color ámbar para cambio de turno).
+            <div style="font-size:0.75rem; color:#b91c1c;">
+              Total pendiente por cobrar: <strong>${{ total_pendiente_dia|floatformat:0|intcomma }}</strong> (resaltadas en rojo para control y recaudo).
             </div>
           </div>
         </div>
-        <span class="badge" style="background:#f59e0b; color:#0f172a; font-weight:800; font-size:0.75rem; padding:6px 10px; border-radius:6px;">
+        <span class="badge" style="background:#dc2626; color:#ffffff; font-weight:800; font-size:0.75rem; padding:6px 12px; border-radius:999px;">
           REVISAR EN CIERRE
         </span>
       </div>
@@ -375,7 +379,7 @@
             <th style="text-align: right;">Precio Uni.</th>
             <th style="text-align: right;">Total</th>
             <th style="text-align: center;">Fecha</th>
-            <th class="col-accion" style="text-align: center; width: 95px;">Acción</th>
+            <th class="col-accion" style="text-align: center; width: 125px;">Estado / Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -388,11 +392,11 @@
                   {{ venta.cliente_nombre|default:"Consumidor final" }}
                   {% if venta.saldo_pendiente > 0 and forloop.first %}
                   <div class="mt-1 d-flex flex-column gap-1">
-                    <span class="cys-debt-pill">
+                    <span class="cys-debt-pill" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700; font-size:0.74rem; padding:2px 8px;">
                       <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0|intcomma }}
                     </span>
                     {% if venta.observacion %}
-                    <span class="cys-debt-obs" title="{{ venta.observacion }}">
+                    <span class="cys-debt-obs" title="{{ venta.observacion }}" style="border-radius:999px;">
                       <i class="bi bi-chat-left-text me-1"></i>{{ venta.observacion }}
                     </span>
                     {% endif %}
@@ -401,20 +405,22 @@
                 </td>
                 <td style="color: var(--texto);">
                   {% if det.producto %}
-                    <span class="cys-stock-badge cys-stock-badge--ok">{{ det.producto.nombre }}</span>
+                    <span class="cys-stock-badge cys-stock-badge--ok" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:999px;">{{ det.producto.nombre }}</span>
                   {% else %}
-                    <span class="cys-stock-badge cys-stock-badge--ok">Ítem General</span>
+                    <span class="cys-stock-badge cys-stock-badge--ok" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:999px;">Ítem General</span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto);">{{ det.cantidad }}</td>
                 <td style="text-align: right; color: var(--texto);">${{ det.precio_unitario|floatformat:0|intcomma }}</td>
-                <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">
+                <td style="text-align: right; font-weight: 800; color: #15803d; font-size:1.05rem;">
                   ${{ det.subtotal_val|floatformat:0|intcomma }}
                   {% if venta.saldo_pendiente > 0 and forloop.first %}
-                  <div style="font-size:0.7rem; color:#fbbf24; font-weight:700;">
+                  <div style="font-size:0.7rem; color:#dc2626; font-weight:700;">
                     Cobrado: ${{ venta.total_cobrado|floatformat:0|intcomma }}
                   </div>
-                  <span class="badge cys-badge-pendiente mt-1">PENDIENTE</span>
+                  <span class="badge mt-1" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:800; font-size:0.68rem; padding:0.25rem 0.6rem;">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>PENDIENTE
+                  </span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
@@ -431,13 +437,13 @@
                             data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
                             data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
                             data-obs="{{ venta.observacion|default:'' }}"
-                            title="Editar / Cobrar venta pendiente (Cambiar a pagada)"
-                            style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
-                      <i class="bi bi-pencil-square"></i>
+                            title="Cobrar saldo pendiente (Cambiar a pagada)"
+                            style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; padding:0.3rem 0.8rem; font-weight:700; font-size:0.75rem; white-space:nowrap;">
+                      <i class="bi bi-pencil-square me-1"></i> Cobrar saldo
                     </button>
                     {% else %}
-                    <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30" style="font-size:0.7rem; font-weight:700;">
-                      <i class="bi bi-check-circle-fill me-1"></i>PAGADA
+                    <span class="cys-badge-pagado">
+                      <i class="bi bi-check-circle-fill me-1"></i>Pagada
                     </span>
                     {% endif %}
                   </div>
@@ -452,11 +458,11 @@
                   {{ venta.cliente_nombre|default:"Consumidor final" }}
                   {% if venta.saldo_pendiente > 0 %}
                   <div class="mt-1 d-flex flex-column gap-1">
-                    <span class="cys-debt-pill">
+                    <span class="cys-debt-pill" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700; font-size:0.74rem; padding:2px 8px;">
                       <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0|intcomma }}
                     </span>
                     {% if venta.observacion %}
-                    <span class="cys-debt-obs" title="{{ venta.observacion }}">
+                    <span class="cys-debt-obs" title="{{ venta.observacion }}" style="border-radius:999px;">
                       <i class="bi bi-chat-left-text me-1"></i>{{ venta.observacion }}
                     </span>
                     {% endif %}
@@ -466,13 +472,15 @@
                 <td style="color: var(--texto);">Venta #{{ venta.pk }} ({{ venta.metodo_pago }})</td>
                 <td style="text-align: center; color: var(--texto);">—</td>
                 <td style="text-align: right; color: var(--texto);">—</td>
-                <td style="text-align: right; font-weight: 800; color: var(--azul-claro,#4DA8DA); font-size:1.05rem;">
+                <td style="text-align: right; font-weight: 800; color: #15803d; font-size:1.05rem;">
                   ${{ venta.total_venta|floatformat:0|intcomma }}
                   {% if venta.saldo_pendiente > 0 %}
-                  <div style="font-size:0.7rem; color:#fbbf24; font-weight:700;">
+                  <div style="font-size:0.7rem; color:#dc2626; font-weight:700;">
                     Cobrado: ${{ venta.total_cobrado|floatformat:0|intcomma }}
                   </div>
-                  <span class="badge cys-badge-pendiente mt-1">PENDIENTE</span>
+                  <span class="badge mt-1" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:800; font-size:0.68rem; padding:0.25rem 0.6rem;">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>PENDIENTE
+                  </span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
@@ -488,13 +496,13 @@
                             data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
                             data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
                             data-obs="{{ venta.observacion|default:'' }}"
-                            title="Editar / Cobrar venta pendiente (Cambiar a pagada)"
-                            style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
-                      <i class="bi bi-pencil-square"></i>
+                            title="Cobrar saldo pendiente (Cambiar a pagada)"
+                            style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; padding:0.3rem 0.8rem; font-weight:700; font-size:0.75rem; white-space:nowrap;">
+                      <i class="bi bi-pencil-square me-1"></i> Cobrar saldo
                     </button>
                     {% else %}
-                    <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30" style="font-size:0.7rem; font-weight:700;">
-                      <i class="bi bi-check-circle-fill me-1"></i>PAGADA
+                    <span class="cys-badge-pagado">
+                      <i class="bi bi-check-circle-fill me-1"></i>Pagada
                     </span>
                     {% endif %}
                   </div>
@@ -506,18 +514,18 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--azul-claro) 15%, transparent) !important;">
+    <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
       <div>
         <span style="font-size: .8rem; font-weight: 700; color: var(--texto-muted); text-transform: uppercase;">
           Total efectivamente cobrado ({{ ventas|length }} transacciones)
         </span>
         {% if total_pendiente_dia > 0 %}
-        <span style="font-size: .75rem; color:#fbbf24; font-weight:700; display:block;">
+        <span style="font-size: .75rem; color:#dc2626; font-weight:700; display:block;">
           Facturado: ${{ total_dia|floatformat:0|intcomma }} &bull; Pendiente: ${{ total_pendiente_dia|floatformat:0|intcomma }}
         </span>
         {% endif %}
       </div>
-      <span style="font-size: 1.5rem; font-weight: 800; color: var(--azul-claro,#4DA8DA);">
+      <span style="font-size: 1.5rem; font-weight: 800; color: #15803d;">
         ${{ total_cobrado_dia|floatformat:0|intcomma }}
       </span>
     </div>

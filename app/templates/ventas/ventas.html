@@ -7,8 +7,8 @@
 {% block page_title %}Punto de Venta{% endblock %}
  
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
-<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
+<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=2">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_exportar.css' %}">
 {% endblock %}
  
@@ -62,10 +62,11 @@
 
     <div class="d-flex gap-2 flex-wrap align-items-center">
       {% if not caja_abierta %}
-        <button type="button" class="btn btn-sm fw-bold cys-btn-checkout"
+        <button type="button" class="btn btn-sm fw-bold cys-btn-primary"
                 data-bs-toggle="modal"
                 data-bs-target="#modalConteo"
-                title="Abrir Caja">
+                title="Abrir Caja"
+                style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
           <i class="bi bi-unlock me-1"></i> Abrir Caja
         </button>
       {% endif %}
@@ -73,12 +74,14 @@
         <button type="button" class="btn btn-sm fw-bold cys-btn-danger-soft"
                 data-bs-toggle="modal"
                 data-bs-target="#modalCierre"
-                title="Cerrar Caja">
+                title="Cerrar Caja"
+                style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
           <i class="bi bi-lock me-1"></i> Cerrar Caja
         </button>
       {% endif %}
-      <a href="{% url 'ventas_dia' %}" class="btn btn-sm cys-btn-ghost-soft"
-         title="Ventas del Día">
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-btn-ghost-soft"
+         title="Ventas del Día"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-bar-chart me-1"></i> Ventas del día
       </a>
     </div>
@@ -317,14 +320,12 @@
                   <i class="bi bi-wallet2 me-1" style="color:#38bdf8;"></i> Formas de Pago
                 </span>
                 <div class="d-flex gap-1">
-                  <button type="button" id="btnPagoPendiente" class="btn btn-sm py-1 px-2"
-                          title="Dejar como saldo pendiente / fiado (requiere justificar el motivo)"
-                          style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; font-size:0.72rem; font-weight:700; border-radius:6px;">
+                  <button type="button" id="btnPagoPendiente" class="btn btn-sm py-1 px-2 cys-btn-pago-pendiente"
+                          title="Dejar como saldo pendiente / fiado (requiere justificar el motivo)">
                     <i class="bi bi-clock-history me-1"></i>Pago Pendiente
                   </button>
-                  <button type="button" id="btnPagoExacto" class="btn btn-sm py-1 px-2"
-                          title="Rellenar total en efectivo automáticamente"
-                          style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.28); color:#38bdf8; font-size:0.72rem; font-weight:700; border-radius:6px;">
+                  <button type="button" id="btnPagoExacto" class="btn btn-sm py-1 px-2 cys-btn-pago-exacto"
+                          title="Rellenar total en efectivo automáticamente">
                     <i class="bi bi-cash-stack me-1"></i>Pago Exacto
                   </button>
                 </div>
@@ -332,34 +333,39 @@
               <div class="row g-2 mb-2">
                 <div class="col-6">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Efectivo ($)</label>
-                  <input type="number" name="pago_efectivo" id="inputPagoEfectivo" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_efectivo" id="inputPagoEfectivo" value="0" min="0" max="50000000" class="form-control pago-input"
+                         onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';"
                          style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-6">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Tarjeta ($)</label>
-                  <input type="number" name="pago_tarjeta" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_tarjeta" value="0" min="0" max="50000000" class="form-control pago-input"
+                         onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';"
                          style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Transfer ($)</label>
-                  <input type="number" name="pago_transferencia" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_transferencia" value="0" min="0" max="50000000" class="form-control pago-input"
+                         onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';"
                          style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Nequi ($)</label>
-                  <input type="number" name="pago_nequi" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_nequi" value="0" min="0" max="50000000" class="form-control pago-input"
+                         onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';"
                          style="border-radius:8px; font-size:.88rem;">
                 </div>
                 <div class="col-4">
                   <label style="font-size:.68rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Daviplata ($)</label>
-                  <input type="number" name="pago_daviplata" value="0" min="0" class="form-control pago-input"
+                  <input type="number" name="pago_daviplata" value="0" min="0" max="50000000" class="form-control pago-input"
+                         onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';"
                          style="border-radius:8px; font-size:.88rem;">
                 </div>
               </div>
               
               <div class="d-flex justify-content-between align-items-center pt-2 mt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
                 <span style="font-size:.76rem; font-weight:600; color:#94a3b8; text-transform:uppercase;">Total Ingresado</span>
-                <span id="totalPagado" style="font-size:1.25rem; font-weight:800; color:var(--azul-claro, #38bdf8);">$0</span>
+                <span id="totalPagado" class="cys-monto-pendiente" style="font-size:1.25rem; font-weight:800;">$0</span>
               </div>
 
               <!-- Indicador Dinámico de Cambio/Vueltos -->
@@ -369,22 +375,20 @@
               </div>
 
               <!-- Motivo Requerido cuando el Cliente Queda Debiendo -->
-              <div id="seccionObservacionPago" class="cys-debt-box mt-3 p-3 rounded-3"
-                   style="display:none; background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.4);">
+              <div id="seccionObservacionPago" class="cys-debt-box mt-3 p-3 rounded-3" style="display:none;">
                 <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-1">
-                  <label for="inputObservacionPago" style="font-size:.72rem; color:#fbbf24; font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin:0;">
+                  <label for="inputObservacionPago" style="font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin:0;">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i> Motivo de Pago Pendiente <span class="text-danger">*</span>
                   </label>
-                  <span class="badge" style="background:rgba(245,158,11,0.25); color:#fbbf24; border:1px solid rgba(245,158,11,0.45); font-size:0.72rem; font-weight:700;">
+                  <span class="badge cys-debt-badge">
                     Queda debiendo: <strong id="textoSaldoPendiente">$0</strong>
                   </span>
                 </div>
                 <textarea name="observacion_pago" id="inputObservacionPago" class="form-control" rows="2"
-                          placeholder="Indica el motivo por el cual queda saldo pendiente (ej. Cliente fía hasta el viernes, pagará el resto por transferencia, etc.)..."
-                          style="background:rgba(10,20,38,0.75); border:1px solid rgba(245,158,11,0.45); color:#f8fafc; border-radius:8px; font-size:.85rem;"></textarea>
-                <div class="small mt-1.5 d-flex align-items-center gap-1" style="color:#fbbf24; font-size:0.73rem;">
+                          placeholder="Indica el motivo por el cual queda saldo pendiente (ej. Cliente fía hasta el viernes, pagará el resto por transferencia, etc.)..."></textarea>
+                <div class="small mt-1.5 d-flex align-items-center gap-1">
                   <i class="bi bi-info-circle-fill"></i>
-                  <span>Esta venta se guardará y quedará resaltada en color ámbar en el historial para el arqueo y cierre de caja.</span>
+                  <span>Esta venta se guardará y quedará registrada con saldo pendiente para el arqueo y cierre de caja.</span>
                 </div>
               </div>
             </div>
@@ -426,8 +430,8 @@
         <span style="color:var(--texto-muted); font-size:.85rem; font-weight:700;">a</span>
         <input type="date" id="filtroHasta" class="form-control form-control-sm prod-input"
                style="border-radius:8px; width:auto;">
-        <button id="btnLimpiarFiltro" class="btn btn-sm prod-btn-outline"
-                style="border-radius:8px; font-weight:600;">
+        <button id="btnLimpiarFiltro" class="btn btn-sm fw-bold prod-btn-outline"
+                style="border-radius:999px;">
           <i class="bi bi-x-circle me-1"></i>Limpiar
         </button>
       </div>
@@ -557,50 +561,49 @@
                   {% endif %}
                 </td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha" rowspan="{{ venta.detalles.all|length }}">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                <td data-label="Acciones" rowspan="{{ venta.detalles.all|length }}">
-                  <div class="d-flex align-items-center justify-content-center gap-1.5">
-                    {% if venta.saldo_pendiente > 0 %}
-                      {% if caja_abierta %}
-                      <button type="button" class="btn btn-sm btn-abrir-cobro"
-                              data-bs-toggle="modal"
-                              data-bs-target="#modalCobrarSaldo"
-                              data-venta-id="{{ venta.pk }}"
-                              data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
-                              data-total="{{ venta.total_venta|floatformat:0 }}"
-                              data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
-                              data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
-                              data-obs="{{ venta.observacion|default:'' }}"
-                              title="Cobrar saldo pendiente / Cambiar a pagada"
-                              style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
-                        <i class="bi bi-pencil-square"></i>
-                      </button>
-                      {% else %}
-                      <button type="button" class="btn btn-sm btn-cobro-bloqueado"
-                              title="Caja bloqueada — Abre caja para registrar cobros"
-                              style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#64748b; border-radius:8px; padding:0.25rem 0.55rem; cursor:not-allowed;">
-                        <i class="bi bi-lock-fill"></i>
-                      </button>
+                <td data-label="Acciones" rowspan="{{ venta.detalles.all|length }}" class="text-center align-middle">
+                  <div class="dd-wrap">
+                    <button type="button" class="dd-btn" onclick="toggleDropdownVentas(this)">
+                      <i class="bi bi-three-dots" title="Más opciones"></i>
+                    </button>
+                    <div class="dd-menu">
+                      {% if venta.saldo_pendiente > 0 %}
+                        {% if caja_abierta %}
+                        <a href="#" class="dd-item btn-abrir-cobro"
+                           data-bs-toggle="modal"
+                           data-bs-target="#modalCobrarSaldo"
+                           data-venta-id="{{ venta.pk }}"
+                           data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                           data-total="{{ venta.total_venta|floatformat:0 }}"
+                           data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
+                           data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
+                           data-obs="{{ venta.observacion|default:'' }}">
+                          <i class="bi bi-pencil-square"></i> Cobrar saldo
+                        </a>
+                        {% else %}
+                        <a href="#" class="dd-item btn-cobro-bloqueado" style="color:var(--texto-muted, #64748b); cursor:not-allowed;">
+                          <i class="bi bi-lock-fill"></i> Cobrar saldo (Caja cerrada)
+                        </a>
+                        {% endif %}
+                        <div class="dd-sep"></div>
                       {% endif %}
-                    {% endif %}
-                    {% if caja_abierta %}
-                    <button type="button" class="btn btn-sm btn-abrir-eliminar"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalEliminarVenta"
-                            data-venta-id="{{ venta.pk }}"
-                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
-                            data-total="{{ venta.total_venta|floatformat:0 }}"
-                            data-fecha="{{ venta.fecha|date:'d/m/Y H:i' }}"
-                            title="Eliminar venta"
-                            style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    {% else %}
-                    <button type="button" class="btn btn-sm btn-eliminar-bloqueada"
-                            title="Caja bloqueada — No se pueden anular ventas"
-                            style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#64748b; border-radius:8px; cursor:not-allowed;">
-                      <i class="bi bi-lock-fill"></i>
-                    </button>
-                    {% endif %}
+
+                      {% if caja_abierta %}
+                      <a href="#" class="dd-item danger btn-abrir-eliminar"
+                         data-bs-toggle="modal"
+                         data-bs-target="#modalEliminarVenta"
+                         data-venta-id="{{ venta.pk }}"
+                         data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                         data-total="{{ venta.total_venta|floatformat:0 }}"
+                         data-fecha="{{ venta.fecha|date:'d/m/Y H:i' }}">
+                        <i class="bi bi-trash"></i> Eliminar
+                      </a>
+                      {% else %}
+                      <a href="#" class="dd-item btn-eliminar-bloqueada" style="color:var(--texto-muted, #64748b); cursor:not-allowed;">
+                        <i class="bi bi-lock-fill"></i> Eliminar (Caja cerrada)
+                      </a>
+                      {% endif %}
+                    </div>
                   </div>
                 </td>
                 {% endif %}
@@ -628,50 +631,49 @@
                   {% endif %}
                 </td>
                 <td class="cys-td cys-td--muted text-center" data-label="Fecha">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                <td data-label="Acciones">
-                  <div class="d-flex align-items-center justify-content-center gap-1.5">
-                    {% if venta.saldo_pendiente > 0 %}
-                      {% if caja_abierta %}
-                      <button type="button" class="btn btn-sm btn-abrir-cobro"
-                              data-bs-toggle="modal"
-                              data-bs-target="#modalCobrarSaldo"
-                              data-venta-id="{{ venta.pk }}"
-                              data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
-                              data-total="{{ venta.total_venta|floatformat:0 }}"
-                              data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
-                              data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
-                              data-obs="{{ venta.observacion|default:'' }}"
-                              title="Cobrar saldo pendiente / Cambiar a pagada"
-                              style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; border-radius:8px; padding:0.25rem 0.55rem;">
-                        <i class="bi bi-pencil-square"></i>
-                      </button>
-                      {% else %}
-                      <button type="button" class="btn btn-sm btn-cobro-bloqueado"
-                              title="Caja bloqueada — Abre caja para registrar cobros"
-                              style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#64748b; border-radius:8px; padding:0.25rem 0.55rem; cursor:not-allowed;">
-                        <i class="bi bi-lock-fill"></i>
-                      </button>
+                <td data-label="Acciones" class="text-center align-middle">
+                  <div class="dd-wrap">
+                    <button type="button" class="dd-btn" onclick="toggleDropdownVentas(this)">
+                      <i class="bi bi-three-dots" title="Más opciones"></i>
+                    </button>
+                    <div class="dd-menu">
+                      {% if venta.saldo_pendiente > 0 %}
+                        {% if caja_abierta %}
+                        <a href="#" class="dd-item btn-abrir-cobro"
+                           data-bs-toggle="modal"
+                           data-bs-target="#modalCobrarSaldo"
+                           data-venta-id="{{ venta.pk }}"
+                           data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                           data-total="{{ venta.total_venta|floatformat:0 }}"
+                           data-cobrado="{{ venta.total_cobrado|floatformat:0 }}"
+                           data-deuda="{{ venta.saldo_pendiente|floatformat:0 }}"
+                           data-obs="{{ venta.observacion|default:'' }}">
+                          <i class="bi bi-pencil-square"></i> Cobrar saldo
+                        </a>
+                        {% else %}
+                        <a href="#" class="dd-item btn-cobro-bloqueado" style="color:var(--texto-muted, #64748b); cursor:not-allowed;">
+                          <i class="bi bi-lock-fill"></i> Cobrar saldo
+                        </a>
+                        {% endif %}
+                        <div class="dd-sep"></div>
                       {% endif %}
-                    {% endif %}
-                    {% if caja_abierta %}
-                    <button type="button" class="btn btn-sm btn-abrir-eliminar"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalEliminarVenta"
-                            data-venta-id="{{ venta.pk }}"
-                            data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
-                            data-total="{{ venta.total_venta|floatformat:0 }}"
-                            data-fecha="{{ venta.fecha|date:'d/m/Y H:i' }}"
-                            title="Eliminar venta"
-                            style="background:rgba(235,77,75,.15); border:1px solid rgba(235,77,75,.35); color:#ff7675; border-radius:8px;">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    {% else %}
-                    <button type="button" class="btn btn-sm btn-eliminar-bloqueada"
-                            title="Caja bloqueada — No se pueden anular ventas"
-                            style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#64748b; border-radius:8px; cursor:not-allowed;">
-                      <i class="bi bi-lock-fill"></i>
-                    </button>
-                    {% endif %}
+
+                      {% if caja_abierta %}
+                      <a href="#" class="dd-item danger btn-abrir-eliminar"
+                         data-bs-toggle="modal"
+                         data-bs-target="#modalEliminarVenta"
+                         data-venta-id="{{ venta.pk }}"
+                         data-cliente="{{ venta.cliente.nombre|default:'Consumidor final' }}"
+                         data-total="{{ venta.total_venta|floatformat:0 }}"
+                         data-fecha="{{ venta.fecha|date:'d/m/Y H:i' }}">
+                        <i class="bi bi-trash"></i> Eliminar
+                      </a>
+                      {% else %}
+                      <a href="#" class="dd-item btn-eliminar-bloqueada" style="color:var(--texto-muted, #64748b); cursor:not-allowed;">
+                        <i class="bi bi-lock-fill"></i> Eliminar
+                      </a>
+                      {% endif %}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -837,48 +839,66 @@
         </div>
       </div>
 
-      <div class="modal-body p-3 p-md-4">
-        <!-- Advertencia -->
-        <div class="p-3 rounded-3 mb-3" style="background:rgba(235,77,75,0.12); border:1px solid rgba(235,77,75,0.35); color:#ff7675;">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-            <div>
-              <div style="font-size:0.86rem; font-weight:800;">Esta acción es irreversible</div>
-              <div style="font-size:0.75rem; color:#fca5a5;">La venta será eliminada del historial y las unidades vendidas se restituirán automáticamente al inventario en bodega.</div>
+      <form method="POST" id="formEliminarVentaModal" action="" class="m-0">
+        {% csrf_token %}
+        <div class="modal-body p-3 p-md-4">
+          <!-- Advertencia -->
+          <div class="p-3 rounded-3 mb-3" style="background:rgba(235,77,75,0.12); border:1px solid rgba(235,77,75,0.35); color:#ff7675;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+              <div>
+                <div style="font-size:0.86rem; font-weight:800;">Esta acción es irreversible</div>
+                <div style="font-size:0.75rem; color:#fca5a5;">La venta será eliminada del historial y las unidades vendidas se restituirán automáticamente al inventario en bodega.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de la venta -->
+          <div class="p-3 rounded-3 mb-3" style="background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.08);">
+            <div class="d-flex justify-content-between align-items-center mb-1.5">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Cliente</span>
+              <strong style="color:#f1f5f9; font-size:0.92rem;" id="eliminarClienteNombre">Consumidor final</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Total Venta</span>
+              <span style="color:#38bdf8; font-weight:800; font-size:1.05rem;" id="eliminarTotalVenta">$0</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Fecha Registro</span>
+              <span style="color:#cbd5e1; font-size:0.85rem;" id="eliminarFechaVenta">—</span>
+            </div>
+          </div>
+
+          <!-- Campo obligatorio: Razón / Motivo de eliminación -->
+          <div class="mb-1">
+            <label for="motivoEliminarVenta" class="form-label d-flex align-items-center justify-content-between mb-1.5" style="font-size:0.83rem; font-weight:700; color:#cbd5e1;">
+              <span class="d-flex align-items-center gap-1.5">
+                <i class="bi bi-chat-square-quote-fill text-danger"></i>
+                <span>Razón de la eliminación <span class="text-danger">*</span></span>
+              </span>
+              <span class="badge" style="background:rgba(235,77,75,0.18); color:#ff7675; font-size:0.68rem; font-weight:700;">Obligatorio</span>
+            </label>
+            <textarea name="motivo_eliminacion" id="motivoEliminarVenta" rows="3" required
+                      class="form-control"
+                      placeholder="Escribe la razón detallada del por qué se va a eliminar esta venta (ej. Error en cobro, cliente desistió, duplicada)..."
+                      style="background:rgba(15,28,52,0.85); border:1px solid rgba(235,77,75,0.4); color:#fff; border-radius:10px; font-size:0.85rem; resize:vertical;"></textarea>
+            <div class="form-text" style="font-size:0.72rem; color:#94a3b8; margin-top:4px;">
+              Este motivo quedará auditado en el sistema para control de caja e inventario.
             </div>
           </div>
         </div>
 
-        <!-- Resumen de la venta -->
-        <div class="p-3 rounded-3" style="background:rgba(10,20,38,0.6); border:1px solid rgba(255,255,255,0.08);">
-          <div class="d-flex justify-content-between align-items-center mb-1.5">
-            <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Cliente</span>
-            <strong style="color:#f1f5f9; font-size:0.92rem;" id="eliminarClienteNombre">Consumidor final</strong>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Total Venta</span>
-            <span style="color:#38bdf8; font-weight:800; font-size:1.05rem;" id="eliminarTotalVenta">$0</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center">
-            <span style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Fecha Registro</span>
-            <span style="color:#cbd5e1; font-size:0.85rem;" id="eliminarFechaVenta">—</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal"
-                style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:10px; padding:.45rem 1.1rem;">
-          <i class="bi bi-x-circle me-1"></i> Cancelar
-        </button>
-        <form method="POST" id="formEliminarVentaModal" action="" class="m-0">
-          {% csrf_token %}
+        <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm fw-bold" data-bs-dismiss="modal"
+                  style="background:rgba(10,42,82,0.8); border:1px solid rgba(77,168,218,0.3); color:#fff; border-radius:999px; padding:.45rem 1.25rem;">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
           <button type="submit" class="btn btn-sm fw-bold"
-                  style="background:linear-gradient(135deg, #e74c3c, #c0392b); color:#fff; border:none; border-radius:10px; padding:.45rem 1.25rem; box-shadow:0 4px 15px rgba(231,76,60,0.35);">
+                  style="background:linear-gradient(135deg, #e74c3c, #c0392b); color:#fff; border:none; border-radius:999px; padding:.45rem 1.35rem; box-shadow:0 4px 15px rgba(231,76,60,0.35);">
             <i class="bi bi-trash-fill me-1"></i> Sí, eliminar venta
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
 
     </div>
   </div>
@@ -1169,6 +1189,36 @@
 {% block extra_js %}
 <script>
 const CAJA_ABIERTA = {% if caja_abierta %}true{% else %}false{% endif %};
+
+// ══ DROPDOWN DE ACCIONES EN HISTORIAL DE VENTAS (3 PUNTOS) ══
+function toggleDropdownVentas(btn) {
+  const wrap = btn.closest('.dd-wrap');
+  if (!wrap) return;
+  const menu = wrap.querySelector('.dd-menu');
+  if (!menu) return;
+  const yaAbierto = menu.classList.contains('open');
+
+  cerrarDropdownsVentas();
+
+  if (!yaAbierto) {
+    menu.classList.add('open');
+  }
+}
+
+function cerrarDropdownsVentas() {
+  document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('.dd-wrap')) {
+    cerrarDropdownsVentas();
+    return;
+  }
+  if (e.target.closest('.dd-item')) {
+    cerrarDropdownsVentas();
+  }
+});
+window.addEventListener('scroll', cerrarDropdownsVentas, true);
 
 // ══ NAVEGACIÓN CATEGORÍAS → PRODUCTOS → PRESENTACIONES ══
 const vistaCats  = document.getElementById('vistaCategorias');
@@ -1518,17 +1568,17 @@ function renderCarrito() {
     div.className = 'cys-cart-item';
     div.innerHTML = `
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <span style="font-weight:700; font-size:.88rem; color:#fff;">${item.nombreProd} <span style="color:var(--texto-muted); font-weight:400; font-size:.78rem;">(${item.nombrePres})</span></span>
-        <button type="button" class="btn-close btn-close-white" style="font-size:.65rem; opacity:.7;" onclick="quitarDelCarrito(${idx})" title="Eliminar ítem"></button>
+        <span class="cys-cart-item-name" style="font-weight:700; font-size:.88rem; color:var(--texto, #f8fafc);">${item.nombreProd} <span style="color:var(--texto-muted); font-weight:400; font-size:.78rem;">(${item.nombrePres})</span></span>
+        <button type="button" class="btn-close cys-cart-close-btn" style="font-size:.65rem; opacity:.7;" onclick="quitarDelCarrito(${idx})" title="Eliminar ítem"></button>
       </div>
       <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <button type="button" class="cys-qty-btn" onclick="cambiarCantidad(${idx}, -1)">−</button>
-          <span style="font-weight:800; font-size:1.15rem; min-width:24px; text-align:center; color:#fff;">${item.cantidad}</span>
+          <span class="cys-cart-item-qty" style="font-weight:800; font-size:1.15rem; min-width:24px; text-align:center; color:var(--texto, #f8fafc);">${item.cantidad}</span>
           <button type="button" class="cys-qty-btn" onclick="cambiarCantidad(${idx}, 1)">+</button>
           <span style="font-size:.75rem; color:var(--texto-muted); margin-left:4px;">× $${parseInt(item.precio).toLocaleString('es-CO')}</span>
         </div>
-        <span style="font-weight:800; font-size:1.15rem; color:var(--azul-claro,#4DA8DA);">$${(item.precio * item.cantidad).toLocaleString('es-CO')}</span>
+        <span style="font-weight:800; font-size:1.15rem; color:var(--verde, #16a34a);">$${(item.precio * item.cantidad).toLocaleString('es-CO')}</span>
       </div>`;
     lista.appendChild(div);
  
@@ -1673,8 +1723,6 @@ function cambiarCantidad(idx, delta) {
   function actualizarPagado() {
     let pagado = 0;
     document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
-    const totalPagEl = document.getElementById('totalPagado');
-    if (totalPagEl) totalPagEl.textContent = '$' + Math.round(pagado).toLocaleString('es-CO');
 
     const descInp = document.getElementById('inputDescuento');
     let descPct = descInp ? (parseFloat(descInp.value) || 0) : 0;
@@ -1685,6 +1733,26 @@ function cambiarCantidad(idx, delta) {
     carrito.forEach(item => subtotal += item.precio * item.cantidad);
     const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
 
+    const totalPagEl = document.getElementById('totalPagado');
+    if (totalPagEl) {
+      totalPagEl.textContent = '$' + Math.round(pagado).toLocaleString('es-CO');
+      if (carrito.length > 0 && pagado >= totalFinal && totalFinal > 0) {
+        totalPagEl.classList.add('cys-monto-ok');
+        totalPagEl.classList.remove('cys-monto-pendiente');
+      } else {
+        totalPagEl.classList.add('cys-monto-pendiente');
+        totalPagEl.classList.remove('cys-monto-ok');
+      }
+    }
+
+    const btnRegistrar = document.getElementById('btnRegistrar');
+    const inpEfec = document.getElementById('inputPagoEfectivo');
+    const pefec = inpEfec ? (parseFloat(inpEfec.value) || 0) : 0;
+    const pelec = (parseFloat(document.querySelector('[name="pago_tarjeta"]')?.value) || 0) +
+                  (parseFloat(document.querySelector('[name="pago_transferencia"]')?.value) || 0) +
+                  (parseFloat(document.querySelector('[name="pago_nequi"]')?.value) || 0) +
+                  (parseFloat(document.querySelector('[name="pago_daviplata"]')?.value) || 0);
+
     const indCambio = document.getElementById('indicadorCambio');
     const lblCambio = document.getElementById('labelCambio');
     const mtoCambio = document.getElementById('montoCambio');
@@ -1693,8 +1761,38 @@ function cambiarCantidad(idx, delta) {
 
     if (carrito.length > 0) {
       const diff = pagado - totalFinal;
+      const vueltos = Math.max(0, diff);
+      const saldoCubrirEfectivo = Math.max(0, totalFinal - pelec);
+
+      // 1. Validar si pagos electrónicos superan el total (los métodos electrónicos no dan vueltos)
+      if (pelec > totalFinal && totalFinal > 0) {
+        if (indCambio) {
+          indCambio.style.display = 'flex';
+          indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
+          lblCambio.textContent = 'Pago electrónico excesivo (No genera vueltos)';
+          mtoCambio.textContent = '$' + Math.round(pelec).toLocaleString('es-CO');
+        }
+        if (btnRegistrar) btnRegistrar.disabled = true;
+        return;
+      }
+
+      // 2. Validar si el efectivo es excesivo (en Colombia el billete máximo es $100.000 COP)
+      if (pefec > saldoCubrirEfectivo + 100000 && totalFinal > 0) {
+        if (indCambio) {
+          indCambio.style.display = 'flex';
+          indCambio.className = 'cys-change-indicator cys-change-indicator--pending mt-2';
+          lblCambio.textContent = 'Monto Excesivo (Vueltos máx. $100.000)';
+          mtoCambio.textContent = '$' + Math.round(vueltos).toLocaleString('es-CO');
+        }
+        if (inpEfec) inpEfec.classList.add('border-danger');
+        if (btnRegistrar) btnRegistrar.disabled = true;
+        return;
+      } else {
+        if (inpEfec) inpEfec.classList.remove('border-danger');
+      }
+
       if (pagado > 0 && diff >= 0) {
-        // Pagado por completo o con vueltos
+        // Pagado por completo o con vueltos válidos
         if (indCambio) {
           indCambio.style.display = 'flex';
           indCambio.className = 'cys-change-indicator cys-change-indicator--ok mt-2';
@@ -1702,6 +1800,7 @@ function cambiarCantidad(idx, delta) {
           mtoCambio.textContent = '$' + Math.round(diff).toLocaleString('es-CO');
         }
         if (secObs) secObs.style.display = 'none';
+        if (btnRegistrar) btnRegistrar.disabled = false;
       } else if (diff < 0) {
         // Queda debiendo o no ha ingresado pago (requiere motivo)
         const faltante = Math.abs(diff);
@@ -1715,16 +1814,45 @@ function cambiarCantidad(idx, delta) {
           secObs.style.display = 'block';
           if (txtDeuda) txtDeuda.textContent = '$' + Math.round(faltante).toLocaleString('es-CO');
         }
+        const obsInp = document.getElementById('inputObservacionPago');
+        if (btnRegistrar) btnRegistrar.disabled = !(obsInp && obsInp.value.trim().length > 0);
       } else {
         if (indCambio) indCambio.style.display = 'none';
         if (secObs) secObs.style.display = 'none';
+        if (btnRegistrar) btnRegistrar.disabled = true;
       }
     } else {
       if (indCambio) indCambio.style.display = 'none';
       if (secObs) secObs.style.display = 'none';
+      if (btnRegistrar) btnRegistrar.disabled = true;
     }
   }
-  document.querySelectorAll('.pago-input').forEach(i => i.addEventListener('input', actualizarPagado));
+  document.querySelectorAll('.pago-input').forEach(i => {
+    // Si hace foco y el valor es 0, vaciar el campo para que escriba directamente sin ceros sobrantes
+    i.addEventListener('focus', function() {
+      if (this.value === '0' || this.value === '0.00') {
+        this.value = '';
+      } else {
+        this.select();
+      }
+    });
+
+    // Limpiar ceros sobrantes a la izquierda mientras el usuario escribe (evita "05664")
+    i.addEventListener('input', function() {
+      if (this.value && this.value.length > 1 && this.value.startsWith('0') && !this.value.startsWith('0.')) {
+        this.value = this.value.replace(/^0+/, '') || '0';
+      }
+      actualizarPagado();
+    });
+
+    // Al salir de la casilla, si quedó vacía, restaurar '0'
+    i.addEventListener('blur', function() {
+      if (this.value === '' || isNaN(parseFloat(this.value))) {
+        this.value = '0';
+        actualizarPagado();
+      }
+    });
+  });
 
   // ══ VALIDACIÓN FORMULARIO DE VENTA ══
   const formVenta = document.getElementById('formVenta');
@@ -1751,6 +1879,32 @@ function cambiarCantidad(idx, delta) {
       document.querySelectorAll('.pago-input').forEach(i => pagado += parseFloat(i.value) || 0);
       const totalFinal = Math.max(0, subtotal - (subtotal * descPct / 100));
 
+      const pelec = (parseFloat(document.querySelector('[name="pago_tarjeta"]')?.value) || 0) +
+                    (parseFloat(document.querySelector('[name="pago_transferencia"]')?.value) || 0) +
+                    (parseFloat(document.querySelector('[name="pago_nequi"]')?.value) || 0) +
+                    (parseFloat(document.querySelector('[name="pago_daviplata"]')?.value) || 0);
+      const pefec = parseFloat(document.getElementById('inputPagoEfectivo')?.value) || 0;
+      const saldoCubrirEfectivo = Math.max(0, totalFinal - pelec);
+
+      // Bloquear si pagos electrónicos superan el total
+      if (pelec > totalFinal && totalFinal > 0) {
+        e.preventDefault();
+        mostrarToast('Los pagos electrónicos (Tarjeta, Transferencia, Nequi, Daviplata) no pueden superar el total.', 'warning');
+        return false;
+      }
+
+      // Bloquear si pago en efectivo genera vueltos mayores a $100.000 (billete máximo en Colombia)
+      if (pefec > saldoCubrirEfectivo + 100000 && totalFinal > 0) {
+        e.preventDefault();
+        mostrarToast('El valor de pago en efectivo es excesivo. Los vueltos no pueden superar $100.000 (billete máximo).', 'warning');
+        const inpEfec = document.getElementById('inputPagoEfectivo');
+        if (inpEfec) {
+          inpEfec.focus();
+          inpEfec.select();
+        }
+        return false;
+      }
+
       // Si no pagó el total completo (incluye si pagó $0 o saldo parcial), es obligatorio el motivo de saldo pendiente
       if (pagado < totalFinal) {
         const obsInp = document.getElementById('inputObservacionPago');
@@ -1771,6 +1925,14 @@ function cambiarCantidad(idx, delta) {
           return false;
         }
       }
+    });
+  }
+
+  // Validar en tiempo real mientras escribe en la observación de pago pendiente
+  const obsInpLive = document.getElementById('inputObservacionPago');
+  if (obsInpLive) {
+    obsInpLive.addEventListener('input', function() {
+      actualizarPagado();
     });
   }
 
@@ -2131,8 +2293,38 @@ function cambiarCantidad(idx, delta) {
 
       const form = document.getElementById('formEliminarVentaModal');
       if (form) form.action = '/ventas/eliminar/' + vid + '/';
+
+      const motInput = document.getElementById('motivoEliminarVenta');
+      if (motInput) {
+        motInput.value = '';
+        motInput.classList.remove('is-invalid');
+      }
     });
   });
+
+  const formEliminar = document.getElementById('formEliminarVentaModal');
+  if (formEliminar) {
+    formEliminar.addEventListener('submit', function(e) {
+      const motInput = document.getElementById('motivoEliminarVenta');
+      if (!motInput || !motInput.value.trim()) {
+        e.preventDefault();
+        alert('Debes indicar obligatoriamente la razón por la cual se va a eliminar la venta.');
+        if (motInput) {
+          motInput.focus();
+          motInput.classList.add('is-invalid');
+        }
+        return false;
+      }
+    });
+  }
+
+  const modalEliminarEl = document.getElementById('modalEliminarVenta');
+  if (modalEliminarEl) {
+    modalEliminarEl.addEventListener('shown.bs.modal', function () {
+      const motInput = document.getElementById('motivoEliminarVenta');
+      if (motInput) motInput.focus();
+    });
+  }
 
   document.querySelectorAll('.btn-eliminar-bloqueada').forEach(btn => {
     btn.addEventListener('click', function(e) {

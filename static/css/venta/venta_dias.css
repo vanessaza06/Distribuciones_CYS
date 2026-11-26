@@ -79,6 +79,7 @@
 .cys-kpi-card {
     background-color: var(--cys-bg-card) !important;
     border: 1px solid var(--cys-borde) !important;
+    border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important;
     border-radius: 12px !important;
     padding: 20px !important;
     height: 100%;
@@ -284,6 +285,7 @@
 .cys-panel-container {
     background-color: var(--cys-surface) !important;
     border: 1px solid var(--cys-borde) !important;
+    border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important;
     border-radius: 12px !important;
     margin-top: 24px;
     overflow: hidden;
@@ -495,8 +497,8 @@
 /* ══════════════════════════════════════
    Variantes de color para tarjetas KPI
 ══════════════════════════════════════ */
-.cys-kpi-card--info    { border-left: 3px solid var(--cys-acento); }
-.cys-kpi-card--success { border-left: 3px solid var(--cys-verde); }
+.cys-kpi-card--info    { border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important; }
+.cys-kpi-card--success { border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important; }
 
 .cys-kpi-card-top {
     display: flex;
@@ -556,17 +558,43 @@
   padding: 4px 10px;
   font-size: 0.85rem;
 }
-.cys-estado-pagado {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: color-mix(in srgb, var(--verde) 10%, transparent);
-  color: var(--cys-verde);
-  border: 1px solid color-mix(in srgb, var(--verde) 25%, transparent);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
+.cys-estado-pagado,
+.cys-badge-pagado {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  background: #ecfdf5 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.08) !important;
+}
+
+.cys-estado-pagado i,
+.cys-badge-pagado i {
+  color: #16a34a !important;
+  font-size: 0.85rem !important;
+}
+
+/* Modo oscuro */
+html:not([data-cys-tema="claro"]):not(.cys-modo-claro) .cys-estado-pagado,
+html:not([data-cys-tema="claro"]):not(.cys-modo-claro) .cys-badge-pagado {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.12) !important;
+}
+html:not([data-cys-tema="claro"]):not(.cys-modo-claro) .cys-estado-pagado i,
+html:not([data-cys-tema="claro"]):not(.cys-modo-claro) .cys-badge-pagado i {
+  color: #4ade80 !important;
 }
 .cys-td-total-alineado,
 .cys-hist-total-alineado { text-align: right; }
