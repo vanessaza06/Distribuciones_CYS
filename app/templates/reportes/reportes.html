@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load l10n %}
 
 {% block title %}Reportes — CYS Ltda{% endblock %}
 {% block page_title %}Reportes{% endblock %}
@@ -36,6 +37,14 @@
   .modal-backdrop.show { opacity: .6; }
   .cys-modal { will-change: auto; contain: layout paint; }
   .cys-modal__body { contain: content; }
+
+  /* Paginación del Historial de Ventas (DataTable) */
+  .cys-hv-pagination-wrap { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .cys-hv-pagination-wrap .cys-pag-btn.active {
+    background: #A78BFA; color: #fff; border-color: #A78BFA;
+  }
+  .cys-hv-pagination-wrap .cys-pag-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .cys-pag-dots { color: var(--texto-muted); padding: 0 4px; }
 </style>
 {% endblock %}
 
@@ -296,8 +305,7 @@
           <span class="cys-hv-date-label">Desde</span>
           <div class="cys-hv-date-input-wrap">
             <input type="date" id="filtro-fecha-inicio" name="fecha_inicio"
-                   class="cys-hv-date-input" value="{{ fecha_inicio }}"
-                   placeholder="dd/mm/aaaa">
+                   class="cys-hv-date-input" value="{{ fecha_inicio }}">
             <i class="bi bi-calendar3 cys-hv-cal-icon"></i>
           </div>
         </div>
@@ -307,8 +315,7 @@
           <span class="cys-hv-date-label">Hasta</span>
           <div class="cys-hv-date-input-wrap">
             <input type="date" id="filtro-fecha-fin" name="fecha_fin"
-                   class="cys-hv-date-input" value="{{ fecha_fin }}"
-                   placeholder="dd/mm/aaaa">
+                   class="cys-hv-date-input" value="{{ fecha_fin }}">
             <i class="bi bi-calendar3 cys-hv-cal-icon"></i>
           </div>
         </div>
@@ -364,7 +371,8 @@
       {% endif %}
 
       <div class="table-responsive mt-3">
-        <table id="reportes-table" class="cys-inv-table table w-100">
+        <table id="reportes-table" class="cys-inv-table table w-100"
+               data-empty-msg="{% if fecha_inicio or fecha_fin %}No se encontraron ventas con los filtros aplicados.{% else %}No hay ventas registradas aún.{% endif %}">
           <thead>
             <tr>
               <th>#</th>
@@ -383,33 +391,19 @@
                 <td class="cys-td cys-td--muted" data-label="#">{{ forloop.parentloop.counter }}</td>
                 <td class="cys-td cys-td--bold" data-label="Cliente">{{ venta.cliente }}</td>
                 <td class="cys-td" data-label="Producto">{% if det.producto %}{{ det.producto.nombre }}{% elif det.presentacion %}{{ det.presentacion.producto.nombre }}{% else %}—{% endif %}</td>
-                <td class="cys-td" data-label="Cantidad">{{ det.cantidad }}</td>
-                <td class="cys-td" data-label="Precio Uni.">${{ det.precio_unitario|floatformat:0 }}</td>
-                <td class="cys-td cys-td--bold" data-label="Total">${{ det.subtotal|floatformat:0 }}</td>
-                <td class="cys-td" data-label="Fecha">{{ venta.fecha|date:"Y-m-d" }}</td>
+                <td class="cys-td" data-label="Cantidad" data-order="{{ det.cantidad|unlocalize }}">{{ det.cantidad }}</td>
+                <td class="cys-td" data-label="Precio Uni." data-order="{{ det.precio_unitario|unlocalize }}">${{ det.precio_unitario|floatformat:0 }}</td>
+                <td class="cys-td cys-td--bold" data-label="Total" data-order="{{ det.subtotal|unlocalize }}">${{ det.subtotal|floatformat:0 }}</td>
+                <td class="cys-td" data-label="Fecha" data-order="{{ venta.fecha|date:'Y-m-d H:i:s' }}">{{ venta.fecha|date:"Y-m-d" }}</td>
               </tr>
               {% endfor %}
-            {% empty %}
-            <tr>
-              <td colspan="7" class="cys-td--empty border-0">
-                <div class="cys-empty-box">
-                  <i class="bi bi-bar-chart"></i>
-                  {% if cliente_q or producto_q or fecha_inicio or fecha_fin %}
-                    No se encontraron ventas con los filtros aplicados.
-                  {% else %}
-                    No hay ventas registradas aún.
-                  {% endif %}
-                </div>
-              </td>
-              <td class="d-none"></td><td class="d-none"></td><td class="d-none"></td>
-              <td class="d-none"></td><td class="d-none"></td><td class="d-none"></td>
-            </tr>
             {% endfor %}
+            {# SIN fila "empty": DataTables muestra el mensaje con language.emptyTable #}
           </tbody>
         </table>
       </div>
 
-      <!-- Pie de tabla -->
+      <!-- Pie de tabla (lo llena reportes.js) -->
       <div class="cys-hv-table-footer">
         <span class="cys-hv-showing-info" id="cys-dt-info"></span>
         <div class="cys-hv-pagination-wrap" id="cys-dt-pagination"></div>

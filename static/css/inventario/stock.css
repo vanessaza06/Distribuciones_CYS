@@ -90,7 +90,7 @@
 .lotes-filtro-btn {
   --lotes-btn-bg: color-mix(in srgb, var(--azul-claro) 80%, black);
   --lotes-btn-borde: color-mix(in srgb, var(--azul-claro) 35%, transparent);
-  --lotes-btn-texto: color-mix(in srgb, var(--azul-claro) 70%, white);
+  --lotes-btn-texto: #fff;
 
   --bs-btn-color: var(--lotes-btn-texto);
   --bs-btn-bg: var(--lotes-btn-bg);
@@ -106,7 +106,7 @@
 
   font-size: .82rem;
   border-radius: 8px;
-  min-width: 170px;
+  min-width: 100px;
   width: auto;
   text-align: left;
   transition: filter .15s ease;

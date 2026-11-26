@@ -461,3 +461,19 @@ button.lote-btn-crear:active,
 .exp-wrap .exp-ico-excel { color: #22c55e !important; }
 .exp-wrap .exp-ico-pdf   { color: #ef4444 !important; }
 .exp-wrap .exp-ico-print { color: #2f7fd1 !important; }   
+/* Botón "Ver Stock": mismo tamaño que "Exportar" */
+.lote-btn-stock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  box-sizing: border-box;
+  padding: 0 22px !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 999px !important;
+}
+.lote-btn-stock i { font-size: 15px; }
