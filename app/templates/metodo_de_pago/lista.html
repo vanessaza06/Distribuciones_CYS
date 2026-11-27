@@ -8,8 +8,10 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=2">
-<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=2">
-<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/venta/venta_caja.css' %}?v=3">
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <style>
   /* ── Estilos limpios y adaptables al tema (Oscuro / Claro) ── */
@@ -25,51 +27,56 @@
   .mp-tabs-nav {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem;
-    border-radius: 12px;
-    background: var(--fondo-card, rgba(14, 28, 52, 0.65));
-    border: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.2));
+    gap: 0.5rem;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
+    border: none;
   }
 
   .mp-tab-btn {
-    padding: 0.45rem 1rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    border-radius: 9px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--texto-muted, #94a3b8);
-    text-decoration: none;
-    transition: all 0.18s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
+    padding: 0.45rem 1.15rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    border-radius: 999px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    transition: all 0.18s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
   }
 
-  .mp-tab-btn:hover {
-    color: var(--texto, #f8fafc);
-    background: rgba(77, 168, 218, 0.08);
+  .mp-tab-btn:hover:not(.active) {
+    color: #0f172a !important;
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
   }
 
   .mp-tab-btn.active {
-    background: var(--azul-claro, #0284c7);
+    background: #a82315 !important;
+    border: 1px solid #a82315 !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(168, 35, 21, 0.25) !important;
   }
 
   .mp-tab-count {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    padding: 0.1rem 0.45rem;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.18);
-    color: inherit;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
   }
 
   .mp-tab-btn:not(.active) .mp-tab-count {
-    background: rgba(148, 163, 184, 0.16);
-    color: var(--texto-muted, #64748b);
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
   }
 
   .mp-kpi-grid {
@@ -148,20 +155,21 @@
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    padding: 0.22rem 0.6rem;
-    border-radius: 6px;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
     font-size: 0.73rem;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
-    background: rgba(56, 189, 248, 0.12);
-    color: var(--azul-claro, #0284c7);
-    border: 1px solid rgba(56, 189, 248, 0.25);
+    background: #fff1f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
     transition: all 0.15s ease;
   }
 
   .mp-turno-link:hover {
-    background: rgba(56, 189, 248, 0.22);
-    color: var(--azul-claro, #0369a1);
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
   }
 
   .mp-card {
@@ -244,8 +252,9 @@
   html.cys-a11y-modo-claro .mp-tabs-nav,
   html.cys-modo-claro .mp-tabs-nav,
   html[data-cys-tema="claro"] .mp-tabs-nav {
-    background: #f1f5f9 !important;
-    border-color: #e2e8f0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   html.cys-a11y-modo-claro .mp-kpi-box,
@@ -289,66 +298,110 @@
     border-color: #e2e8f0 !important;
   }
 
-  /* ── Paginación DataTables estilo Bootstrap « ‹ 1 2 › » ── */
+  /* ── Paginación DataTables estilo Rojo redondeado « ‹ 1 2 › » (Sin viñetas) ── */
   div.dataTables_wrapper .dataTables_paginate {
     display: inline-flex !important;
     flex-direction: row !important;
-    align-items: stretch !important;
-    border: 1px solid #dee2e6 !important;
-    border-radius: 6px !important;
-    overflow: hidden !important;
-    background-color: #ffffff !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
     margin: 0 !important;
     padding: 0 !important;
     list-style: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    list-style-type: none !important;
   }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button {
+  div.dataTables_wrapper .dataTables_paginate ul,
+  div.dataTables_wrapper .dataTables_paginate ul.pagination {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    list-style-type: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate li,
+  div.dataTables_wrapper .dataTables_paginate li.page-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    list-style-type: none !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate li::before,
+  div.dataTables_wrapper .dataTables_paginate li::marker {
+    display: none !important;
+    content: "" !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button,
+  div.dataTables_wrapper .dataTables_paginate .page-link {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-width: 36px !important;
+    min-width: 34px !important;
     height: 34px !important;
-    padding: 0 11px !important;
+    padding: 0 10px !important;
     margin: 0 !important;
     font-size: 0.88rem !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     line-height: 1 !important;
-    border: none !important;
-    border-right: 1px solid #dee2e6 !important;
-    border-radius: 0 !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 8px !important;
     text-decoration: none !important;
     cursor: pointer !important;
-    background-color: #ffffff !important;
-    color: #0d6efd !important;
+    background-color: #fff1f2 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 1px 2px rgba(168, 35, 21, 0.08) !important;
     user-select: none !important;
+    box-sizing: border-box !important;
     transition: all 0.15s ease !important;
   }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button:last-child {
-    border-right: none !important;
+  div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled),
+  div.dataTables_wrapper .dataTables_paginate .page-link:hover:not(.disabled) {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fca5a5 !important;
   }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
-    background-color: #e9ecef !important;
-    color: #0a58ca !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background-color: #0d6efd !important;
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+  div.dataTables_wrapper .dataTables_paginate li.active .page-link,
+  div.dataTables_wrapper .dataTables_paginate li.active .paginate_button {
+    background-color: #a82315 !important;
     color: #ffffff !important;
+    border-color: #a82315 !important;
+    box-shadow: 0 2px 6px rgba(168, 35, 21, 0.3) !important;
     font-weight: 700 !important;
     cursor: default !important;
   }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-    background-color: #f1f5f9 !important;
-    color: #94a3b8 !important;
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+  div.dataTables_wrapper .dataTables_paginate li.disabled .page-link,
+  div.dataTables_wrapper .dataTables_paginate li.disabled .paginate_button {
+    background-color: #f8fafc !important;
+    color: #cbd5e1 !important;
+    border: 1px solid #f1f5f9 !important;
     cursor: not-allowed !important;
-    opacity: 0.75 !important;
+    opacity: 0.65 !important;
     pointer-events: none !important;
+    box-shadow: none !important;
   }
   div.dataTables_wrapper .dataTables_info {
     font-size: 0.84rem !important;
     font-weight: 600 !important;
     color: var(--texto-muted, #64748b) !important;
-    padding-top: 0.5rem !important;
+    padding: 0.5rem 0 !important;
+    margin: 0 !important;
   }
   div.dataTables_wrapper .dataTables_bottom,
   div.dataTables_wrapper .row:last-child {
@@ -360,97 +413,137 @@
     margin-top: 0.85rem !important;
   }
 
-  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate {
-    border-color: rgba(77, 168, 218, 0.25) !important;
-    background-color: rgba(14, 28, 52, 0.85) !important;
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button,
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .page-link {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #f87171 !important;
   }
-  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button {
-    background-color: rgba(14, 28, 52, 0.85) !important;
-    border-right-color: rgba(77, 168, 218, 0.25) !important;
-    color: #38bdf8 !important;
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled),
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .page-link:hover:not(.disabled) {
+    background-color: rgba(239, 68, 68, 0.22) !important;
+    color: #fca5a5 !important;
+    border-color: #f87171 !important;
   }
-  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
-    background-color: rgba(56, 189, 248, 0.15) !important;
-    color: #7dd3fc !important;
-  }
-  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background-color: #0284c7 !important;
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate li.active .page-link,
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate li.active .paginate_button {
+    background-color: #dc2626 !important;
     color: #ffffff !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4) !important;
   }
-  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate li.disabled .page-link,
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate li.disabled .paginate_button {
     background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
     color: #64748b !important;
-    opacity: 0.6 !important;
+  }
+
+  /* ── Botones Rojos CYS (Forma redondeada píldora) ── */
+  .cys-btn-primary,
+  .prod-btn-primary,
+  .btn-primary:not(.mp-tab-btn):not(.paginate_button):not(.cys-page-btn) {
+    background: #a82315 !important;
+    color: #ffffff !important;
+    border: 1px solid #a82315 !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    padding: 0.45rem 1.25rem !important;
+    box-shadow: 0 2px 6px rgba(168, 35, 21, 0.25) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    text-decoration: none !important;
+  }
+  .cys-btn-primary:hover,
+  .prod-btn-primary:hover,
+  .btn-primary:not(.mp-tab-btn):not(.paginate_button):not(.cys-page-btn):hover {
+    background: #8b1a0e !important;
+    color: #ffffff !important;
+    border-color: #8b1a0e !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(168, 35, 21, 0.35) !important;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<style>
-  div.dataTables_wrapper .dataTables_paginate {
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    border: 1px solid #dee2e6 !important;
-    border-radius: 6px !important;
-    overflow: hidden !important;
-    background-color: #ffffff !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 36px !important;
-    height: 34px !important;
-    padding: 0 11px !important;
-    margin: 0 !important;
-    font-size: 0.88rem !important;
-    font-weight: 600 !important;
-    line-height: 1 !important;
-    border: none !important;
-    border-right: 1px solid #dee2e6 !important;
-    border-radius: 0 !important;
-    text-decoration: none !important;
-    cursor: pointer !important;
-    background-color: #ffffff !important;
-    color: #0d6efd !important;
-    user-select: none !important;
-    transition: all 0.15s ease !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button:last-child {
-    border-right: none !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
-    background-color: #e9ecef !important;
-    color: #0a58ca !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background-color: #0d6efd !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    cursor: default !important;
-  }
-  div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-    background-color: #f1f5f9 !important;
-    color: #94a3b8 !important;
-    cursor: not-allowed !important;
-    opacity: 0.75 !important;
-    pointer-events: none !important;
-  }
-  div.dataTables_wrapper .dataTables_info {
-    font-size: 0.84rem !important;
-    font-weight: 600 !important;
-    color: var(--texto-muted, #64748b) !important;
-    padding-top: 0.5rem !important;
-  }
-</style>
 <div class="container-fluid p-0">
 
-  <!-- ── BARRA SUPERIOR UNIFICADA: PESTAÑAS + ACCIONES RÁPIDAS ── -->
+  <!-- ── BARRA ESTADO DE CAJA (Unificada Estilo Image 1) ── -->
+  <div class="cys-pos-header-bar d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-4">
+      {% if caja_abierta %}
+        <div class="cys-status-pill cys-status-pill--abierta">
+          <span class="cys-pulse-dot"></span>
+          CAJA ABIERTA
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Apertura</div>
+            <div class="cys-pos-hora" style="font-size:.92rem; font-weight:800; color:var(--texto);">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
+          </div>
+          <div class="cys-pos-divider" style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Base Inicial</div>
+            <div class="cys-pos-base" style="font-size:.92rem; font-weight:800; color:var(--azul-claro, #38bdf8);">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
+          </div>
+        </div>
+      {% else %}
+        <div class="cys-status-pill cys-status-pill--cerrada">
+          <i class="bi bi-lock-fill me-1" style="font-size:.75rem;"></i> CAJA BLOQUEADA
+        </div>
+      {% endif %}
+
+      <div class="cys-pos-divider d-none d-md-block" style="width:1px; height:28px; background:rgba(255,255,255,0.12);"></div>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle d-flex align-items-center justify-content-center cys-pos-cash-icon" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
+          <i class="bi bi-currency-dollar fs-5"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-1.5">
+            <span style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Cobrado Hoy</span>
+            {% if total_pendiente_dia > 0 %}
+            <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-size:0.6rem; padding:1px 5px; font-weight:700;">
+              -${{ total_pendiente_dia|floatformat:0|intcomma }} pend.
+            </span>
+            {% endif %}
+          </div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_cobrado_dia|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Ventas"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cart me-1"></i> Ventas
+      </a>
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Ventas del Día"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-bar-chart me-1"></i> Ventas del día
+      </a>
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Caja"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cash-stack me-1"></i> Caja
+      </a>
+      <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--active"
+         title="Métodos de Pago"
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-wallet2 me-1"></i> Métodos de Pago
+      </a>
+    </div>
+  </div>
+
+  <!-- ── BARRA SUPERIOR: PESTAÑAS REDONDEADAS ── -->
   <div class="mp-header-bar">
     <div class="mp-tabs-nav" role="tablist">
       <a href="?tab=ventas" class="mp-tab-btn {% if tab != 'compras' %}active{% endif %}">
@@ -472,14 +565,6 @@
         <i class="bi bi-plus-lg me-1"></i> Registrar Pago
       </button>
       {% endif %}
-      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-btn-danger-soft" title="Ir a Caja"
-         style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-        <i class="bi bi-cash-stack me-1"></i> Caja
-      </a>
-      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary" title="Ir a POS"
-         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important;">
-        <i class="bi bi-cart-check me-1"></i> Punto de Venta
-      </a>
     </div>
   </div>
 
@@ -497,16 +582,16 @@
        VISTA 1: MÉTODOS DE PAGO DE VENTAS Y CAJA
   ═══════════════════════════════════════════════════════════════════════════════════ -->
 
-  <!-- Tarjetas KPI Limpias -->
+  <!-- Tarjetas KPI Limpias y Sincronizadas con Caja -->
   <div class="mp-kpi-grid">
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(2, 132, 199, 0.12); color: #0284c7;">
-        <i class="bi bi-graph-up-arrow"></i>
+      <div class="mp-kpi-icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
+        <i class="bi bi-safe2"></i>
       </div>
       <div>
-        <div class="mp-kpi-label">Total Ventas</div>
-        <div class="mp-kpi-value">${{ total_ventas_monto|floatformat:0|intcomma }}</div>
-        <div class="mp-kpi-sub">{{ ventas_count }} transaccion{{ ventas_count|pluralize:"es" }}</div>
+        <div class="mp-kpi-label">Total Físico en Caja</div>
+        <div class="mp-kpi-value" style="color: #16a34a !important;">${{ total_fisico_en_caja|floatformat:0|intcomma }}</div>
+        <div class="mp-kpi-sub">Base (${{ monto_base_caja|floatformat:0|intcomma }}) + Efectivo (${{ total_efectivo_ventas|floatformat:0|intcomma }})</div>
       </div>
     </div>
 
@@ -515,30 +600,30 @@
         <i class="bi bi-cash-stack"></i>
       </div>
       <div>
-        <div class="mp-kpi-label">Efectivo en Caja</div>
+        <div class="mp-kpi-label">Efectivo Cobrado</div>
         <div class="mp-kpi-value" style="color: #16a34a !important;">${{ total_efectivo_ventas|floatformat:0|intcomma }}</div>
         <div class="mp-kpi-sub">{{ cant_efectivo }} cobro{{ cant_efectivo|pluralize }} en efectivo</div>
       </div>
     </div>
 
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(147, 51, 234, 0.12); color: #9333ea;">
+      <div class="mp-kpi-icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
         <i class="bi bi-credit-card-2-front"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Canales Digitales</div>
-        <div class="mp-kpi-value" style="color: #9333ea !important;">${{ total_digital_ventas|floatformat:0|intcomma }}</div>
+        <div class="mp-kpi-value" style="color: #16a34a !important;">${{ total_digital_ventas|floatformat:0|intcomma }}</div>
         <div class="mp-kpi-sub">Nequi, Daviplata, Tarjeta, Transf.</div>
       </div>
     </div>
 
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(217, 119, 6, 0.12); color: #d97706;">
+      <div class="mp-kpi-icon" style="background: rgba(220, 38, 38, 0.12); color: #dc2626;">
         <i class="bi bi-clock-history"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Pendiente por Cobrar</div>
-        <div class="mp-kpi-value" style="color: #d97706 !important;">${{ total_pendiente_ventas|floatformat:0|intcomma }}</div>
+        <div class="mp-kpi-value" style="color: #dc2626 !important;">${{ total_pendiente_ventas|floatformat:0|intcomma }}</div>
         <div class="mp-kpi-sub">{{ cant_pendiente }} venta{{ cant_pendiente|pluralize }} a crédito</div>
       </div>
     </div>
@@ -584,20 +669,41 @@
         <span class="small text-muted">—</span>
         <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;" title="Hasta">
 
-        <button type="submit" class="btn btn-sm fw-bold cys-btn-primary px-3">
+        <button type="submit" class="btn btn-sm px-3"
+                style="background:#16a34a; border:1px solid #16a34a; color:#fff; border-radius:999px; font-weight:700;">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
         {% if q or selected_caja or selected_metodo or fecha_inicio or fecha_fin %}
-        <a href="?tab=ventas" class="btn btn-sm fw-bold cys-btn-ghost-soft px-2.5" title="Limpiar filtros">
-          <i class="bi bi-x-lg"></i>
+        <a href="?tab=ventas" class="btn btn-sm px-3"
+           style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700;">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
         </a>
         {% endif %}
       </div>
     </form>
 
+    {% if cant_pendiente > 0 %}
+    <div class="px-3 pt-3 pb-1">
+      <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 flex-wrap gap-2"
+           style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626;">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill fs-5" style="color:#dc2626;"></i>
+          <div>
+            <strong style="color:#b91c1c;">Atención: Hay {{ cant_pendiente }} venta{{ cant_pendiente|pluralize }} con saldo pendiente.</strong>
+            <div class="small" style="color:#dc2626;">Total pendiente de cobro: <strong>${{ total_pendiente_ventas|floatformat:0|intcomma }}</strong></div>
+          </div>
+        </div>
+        <a href="?tab=ventas&metodo=pendiente" class="btn btn-sm px-3"
+           style="background:#dc2626; border:1px solid #dc2626; color:#ffffff; border-radius:999px; font-weight:700;">
+          <i class="bi bi-funnel me-1"></i> Ver pendientes
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Tabla Simplificada y Limpia con DataTables -->
-    <div class="table-responsive">
+    <div class="table-responsive p-3 pt-2">
       <table id="tablaVentasMetodosPago" class="cys-inv-table table mb-0 align-middle mp-table w-100">
         <thead>
           <tr>
@@ -613,7 +719,7 @@
         <tbody>
           {% for item in ventas %}
             <tr class="fila-metodo-pago {% if item.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}">
-              <td class="text-center fw-bold" style="color: var(--azul-claro, #0284c7) !important;">
+              <td class="text-center fw-bold" style="color: var(--texto, #0f172a) !important;">
                 #{{ item.venta.codigo_venta }}
               </td>
 
@@ -628,7 +734,8 @@
 
               <td class="text-center">
                 {% if item.caja_info %}
-                  <a href="{% url 'caja' %}#collapseTurno{{ item.caja_info.id }}" class="mp-turno-link" title="Ver en Caja">
+                  <a href="{% url 'caja' %}#collapseTurno{{ item.caja_info.id }}" class="mp-turno-link" title="Ver en Caja"
+                     style="background:rgba(22,163,74,0.1); color:#16a34a; border:1px solid rgba(22,163,74,0.25);">
                     Turno #{{ item.caja_info.id }}
                   </a>
                 {% else %}
@@ -644,7 +751,7 @@
                       {{ badge.tipo }}{% if item.desglose_badges|length > 1 %}: ${{ badge.monto|floatformat:0|intcomma }}{% endif %}
                     </span>
                   {% empty %}
-                    <span class="mp-method-chip" style="background:rgba(148,163,184,0.12); color:var(--texto-muted);">
+                    <span class="mp-method-chip" style="background:rgba(22,163,74,0.12); color:#16a34a; border:1px solid rgba(22,163,74,0.25);">
                       {{ item.venta.metodo_pago|capfirst|default:"Efectivo" }}
                     </span>
                   {% endfor %}
@@ -653,11 +760,11 @@
 
               <td class="text-center">
                 {% if item.saldo_pendiente > 0 %}
-                  <span class="badge cys-badge-pendiente">
+                  <span class="badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:0.75rem; font-weight:700; border-radius:999px; padding:0.3rem 0.65rem;">
                     Debe ${{ item.saldo_pendiente|floatformat:0|intcomma }}
                   </span>
                 {% else %}
-                  <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1" style="font-size:0.7rem; font-weight:700;">
+                  <span class="badge" style="background:#ecfdf5; color:#16a34a; border:1px solid #86efac; font-size:0.75rem; font-weight:700; border-radius:999px; padding:0.3rem 0.65rem;">
                     Pagado
                   </span>
                 {% endif %}
@@ -699,12 +806,12 @@
 
   <div class="mp-kpi-grid">
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(2, 132, 199, 0.12); color: #0284c7;">
+      <div class="mp-kpi-icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
         <i class="bi bi-currency-dollar"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Total Pagado</div>
-        <div class="mp-kpi-value">${{ total_recaudado_compras|floatformat:0|intcomma }}</div>
+        <div class="mp-kpi-value" style="color: #16a34a !important;">${{ total_recaudado_compras|floatformat:0|intcomma }}</div>
         <div class="mp-kpi-sub">Pagos a proveedores</div>
       </div>
     </div>
@@ -721,23 +828,23 @@
     </div>
 
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(147, 51, 234, 0.12); color: #9333ea;">
+      <div class="mp-kpi-icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
         <i class="bi bi-bank"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Transferencia / Banco</div>
-        <div class="mp-kpi-value" style="color: #9333ea !important;">${{ total_transaccion_compras|floatformat:0|intcomma }}</div>
+        <div class="mp-kpi-value" style="color: #16a34a !important;">${{ total_transaccion_compras|floatformat:0|intcomma }}</div>
         <div class="mp-kpi-sub">Canales bancarios</div>
       </div>
     </div>
 
     <div class="mp-kpi-box">
-      <div class="mp-kpi-icon" style="background: rgba(217, 119, 6, 0.12); color: #d97706;">
+      <div class="mp-kpi-icon" style="background: rgba(220, 38, 38, 0.12); color: #dc2626;">
         <i class="bi bi-receipt-cutoff"></i>
       </div>
       <div>
         <div class="mp-kpi-label">Comprobantes</div>
-        <div class="mp-kpi-value" style="color: #d97706 !important;">{{ total_registros_compras }}</div>
+        <div class="mp-kpi-value" style="color: #dc2626 !important;">{{ total_registros_compras }}</div>
         <div class="mp-kpi-sub">Registros guardados</div>
       </div>
     </div>
@@ -760,19 +867,21 @@
         <span class="small text-muted">—</span>
         <input type="date" name="fecha_fin" id="filtroFechaFinMP" value="{{ fecha_fin }}" class="form-control form-control-sm prod-input" style="width: auto;">
 
-        <button type="submit" class="btn btn-sm fw-bold cys-btn-primary px-3">
+        <button type="submit" class="btn btn-sm px-3"
+                style="background:#16a34a; border:1px solid #16a34a; color:#fff; border-radius:999px; font-weight:700;">
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
         {% if q or fecha_inicio or fecha_fin %}
-        <a href="?tab=compras" class="btn btn-sm fw-bold cys-btn-ghost-soft px-2.5" title="Limpiar filtros">
-          <i class="bi bi-x-lg"></i>
+        <a href="?tab=compras" class="btn btn-sm px-3"
+           style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700;">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
         </a>
         {% endif %}
       </div>
     </form>
 
-    <div class="table-responsive">
+    <div class="table-responsive p-3 pt-2">
       <table id="tablaPagosCompras" class="cys-inv-table table mb-0 align-middle mp-table w-100">
         <thead>
           <tr>
@@ -807,7 +916,7 @@
                     <i class="bi bi-cash"></i> Efectivo
                   </span>
                 {% elif p.transaccion > 0 %}
-                  <span class="mp-method-chip" style="background:rgba(147,51,234,0.12); color:#9333ea; border:1px solid rgba(147,51,234,0.25);">
+                  <span class="mp-method-chip" style="background:rgba(22,163,74,0.12); color:#16a34a; border:1px solid rgba(22,163,74,0.25);">
                     <i class="bi bi-bank"></i> Transferencia
                   </span>
                 {% else %}
@@ -935,6 +1044,7 @@ function initMetodosPago() {
   if (window.jQuery && jQuery.fn.DataTable) {
     if (jQuery('#tablaVentasMetodosPago').length && !jQuery.fn.DataTable.isDataTable('#tablaVentasMetodosPago')) {
       const dtVentas = jQuery('#tablaVentasMetodosPago').DataTable({
+        dom: 'tip',
         paging: true,
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50, 100],
@@ -953,6 +1063,13 @@ function initMetodosPago() {
           lengthMenu: "Mostrar _MENU_ registros",
           search: "Buscar en tabla:",
           paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        },
+        drawCallback: function() {
+          const wrapper = this.api().table().container();
+          wrapper.querySelectorAll('.dataTables_paginate, .dataTables_paginate ul, .dataTables_paginate li').forEach(el => {
+            el.style.listStyle = 'none';
+            el.style.listStyleType = 'none';
+          });
         }
       });
 

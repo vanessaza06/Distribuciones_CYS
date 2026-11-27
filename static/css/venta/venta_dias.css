@@ -253,80 +253,106 @@
   display: none !important;
 }
 
+.cys-bootstrap-pagination {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: none !important;
+  background-color: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  box-shadow: none !important;
+}
+
 .cys-bootstrap-pagination .page-link {
   position: relative !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  padding: 0.35rem 0.7rem !important;
-  font-size: 0.85rem !important;
-  font-weight: 600 !important;
-  color: #0d6efd !important;
-  background-color: #ffffff !important;
-  border: none !important;
-  border-right: 1px solid #dee2e6 !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #b91c1c !important;
+  background-color: #fff1f2 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 8px !important;
   text-decoration: none !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
   line-height: 1 !important;
   user-select: none !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(168, 35, 21, 0.08) !important;
   outline: none !important;
+  box-sizing: border-box !important;
 }
 
 .cys-bootstrap-pagination .page-item:last-child .page-link {
-  border-right: none !important;
+  border-right: 1px solid #fecaca !important;
 }
 
 .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
-  background-color: #e9ecef !important;
-  color: #0a58ca !important;
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fca5a5 !important;
 }
 
 .cys-bootstrap-pagination .page-item.active .page-link {
-  background-color: #0d6efd !important;
+  background-color: #a82315 !important;
   color: #ffffff !important;
+  border-color: #a82315 !important;
   font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(168, 35, 21, 0.3) !important;
+  cursor: default !important;
 }
 
 .cys-bootstrap-pagination .page-item.disabled .page-link {
-  background-color: #f1f5f9 !important;
-  color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+  color: #cbd5e1 !important;
+  border: 1px solid #f1f5f9 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  opacity: 0.9 !important;
+  opacity: 0.65 !important;
+  box-shadow: none !important;
 }
 
 /* Adaptación suave a Modo Oscuro */
 html[data-cys-tema="oscuro"] .cys-bootstrap-pagination,
 html.cys-modo-oscuro .cys-bootstrap-pagination {
-  border-color: rgba(77, 168, 218, 0.25) !important;
+  border: none !important;
+  background-color: transparent !important;
 }
 
 html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link,
 html.cys-modo-oscuro .cys-bootstrap-pagination .page-link {
-  background-color: #0f223a !important;
-  color: #38bdf8 !important;
-  border-right-color: rgba(77, 168, 218, 0.25) !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
 }
 
 html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled),
 html.cys-modo-oscuro .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
-  background-color: rgba(56, 189, 248, 0.15) !important;
-  color: #7dd3fc !important;
+  background-color: rgba(239, 68, 68, 0.22) !important;
+  color: #fca5a5 !important;
+  border-color: #f87171 !important;
 }
 
 html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link,
 html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.active .page-link {
-  background-color: #0284c7 !important;
+  background-color: #dc2626 !important;
   color: #ffffff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4) !important;
 }
 
 html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link,
 html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.disabled .page-link {
-  background-color: rgba(15, 34, 58, 0.7) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   color: #64748b !important;
 }
 

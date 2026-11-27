@@ -147,7 +147,16 @@
     window.sincronizarTemaCYS = sincronizarTemaCYS;
 
     // Después de cada navegación/intercambio de htmx
-    document.addEventListener('htmx:afterSettle', sincronizarTemaCYS);
+    document.addEventListener('htmx:afterSettle', function () {
+        sincronizarTemaCYS();
+        // Limpieza de posibles backdrops huérfanos tras navegación/swaps de htmx
+        if (!document.querySelector('.modal.show')) {
+            document.querySelectorAll('.modal-backdrop').forEach(function (b) { b.remove(); });
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }
+    });
 
     // Al volver con el botón atrás/adelante (htmx restaura la página desde su caché)
     document.addEventListener('htmx:historyRestore', function () { sincronizarTemaCYS(); });
