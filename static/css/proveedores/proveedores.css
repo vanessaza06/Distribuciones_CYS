@@ -1859,3 +1859,19 @@ h1, h2, h3, h4, h5, h6 {
   background: color-mix(in srgb, var(--azul-claro) 12%, transparent);
   margin: 0;
 }
+/* ════════════════════════════════════════════════════════════════
+   MENÚ DE EXPORTAR — mismo ancho que el botón "Exportar"
+   (Excel / PDF / Imprimir). Se aplica a todas las páginas que cargan
+   este CSS: Proveedores, Compras y Detalle de compra.
+   ════════════════════════════════════════════════════════════════ */
+.dropdown > .dropdown-menu.cat-dropdown-export {
+  min-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.dropdown > .dropdown-menu.cat-dropdown-export .dropdown-item {
+  padding-left: 0.9rem !important;
+  padding-right: 0.9rem !important;
+  white-space: nowrap;
+}

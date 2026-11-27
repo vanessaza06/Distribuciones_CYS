@@ -4,7 +4,7 @@
 {% block page_title %}Gestión de categorías{% endblock %}
 {% block nav_categorias %}active{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=5" />
+<link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=6" />
 <link rel="stylesheet" href="{% static 'css/datatables.css' %}" />
 {% endblock %}
 {% block content %}
@@ -55,7 +55,7 @@
       <div class="cys-cat-panel__head flex-wrap gap-2">
         <div>
           <h2 class="cys-cat-panel__title mb-1"><i class="bi bi-tags"></i> Categorías</h2>
-          <div class="d-flex align-items-center gap-2 mt-1">
+          <div class="cys-filtros-estado d-flex align-items-center gap-2 mt-2 cys-no-print">
             <button type="button" class="btn btn-sm rounded-pill cys-filtro-estado-btn active" data-estado="">
               Todas <span class="badge bg-secondary ms-1">{{ categorias|length }}</span>
             </button>
@@ -81,10 +81,6 @@
               <li data-export="imprimir"><i class="bi bi-printer cys-ico-print"></i> Imprimir</li>
             </ul>
           </div>
-
-          <button class="cys-btn cys-btn--primary" id="btnNuevaCategoria" type="button">
-            <i class="bi bi-plus-lg"></i> Nueva categoría
-          </button>
         </div>
       </div>
 
@@ -237,56 +233,6 @@
 
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
-<script src="{% static 'js/categorias/categorias.js' %}?v=6"></script>
-
-<!-- Menú de acciones (⋯): abrir / cerrar / posicionar -->
-<script>
-(function () {
-  var openMenu = null;
-
-  function closeMenu() {
-    if (!openMenu) return;
-    openMenu.classList.remove('is-open');
-    var t = openMenu.querySelector('.cys-cat-menu__trigger');
-    if (t) t.setAttribute('aria-expanded', 'false');
-    openMenu = null;
-  }
-
-  function openIt(menu) {
-    closeMenu();
-    var trigger = menu.querySelector('.cys-cat-menu__trigger');
-    var list = menu.querySelector('.cys-cat-menu__list');
-    menu.classList.add('is-open');
-    trigger.setAttribute('aria-expanded', 'true');
-
-    var r = trigger.getBoundingClientRect();
-    var w = list.offsetWidth, h = list.offsetHeight;
-    var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
-    var top = r.bottom + 8;
-    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
-    list.style.left = left + 'px';
-    list.style.top = top + 'px';
-    openMenu = menu;
-  }
-
-  document.addEventListener('click', function (e) {
-    var trigger = e.target.closest('.cys-cat-menu__trigger');
-    if (trigger) {
-      e.preventDefault();
-      var menu = trigger.closest('.cys-cat-menu');
-      if (menu === openMenu) closeMenu(); else openIt(menu);
-      return;
-    }
-    if (!openMenu) return;
-    // Al elegir una opción, se cierra el menú (después de que la acción se ejecute)
-    if (e.target.closest('.cys-cat-menu__item')) { setTimeout(closeMenu, 0); return; }
-    if (!e.target.closest('.cys-cat-menu__list')) closeMenu();
-  });
-
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
-  window.addEventListener('resize', closeMenu);
-  window.addEventListener('scroll', closeMenu, true);
-})();
-</script>
+<script src="{% static 'js/categorias/categorias.js' %}?v=7"></script>
 
 {% endblock %}
