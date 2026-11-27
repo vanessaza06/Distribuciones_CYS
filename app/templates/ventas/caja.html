@@ -1,859 +1,793 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load l10n %}
 {% load humanize %}
 
 {% block title %}Control de Caja y Turnos — CYS Ltda{% endblock %}
-{% block page_title %}Módulo de Caja y Control de Turnos{% endblock %}
+{% block page_title %}Control de Caja{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=2">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=2">
-<link rel="stylesheet" href="{% static 'css/venta/venta_caja.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/venta/venta_caja.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
-<div class="cys-caja-container">
+<div class="cys-caja-container pb-4">
 
-  <!-- ── ENCABEZADO Y ACCIONES PRINCIPALES ── -->
-  <div class="cys-caja-header-banner">
-    <div>
-      <div class="d-flex align-items-center gap-3 mb-1.5 flex-wrap">
-        <h3 class="fw-bold mb-0" style="letter-spacing: -0.3px;">Control de Caja y Turnos</h3>
-        {% if caja_abierta %}
-          <span class="badge cys-badge-activo px-3 py-1.5 rounded-pill fs-6 cys-pulse-badge">
-            <i class="bi bi-circle-fill me-1" style="font-size:0.6rem; color:#16a34a;"></i> Turno Activo
-          </span>
-        {% else %}
-          <span class="badge cys-badge-cerrado px-3 py-1.5 rounded-pill fs-6">
-            <i class="bi bi-lock-fill me-1" style="color:#dc2626;"></i> Caja Cerrada
-          </span>
-        {% endif %}
-      </div>
-      <p class="text-muted small mb-0">Arqueo de efectivo, fondos base y ventas por turno.</p>
-    </div>
-
-    <!-- Botones de Acción Estilizados estilo Ventas -->
-    <div class="d-flex align-items-center gap-2 flex-wrap">
+  <!-- ── BARRA ESTADO DE CAJA (Unificada Estilo Image 3) ── -->
+  <div class="cys-pos-header-bar d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-4">
       {% if caja_abierta %}
-        <button type="button" class="btn btn-sm fw-bold cys-btn-danger-soft"
-                data-bs-toggle="modal"
-                data-bs-target="#modalCierre"
-                title="Cerrar Turno / Arqueo"
-                style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-          <i class="bi bi-lock me-1" style="color:#dc2626;"></i> Cerrar Turno / Arqueo
-        </button>
+        <div class="cys-status-pill cys-status-pill--abierta">
+          <span class="cys-pulse-dot"></span>
+          CAJA ABIERTA
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Apertura</div>
+            <div class="cys-pos-hora" style="font-size:.92rem; font-weight:800; color:var(--texto);">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
+          </div>
+          <div class="cys-pos-divider" style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Base Inicial</div>
+            <div class="cys-pos-base" style="font-size:.92rem; font-weight:800; color:var(--azul-claro, #38bdf8);">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
+          </div>
+        </div>
       {% else %}
-        <button type="button" class="btn btn-sm fw-bold cys-btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#modalConteo"
-                title="Abrir Turno"
-                style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-          <i class="bi bi-unlock me-1" style="color:#ffffff;"></i> Abrir Nuevo Turno
-        </button>
+        <div class="cys-status-pill cys-status-pill--cerrada">
+          <i class="bi bi-lock-fill me-1" style="font-size:.75rem;"></i> CAJA BLOQUEADA
+        </div>
       {% endif %}
 
-      <a href="{% url 'punto_venta' %}" class="btn btn-sm fw-bold cys-btn-primary"
-         title="Volver al POS"
-         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-        <i class="bi bi-cart me-1" style="color:#ffffff;"></i> Ir a POS
-      </a>
+      <div class="cys-pos-divider d-none d-md-block" style="width:1px; height:28px; background:rgba(255,255,255,0.12);"></div>
 
-      <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm fw-bold cys-btn-ghost-soft"
-         title="Control de Métodos de Pago"
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle d-flex align-items-center justify-content-center cys-pos-cash-icon" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
+          <i class="bi bi-currency-dollar fs-5"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-1.5">
+            <span style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Cobrado Hoy</span>
+            {% if total_pendiente_dia > 0 %}
+            <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-size:0.6rem; padding:1px 5px; font-weight:700;">
+              -${{ total_pendiente_dia|floatformat:0|intcomma }} pend.
+            </span>
+            {% endif %}
+          </div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_cobrado_dia|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Ventas"
          style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-        <i class="bi bi-wallet2 me-1" style="color:#16a34a;"></i> Métodos de Pago
+        <i class="bi bi-cart me-1"></i> Ventas
       </a>
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Ventas del Día"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-bar-chart me-1"></i> Ventas del día
+      </a>
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--active"
+         title="Caja"
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cash-stack me-1"></i> Caja
+      </a>
+      <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Métodos de Pago"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-wallet2 me-1"></i> Métodos de Pago
+      </a>
+      {% if not caja_abierta %}
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--primary"
+                data-bs-toggle="modal"
+                data-bs-target="#modalConteo"
+                title="Abrir Caja"
+                style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+          <i class="bi bi-unlock me-1"></i> Abrir Caja
+        </button>
+      {% endif %}
+      {% if caja_abierta %}
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--danger-soft"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCierre"
+                title="Cerrar Caja"
+                style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+          <i class="bi bi-lock me-1"></i> Cerrar Caja
+        </button>
+      {% endif %}
     </div>
   </div>
 
-  <!-- ── TARJETAS KPIS SUPERIORES MINIMALISTAS CON BORDE DORADO ── -->
-  <div class="row g-2 mb-3 align-items-stretch">
+  <!-- ── TARJETAS KPIS MINIMALISTAS (Mismo estilo exacto que Ventas del Día) ── -->
+  <div class="row g-3 mb-4 align-items-stretch">
     
-    <!-- KPI 1: Estado / Turno Activo -->
-    <div class="col-6 col-lg-3">
-      <div class="cys-caja-kpi-card">
-        <div class="cys-caja-icon-box {% if turno_activo %}cys-caja-icon-box--verde{% else %}cys-caja-icon-box--rojo{% endif %}">
-          {% if turno_activo %}
-            <i class="bi bi-clock-history"></i>
-          {% else %}
-            <i class="bi bi-lock-fill"></i>
-          {% endif %}
+    <!-- KPI 1: Estado del Turno -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Estado de Caja</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+            {% if turno_activo %}<i class="bi bi-clock-history"></i>{% else %}<i class="bi bi-lock-fill"></i>{% endif %}
+          </span>
         </div>
-        <div style="min-width:0; flex:1;">
-          <div class="cys-caja-kpi-label">Estado de Caja</div>
-          <div class="cys-caja-kpi-val text-truncate">
-            {% if turno_activo %}Turno #{{ turno_activo.id }}{% else %}Sin Turno Activo{% endif %}
-          </div>
+        <div class="cys-kpi-num-mini" style="font-size:1.15rem;">
+          {% if turno_activo %}Turno #{{ turno_activo.id }}{% else %}Cerrado{% endif %}
+        </div>
+        <div class="cys-kpi-sub-mini">
+          {% if turno_activo %}Op: {{ turno_activo.operador }}{% else %}Sin turno abierto{% endif %}
         </div>
       </div>
     </div>
 
     <!-- KPI 2: Base en Caja -->
-    <div class="col-6 col-lg-3">
-      <div class="cys-caja-kpi-card">
-        <div class="cys-caja-icon-box cys-caja-icon-box--verde">
-          <i class="bi bi-cash-coin"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Base en Caja</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+            <i class="bi bi-cash-coin"></i>
+          </span>
         </div>
-        <div style="min-width:0; flex:1;">
-          <div class="cys-caja-kpi-label">Base en Caja</div>
-          <div class="cys-caja-kpi-val" style="color:#16a34a;">
-            {% if turno_activo %}${{ turno_activo.monto_base|floatformat:0|intcomma }}{% elif ultimo_cierre %}${{ ultimo_cierre.monto_base_siguiente|floatformat:0|intcomma }}{% else %}$0{% endif %}
-          </div>
+        <div class="cys-kpi-num-mini" style="color:#b45309;">
+          {% if turno_activo %}${{ turno_activo.monto_base|floatformat:0|intcomma }}{% elif ultimo_cierre %}${{ ultimo_cierre.monto_base_siguiente|floatformat:0|intcomma }}{% else %}$0{% endif %}
+        </div>
+        <div class="cys-kpi-sub-mini">Fondo base de apertura</div>
+      </div>
+    </div>
+
+    <!-- KPI 3: Vendido en Turno -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Vendido en Turno</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+            <i class="bi bi-graph-up-arrow"></i>
+          </span>
+        </div>
+        <div class="cys-kpi-num-mini" style="color:#16a34a;">
+          {% if turno_activo %}${{ turno_activo.total_ventas|floatformat:0|intcomma }}{% else %}$0{% endif %}
+        </div>
+        <div class="cys-kpi-sub-mini">
+          {% if turno_activo %}{{ turno_activo.cant_ventas }} venta{{ turno_activo.cant_ventas|pluralize }}{% else %}0 ventas{% endif %}
         </div>
       </div>
     </div>
 
-    <!-- KPI 3: Generado en Turno Activo -->
-    <div class="col-6 col-lg-3">
-      <div class="cys-caja-kpi-card">
-        <div class="cys-caja-icon-box cys-caja-icon-box--verde">
-          <i class="bi bi-graph-up-arrow"></i>
+    <!-- KPI 4: Total en Caja -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Total en Caja</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+            <i class="bi bi-safe2"></i>
+          </span>
         </div>
-        <div style="min-width:0; flex:1;">
-          <div class="cys-caja-kpi-label">Vendido en Turno</div>
-          <div class="cys-caja-kpi-val" style="color:#16a34a;">
-            {% if turno_activo %}${{ turno_activo.total_ventas|floatformat:0|intcomma }}{% else %}$0{% endif %}
-          </div>
+        <div class="cys-kpi-num-mini" style="color:#15803d;">
+          {% if turno_activo %}${{ total_en_caja_activo|floatformat:0|intcomma }}{% else %}$0{% endif %}
         </div>
-      </div>
-    </div>
-
-    <!-- KPI 4: Acumulado Histórico -->
-    <div class="col-6 col-lg-3">
-      <div class="cys-caja-kpi-card">
-        <div class="cys-caja-icon-box cys-caja-icon-box--verde">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <div style="min-width:0; flex:1;">
-          <div class="cys-caja-kpi-label">Histórico Recaudado</div>
-          <div class="cys-caja-kpi-val">
-            ${{ ventas_totales_historicas|floatformat:0|intcomma }}
-          </div>
-        </div>
+        <div class="cys-kpi-sub-mini">Base + Recaudo</div>
       </div>
     </div>
 
   </div>
 
-  <!-- ── LISTADO Y DETALLE DE TURNOS (CON ESTADÍSTICAS VISUALES) ── -->
-  <div class="mb-3 d-flex align-items-center justify-content-between">
-    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size:1.05rem; letter-spacing:-0.2px;">
-      <i class="bi bi-journal-bookmark-fill" style="color:#16a34a;"></i> Historial de Turnos de Caja
-    </h5>
-    <span class="badge cys-badge-activo px-3 py-1 rounded-pill" style="font-size:0.75rem;">
-      Total {{ total_turnos }} Turno{% if total_turnos != 1 %}s{% endif %}
-    </span>
+  <!-- ── BANNER DESTACADO DEL TURNO ACTIVO (Limpio y compacto) ── -->
+  {% if turno_activo %}
+  <div class="p-3 mb-4 rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+       style="background:rgba(22,163,74,0.04); border:1px solid rgba(22,163,74,0.22); border-left:4px solid #16a34a;">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge" style="background:#16a34a; color:#fff; border-radius:999px; font-weight:700; font-size:0.75rem; padding:0.35rem 0.8rem;">
+          <i class="bi bi-play-circle-fill me-1"></i>En Curso
+        </span>
+        <span class="fw-bold" style="color:var(--texto); font-size:0.95rem;">Turno #{{ turno_activo.id }}</span>
+      </div>
+      <span class="text-muted small">&bull;</span>
+      <span class="small" style="color:var(--texto-muted);">
+        <i class="bi bi-clock me-1 text-success"></i>Apertura: <strong>{{ turno_activo.fecha_inicio|date:"h:i A" }}</strong>
+      </span>
+      <span class="text-muted small">&bull;</span>
+      <span class="small" style="color:var(--texto-muted);">
+        <i class="bi bi-person me-1 text-success"></i>Operador: <strong>{{ turno_activo.operador }}</strong>
+      </span>
+    </div>
+
+    <!-- Pastillas limpias de recaudos por método en el turno -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      {% if turno_activo.pago_efectivo > 0 %}
+        <span class="badge py-1 px-2.5 rounded-pill" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:0.74rem;">
+          Efectivo: <strong style="color:#16a34a;">${{ turno_activo.pago_efectivo|floatformat:0|intcomma }}</strong>
+        </span>
+      {% endif %}
+      {% if turno_activo.pago_nequi > 0 %}
+        <span class="badge py-1 px-2.5 rounded-pill" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:0.74rem;">
+          Nequi: <strong style="color:#16a34a;">${{ turno_activo.pago_nequi|floatformat:0|intcomma }}</strong>
+        </span>
+      {% endif %}
+      {% if turno_activo.pago_daviplata > 0 %}
+        <span class="badge py-1 px-2.5 rounded-pill" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:0.74rem;">
+          Daviplata: <strong style="color:#16a34a;">${{ turno_activo.pago_daviplata|floatformat:0|intcomma }}</strong>
+        </span>
+      {% endif %}
+      {% if turno_activo.pago_tarjeta > 0 %}
+        <span class="badge py-1 px-2.5 rounded-pill" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:0.74rem;">
+          Tarjeta: <strong style="color:#16a34a;">${{ turno_activo.pago_tarjeta|floatformat:0|intcomma }}</strong>
+        </span>
+      {% endif %}
+      {% if turno_activo.pago_transferencia > 0 %}
+        <span class="badge py-1 px-2.5 rounded-pill" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:0.74rem;">
+          Transf: <strong style="color:#16a34a;">${{ turno_activo.pago_transferencia|floatformat:0|intcomma }}</strong>
+        </span>
+      {% endif %}
+      {% if turno_activo.total_ventas == 0 %}
+        <span class="text-muted small" style="font-size:0.75rem;">Sin ventas aún en este turno</span>
+      {% endif %}
+    </div>
   </div>
+  {% endif %}
 
-
-  {% for t in turnos %}
-  <div class="cys-turno-card mb-3 {% if t.estado == 'ACTIVO' %}cys-turno-card--activo{% endif %}">
+  <!-- ── SECCIÓN TABLA HISTORIAL DE TURNOS (Contenedor Clean idéntico a Ventas del Día) ── -->
+  <section class="cys-card-mini p-0 overflow-hidden mb-4" id="seccionHistorialCaja">
     
-    <!-- Encabezado del Turno con Toggle Desplegable -->
-    <div class="cys-turno-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 p-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="cys-caja-icon-box {% if t.estado == 'ACTIVO' %}cys-caja-icon-box--verde{% else %}cys-caja-icon-box--rojo{% endif %}">
-          {% if t.estado == 'ACTIVO' %}
-            <i class="bi bi-receipt-cutoff"></i>
-          {% else %}
-            <i class="bi bi-lock-fill"></i>
-          {% endif %}
-        </div>
-        <div>
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <h5 class="fw-bold mb-0 fs-6">Turno #{{ t.id }}</h5>
-            {% if t.estado == 'ACTIVO' %}
-              <span class="badge cys-badge-activo px-2.5 py-0.5 rounded-pill small cys-pulse-badge" style="font-size:0.72rem;">
-                <i class="bi bi-circle-fill me-1" style="font-size:0.55rem; color:#16a34a;"></i> ACTIVO EN CURSO
-              </span>
-            {% elif t.estado == 'CERRADO' %}
-              <span class="badge cys-badge-cerrado px-2.5 py-0.5 rounded-pill small" style="font-size:0.72rem;">
-                <i class="bi bi-lock-fill me-1" style="color:#dc2626;"></i> CERRADO
-              </span>
-            {% else %}
-              <span class="badge cys-badge-cerrado px-2.5 py-0.5 rounded-pill small" style="font-size:0.72rem;">FINALIZADO</span>
-            {% endif %}
-          </div>
-          <div class="small opacity-85 mt-1 d-flex flex-wrap align-items-center gap-2" style="font-size:0.78rem;">
-            <span><i class="bi bi-calendar-event me-1" style="color:#16a34a;"></i><strong>Inicio:</strong> {{ t.fecha_inicio|date:"d/m/Y h:i A" }}</span>
-            {% if t.fecha_fin %}
-              <span class="d-none d-sm-inline opacity-50">|</span>
-              <span><i class="bi bi-clock me-1" style="color:#dc2626;"></i><strong>Fin:</strong> {{ t.fecha_fin|date:"d/m/Y h:i A" }}</span>
-            {% endif %}
-            <span class="d-none d-sm-inline opacity-50">|</span>
-            <span><i class="bi bi-person-badge me-1" style="color:#16a34a;"></i><strong>Op:</strong> {{ t.operador }}</span>
-          </div>
-          {% if t.es_cerrado %}
-          <div class="mt-1 d-flex align-items-center gap-2">
-            <span class="text-muted" style="font-size:0.73rem;">
-              Cierre: Se hizo <strong style="color:#16a34a;">${{ t.total_ventas|floatformat:0|intcomma }}</strong> &bull; Se recogió <strong style="color:#dc2626;">${{ t.total_retirado|floatformat:0|intcomma }}</strong> &bull; Base sig. <strong style="color:#16a34a;">${{ t.base_siguiente|floatformat:0|intcomma }}</strong>
-            </span>
-          </div>
-          {% endif %}
-        </div>
-      </div>
+    <div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-color: color-mix(in srgb, var(--texto) 6%, transparent) !important;">
+      <h6 class="fw-bold mb-0 text-uppercase d-flex align-items-center gap-2" style="color:var(--texto); font-size:0.88rem; letter-spacing:0.5px;">
+        <i class="bi bi-journal-bookmark-fill" style="color:#16a34a;"></i> Historial de Turnos y Arqueos
+      </h6>
+      <span class="badge px-3 py-1.5 rounded-pill" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; font-weight:700; font-size:0.74rem;">
+        {{ total_turnos }} Turno{{ total_turnos|pluralize }}
+      </span>
+    </div>
 
-      <div class="d-flex align-items-center justify-content-between justify-content-md-end gap-3">
-        <div class="text-md-end">
-          <div class="small text-muted text-uppercase fw-bold" style="font-size:.65rem;">{% if t.es_cerrado %}Total Ventas{% else %}Total Acumulado{% endif %}</div>
-          <div class="fw-bold fs-5" style="color:#16a34a;">
-            ${% if t.es_cerrado %}{{ t.total_ventas|floatformat:0|intcomma }}{% else %}{{ t.monto_total_acumulado|floatformat:0|intcomma }}{% endif %}
-          </div>
-        </div>
-
-        <button class="btn btn-sm cys-btn-secondary px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseTurno{{ t.id }}"
-                aria-expanded="{% if t.estado == 'ACTIVO' or forloop.first %}true{% else %}false{% endif %}"
-                aria-controls="collapseTurno{{ t.id }}"
-                title="Mostrar/Ocultar detalles del turno">
-          <i class="bi bi-chevron-down" style="color:#16a34a;"></i>
-          <span class="small fw-bold">{% if t.estado == 'ACTIVO' or forloop.first %}Ocultar{% else %}Ver detalle{% endif %}</span>
-        </button>
+    <!-- Barra de Búsqueda rápida de turnos -->
+    <div class="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
+      <div class="cys-search-group" style="min-width:260px; max-width:400px; width:100%;">
+        <i class="bi bi-search" style="color:#16a34a;"></i>
+        <input type="text" id="buscadorTurnos" class="form-control form-control-sm cys-search-input"
+               placeholder="Buscar por turno, fecha u operador..." style="padding-left:36px !important; border-radius:999px;">
       </div>
     </div>
 
-    <!-- Cuerpo Colapsable del Turno -->
-    <div class="collapse {% if t.estado == 'ACTIVO' or forloop.first %}show{% endif %}" id="collapseTurno{{ t.id }}">
-      <div class="p-3 pt-1 border-top" style="border-color: rgba(207, 156, 72, 0.25) !important;">
-        
-        {% if t.es_cerrado %}
-        <!-- 4 Cifras Clave del Turno Cerrado: Base Inicial, Se Hizo, Se Recogió, Se Dejó -->
-        <div class="row g-2 mb-2.5">
-          <div class="col-6 col-md-3">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-cash-coin me-1" style="color:#16a34a;"></i> Base Inicial</span>
-              <span class="cys-stat-val">${{ t.monto_base|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-graph-up-arrow me-1" style="color:#16a34a;"></i> Se Hizo (Ventas)</span>
-              <span class="cys-stat-val" style="color:#16a34a;">${{ t.total_ventas|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-box-arrow-right me-1" style="color:#dc2626;"></i> Se Recogió</span>
-              <span class="cys-stat-val" style="color:#dc2626;">${{ t.total_retirado|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-safe2 me-1" style="color:#16a34a;"></i> Se Dejó en Caja</span>
-              <span class="cys-stat-val">${{ t.base_siguiente|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-        </div>
-
-        {% else %}
-        <!-- 3 Cifras Clave del Turno Activo -->
-        <div class="row g-2 mb-2.5">
-          <div class="col-12 col-md-4">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-cash-coin me-1" style="color:#16a34a;"></i> Base Inicial</span>
-              <span class="cys-stat-val">${{ t.monto_base|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-          <div class="col-12 col-md-4">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-graph-up-arrow me-1" style="color:#16a34a;"></i> Generado en Turno</span>
-              <span class="cys-stat-val" style="color:#16a34a;">${{ t.total_ventas|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-          <div class="col-12 col-md-4">
-            <div class="cys-mini-stat-card">
-              <span class="cys-stat-label"><i class="bi bi-wallet2 me-1" style="color:#16a34a;"></i> Total en Caja</span>
-              <span class="cys-stat-val">${{ t.monto_total_acumulado|floatformat:0|intcomma }}</span>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-        <!-- Métodos de Pago (Línea compacta y limpia con bordes dorados) -->
-        <div class="cys-turno-subpanel p-2 rounded-2 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="small fw-bold text-uppercase text-muted" style="font-size:.68rem;">
-              <i class="bi bi-credit-card-2-front me-1" style="color:#16a34a;"></i> Métodos:
-            </span>
-            {% if t.pago_efectivo > 0 %}<span class="badge py-1 px-2" style="background:rgba(22,163,74,0.08); color:var(--texto); border:1px solid rgba(207,156,72,0.3); font-size:.73rem;">Efectivo: <strong style="color:#16a34a;">${{ t.pago_efectivo|floatformat:0|intcomma }}</strong></span>{% endif %}
-            {% if t.pago_nequi > 0 %}<span class="badge py-1 px-2" style="background:rgba(22,163,74,0.08); color:var(--texto); border:1px solid rgba(207,156,72,0.3); font-size:.73rem;">Nequi: <strong style="color:#16a34a;">${{ t.pago_nequi|floatformat:0|intcomma }}</strong></span>{% endif %}
-            {% if t.pago_daviplata > 0 %}<span class="badge py-1 px-2" style="background:rgba(22,163,74,0.08); color:var(--texto); border:1px solid rgba(207,156,72,0.3); font-size:.73rem;">Daviplata: <strong style="color:#16a34a;">${{ t.pago_daviplata|floatformat:0|intcomma }}</strong></span>{% endif %}
-            {% if t.pago_tarjeta > 0 %}<span class="badge py-1 px-2" style="background:rgba(22,163,74,0.08); color:var(--texto); border:1px solid rgba(207,156,72,0.3); font-size:.73rem;">Tarjeta: <strong style="color:#16a34a;">${{ t.pago_tarjeta|floatformat:0|intcomma }}</strong></span>{% endif %}
-            {% if t.pago_transferencia > 0 %}<span class="badge py-1 px-2" style="background:rgba(22,163,74,0.08); color:var(--texto); border:1px solid rgba(207,156,72,0.3); font-size:.73rem;">Transf: <strong style="color:#16a34a;">${{ t.pago_transferencia|floatformat:0|intcomma }}</strong></span>{% endif %}
-            {% if t.total_ventas == 0 %}
-              <span class="text-muted small" style="font-size:0.73rem;">Sin cobros en este turno</span>
-            {% endif %}
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            {% if t.cant_ventas > 0 %}
-            <div class="small text-muted" style="font-size:.72rem;">
-              {{ t.cant_ventas }} venta{% if t.cant_ventas != 1 %}s{% endif %}
-            </div>
-            {% endif %}
-            <a href="{% url 'lista_metodos_pago' %}?caja_id={{ t.id }}"
-               class="badge text-decoration-none"
-               style="background:rgba(207,156,72,0.1); color:#CF9C48; border:1px solid rgba(207,156,72,0.35); font-size:0.7rem; font-weight:700;"
-               title="Ver detalle de pagos de este turno">
-              <i class="bi bi-box-arrow-up-right me-1" style="color:#CF9C48;"></i>Ver Pagos
-            </a>
-          </div>
-        </div>
-
-        <!-- ── FILA 3: TOP PRODUCTOS Y VENTAS DEL TURNO EN PARALELO (GRID 2 COLUMNAS) ── -->
-        <div class="row g-2 align-items-stretch">
-          
-          <!-- Top Productos (col-lg-5) -->
-          <div class="col-12 col-lg-5">
-            <div class="cys-turno-subpanel rounded-3 p-2.5 h-100 d-flex flex-column">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <h6 class="fw-bold mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
-                  <i class="bi bi-trophy" style="color:#16a34a;"></i> Top Productos
-                </h6>
-                <span class="small text-muted" style="font-size:.7rem;">Top {{ t.productos_top|length }}</span>
+    <!-- Tabla limpia sin sobrecarga visual -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="tablaTurnos" style="font-size:0.83rem;">
+        <thead style="background:color-mix(in srgb, var(--texto) 2%, transparent);">
+          <tr>
+            <th style="width:70px; text-align:center;">#</th>
+            <th>Estado</th>
+            <th>Apertura</th>
+            <th>Cierre</th>
+            <th>Operador</th>
+            <th style="text-align:right;">Base Inicial</th>
+            <th style="text-align:right;">Vendido</th>
+            <th style="text-align:right;">Total en Caja</th>
+            <th style="text-align:right;">Base Siguiente</th>
+            <th style="width:115px; text-align:center;">Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in turnos %}
+          <tr class="fila-turno" data-turno-id="{{ t.id }}" data-estado="{{ t.estado }}">
+            <td style="text-align:center; font-weight:700; color:var(--texto-muted);">
+              #{{ t.id }}
+            </td>
+            <td>
+              {% if t.estado == 'ACTIVO' %}
+                <span class="badge" style="background:#dcfce7; border:1px solid #86efac; color:#15803d; border-radius:999px; font-weight:700; font-size:0.72rem; padding:0.25rem 0.65rem;">
+                  <i class="bi bi-circle-fill me-1" style="font-size:0.5rem; color:#16a34a;"></i>Activo
+                </span>
+              {% elif t.estado == 'CERRADO' %}
+                <span class="badge" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; border-radius:999px; font-weight:700; font-size:0.72rem; padding:0.25rem 0.65rem;">
+                  <i class="bi bi-lock-fill me-1"></i>Cerrado
+                </span>
+              {% else %}
+                <span class="badge" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; border-radius:999px; font-weight:700; font-size:0.72rem; padding:0.25rem 0.65rem;">
+                  Finalizado
+                </span>
+              {% endif %}
+            </td>
+            <td style="color:var(--texto); font-weight:600; white-space:nowrap;">
+              {{ t.fecha_inicio|date:"d/m/Y h:i A" }}
+            </td>
+            <td style="color:var(--texto-muted); white-space:nowrap;">
+              {% if t.fecha_fin %}
+                {{ t.fecha_fin|date:"d/m/Y h:i A" }}
+              {% else %}
+                <span class="text-success fw-bold"><i class="bi bi-play-fill"></i>En curso</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--texto); font-weight:600;">
+              <i class="bi bi-person me-1 text-muted"></i>{{ t.operador }}
+            </td>
+            <td style="text-align:right; font-weight:600; color:var(--texto);">
+              ${{ t.monto_base|floatformat:0|intcomma }}
+            </td>
+            <td style="text-align:right;">
+              <div style="font-weight:800; color:#15803d;">
+                ${{ t.total_ventas|floatformat:0|intcomma }}
               </div>
+              <div class="text-muted" style="font-size:0.7rem;">
+                {{ t.cant_ventas }} venta{{ t.cant_ventas|pluralize }}
+              </div>
+            </td>
+            <td style="text-align:right; font-weight:700; color:var(--texto);">
+              ${{ t.monto_total_acumulado|floatformat:0|intcomma }}
+            </td>
+            <td style="text-align:right; color:var(--texto);">
+              ${{ t.base_siguiente|floatformat:0|intcomma }}
+            </td>
+            <td style="text-align:center;">
+              <button type="button" class="btn btn-sm btn-outline-secondary px-2.5 py-1 rounded-pill"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#detalleTurnoRow{{ t.id }}"
+                      aria-expanded="false"
+                      title="Ver desglose del turno"
+                      style="font-size:0.75rem; font-weight:600;">
+                <i class="bi bi-chevron-down me-1"></i>Ver
+              </button>
+            </td>
+          </tr>
 
-              {% if t.productos_top %}
-                <div class="d-flex flex-column gap-2 flex-grow-1" style="max-height:260px; overflow-y:auto; padding-right:3px;">
-                  {% for prod in t.productos_top %}
-                  <div class="cys-turno-item-row p-2 rounded-2">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                      <div class="d-flex align-items-center gap-1.5 text-truncate" style="max-width:65%;">
-                        <div class="cys-rank-badge" style="width:20px; height:20px; font-size:.68rem;">
-                          {{ forloop.counter }}
-                        </div>
-                        <span class="fw-bold text-truncate" style="font-size:.8rem;" title="{{ prod.nombre }}">{{ prod.nombre }}</span>
-                      </div>
-                      <div class="text-end">
-                        <span class="fw-bold" style="font-size:.85rem; color:#16a34a;">${{ prod.total|floatformat:0|intcomma }}</span>
-                        <span class="badge py-0 px-1 ms-1" style="background:rgba(22,163,74,0.12); color:#16a34a; border:1px solid rgba(22,163,74,0.3); font-size:.68rem;">{{ prod.cantidad }}u</span>
-                      </div>
-                    </div>
-                    <!-- Barra de progreso miniatura verde minimalista -->
-                    <div class="progress cys-caja-progress" style="height: 4px;">
-                      <div class="progress-bar" role="progressbar"
-                           style="width: {{ prod.porcentaje_relativo }}%; background-color: #16a34a;"
-                           aria-valuenow="{{ prod.porcentaje_relativo }}" aria-valuemin="0" aria-valuemax="100"></div>
+          <!-- Fila Colapsable de Desglose Minimalista -->
+          <tr class="collapse p-0" id="detalleTurnoRow{{ t.id }}" style="background:color-mix(in srgb, var(--texto) 2%, transparent);">
+            <td colspan="10" class="p-3">
+              <div class="p-3 rounded-3" style="background:var(--fondo-card, #ffffff); border:1px solid color-mix(in srgb, var(--texto) 10%, transparent);">
+                
+                <!-- 4 Cifras Claves -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6 col-md-3">
+                    <div class="p-2.5 rounded-2" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                      <span class="text-muted small d-block" style="font-size:0.7rem; font-weight:700;">BASE INICIAL</span>
+                      <span class="fw-bold fs-6" style="color:#0f172a;">${{ t.monto_base|floatformat:0|intcomma }}</span>
                     </div>
                   </div>
-                  {% endfor %}
+                  <div class="col-6 col-md-3">
+                    <div class="p-2.5 rounded-2" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                      <span class="text-muted small d-block" style="font-size:0.7rem; font-weight:700;">VENTAS EN TURNO</span>
+                      <span class="fw-bold fs-6 text-success">${{ t.total_ventas|floatformat:0|intcomma }}</span>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="p-2.5 rounded-2" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                      <span class="text-muted small d-block" style="font-size:0.7rem; font-weight:700;">TOTAL RETIRADO</span>
+                      <span class="fw-bold fs-6 text-danger">${{ t.total_retirado|floatformat:0|intcomma }}</span>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="p-2.5 rounded-2" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                      <span class="text-muted small d-block" style="font-size:0.7rem; font-weight:700;">SE DEJÓ EN CAJA</span>
+                      <span class="fw-bold fs-6" style="color:#0f172a;">${{ t.base_siguiente|floatformat:0|intcomma }}</span>
+                    </div>
+                  </div>
                 </div>
-              {% else %}
-                <div class="text-center py-4 opacity-75 small my-auto">
-                  <i class="bi bi-cart-x fs-4 d-block mb-1" style="color:#dc2626; opacity:0.6;"></i>
-                  Sin ventas de productos en este turno.
+
+                <!-- Métodos de pago y desglose -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 rounded-2 mb-2" style="background:#f1f5f9; border:1px solid #e2e8f0;">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="small fw-bold text-uppercase text-muted" style="font-size:0.7rem;">Métodos:</span>
+                    {% if t.pago_efectivo > 0 %}<span class="badge bg-white text-dark border py-1 px-2 rounded-pill" style="font-size:0.73rem;">Efectivo: <strong class="text-success">${{ t.pago_efectivo|floatformat:0|intcomma }}</strong></span>{% endif %}
+                    {% if t.pago_nequi > 0 %}<span class="badge bg-white text-dark border py-1 px-2 rounded-pill" style="font-size:0.73rem;">Nequi: <strong class="text-success">${{ t.pago_nequi|floatformat:0|intcomma }}</strong></span>{% endif %}
+                    {% if t.pago_daviplata > 0 %}<span class="badge bg-white text-dark border py-1 px-2 rounded-pill" style="font-size:0.73rem;">Daviplata: <strong class="text-success">${{ t.pago_daviplata|floatformat:0|intcomma }}</strong></span>{% endif %}
+                    {% if t.pago_tarjeta > 0 %}<span class="badge bg-white text-dark border py-1 px-2 rounded-pill" style="font-size:0.73rem;">Tarjeta: <strong class="text-success">${{ t.pago_tarjeta|floatformat:0|intcomma }}</strong></span>{% endif %}
+                    {% if t.pago_transferencia > 0 %}<span class="badge bg-white text-dark border py-1 px-2 rounded-pill" style="font-size:0.73rem;">Transf: <strong class="text-success">${{ t.pago_transferencia|floatformat:0|intcomma }}</strong></span>{% endif %}
+                    {% if t.total_ventas == 0 %}<span class="text-muted small" style="font-size:0.73rem;">Sin cobros en este turno</span>{% endif %}
+                  </div>
+                  <a href="{% url 'lista_metodos_pago' %}?caja_id={{ t.id }}" class="btn btn-sm btn-light border py-1 px-2.5 rounded-pill" style="font-size:0.72rem; font-weight:700;">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Ver Métodos
+                  </a>
                 </div>
-              {% endif %}
-            </div>
-          </div>
 
-          <!-- Tabla de Ventas Registradas (col-lg-7) -->
-          <div class="col-12 col-lg-7">
-            <div class="cys-turno-subpanel rounded-3 p-2.5 h-100 d-flex flex-column">
-              <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
-                <h6 class="fw-bold mb-0 d-flex align-items-center gap-1.5" style="font-size:.82rem;">
-                  <i class="bi bi-receipt" style="color:#16a34a;"></i> Ventas del Turno ({{ t.ventas|length }})
-                </h6>
-              </div>
-
-              {% if t.ventas %}
-              <div class="table-responsive flex-grow-1" style="max-height:260px; overflow-y:auto;">
-                <table class="cys-clean-table" style="font-size:.78rem;">
-                  <thead>
-                    <tr>
-                      <th style="padding:0.4rem 0.6rem;">#</th>
-                      <th style="padding:0.4rem 0.6rem;">Hora</th>
-                      <th style="padding:0.4rem 0.6rem;">Cliente</th>
-                      <th style="padding:0.4rem 0.6rem;">Método</th>
-                      <th style="padding:0.4rem 0.6rem; text-align:right;">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for v in t.ventas %}
-                    <tr>
-                      <td class="fw-bold" style="padding:0.4rem 0.6rem; color:var(--texto);">#{{ v.codigo_venta }}</td>
-                      <td style="padding:0.4rem 0.6rem; white-space:nowrap; color:var(--texto-muted);">{{ v.fecha|date:"h:i A" }}</td>
-                      <td style="padding:0.4rem 0.6rem;" title="{{ v.cliente_nombre|default:'Consumidor final' }}">
-                        <div class="fw-bold">{{ v.cliente_nombre|default:"Consumidor final" }}</div>
-                        <div class="text-muted" style="font-size:0.71rem; line-height:1.2;">
-                          {% for d in v.detalles.all %}
-                            <span>{{ d.producto.nombre|default:d.presentacion.nombre }} <strong style="color:#16a34a;">x{{ d.cantidad }}</strong></span>{% if not forloop.last %}, {% endif %}
-                          {% empty %}
-                            <span>Venta #{{ v.codigo_venta }}</span>
-                          {% endfor %}
-                        </div>
-                        {% if v.saldo_pendiente > 0 %}
-                        <div class="mt-1 d-flex flex-column gap-1">
-                          <span class="badge cys-badge-cerrado py-0.5 px-1.5 d-inline-flex align-items-center" style="font-size:.7rem; width:fit-content;">
-                            <i class="bi bi-exclamation-circle-fill me-1" style="color:#dc2626;"></i>Debe: ${{ v.saldo_pendiente|floatformat:0|intcomma }}
-                          </span>
-                          {% if v.observacion %}
-                          <span class="small text-muted" style="font-size:0.7rem;" title="{{ v.observacion }}">
-                            <i class="bi bi-chat-left-text me-1" style="color:#16a34a;"></i>{{ v.observacion }}
-                          </span>
-                          {% endif %}
-                        </div>
-                        {% endif %}
-                      </td>
-                      <td style="padding:0.4rem 0.6rem;">
-                        {% if v.saldo_pendiente > 0 %}
-                        <span class="badge cys-badge-cerrado py-0.5 px-1.5" style="font-size:.7rem;">
-                          PENDIENTE
-                        </span>
-                        {% else %}
-                        <span class="badge py-0.5 px-1.5" style="background:rgba(0,0,0,0.04); color:var(--texto-muted); border:1px solid rgba(207,156,72,0.25); font-size:.7rem;">
-                          {{ v.metodo_pago|capfirst }}
-                        </span>
-                        {% endif %}
-                      </td>
-                      <td class="text-end fw-bold" style="padding:0.4rem 0.6rem; color:#16a34a; white-space:nowrap;">
-                        <div>${{ v.total_con_descuento|default:v.total_venta|floatformat:0|intcomma }}</div>
-                        {% if v.saldo_pendiente > 0 %}
-                        <div style="font-size:0.7rem; color:#dc2626; font-weight:700;">
-                          Cobrado: ${{ v.total_cobrado|floatformat:0|intcomma }}
-                        </div>
-                        {% endif %}
-                      </td>
-                    </tr>
+                <!-- Top productos si existen -->
+                {% if t.productos_top %}
+                <div class="mt-2">
+                  <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="font-size:0.68rem;">Top Productos Vendidos:</span>
+                  <div class="d-flex flex-wrap gap-2">
+                    {% for p in t.productos_top %}
+                    <span class="badge bg-white text-dark border py-1 px-2 rounded-pill d-inline-flex align-items-center gap-1" style="font-size:0.73rem;">
+                      <span class="text-muted">#{{ forloop.counter }}</span>
+                      <strong>{{ p.nombre }}</strong>
+                      <span class="text-success">(${{ p.total|floatformat:0|intcomma }})</span>
+                      <span class="badge bg-light text-muted border py-0 px-1">{{ p.cantidad }}u</span>
+                    </span>
                     {% endfor %}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+                {% endif %}
+
+                {% if t.observacion %}
+                <div class="mt-2 small text-muted">
+                  <i class="bi bi-chat-left-text me-1"></i><strong>Nota:</strong> {{ t.observacion }}
+                </div>
+                {% endif %}
               </div>
-              {% else %}
-              <div class="text-center py-4 text-muted small my-auto">
-                <i class="bi bi-receipt fs-4 d-block mb-1" style="color:#16a34a; opacity:0.4;"></i>
-                Sin transacciones registradas en este turno.
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center py-5">
+              <div class="text-muted">
+                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                No hay turnos registrados aún.
               </div>
-              {% endif %}
-            </div>
-          </div>
-
-        </div>
-
-        {% if t.observacion %}
-        <div class="cys-turno-subpanel mt-2.5 p-2 rounded-2 small opacity-90 d-flex align-items-center gap-2" style="font-size:.78rem;">
-          <i class="bi bi-chat-left-text" style="color:#16a34a;"></i>
-          <span><strong>Observación:</strong> {{ t.observacion }}</span>
-        </div>
-        {% endif %}
-
-      </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </div>
-  {% empty %}
-  <div class="cys-turno-card p-5 text-center">
-    <div class="cys-caja-icon-box cys-caja-icon-box--verde mx-auto mb-3" style="width:56px; height:56px; font-size:1.8rem;">
-      <i class="bi bi-cash-register"></i>
-    </div>
-    <h5 class="fw-bold mb-2">No hay registro de turnos de caja</h5>
-    <p class="text-muted small mb-4">Haz clic en el botón de abajo para iniciar la apertura del primer turno de caja.</p>
-    <button type="button" class="btn btn-sm fw-bold cys-btn-primary px-4 py-2"
-            data-bs-toggle="modal"
-            data-bs-target="#modalConteo"
-            title="Abrir Primer Turno">
-      <i class="bi bi-unlock-fill me-1" style="color:#ffffff;"></i> Abrir Primer Turno
-    </button>
-  </div>
-  {% endfor %}
+  </section>
 
   <!-- ══ MODAL APERTURA DE CAJA ══ -->
-<div class="modal fade" id="modalConteo" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content cys-modal cys-modal-dorado" style="background:#091d36; border:1.5px solid #CF9C48; border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.6);">
-      
-      <div class="cys-modal__header" style="border-bottom:1px solid rgba(207,156,72,0.3); padding:1rem 1.25rem; background:linear-gradient(135deg, rgba(15,59,108,0.9), rgba(10,42,82,0.95)); border-radius:18px 18px 0 0;">
-        <div class="d-flex align-items-center justify-content-between w-100">
+  <div class="modal fade" id="modalConteo" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content cys-modal" style="border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.3); border:1px solid #cbd5e1;">
+        
+        <div class="cys-modal__header p-3 border-bottom d-flex align-items-center justify-content-between" style="background:#f8fafc; border-radius:18px 18px 0 0;">
           <div class="d-flex align-items-center gap-2.5">
-            <div class="cys-modal__icon cys-caja-icon-box--verde" style="width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-              <i class="bi bi-unlock-fill fs-5" style="color:#16a34a;"></i>
+            <div style="width:38px; height:38px; border-radius:10px; background:#ecfdf5; color:#15803d; border:1px solid #86efac; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-unlock-fill fs-5"></i>
             </div>
             <div>
               <div style="font-size:.68rem; color:#16a34a; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Apertura de Turno</div>
-              <div class="cys-modal__title" style="font-size:1.15rem; font-weight:800; color:#fff; margin:0;">Conteo de Caja Inicial</div>
+              <h5 class="fw-bold mb-0 text-dark">Conteo de Caja Inicial</h5>
             </div>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-      </div>
-
-      <div class="modal-body p-3 p-md-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
-        
-        <!-- Alerta de Error de Validación -->
-        <div id="ctErrorMsg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2" role="alert">
-          <i class="bi bi-exclamation-triangle-fill fs-6" style="color:#dc2626;"></i>
-          <span id="ctErrorText">No se permiten números negativos ni datos erróneos en el conteo.</span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
 
-        <p style="font-size:.85rem; color:#ffffff; opacity:0.9; margin-bottom:1rem;">
-          <i class="bi bi-info-circle me-1" style="color:#16a34a;"></i>
-          Ingresa la cantidad física de billetes y monedas con los que inicias la caja registradora.
-        </p>
-
-        <!-- Seccion Billetes -->
-        <div class="cys-denom-section-title d-flex justify-content-between align-items-center mb-1.5">
-          <span class="text-white fw-bold small"><i class="bi bi-cash-stack me-1" style="color:#16a34a;"></i> Billetes</span>
-          <span class="badge cys-badge-activo" style="font-size:.78rem;" id="totalBilletesCt">$0</span>
-        </div>
-        <div class="row g-2 mb-3">
-          {% for valor in billetes_denom %}
-          <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--billete p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(207,156,72,0.35);">
-              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
-                <span class="cys-denom-badge small" style="color:#16a34a;"><i class="bi bi-cash-stack"></i></span>
-                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
-              </div>
-              <div class="mb-1">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
-                       class="form-control denom-ct cys-clean-denom-input"
-                       data-valor="{{ valor|stringformat:'d' }}"
-                       onkeydown="preventInvalidDenomKeys(event)"
-                       onpaste="handleDenomPaste(event)"
-                       oninput="sanitizeDenomInput(this)">
-              </div>
-              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
-            </div>
+        <div class="modal-body p-3 p-md-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+          
+          <div id="ctErrorMsg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-6 text-danger"></i>
+            <span id="ctErrorText">No se permiten números negativos ni datos erróneos en el conteo.</span>
           </div>
-          {% endfor %}
-        </div>
 
-        <!-- Seccion Monedas -->
-        <div class="cys-denom-section-title d-flex justify-content-between align-items-center mb-1.5">
-          <span class="text-white fw-bold small"><i class="bi bi-coin me-1" style="color:#16a34a;"></i> Monedas</span>
-          <span class="badge cys-badge-activo" style="font-size:.78rem;" id="totalMonedasCt">$0</span>
-        </div>
-        <div class="row g-2 mb-3">
-          {% for valor in monedas_denom %}
-          <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--moneda p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(207,156,72,0.35);">
-              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
-                <span class="cys-denom-badge small" style="color:#16a34a;"><i class="bi bi-coin"></i></span>
-                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
+          {% if base_dejada_anterior and base_dejada_anterior > 0 %}
+          <div class="p-2.5 rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background:#eff6ff; border:1px solid #bfdbfe;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle-fill text-primary" style="font-size:1.1rem;"></i>
+              <div>
+                <span class="text-dark small fw-semibold">Base que se dejó en el último cierre de caja:</span>
+                <strong style="color:#16a34a; font-size:1rem; margin-left:0.35rem;">${{ base_dejada_anterior|floatformat:0|intcomma }}</strong>
               </div>
-              <div class="mb-1">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
-                       class="form-control denom-ct cys-clean-denom-input"
-                       data-valor="{{ valor|stringformat:'d' }}"
-                       onkeydown="preventInvalidDenomKeys(event)"
-                       onpaste="handleDenomPaste(event)"
-                       oninput="sanitizeDenomInput(this)">
-              </div>
-              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
             </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label text-white small fw-bold">Observación de Apertura (Opcional)</label>
-          <input type="text" id="ctObservacion" class="form-control text-white border-secondary" style="background:#06172b !important; font-size:.85rem;" placeholder="Ej. Base entregada por administración">
-        </div>
-
-        <!-- Resumen Fondo Total -->
-        <div class="p-2.5 rounded-3 d-flex align-items-center justify-content-between" style="background:rgba(22,163,74,0.15); border:1px solid #CF9C48;">
-          <span class="fw-bold text-white fs-6">Total Base Inicial Calculada:</span>
-          <span class="fw-bold fs-5" style="color:#16a34a;" id="totalConteo">$0</span>
-        </div>
-      </div>
-
-      <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-sm fw-bold cys-btn-ghost-soft" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-sm fw-bold cys-btn-primary px-3 py-2" id="btnConfirmarConteo">
-          <i class="bi bi-check-circle-fill me-1" style="color:#ffffff;"></i> Confirmar e Iniciar Turno
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- ══ MODAL CIERRE DE CAJA ══ -->
-<div class="modal fade" id="modalCierre" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content cys-modal cys-modal-dorado" style="background:#091d36; border:1.5px solid #CF9C48; border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.6);">
-      
-      <div class="cys-modal__header" style="border-bottom:1px solid rgba(207,156,72,0.3); padding:1rem 1.25rem; background:linear-gradient(135deg, rgba(108,15,15,0.9), rgba(82,10,10,0.95)); border-radius:18px 18px 0 0;">
-        <div class="d-flex align-items-center justify-content-between w-100">
-          <div class="d-flex align-items-center gap-2.5">
-            <div class="cys-modal__icon cys-caja-icon-box--rojo" style="width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-              <i class="bi bi-lock-fill fs-5" style="color:#dc2626;"></i>
-            </div>
-            <div>
-              <div style="font-size:.68rem; color:#dc2626; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Cierre de Turno</div>
-              <div class="cys-modal__title" style="font-size:1.15rem; font-weight:800; color:#fff; margin:0;">Arqueo y Cierre de Caja</div>
-            </div>
-          </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-      </div>
-
-      <div class="modal-body p-3 p-md-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
-        
-        <!-- Alerta de Error de Validación -->
-        <div id="ciErrorMsg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2" role="alert">
-          <i class="bi bi-exclamation-triangle-fill fs-6" style="color:#dc2626;"></i>
-          <span id="ciErrorText">No se permiten números negativos ni datos erróneos en el arqueo.</span>
-        </div>
-
-        <p style="font-size:.85rem; color:#ffffff; opacity:0.9; margin-bottom:1rem;">
-          <i class="bi bi-info-circle me-1" style="color:#dc2626;"></i>
-          Cuenta el efectivo físico final en caja para procesar el cierre del turno.
-        </p>
-
-        <!-- Seccion Billetes Cierre -->
-        <div class="cys-denom-section-title d-flex justify-content-between align-items-center mb-1.5">
-          <span class="text-white fw-bold small"><i class="bi bi-cash-stack me-1" style="color:#16a34a;"></i> Billetes al Cierre</span>
-          <span class="badge cys-badge-activo" style="font-size:.78rem;" id="totalBilletesCi">$0</span>
-        </div>
-        <div class="row g-2 mb-3">
-          {% for valor in billetes_denom %}
-          <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--billete p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(207,156,72,0.35);">
-              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
-                <span class="cys-denom-badge small" style="color:#16a34a;"><i class="bi bi-cash-stack"></i></span>
-                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
-              </div>
-              <div class="mb-1">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
-                       class="form-control denom-ci cys-clean-denom-input"
-                       data-valor="{{ valor|stringformat:'d' }}"
-                       onkeydown="preventInvalidDenomKeys(event)"
-                       onpaste="handleDenomPaste(event)"
-                       oninput="sanitizeDenomInput(this)">
-              </div>
-              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <!-- Seccion Monedas Cierre -->
-        <div class="cys-denom-section-title d-flex justify-content-between align-items-center mb-1.5">
-          <span class="text-white fw-bold small"><i class="bi bi-coin me-1" style="color:#16a34a;"></i> Monedas al Cierre</span>
-          <span class="badge cys-badge-activo" style="font-size:.78rem;" id="totalMonedasCi">$0</span>
-        </div>
-        <div class="row g-2 mb-3">
-          {% for valor in monedas_denom %}
-          <div class="col-6 col-sm-4 col-md-3">
-            <div class="cys-denom-card cys-denom-card--moneda p-2 rounded-3" style="background:rgba(15,59,108,0.5); border:1px solid rgba(207,156,72,0.35);">
-              <div class="cys-denom-header d-flex align-items-center justify-content-between mb-1">
-                <span class="cys-denom-badge small" style="color:#16a34a;"><i class="bi bi-coin"></i></span>
-                <span class="cys-denom-val text-white fw-bold small">${{ valor|floatformat:0 }}</span>
-              </div>
-              <div class="mb-1">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
-                       class="form-control denom-ci cys-clean-denom-input"
-                       data-valor="{{ valor|stringformat:'d' }}"
-                       onkeydown="preventInvalidDenomKeys(event)"
-                       onpaste="handleDenomPaste(event)"
-                       oninput="sanitizeDenomInput(this)">
-              </div>
-              <div class="cys-denom-subtotal small text-white opacity-85 text-end" style="font-size:.72rem;">Sub: <span class="text-white fw-bold">$0</span></div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label text-white small fw-bold">Base para el Siguiente Turno ($)</label>
-          <input type="number" id="baseSiguiente" min="0" step="1" inputmode="numeric" pattern="[0-9]*"
-                 class="form-control text-white border-secondary fw-bold"
-                 style="background:#06172b !important; font-size:.9rem;"
-                 value="{{ turno_activo.monto_base|default:0|floatformat:0 }}"
-                 onkeydown="preventInvalidDenomKeys(event)"
-                 onpaste="handleDenomPaste(event)"
-                 oninput="sanitizeDenomInput(this)">
-        </div>
-
-        <div class="p-2.5 rounded-3" style="background:rgba(220,38,38,0.15); border:1px solid #CF9C48;">
-          {% if turno_activo and turno_activo.total_pendiente > 0 %}
-          <div class="d-flex justify-content-between small text-warning py-1 mb-1 pb-1" style="border-bottom:1px dashed rgba(207,156,72,0.45);">
-            <span class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-1" style="color:#dc2626;"></i>Pagos pendientes de turno:</span>
-            <strong style="color:#dc2626;">-${{ turno_activo.total_pendiente|floatformat:0|intcomma }} ({{ turno_activo.ventas_pendientes_count }} fiado{{ turno_activo.ventas_pendientes_count|pluralize }})</strong>
           </div>
           {% endif %}
-          <div class="d-flex justify-content-between small text-white py-1">
-            <span class="fw-bold">Total Efectivo Contado:</span>
-            <strong id="totalCierre" style="font-size:1.1rem; color:#16a34a;">$0</strong>
+
+          <p class="small text-muted mb-3">
+            <i class="bi bi-info-circle me-1 text-success"></i>
+            Ingresa la cantidad física de billetes y monedas con los que inicias la caja registradora.
+          </p>
+
+          <!-- Sección Billetes -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold small text-dark"><i class="bi bi-cash-stack me-1 text-success"></i> Billetes</span>
+            <span class="badge bg-success" style="font-size:.78rem;" id="totalBilletesCt">$0</span>
           </div>
-          <div class="d-flex justify-content-between small text-white opacity-90 py-1">
-            <span>Monto Base para Siguiente Turno:</span>
-            <strong id="resumenBaseSig" class="text-white">$0</strong>
+          <div class="row g-2 mb-3">
+            {% for valor in billetes_denom %}
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="p-2 rounded-3 border bg-light">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="small text-success"><i class="bi bi-cash-stack"></i></span>
+                  <span class="text-dark fw-bold small">${{ valor|floatformat:0|intcomma }}</span>
+                </div>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control form-control-sm denom-ct text-center fw-bold"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="preventInvalidDenomKeys(event)"
+                       onpaste="handleDenomPaste(event)"
+                       oninput="sanitizeDenomInput(this)">
+                <div class="small text-muted text-end mt-1" style="font-size:.72rem;">Sub: <span class="fw-bold text-dark">$0</span></div>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          <div class="d-flex justify-content-between small py-1 fw-bold" style="color:#dc2626;">
-            <span class="fs-6">Total a Retirar:</span>
-            <strong id="resumenRetirar" style="font-size:1.15rem; color:#dc2626;">$0</strong>
+
+          <!-- Sección Monedas -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold small text-dark"><i class="bi bi-coin me-1 text-success"></i> Monedas</span>
+            <span class="badge bg-success" style="font-size:.78rem;" id="totalMonedasCt">$0</span>
           </div>
+          <div class="row g-2 mb-3">
+            {% for valor in monedas_denom %}
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="p-2 rounded-3 border bg-light">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="small text-success"><i class="bi bi-coin"></i></span>
+                  <span class="text-dark fw-bold small">${{ valor|floatformat:0|intcomma }}</span>
+                </div>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control form-control-sm denom-ct text-center fw-bold"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="preventInvalidDenomKeys(event)"
+                       onpaste="handleDenomPaste(event)"
+                       oninput="sanitizeDenomInput(this)">
+                <div class="small text-muted text-end mt-1" style="font-size:.72rem;">Sub: <span class="fw-bold text-dark">$0</span></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Total Calculado de Apertura -->
+          <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center mb-3" style="background:#f8fafc;">
+            <div>
+              <div class="small text-muted fw-bold text-uppercase" style="font-size:.7rem;">Monto Base de Apertura</div>
+              <div class="small text-muted" style="font-size:.75rem;">Suma de billetes y monedas</div>
+            </div>
+            <div class="fs-4 fw-bold text-success" id="totalAperturaCalculado">$0</div>
+          </div>
+
+          <div class="mb-2">
+            <label for="ctObservacion" class="form-label small fw-bold text-dark">Observación o Nota (Opcional)</label>
+            <input type="text" id="ctObservacion" class="form-control form-control-sm" placeholder="Ej. Inicio turno de la tarde...">
+          </div>
+
         </div>
-      </div>
 
-      <div class="modal-footer border-top-0 p-3 d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-sm fw-bold cys-btn-ghost-soft" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-sm fw-bold cys-btn-danger-soft" id="btnConfirmarCierre">
-          <i class="bi bi-lock-fill me-1" style="color:#dc2626;"></i> Confirmar y Cerrar Turno
-        </button>
-      </div>
+        <div class="modal-footer p-3 border-top" style="background:#f8fafc; border-radius:0 0 18px 18px;">
+          <button type="button" class="btn btn-sm btn-light border px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-success px-4 rounded-pill fw-bold" id="btnConfirmarConteo">
+            <i class="bi bi-check-circle-fill me-1"></i> Confirmar e Iniciar Turno
+          </button>
+        </div>
 
+      </div>
     </div>
   </div>
-</div>
-      </div>
 
+  <!-- ══ MODAL CIERRE Y ARQUEO DE CAJA ══ -->
+  <div class="modal fade" id="modalCierre" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content cys-modal" style="border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.3); border:1px solid #cbd5e1;">
+        
+        <div class="cys-modal__header p-3 border-bottom d-flex align-items-center justify-content-between" style="background:#f8fafc; border-radius:18px 18px 0 0;">
+          <div class="d-flex align-items-center gap-2.5">
+            <div style="width:38px; height:38px; border-radius:10px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-lock-fill fs-5"></i>
+            </div>
+            <div>
+              <div style="font-size:.68rem; color:#b91c1c; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Arqueo y Cierre</div>
+              <h5 class="fw-bold mb-0 text-dark">Cierre de Turno de Caja</h5>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body p-3 p-md-4" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+          
+          <div id="ciErrorMsg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-none align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-6 text-danger"></i>
+            <span id="ciErrorText">No se permiten números negativos ni datos erróneos en el arqueo o cierre.</span>
+          </div>
+
+          <!-- Resumen de Cuadre del Sistema -->
+          <div class="p-3 rounded-3 border mb-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background:#f8fafc;">
+            <div>
+              <span class="text-muted small fw-bold text-uppercase d-block" style="font-size:.68rem;">Esperado en Caja Registradora</span>
+              <span class="fw-bold fs-5 text-dark" id="sistemaEsperadoEnCaja" data-esperado="{{ total_en_caja_activo|default:0|unlocalize }}">
+                ${{ total_en_caja_activo|default:0|floatformat:0|intcomma }}
+              </span>
+              <span class="text-muted small d-block" style="font-size:.73rem;">Base (${{ turno_activo.monto_base|default:0|floatformat:0|intcomma }}) + Lo vendido (${{ turno_activo.total_ventas|default:0|floatformat:0|intcomma }})</span>
+            </div>
+            <div class="text-md-end">
+              <span class="text-muted small fw-bold text-uppercase d-block" style="font-size:.68rem;">Estado del Cuadre</span>
+              <span class="badge py-1.5 px-3 rounded-pill fw-bold" id="badgeCuadreCaja" style="font-size:.8rem; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
+                Ingresa el conteo
+              </span>
+            </div>
+          </div>
+
+          <!-- Billetes Cierre -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold small text-dark"><i class="bi bi-cash-stack me-1 text-success"></i> Billetes Físicos en Caja</span>
+            <span class="badge bg-success" style="font-size:.78rem;" id="totalBilletesCi">$0</span>
+          </div>
+          <div class="row g-2 mb-3">
+            {% for valor in billetes_denom %}
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="p-2 rounded-3 border bg-light">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="small text-success"><i class="bi bi-cash-stack"></i></span>
+                  <span class="text-dark fw-bold small">${{ valor|floatformat:0|intcomma }}</span>
+                </div>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control form-control-sm denom-ci text-center fw-bold"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="preventInvalidDenomKeys(event)"
+                       onpaste="handleDenomPaste(event)"
+                       oninput="sanitizeDenomInput(this)">
+                <div class="small text-muted text-end mt-1" style="font-size:.72rem;">Sub: <span class="fw-bold text-dark">$0</span></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Monedas Cierre -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold small text-dark"><i class="bi bi-coin me-1 text-success"></i> Monedas Físicas en Caja</span>
+            <span class="badge bg-success" style="font-size:.78rem;" id="totalMonedasCi">$0</span>
+          </div>
+          <div class="row g-2 mb-3">
+            {% for valor in monedas_denom %}
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="p-2 rounded-3 border bg-light">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="small text-success"><i class="bi bi-coin"></i></span>
+                  <span class="text-dark fw-bold small">${{ valor|floatformat:0|intcomma }}</span>
+                </div>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" value="" placeholder="0"
+                       class="form-control form-control-sm denom-ci text-center fw-bold"
+                       data-valor="{{ valor|stringformat:'d' }}"
+                       onkeydown="preventInvalidDenomKeys(event)"
+                       onpaste="handleDenomPaste(event)"
+                       oninput="sanitizeDenomInput(this)">
+                <div class="small text-muted text-end mt-1" style="font-size:.72rem;">Sub: <span class="fw-bold text-dark">$0</span></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Total Físico Contado -->
+          <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center mb-3" style="background:#f8fafc;">
+            <div>
+              <div class="small text-muted fw-bold text-uppercase" style="font-size:.7rem;">Total Físico Contado</div>
+              <div class="small text-muted" style="font-size:.73rem;">Billetes + Monedas físicas</div>
+            </div>
+            <div class="fs-4 fw-bold text-success" id="totalCierreCalculado">$0</div>
+          </div>
+
+          <!-- Cuánto se deja de base para el siguiente turno -->
+          <div class="mb-3 p-3 rounded-3 border" style="background:#f8fafc;">
+            <label for="baseSiguiente" class="form-label small fw-bold text-dark mb-1">
+              ¿Cuánto dinero se dejará en caja para el siguiente turno? <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-sm mb-2" style="max-width:280px;">
+              <span class="input-group-text">$</span>
+              <input type="number" id="baseSiguiente" class="form-control fw-bold" min="0" placeholder="0"
+                     value="{% if turno_activo %}{{ turno_activo.monto_base|floatformat:0|unlocalize }}{% else %}200000{% endif %}">
+            </div>
+            <div class="d-flex justify-content-between align-items-center small text-muted">
+              <span>Se deja de fondo: <strong class="text-dark" id="resumenBaseSig">$0</strong></span>
+              <span>Se retira de ganancias: <strong class="text-danger" id="resumenRetirar">$0</strong></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer p-3 border-top" style="background:#f8fafc; border-radius:0 0 18px 18px;">
+          <button type="button" class="btn btn-sm btn-light border px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-danger px-4 rounded-pill fw-bold" id="btnConfirmarCierre">
+            <i class="bi bi-lock-fill me-1"></i> Confirmar y Cerrar Turno
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Funciones auxiliares para mostrar/ocultar avisos en el modal sin usar alert()
-function mostrarAvisoCaja(tipo, msg) {
-  const isCierre = tipo === 'cierre';
-  const errBox = document.getElementById(isCierre ? 'ciErrorMsg' : 'ctErrorMsg');
-  const errText = document.getElementById(isCierre ? 'ciErrorText' : 'ctErrorText');
-  if (errBox && errText) {
-    errText.textContent = msg;
-    errBox.classList.remove('d-none');
-    errBox.classList.add('d-flex');
-    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-}
-
-function ocultarAvisoCaja(tipo) {
-  const isCierre = tipo === 'cierre';
-  const errBox = document.getElementById(isCierre ? 'ciErrorMsg' : 'ctErrorMsg');
-  if (errBox) {
-    errBox.classList.add('d-none');
-    errBox.classList.remove('d-flex');
-  }
-}
-
-// Prevenir teclas inválidas (signo negativo, notación exponencial, decimales)
+// Evitar teclas inválidas en las denominaciones
 function preventInvalidDenomKeys(e) {
-  if (['-', '+', 'e', 'E', '.', ',', 'Subtract'].includes(e.key) || e.keyCode === 189 || e.keyCode === 109) {
+  if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
     e.preventDefault();
-    const isCierre = !!e.target.closest('#modalCierre');
-    mostrarAvisoCaja(isCierre ? 'cierre' : 'conteo', 'No se permiten números negativos ni caracteres especiales en el conteo.');
-    e.target.classList.add('border-danger');
-    setTimeout(() => { e.target.classList.remove('border-danger'); }, 2500);
   }
 }
-
-// Limpiar y asegurar que el dato sea entero positivo (dejar en blanco si se borra)
-function sanitizeDenomInput(input) {
-  let val = String(input.value || '');
-  const isCierre = !!input.closest('#modalCierre');
-  if (val.includes('-')) {
-    mostrarAvisoCaja(isCierre ? 'cierre' : 'conteo', 'No se permiten valores negativos en el arqueo o cierre de caja.');
-    input.classList.add('border-danger');
-    setTimeout(() => { input.classList.remove('border-danger'); }, 2500);
-  }
-  let clean = val.replace(/[^0-9]/g, '');
-  input.value = clean; // Dejar en blanco si se borra, no forzar '0'
-
-  if (input.classList.contains('denom-ct')) {
-    recalcApertura();
-  } else if (input.classList.contains('denom-ci')) {
-    recalcCierre();
-  }
-}
-
-// Manejar pegado de texto evitando caracteres erróneos
 function handleDenomPaste(e) {
-  e.preventDefault();
-  const text = (e.clipboardData || window.clipboardData).getData('text');
-  const digits = String(text || '').replace(/[^0-9]/g, '');
-  this.value = digits;
-  this.dispatchEvent(new Event('input'));
+  const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+  if (/[^0-9]/.test(pasteData)) {
+    e.preventDefault();
+  }
+}
+function sanitizeDenomInput(input) {
+  if (input.value && /[^0-9]/.test(input.value)) {
+    input.value = input.value.replace(/[^0-9]/g, '');
+  }
 }
 
-function stepDenom(btn, step) {
-  const input = btn.closest('.cys-denom-card')?.querySelector('input');
-  if (!input) return;
-  let val = parseInt(input.value, 10);
-  if (isNaN(val) || val < 0) val = 0;
-  val += step;
-  input.value = val > 0 ? val : '';
-  input.dispatchEvent(new Event('input'));
+function mostrarAvisoCaja(tipo, msg) {
+  const box = document.getElementById(tipo === 'conteo' ? 'ctErrorMsg' : 'ciErrorMsg');
+  const txt = document.getElementById(tipo === 'conteo' ? 'ctErrorText' : 'ciErrorText');
+  if (box && txt) {
+    txt.textContent = msg;
+    box.classList.remove('d-none');
+    box.classList.add('d-flex');
+  }
+}
+function ocultarAvisoCaja(tipo) {
+  const box = document.getElementById(tipo === 'conteo' ? 'ctErrorMsg' : 'ciErrorMsg');
+  if (box) {
+    box.classList.remove('d-flex');
+    box.classList.add('d-none');
+  }
 }
 
+// Recalcular Apertura
 function recalcApertura() {
-  let total = 0;
+  ocultarAvisoCaja('conteo');
   let totalBilletes = 0;
   let totalMonedas = 0;
+  let total = 0;
   let hasNegative = false;
 
-  document.querySelectorAll('.denom-ct').forEach(d => {
-    let valRaw = String(d.value || '').trim();
-    if (valRaw.includes('-') || (valRaw !== '' && /[^0-9]/.test(valRaw))) {
+  document.querySelectorAll('.denom-ct').forEach(i => {
+    const raw = String(i.value || '').trim();
+    if (raw.includes('-') || (raw !== '' && /[^0-9]/.test(raw))) {
       hasNegative = true;
-      d.classList.add('border-danger');
+      i.classList.add('border-danger');
     } else {
-      d.classList.remove('border-danger');
+      i.classList.remove('border-danger');
     }
-    const cant = Math.max(0, parseInt(d.value, 10) || 0);
-    const valor = Math.max(0, parseInt(d.dataset.valor, 10) || 0);
-    const sub = cant * valor;
-    total += sub;
+    const val = parseInt(raw, 10) || 0;
+    const denom = parseInt(i.dataset.valor, 10) || 0;
+    const sub = val * denom;
 
-    const card = d.closest('.cys-denom-card');
-    if (card) {
-      const subSpan = card.querySelector('.cys-denom-subtotal span');
-      if (subSpan) subSpan.textContent = '$' + sub.toLocaleString('es-CO');
-      if (card.classList.contains('cys-denom-card--billete')) totalBilletes += sub;
+    const subEl = i.closest('.p-2')?.querySelector('.small span');
+    if (subEl) subEl.textContent = '$' + sub.toLocaleString('es-CO');
+
+    if (denom >= 1000 && !denom.toString().endsWith('000') || denom < 2000) {
+      if (denom >= 2000) totalBilletes += sub;
       else totalMonedas += sub;
+    } else {
+      totalBilletes += sub;
     }
+    total += sub;
   });
 
-  if (hasNegative) {
-    mostrarAvisoCaja('conteo', 'No se permiten números negativos en el conteo.');
-  }
+  const totEl = document.getElementById('totalAperturaCalculado');
+  if (totEl) totEl.textContent = '$' + total.toLocaleString('es-CO');
 
-  const totFmt = '$' + total.toLocaleString('es-CO');
-  const totConteo = document.getElementById('totalConteo');
-  if (totConteo) totConteo.textContent = totFmt;
   const tbBadge = document.getElementById('totalBilletesCt');
   if (tbBadge) tbBadge.textContent = '$' + totalBilletes.toLocaleString('es-CO');
   const tmBadge = document.getElementById('totalMonedasCt');
   if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
+
+  if (hasNegative) {
+    mostrarAvisoCaja('conteo', 'No se permiten números negativos ni caracteres inválidos.');
+  }
 }
 
+// Recalcular Cierre
 function recalcCierre() {
-  let total = 0;
+  ocultarAvisoCaja('cierre');
   let totalBilletes = 0;
   let totalMonedas = 0;
+  let total = 0;
   let hasNegative = false;
 
-  document.querySelectorAll('.denom-ci').forEach(d => {
-    let valRaw = String(d.value || '').trim();
-    if (valRaw.includes('-') || (valRaw !== '' && /[^0-9]/.test(valRaw))) {
+  document.querySelectorAll('.denom-ci').forEach(i => {
+    const raw = String(i.value || '').trim();
+    if (raw.includes('-') || (raw !== '' && /[^0-9]/.test(raw))) {
       hasNegative = true;
-      d.classList.add('border-danger');
+      i.classList.add('border-danger');
     } else {
-      d.classList.remove('border-danger');
+      i.classList.remove('border-danger');
     }
-    const cant = Math.max(0, parseInt(d.value, 10) || 0);
-    const valor = Math.max(0, parseInt(d.dataset.valor, 10) || 0);
-    const sub = cant * valor;
-    total += sub;
+    const val = parseInt(raw, 10) || 0;
+    const denom = parseInt(i.dataset.valor, 10) || 0;
+    const sub = val * denom;
 
-    const card = d.closest('.cys-denom-card');
-    if (card) {
-      const subSpan = card.querySelector('.cys-denom-subtotal span');
-      if (subSpan) subSpan.textContent = '$' + sub.toLocaleString('es-CO');
-      if (card.classList.contains('cys-denom-card--billete')) totalBilletes += sub;
-      else totalMonedas += sub;
-    }
+    const subEl = i.closest('.p-2')?.querySelector('.small span');
+    if (subEl) subEl.textContent = '$' + sub.toLocaleString('es-CO');
+
+    if (denom >= 2000) totalBilletes += sub;
+    else totalMonedas += sub;
+    total += sub;
   });
 
-  const totFmt = '$' + total.toLocaleString('es-CO');
-  const totCierreEl = document.getElementById('totalCierre');
-  if (totCierreEl) totCierreEl.textContent = totFmt;
+  const totEl = document.getElementById('totalCierreCalculado');
+  if (totEl) totEl.textContent = '$' + total.toLocaleString('es-CO');
 
   const baseInput = document.getElementById('baseSiguiente');
-  let baseValRaw = baseInput ? String(baseInput.value || '').trim() : '';
+  const baseValRaw = baseInput ? String(baseInput.value || '').trim() : '';
   if (baseValRaw.includes('-') || (baseValRaw !== '' && /[^0-9]/.test(baseValRaw))) {
     hasNegative = true;
     if (baseInput) baseInput.classList.add('border-danger');
@@ -872,14 +806,62 @@ function recalcCierre() {
   const tmBadge = document.getElementById('totalMonedasCi');
   if (tmBadge) tmBadge.textContent = '$' + totalMonedas.toLocaleString('es-CO');
 
+  // Cuadre vs Esperado en Caja (Base + Vendido)
+  const espEl = document.getElementById('sistemaEsperadoEnCaja');
+  const esperado = espEl ? (parseFloat(espEl.dataset.esperado) || 0) : 0;
+  const badgeCuadre = document.getElementById('badgeCuadreCaja');
+  if (badgeCuadre) {
+    if (total === 0) {
+      badgeCuadre.textContent = 'Ingresa el conteo';
+      badgeCuadre.style.background = '#f1f5f9';
+      badgeCuadre.style.color = '#475569';
+      badgeCuadre.style.border = '1px solid #cbd5e1';
+    } else {
+      const diff = total - esperado;
+      if (Math.abs(diff) < 0.01) {
+        badgeCuadre.textContent = '✓ Cuadre Exacto ($0)';
+        badgeCuadre.style.background = '#dcfce7';
+        badgeCuadre.style.color = '#15803d';
+        badgeCuadre.style.border = '1px solid #86efac';
+      } else if (diff > 0) {
+        badgeCuadre.textContent = '+ $' + diff.toLocaleString('es-CO') + ' (Sobrante)';
+        badgeCuadre.style.background = '#dcfce7';
+        badgeCuadre.style.color = '#15803d';
+        badgeCuadre.style.border = '1px solid #86efac';
+      } else {
+        badgeCuadre.textContent = '- $' + Math.abs(diff).toLocaleString('es-CO') + ' (Faltante)';
+        badgeCuadre.style.background = '#fee2e2';
+        badgeCuadre.style.color = '#b91c1c';
+        badgeCuadre.style.border = '1px solid #fca5a5';
+      }
+    }
+  }
+
   if (hasNegative) {
     mostrarAvisoCaja('cierre', 'No se permiten números negativos ni caracteres inválidos en el cierre.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function initCaja() {
   if (window.setupStrictCYSTooltips) {
     window.setupStrictCYSTooltips();
+  }
+
+  // Buscador de turnos en tiempo real
+  const busq = document.getElementById('buscadorTurnos');
+  if (busq) {
+    busq.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      document.querySelectorAll('.fila-turno').forEach(f => {
+        const id = f.dataset.turnoId;
+        const col = document.getElementById('detalleTurnoRow' + id);
+        let texto = f.textContent.toLowerCase();
+        if (col) texto += ' ' + col.textContent.toLowerCase();
+        const match = !q || texto.includes(q);
+        f.style.display = match ? '' : 'none';
+        if (!match && col) col.classList.remove('show');
+      });
+    });
   }
 
   document.querySelectorAll('.denom-ct').forEach(i => {
@@ -895,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ['input', 'change'].forEach(evt => baseInput.addEventListener(evt, recalcCierre));
   }
 
-  // Confirmar Apertura con Validación Estricta (sin alert popup)
+  // Confirmar Apertura con Validación Estricta
   const btnConfirmarConteo = document.getElementById('btnConfirmarConteo');
   if (btnConfirmarConteo) {
     btnConfirmarConteo.addEventListener('click', function() {
@@ -929,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (hasError) {
         mostrarAvisoCaja('conteo', errorMsg);
-        return; // BLOQUEAR: No permite abrir la caja
+        return;
       }
 
       const obsEl = document.getElementById('ctObservacion');
@@ -973,7 +955,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Confirmar Cierre con Validación Estricta (sin alert popup)
+  // Confirmar Cierre con Validación Estricta
   const btnConfirmarCierre = document.getElementById('btnConfirmarCierre');
   if (btnConfirmarCierre) {
     btnConfirmarCierre.addEventListener('click', function() {
@@ -1012,7 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (hasError) {
         mostrarAvisoCaja('cierre', errorMsg);
-        return; // BLOQUEAR: No permite cerrar con datos erróneos
+        return;
       }
 
       const baseVal = parseInt(baseStr || 0, 10) || 0;
@@ -1061,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Limpieza inicial al abrir modales para que salgan en blanco
+  // Limpieza inicial al abrir modales
   const modalConteo = document.getElementById('modalConteo');
   if (modalConteo) {
     modalConteo.addEventListener('shown.bs.modal', function() {
@@ -1115,6 +1097,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCaja);
+} else {
+  initCaja();
+}
+document.body.addEventListener('htmx:afterSettle', initCaja);
+document.body.addEventListener('htmx:load', initCaja);
 </script>
 {% endblock %}

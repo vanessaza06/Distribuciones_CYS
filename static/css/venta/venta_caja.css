@@ -3,27 +3,27 @@
    Diseño Minimalista para Módulo de Caja y Turnos:
    - Bordes de cuadros/tarjetas en color Dorado (#CF9C48).
    - Iconos estrictamente en Verde (#16a34a) y Rojo (#dc2626).
-   - Estructura limpia, ligera y sin saturación visual.
+   - Estructura limpia, ligera, espaciosa y sin saturación visual.
    ========================================================================== */
 
 :root {
   --cys-dorado: #CF9C48;
   --cys-dorado-borde: rgba(207, 156, 72, 0.45);
   --cys-dorado-borde-suave: rgba(207, 156, 72, 0.3);
-  --cys-dorado-glow: rgba(207, 156, 72, 0.15);
+  --cys-dorado-glow: rgba(207, 156, 72, 0.12);
   --cys-verde-icono: #16a34a;
   --cys-rojo-icono: #dc2626;
-  --cys-verde-bg: rgba(22, 163, 74, 0.1);
-  --cys-rojo-bg: rgba(220, 38, 38, 0.1);
-  --cys-verde-border: rgba(22, 163, 74, 0.3);
-  --cys-rojo-border: rgba(220, 38, 38, 0.3);
+  --cys-verde-bg: rgba(22, 163, 74, 0.08);
+  --cys-rojo-bg: rgba(220, 38, 38, 0.08);
+  --cys-verde-border: rgba(22, 163, 74, 0.25);
+  --cys-rojo-border: rgba(220, 38, 38, 0.25);
 }
 
 /* ── CONTENEDOR PRINCIPAL ── */
 .cys-caja-container {
   max-width: 1400px;
   margin: 0 auto;
-  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
 }
 
 /* ── 1. ENCABEZADO / BANNER CON BORDE DORADO ── */
@@ -32,20 +32,20 @@
   border: 1px solid var(--cys-dorado-borde) !important;
   border-left: 4px solid var(--cys-dorado) !important;
   border-radius: 14px !important;
-  padding: 1.15rem 1.4rem !important;
+  padding: 1.1rem 1.35rem !important;
   margin-bottom: 1.25rem !important;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cys-caja-header-banner:hover {
   border-color: var(--cys-dorado) !important;
-  box-shadow: 0 4px 16px var(--cys-dorado-glow) !important;
+  box-shadow: 0 4px 14px var(--cys-dorado-glow) !important;
 }
 
 /* ── 2. TARJETAS KPIS CON BORDE DORADO E ICONOS VERDES/ROJOS ── */
@@ -54,30 +54,30 @@
   border: 1px solid var(--cys-dorado-borde) !important;
   border-left: 3.5px solid var(--cys-dorado) !important;
   border-radius: 12px !important;
-  padding: 0.95rem 1.15rem !important;
+  padding: 0.9rem 1.1rem !important;
   height: 100% !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.85rem !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .cys-caja-kpi-card:hover {
   transform: translateY(-2px);
   border-color: var(--cys-dorado) !important;
-  box-shadow: 0 6px 18px var(--cys-dorado-glow) !important;
+  box-shadow: 0 5px 15px var(--cys-dorado-glow) !important;
 }
 
 /* Cajas de iconos estrictamente verde o rojo */
 .cys-caja-icon-box {
-  width: 42px !important;
-  height: 42px !important;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 1.2rem !important;
+  font-size: 1.15rem !important;
   flex-shrink: 0 !important;
 }
 
@@ -94,7 +94,7 @@
 }
 
 .cys-caja-kpi-label {
-  font-size: 0.68rem !important;
+  font-size: 0.67rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -117,19 +117,19 @@
   border-radius: 14px !important;
   overflow: hidden !important;
   margin-bottom: 1rem !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.2s ease !important;
 }
 
 .cys-turno-card:hover {
   border-color: var(--cys-dorado) !important;
-  box-shadow: 0 4px 18px var(--cys-dorado-glow) !important;
+  box-shadow: 0 4px 16px var(--cys-dorado-glow) !important;
 }
 
 .cys-turno-card--activo {
   border: 1.5px solid var(--cys-dorado) !important;
   border-left: 5px solid var(--cys-dorado) !important;
-  box-shadow: 0 4px 20px var(--cys-dorado-glow) !important;
+  box-shadow: 0 4px 18px var(--cys-dorado-glow) !important;
 }
 
 .cys-turno-header {
@@ -152,9 +152,10 @@
 }
 
 .cys-mini-stat-card .cys-stat-label {
-  font-size: 0.72rem !important;
+  font-size: 0.7rem !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
   color: var(--texto-muted, #64748b) !important;
   display: flex !important;
   align-items: center !important;
@@ -181,7 +182,7 @@
 
 /* ── 6. RANKING Y LISTA DE PRODUCTOS TOP ── */
 .cys-turno-item-row {
-  background: color-mix(in srgb, var(--fondo-card, #ffffff) 92%, var(--cys-dorado) 8%) !important;
+  background: rgba(207, 156, 72, 0.04) !important;
   border: 1px solid var(--cys-dorado-borde-suave) !important;
   border-radius: 8px !important;
   transition: border-color 0.2s ease !important;
@@ -225,13 +226,14 @@
   font-size: 0.72rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
   color: var(--texto-muted, #64748b) !important;
   border-bottom: 1px solid var(--cys-dorado-borde-suave) !important;
   background: transparent !important;
 }
 
 .cys-clean-table td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-bottom: 1px solid rgba(207, 156, 72, 0.12) !important;
   vertical-align: middle;
 }
 
@@ -292,5 +294,28 @@ html[data-cys-tema="oscuro"] .cys-turno-subpanel {
 }
 
 html[data-cys-tema="oscuro"] .cys-clean-table td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(207, 156, 72, 0.15) !important;
+}
+
+/* ── CONTENEDOR HISTORIAL IDÉNTICO A VENTAS DEL DÍA ── */
+#seccionHistorialCaja {
+  background: var(--fondo-card, #ffffff) !important;
+  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  border-left: 4px solid var(--cys-dorado, #CF9C48) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#seccionHistorialCaja:hover {
+  border-color: var(--cys-dorado, #CF9C48) !important;
+  box-shadow: 0 4px 16px rgba(207, 156, 72, 0.12) !important;
+}
+
+.fila-turno:hover td {
+  background-color: rgba(207, 156, 72, 0.05) !important;
+}
+
+html[data-cys-tema="oscuro"] #seccionHistorialCaja {
+  background: #0f172a !important;
 }

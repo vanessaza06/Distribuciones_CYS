@@ -54,70 +54,107 @@
 
 /* ════════════════════════════════════════════════════════════════
    DISEÑO MINIMALISTA Y LIMPIO — VENTAS DEL DÍA
+   - Bordes de cuadros/tarjetas en Dorado (#CF9C48).
+   - Iconos estrictamente en Verde (#16a34a) y Rojo (#dc2626).
    ════════════════════════════════════════════════════════════════ */
 
-.cys-kpi-card-mini {
-  background: var(--fondo-card);
-  border: 1px solid var(--azul-borde, rgba(0,0,0,0.08));
-  border-radius: 14px;
-  padding: 1.15rem 1.25rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  height: 100%;
+.cys-ventas-dia-banner {
+  background: var(--fondo-card, #ffffff) !important;
+  border: 1px solid rgba(207, 156, 72, 0.45) !important;
+  border-left: 4px solid var(--cys-dorado, #CF9C48) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+.cys-ventas-dia-banner:hover {
+  border-color: var(--cys-dorado, #CF9C48) !important;
+  box-shadow: 0 4px 14px rgba(207, 156, 72, 0.15) !important;
+}
+
+.cys-kpi-card-mini {
+  background: var(--fondo-card, #ffffff) !important;
+  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important;
+  border-radius: 12px !important;
+  padding: 1.15rem 1.25rem !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+  height: 100% !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+
 .cys-kpi-card-mini:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border-color: var(--cys-dorado, #CF9C48) !important;
+  box-shadow: 0 6px 16px rgba(207, 156, 72, 0.15) !important;
 }
+
 .cys-kpi-title-mini {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--texto-muted);
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: var(--texto-muted, #64748b) !important;
 }
+
 .cys-kpi-icon-mini {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 9px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.1rem !important;
+  background: rgba(22, 163, 74, 0.1) !important;
+  color: #16a34a !important;
+  border: 1px solid rgba(22, 163, 74, 0.25) !important;
 }
+
 .cys-kpi-num-mini {
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: var(--texto);
-  line-height: 1.15;
-  margin-bottom: 0.25rem;
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  color: var(--texto, #0f172a) !important;
+  line-height: 1.15 !important;
+  margin-bottom: 0.25rem !important;
 }
+
 .cys-kpi-sub-mini {
-  font-size: 0.74rem;
-  color: var(--texto-muted);
+  font-size: 0.74rem !important;
+  color: var(--texto-muted, #64748b) !important;
 }
 
 /* Card Minimalista de Análisis */
 .cys-card-mini {
-  background: var(--fondo-card);
-  border: 1px solid var(--azul-borde, rgba(0,0,0,0.08));
-  border-radius: 14px;
-  padding: 1.25rem 1.4rem;
-  height: 100%;
+  background: var(--fondo-card, #ffffff) !important;
+  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  border-left: 3.5px solid var(--cys-dorado, #CF9C48) !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.4rem !important;
+  height: 100% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+.cys-card-mini:hover {
+  border-color: var(--cys-dorado, #CF9C48) !important;
+  box-shadow: 0 4px 16px rgba(207, 156, 72, 0.12) !important;
+}
+
 .cys-card-mini-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.85rem;
   padding-bottom: 0.65rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--texto) 6%, transparent);
+  border-bottom: 1px solid rgba(207, 156, 72, 0.25) !important;
 }
+
 .cys-card-mini-title {
-  font-size: 0.88rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--texto);
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: var(--texto, #0f172a) !important;
   margin: 0;
   display: flex;
   align-items: center;
@@ -130,24 +167,25 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);
+  border-bottom: 1px solid rgba(207, 156, 72, 0.15) !important;
 }
+
 .cys-mini-rank-item:last-child {
-  border-bottom: none;
+  border-bottom: none !important;
 }
+
 .cys-mini-rank-badge {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #ecfdf5;
-  color: #15803d;
-  border: 1px solid #86efac;
-  font-weight: 800;
-  font-size: 0.72rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 6px !important;
+  background: var(--cys-dorado, #CF9C48) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 0.72rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 /* Fila minimalista de franja horaria */
@@ -156,10 +194,140 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--texto) 5%, transparent);
+  border-bottom: 1px solid rgba(207, 156, 72, 0.15) !important;
 }
+
 .cys-mini-franja-row:last-child {
-  border-bottom: none;
+  border-bottom: none !important;
+}
+
+#seccionTablaVentasDia {
+  border: 1px solid rgba(207, 156, 72, 0.4) !important;
+  border-left: 4px solid var(--cys-dorado, #CF9C48) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* ── PAGINACIÓN BOOTSTRAP UNIFICADA (« ‹ 1 2 › ») ── */
+.cys-pagination-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  padding: 0.85rem 1.15rem !important;
+  border-top: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
+}
+
+.cys-pagination-info {
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: var(--texto-muted, #64748b) !important;
+  margin: 0 !important;
+}
+
+.cys-bootstrap-pagination {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  padding-left: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  border: 1px solid #dee2e6 !important;
+  margin: 0 !important;
+}
+
+.cys-bootstrap-pagination .page-item {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  display: inline-block !important;
+}
+
+.cys-bootstrap-pagination .page-item::before,
+.cys-bootstrap-pagination .page-item::after {
+  content: none !important;
+  display: none !important;
+}
+
+.cys-bootstrap-pagination .page-link {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0.35rem 0.7rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: #0d6efd !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  border-right: 1px solid #dee2e6 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.cys-bootstrap-pagination .page-item:last-child .page-link {
+  border-right: none !important;
+}
+
+.cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: #e9ecef !important;
+  color: #0a58ca !important;
+}
+
+.cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  opacity: 0.9 !important;
+}
+
+/* Adaptación suave a Modo Oscuro */
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination,
+html.cys-modo-oscuro .cys-bootstrap-pagination {
+  border-color: rgba(77, 168, 218, 0.25) !important;
+}
+
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-link {
+  background-color: #0f223a !important;
+  color: #38bdf8 !important;
+  border-right-color: rgba(77, 168, 218, 0.25) !important;
+}
+
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled),
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  color: #7dd3fc !important;
+}
+
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: rgba(15, 34, 58, 0.7) !important;
+  color: #64748b !important;
 }
 
 /* Tabla limpia minimalista */
@@ -818,4 +986,135 @@ html:not([data-cys-tema="claro"]):not(.cys-modo-claro) .cys-badge-pagado i {
   #seccionTablaVentasDia table { width: 100%; border-collapse: collapse; }
   #seccionTablaVentasDia th,
   #seccionTablaVentasDia td { border: 1px solid #999 !important; padding: 4px 6px !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGINACIÓN BOOTSTRAP UNIFICADA (Estilo « ‹ 1 2 › »)
+   ════════════════════════════════════════════════════════════════ */
+.cys-pagination-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  padding: 0.85rem 1.15rem !important;
+  border-top: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
+}
+
+.cys-pagination-info {
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  color: var(--texto-muted, #64748b) !important;
+  margin: 0 !important;
+}
+
+.cys-pagination-bar,
+.cys-bootstrap-pagination {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.cys-pagination-bar .cys-page-btn,
+.cys-bootstrap-pagination .page-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  color: #0d6efd !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  border-right: 1px solid #dee2e6 !important;
+  border-radius: 0 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+.cys-pagination-bar .cys-page-btn:last-child,
+.cys-bootstrap-pagination .page-item:last-child .page-link {
+  border-right: none !important;
+}
+
+.cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
+.cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: #e9ecef !important;
+  color: #0a58ca !important;
+}
+
+.cys-pagination-bar .cys-page-btn.active,
+.cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  cursor: default !important;
+}
+
+.cys-pagination-bar .cys-page-btn.disabled,
+.cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.75 !important;
+  pointer-events: none !important;
+}
+
+/* Adaptación suave a Modo Oscuro */
+[data-tema-sistema="oscuro"] .cys-pagination-bar,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination,
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination,
+html.cys-modo-oscuro .cys-bootstrap-pagination {
+  border-color: rgba(77, 168, 218, 0.25) !important;
+  background-color: rgba(14, 28, 52, 0.85) !important;
+}
+
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link,
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-link {
+  background-color: rgba(14, 28, 52, 0.85) !important;
+  border-right-color: rgba(77, 168, 218, 0.25) !important;
+  color: #38bdf8 !important;
+}
+
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled),
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled),
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  color: #7dd3fc !important;
+}
+
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.active,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link,
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.disabled,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link,
+html[data-cys-tema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link,
+html.cys-modo-oscuro .cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #64748b !important;
+  opacity: 0.6 !important;
 }
