@@ -29,174 +29,90 @@
 .cys-bootstrap-pagination {
   display: inline-flex !important;
   flex-direction: row !important;
-  align-items: stretch !important;
-  border: 1px solid #dee2e6 !important;
-  border-radius: 6px !important;
-  overflow: hidden !important;
-  background-color: #ffffff !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
   list-style: none !important;
   list-style-type: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: none !important;
 }
 .cys-pagination-bar .cys-page-btn,
 .cys-bootstrap-pagination .page-link {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-width: 36px !important;
+  min-width: 34px !important;
   height: 34px !important;
-  padding: 0 11px !important;
+  padding: 0 10px !important;
   font-size: 0.88rem !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   font-family: inherit !important;
-  color: #0d6efd !important;
-  background-color: #ffffff !important;
-  border: none !important;
-  border-right: 1px solid #dee2e6 !important;
-  border-radius: 0 !important;
+  color: #b91c1c !important;
+  background-color: #fff1f2 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 8px !important;
   text-decoration: none !important;
   cursor: pointer !important;
   line-height: 1 !important;
   user-select: none !important;
+  box-shadow: 0 1px 2px rgba(168, 35, 21, 0.08) !important;
   transition: all 0.15s ease !important;
   box-sizing: border-box !important;
 }
-.cys-pagination-bar .cys-page-btn:last-child,
-.cys-bootstrap-pagination .page-item:last-child .page-link {
-  border-right: none !important;
-}
 .cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
 .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
-  background-color: #e9ecef !important;
-  color: #0a58ca !important;
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fca5a5 !important;
 }
 .cys-pagination-bar .cys-page-btn.active,
 .cys-bootstrap-pagination .page-item.active .page-link {
-  background-color: #0d6efd !important;
+  background-color: #a82315 !important;
   color: #ffffff !important;
+  border-color: #a82315 !important;
   font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(168, 35, 21, 0.3) !important;
   cursor: default !important;
 }
 .cys-pagination-bar .cys-page-btn.disabled,
 .cys-bootstrap-pagination .page-item.disabled .page-link {
-  background-color: #f1f5f9 !important;
-  color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+  color: #cbd5e1 !important;
+  border: 1px solid #f1f5f9 !important;
   cursor: not-allowed !important;
-  opacity: 0.75 !important;
+  opacity: 0.65 !important;
   pointer-events: none !important;
+  box-shadow: none !important;
 }
-[data-tema-sistema="oscuro"] .cys-pagination-bar,
-[data-tema-sistema="oscuro"] .cys-bootstrap-pagination {
-  border-color: rgba(77, 168, 218, 0.25) !important;
-  background-color: rgba(14, 28, 52, 0.85) !important;
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
 }
-[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn,
-[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link {
-  background-color: rgba(14, 28, 52, 0.85) !important;
-  border-right-color: rgba(77, 168, 218, 0.25) !important;
-  color: #38bdf8 !important;
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled) {
+  background-color: rgba(239, 68, 68, 0.22) !important;
+  color: #fca5a5 !important;
+  border-color: #f87171 !important;
 }
-[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
-[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
-  background-color: rgba(56, 189, 248, 0.15) !important;
-  color: #7dd3fc !important;
-}
-[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.active,
-[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link {
-  background-color: #0284c7 !important;
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.active {
+  background-color: #dc2626 !important;
   color: #ffffff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4) !important;
 }
-[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.disabled,
-[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link {
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.disabled {
   background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   color: #64748b !important;
-  opacity: 0.6 !important;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<style>
-.cys-pagination-container {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  flex-wrap: wrap !important;
-  gap: 0.75rem !important;
-  padding: 0.85rem 1.15rem !important;
-  border-top: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
-}
-.cys-pagination-info {
-  font-size: 0.84rem !important;
-  font-weight: 600 !important;
-  color: var(--texto-muted, #64748b) !important;
-  margin: 0 !important;
-}
-.cys-pagination-bar,
-.cys-bootstrap-pagination {
-  display: inline-flex !important;
-  flex-direction: row !important;
-  align-items: stretch !important;
-  border: 1px solid #dee2e6 !important;
-  border-radius: 6px !important;
-  overflow: hidden !important;
-  background-color: #ffffff !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-  list-style-type: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-.cys-pagination-bar .cys-page-btn,
-.cys-bootstrap-pagination .page-link {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 36px !important;
-  height: 34px !important;
-  padding: 0 11px !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  font-family: inherit !important;
-  color: #0d6efd !important;
-  background-color: #ffffff !important;
-  border: none !important;
-  border-right: 1px solid #dee2e6 !important;
-  border-radius: 0 !important;
-  text-decoration: none !important;
-  cursor: pointer !important;
-  line-height: 1 !important;
-  user-select: none !important;
-  transition: all 0.15s ease !important;
-  box-sizing: border-box !important;
-}
-.cys-pagination-bar .cys-page-btn:last-child,
-.cys-bootstrap-pagination .page-item:last-child .page-link {
-  border-right: none !important;
-}
-.cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
-.cys-bootstrap-pagination .page-link:hover:not(.disabled) {
-  background-color: #e9ecef !important;
-  color: #0a58ca !important;
-}
-.cys-pagination-bar .cys-page-btn.active,
-.cys-bootstrap-pagination .page-item.active .page-link {
-  background-color: #0d6efd !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  cursor: default !important;
-}
-.cys-pagination-bar .cys-page-btn.disabled,
-.cys-bootstrap-pagination .page-item.disabled .page-link {
-  background-color: #f1f5f9 !important;
-  color: #94a3b8 !important;
-  cursor: not-allowed !important;
-  opacity: 0.75 !important;
-  pointer-events: none !important;
-}
-</style>
 <div class="container-fluid p-3">
  
   <!-- ── BARRA ESTADO DE CAJA ── -->
@@ -939,8 +855,9 @@
         </div>
       </div>
 
-      <form id="formCobrarSaldo" method="POST" action="">
+      <form id="formCobrarSaldo" method="POST" action="" hx-boost="false">
         {% csrf_token %}
+        <input type="hidden" name="venta_id" id="cobroHiddenVentaId" value="">
         <div class="modal-body p-3 p-md-4">
           
           <!-- Resumen de la venta -->
@@ -1053,8 +970,9 @@
         </div>
       </div>
 
-      <form method="POST" id="formEliminarVentaModal" action="" class="m-0">
+      <form method="POST" id="formEliminarVentaModal" action="" class="m-0" hx-boost="false">
         {% csrf_token %}
+        <input type="hidden" name="venta_id" id="eliminarHiddenVentaId" value="">
         <div class="modal-body p-3 p-md-4">
           <!-- Advertencia -->
           <div class="p-3 rounded-3 mb-3" style="background:rgba(235,77,75,0.12); border:1px solid rgba(235,77,75,0.35); color:#ff7675;">
@@ -2351,7 +2269,7 @@ function cambiarCantidad(idx, delta) {
   function renderizarPaginacionBootstrap(containerEl, paginaActual, totalPaginas, onCambiar) {
     if (!containerEl) return;
     containerEl.innerHTML = '';
-    containerEl.setAttribute('style', 'display:inline-flex !important; flex-direction:row !important; align-items:stretch !important; border:1px solid #dee2e6 !important; border-radius:6px !important; overflow:hidden !important; background-color:#ffffff !important; margin:0 !important; padding:0 !important; box-shadow:0 1px 3px rgba(0,0,0,0.05) !important;');
+    containerEl.setAttribute('style', 'display:inline-flex !important; flex-direction:row !important; align-items:center !important; gap:6px !important; border:none !important; background:transparent !important; margin:0 !important; padding:0 !important; box-shadow:none !important;');
 
     const crearBoton = (clase, texto, onClick, deshabilitado, esActivo) => {
       const el = document.createElement(deshabilitado || esActivo ? 'span' : 'button');
@@ -2359,23 +2277,29 @@ function cambiarCantidad(idx, delta) {
       el.className = 'cys-page-btn' + (clase ? ' ' + clase : '');
       el.innerHTML = texto;
 
-      let inlineBg = '#ffffff';
-      let inlineColor = '#0d6efd';
+      let inlineBg = '#fff1f2';
+      let inlineColor = '#b91c1c';
+      let inlineBorder = '1px solid #fecaca';
+      let inlineShadow = '0 1px 2px rgba(168,35,21,0.08)';
       let inlineCursor = 'pointer';
       let inlineOpacity = '1';
 
       if (esActivo) {
-        inlineBg = '#0d6efd';
+        inlineBg = '#a82315';
         inlineColor = '#ffffff';
+        inlineBorder = '1px solid #a82315';
+        inlineShadow = '0 2px 6px rgba(168,35,21,0.3)';
         inlineCursor = 'default';
       } else if (deshabilitado) {
-        inlineBg = '#f1f5f9';
-        inlineColor = '#94a3b8';
+        inlineBg = '#f8fafc';
+        inlineColor = '#cbd5e1';
+        inlineBorder = '1px solid #f1f5f9';
+        inlineShadow = 'none';
         inlineCursor = 'not-allowed';
-        inlineOpacity = '0.7';
+        inlineOpacity = '0.65';
       }
 
-      el.setAttribute('style', 'display:inline-flex !important; align-items:center !important; justify-content:center !important; min-width:36px !important; height:34px !important; padding:0 11px !important; font-size:0.88rem !important; font-weight:' + (esActivo ? '700' : '600') + ' !important; line-height:1 !important; border:none !important; border-right:1px solid #dee2e6 !important; border-radius:0 !important; text-decoration:none !important; cursor:' + inlineCursor + ' !important; background-color:' + inlineBg + ' !important; color:' + inlineColor + ' !important; opacity:' + inlineOpacity + ' !important; user-select:none !important; box-sizing:border-box !important;');
+      el.setAttribute('style', 'display:inline-flex !important; align-items:center !important; justify-content:center !important; min-width:34px !important; height:34px !important; padding:0 10px !important; font-size:0.88rem !important; font-weight:700 !important; line-height:1 !important; border:' + inlineBorder + ' !important; border-radius:8px !important; text-decoration:none !important; cursor:' + inlineCursor + ' !important; background-color:' + inlineBg + ' !important; color:' + inlineColor + ' !important; opacity:' + inlineOpacity + ' !important; box-shadow:' + inlineShadow + ' !important; user-select:none !important; box-sizing:border-box !important;');
 
       if (!deshabilitado && !esActivo && onClick) {
         el.addEventListener('click', (e) => {
@@ -2419,10 +2343,6 @@ function cambiarCantidad(idx, delta) {
 
     // 5. » (Última)
     containerEl.appendChild(crearBoton('last' + (paginaActual >= totalPaginas ? ' disabled' : ''), '&raquo;', () => onCambiar(totalPaginas), paginaActual >= totalPaginas, false));
-
-    if (containerEl.lastElementChild) {
-      containerEl.lastElementChild.style.borderRight = 'none';
-    }
   }
 
   function aplicarFiltroHistorial(origen, forzarPagina) {
@@ -2621,45 +2541,89 @@ function cambiarCantidad(idx, delta) {
   })();
 
   // ══ MODAL DE COBRO DE SALDO PENDIENTE (CAMBIAR A PAGADA) ══
+  function configurarModalCobro(btn) {
+    if (!btn) return;
+    const vid = btn.dataset.ventaId;
+    const cliente = btn.dataset.cliente || 'Consumidor final';
+    const total = parseFloat(btn.dataset.total) || 0;
+    const cobrado = parseFloat(btn.dataset.cobrado) || 0;
+    const deuda = parseFloat(btn.dataset.deuda) || 0;
+    const obs = btn.dataset.obs || '';
+
+    const vidEl = document.getElementById('cobroVentaId');
+    if (vidEl) vidEl.textContent = vid;
+    const cliEl = document.getElementById('cobroCliente');
+    if (cliEl) cliEl.textContent = cliente;
+    const totEl = document.getElementById('cobroTotalVenta');
+    if (totEl) totEl.textContent = '$' + Math.round(total).toLocaleString('es-CO');
+    const cobEl = document.getElementById('cobroYaCobrado');
+    if (cobEl) cobEl.textContent = '$' + Math.round(cobrado).toLocaleString('es-CO');
+    const deuEl = document.getElementById('cobroSaldoDeuda');
+    if (deuEl) deuEl.textContent = '$' + Math.round(deuda).toLocaleString('es-CO');
+
+    const inpMonto = document.getElementById('inputMontoCobro');
+    if (inpMonto) {
+      inpMonto.value = Math.round(deuda);
+      inpMonto.max = Math.round(deuda);
+      inpMonto.min = 1;
+    }
+
+    const obsBox = document.getElementById('cobroObsBox');
+    const obsTxt = document.getElementById('cobroMotivoTexto');
+    if (obs && obsBox && obsTxt) {
+      obsTxt.textContent = obs;
+      obsBox.style.display = 'block';
+    } else if (obsBox) {
+      obsBox.style.display = 'none';
+    }
+
+    const form = document.getElementById('formCobrarSaldo');
+    if (form && vid) {
+      const targetUrl = `/ventas/cobrar-saldo/${vid}/`;
+      form.action = targetUrl;
+      form.setAttribute('action', targetUrl);
+    }
+    const hid = document.getElementById('cobroHiddenVentaId');
+    if (hid && vid) hid.value = vid;
+  }
+
   document.querySelectorAll('.btn-abrir-cobro').forEach(btn => {
     btn.addEventListener('click', function() {
-      const vid = this.dataset.ventaId;
-      const cliente = this.dataset.cliente || 'Consumidor final';
-      const total = parseFloat(this.dataset.total) || 0;
-      const cobrado = parseFloat(this.dataset.cobrado) || 0;
-      const deuda = parseFloat(this.dataset.deuda) || 0;
-      const obs = this.dataset.obs || '';
-
-      const vidEl = document.getElementById('cobroVentaId');
-      if (vidEl) vidEl.textContent = vid;
-      const cliEl = document.getElementById('cobroCliente');
-      if (cliEl) cliEl.textContent = cliente;
-      const totEl = document.getElementById('cobroTotalVenta');
-      if (totEl) totEl.textContent = '$' + Math.round(total).toLocaleString('es-CO');
-      const cobEl = document.getElementById('cobroYaCobrado');
-      if (cobEl) cobEl.textContent = '$' + Math.round(cobrado).toLocaleString('es-CO');
-      const deuEl = document.getElementById('cobroSaldoDeuda');
-      if (deuEl) deuEl.textContent = '$' + Math.round(deuda).toLocaleString('es-CO');
-
-      const inpMonto = document.getElementById('inputMontoCobro');
-      if (inpMonto) {
-        inpMonto.value = Math.round(deuda);
-        inpMonto.max = Math.round(deuda);
-      }
-
-      const obsBox = document.getElementById('cobroObsBox');
-      const obsTxt = document.getElementById('cobroMotivoTexto');
-      if (obs && obsBox && obsTxt) {
-        obsTxt.textContent = obs;
-        obsBox.style.display = 'block';
-      } else if (obsBox) {
-        obsBox.style.display = 'none';
-      }
-
-      const form = document.getElementById('formCobrarSaldo');
-      if (form) form.action = `/ventas/cobrar-saldo/${vid}/`;
+      configurarModalCobro(this);
     });
   });
+
+  const modalCobroEl = document.getElementById('modalCobrarSaldo');
+  if (modalCobroEl) {
+    modalCobroEl.addEventListener('show.bs.modal', function(event) {
+      if (event.relatedTarget) {
+        configurarModalCobro(event.relatedTarget);
+      }
+    });
+  }
+
+  const formCobro = document.getElementById('formCobrarSaldo');
+  if (formCobro) {
+    formCobro.addEventListener('submit', function(e) {
+      const hid = document.getElementById('cobroHiddenVentaId');
+      const vid = hid ? hid.value : (document.getElementById('cobroVentaId')?.textContent || '').trim();
+      if (vid) {
+        const targetUrl = `/ventas/cobrar-saldo/${vid}/`;
+        this.action = targetUrl;
+        this.setAttribute('action', targetUrl);
+      }
+      // Ocultar modal y limpiar backdrops para evitar pantalla negra
+      const mEl = document.getElementById('modalCobrarSaldo');
+      if (mEl && window.bootstrap && window.bootstrap.Modal) {
+        const inst = window.bootstrap.Modal.getInstance(mEl);
+        if (inst) inst.hide();
+      }
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    });
+  }
 
   const btnPagarTodo = document.getElementById('btnPagarTodo');
   if (btnPagarTodo) {
@@ -2691,7 +2655,13 @@ function cambiarCantidad(idx, delta) {
       if (fecEl) fecEl.textContent = fecha;
 
       const form = document.getElementById('formEliminarVentaModal');
-      if (form) form.action = '/ventas/eliminar/' + vid + '/';
+      if (form) {
+        const targetUrl = '/ventas/eliminar/' + vid + '/';
+        form.action = targetUrl;
+        form.setAttribute('action', targetUrl);
+      }
+      const hid = document.getElementById('eliminarHiddenVentaId');
+      if (hid && vid) hid.value = vid;
 
       const motInput = document.getElementById('motivoEliminarVenta');
       if (motInput) {
@@ -2714,6 +2684,23 @@ function cambiarCantidad(idx, delta) {
         }
         return false;
       }
+      const hid = document.getElementById('eliminarHiddenVentaId');
+      const vid = hid ? hid.value : (document.getElementById('eliminarVentaIdText')?.textContent || '').trim();
+      if (vid) {
+        const targetUrl = '/ventas/eliminar/' + vid + '/';
+        this.action = targetUrl;
+        this.setAttribute('action', targetUrl);
+      }
+      // Ocultar modal y limpiar backdrops
+      const mEl = document.getElementById('modalEliminarVenta');
+      if (mEl && window.bootstrap && window.bootstrap.Modal) {
+        const inst = window.bootstrap.Modal.getInstance(mEl);
+        if (inst) inst.hide();
+      }
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
     });
   }
 

@@ -24,7 +24,7 @@ def session_required(view_func):
 def lista_metodos_pago(request):
     """
     Panel centralizado de Métodos de Pago integrando Ventas, Caja y Compras.
-    Por defecto muestra los pagos y recaudos de Ventas organizados por turno de Caja.
+    Por defecto muestra los pagos y recaudos de Ventas organizados con base en lo que hay en Caja.
     """
     tab = request.GET.get('tab', 'ventas').strip()
     q = request.GET.get('q', '').strip()
@@ -33,12 +33,28 @@ def lista_metodos_pago(request):
     fecha_inicio = request.GET.get('fecha_inicio', '').strip()
     fecha_fin = request.GET.get('fecha_fin', '').strip()
 
+    # Identificar la caja del turno activo y el último turno registrado
+    caja_ultima = Caja.objects.order_by('-codigo_caja').first()
+    caja_abierta = caja_ultima if (caja_ultima and '[CERRADO]' not in (caja_ultima.observacion or '')) else None
+
+    # Si no se pasó caja_id explícitamente ni rango de fechas, sincronizar con el turno activo (o último turno)
+    # para que los datos en pantalla coincidan exactamente con lo que hay en caja física.
+    if not caja_id and not fecha_inicio and not fecha_fin and tab != 'compras':
+        if caja_abierta:
+            caja_id = str(caja_abierta.codigo_caja)
+        elif caja_ultima:
+            caja_id = str(caja_ultima.codigo_caja)
+
     # ═════════════════════════════════════════════════════════
     # 1. PESTAÑA PRINCIPAL: VENTAS Y CAJA (INGRESOS / COBROS)
     # ═════════════════════════════════════════════════════════
     ventas_qs = Venta.objects.select_related('caja', 'vendedor').prefetch_related(
         'detalles__producto', 'detalles__presentacion'
     ).order_by('-fecha')
+
+    # Filtro por Turno de Caja específico (si es 'todos', no se filtra por caja)
+    if caja_id and caja_id.isdigit():
+        ventas_qs = ventas_qs.filter(caja_id=int(caja_id))
 
     # Filtro por rango de fechas
     if fecha_inicio:
@@ -54,10 +70,6 @@ def lista_metodos_pago(request):
             ventas_qs = ventas_qs.filter(fecha__date__lte=ff.date())
         except ValueError:
             pass
-
-    # Filtro por Turno de Caja específico
-    if caja_id and caja_id.isdigit():
-        ventas_qs = ventas_qs.filter(caja_id=int(caja_id))
 
     # Filtro por método de pago o saldo pendiente
     if metodo == 'efectivo':
@@ -116,19 +128,24 @@ def lista_metodos_pago(request):
         pd = Decimal(str(v.pago_daviplata or 0))
         sp = Decimal(str(v.saldo_pendiente or 0))
 
-        # Si no se ingresaron desgloses explícitos, usar metodo_pago string
+        # Si no se ingresaron desgloses explícitos, deducir con precisión según metodo_pago
         if pe == 0 and pt == 0 and ptr == 0 and pn == 0 and pd == 0:
-            mp_str = (v.metodo_pago or 'efectivo').lower()
+            mp_str = (v.metodo_pago or '').lower()
+            cobrado_v = max(Decimal('0'), monto_total - sp)
             if 'efectivo' in mp_str:
-                pe = max(Decimal('0'), monto_total - sp)
+                pe = cobrado_v
             elif 'nequi' in mp_str:
-                pn = max(Decimal('0'), monto_total - sp)
+                pn = cobrado_v
             elif 'daviplata' in mp_str:
-                pd = max(Decimal('0'), monto_total - sp)
+                pd = cobrado_v
             elif 'tarjeta' in mp_str:
-                pt = max(Decimal('0'), monto_total - sp)
+                pt = cobrado_v
+            elif 'transferencia' in mp_str or 'banco' in mp_str:
+                ptr = cobrado_v
+            elif 'pendiente' in mp_str:
+                pass  # Deuda pura, no entra a los recaudos cobrados
             else:
-                ptr = max(Decimal('0'), monto_total - sp)
+                pe = cobrado_v
 
         total_ventas_monto += monto_total
         total_efectivo_ventas += pe
@@ -147,15 +164,17 @@ def lista_metodos_pago(request):
 
         desglose_badges = []
         if pe > 0:
-            desglose_badges.append({'tipo': 'Efectivo', 'monto': pe, 'color': '#2ed573', 'bg': 'rgba(46,213,115,0.15)', 'icon': 'bi-cash'})
+            desglose_badges.append({'tipo': 'Efectivo', 'monto': pe, 'color': '#16a34a', 'bg': 'rgba(22,163,74,0.12)', 'icon': 'bi-cash-stack'})
         if pn > 0:
-            desglose_badges.append({'tipo': 'Nequi', 'monto': pn, 'color': '#e84393', 'bg': 'rgba(232,67,147,0.15)', 'icon': 'bi-phone'})
+            desglose_badges.append({'tipo': 'Nequi', 'monto': pn, 'color': '#16a34a', 'bg': 'rgba(22,163,74,0.12)', 'icon': 'bi-phone'})
         if pd > 0:
-            desglose_badges.append({'tipo': 'Daviplata', 'monto': pd, 'color': '#ff7675', 'bg': 'rgba(255,118,117,0.15)', 'icon': 'bi-phone-fill'})
+            desglose_badges.append({'tipo': 'Daviplata', 'monto': pd, 'color': '#16a34a', 'bg': 'rgba(22,163,74,0.12)', 'icon': 'bi-phone-fill'})
         if pt > 0:
-            desglose_badges.append({'tipo': 'Tarjeta', 'monto': pt, 'color': '#74b9ff', 'bg': 'rgba(116,185,255,0.15)', 'icon': 'bi-credit-card'})
+            desglose_badges.append({'tipo': 'Tarjeta', 'monto': pt, 'color': '#16a34a', 'bg': 'rgba(22,163,74,0.12)', 'icon': 'bi-credit-card'})
         if ptr > 0:
-            desglose_badges.append({'tipo': 'Transferencia', 'monto': ptr, 'color': '#a55eea', 'bg': 'rgba(165,94,234,0.15)', 'icon': 'bi-bank'})
+            desglose_badges.append({'tipo': 'Transferencia', 'monto': ptr, 'color': '#16a34a', 'bg': 'rgba(22,163,74,0.12)', 'icon': 'bi-bank'})
+        if sp > 0:
+            desglose_badges.append({'tipo': 'Pendiente', 'monto': sp, 'color': '#dc2626', 'bg': 'rgba(220,38,38,0.12)', 'icon': 'bi-clock-history'})
 
         # Determinar estado de la caja asignada
         caja_info = None
@@ -186,14 +205,34 @@ def lista_metodos_pago(request):
 
     total_digital_ventas = total_nequi_ventas + total_daviplata_ventas + total_tarjeta_ventas + total_transferencia_ventas
 
+    # Datos de la caja seleccionada (o activa) para cuadre exacto con Caja
+    caja_seleccionada_obj = None
+    if caja_id and caja_id.isdigit():
+        caja_seleccionada_obj = Caja.objects.filter(pk=int(caja_id)).first()
+    elif not caja_id and caja_abierta:
+        caja_seleccionada_obj = caja_abierta
+
+    monto_base_caja = Decimal(str(caja_seleccionada_obj.monto_base or 0)) if caja_seleccionada_obj else Decimal('0')
+    total_retirado_caja = Decimal(str(caja_seleccionada_obj.total_retirado or 0)) if caja_seleccionada_obj else Decimal('0')
+    total_fisico_en_caja = max(Decimal('0'), monto_base_caja + total_efectivo_ventas - total_retirado_caja)
+
     # Lista de turnos/cajas disponibles para el filtro
     cajas_disponibles = []
-    for c_obj in Caja.objects.all().order_by('-fecha_hora')[:40]:
+    cajas_disponibles.append({
+        'id': 'todos',
+        'label': 'Todos los turnos (Consolidado histórico)',
+        'es_cerrado': False,
+        'es_activa': False,
+    })
+    for c_obj in Caja.objects.all().order_by('-codigo_caja')[:50]:
         es_c = '[CERRADO]' in (c_obj.observacion or '')
+        es_act = (caja_abierta and c_obj.codigo_caja == caja_abierta.codigo_caja)
+        estado_txt = 'Activo' if es_act else ('Cerrado' if es_c else 'Finalizado')
         cajas_disponibles.append({
-            'id': c_obj.codigo_caja,
-            'label': f"Turno #{c_obj.codigo_caja} ({'Cerrado' if es_c else 'Activo'} - {c_obj.fecha_hora.strftime('%d/%m %I:%M %p')})",
+            'id': str(c_obj.codigo_caja),
+            'label': f"Turno #{c_obj.codigo_caja} ({estado_txt} - {c_obj.fecha_hora.strftime('%d/%m/%Y %I:%M %p')})",
             'es_cerrado': es_c,
+            'es_activa': es_act,
         })
 
     # ═════════════════════════════════════════════════════════
@@ -237,12 +276,23 @@ def lista_metodos_pago(request):
 
     compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'confirmada', 'recibida']).order_by('-fecha')[:30]
 
+    total_cobrado_dia = total_efectivo_ventas + total_digital_ventas
+    total_pendiente_dia = total_pendiente_ventas
+
     context = {
         'breadcrumb_items': [
             {'nombre': 'Ventas', 'url': reverse('ventas')},
             {'nombre': 'Métodos de Pago', 'url': reverse('lista_metodos_pago')},
         ],
         'tab': tab,
+        # Estado de caja sincronizado
+        'caja_abierta': caja_abierta,
+        'caja_seleccionada': caja_seleccionada_obj,
+        'monto_base_caja': monto_base_caja,
+        'total_retirado_caja': total_retirado_caja,
+        'total_fisico_en_caja': total_fisico_en_caja,
+        'total_cobrado_dia': total_cobrado_dia,
+        'total_pendiente_dia': total_pendiente_dia,
         # Ventas & Caja
         'ventas': ventas_procesadas,
         'total_ventas_monto': total_ventas_monto,
