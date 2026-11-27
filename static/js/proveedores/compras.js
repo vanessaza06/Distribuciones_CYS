@@ -356,6 +356,7 @@ function initTabla() {
   if (!tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
   jQuery(tabla).DataTable({
+    responsive: true,
     paging: true,
     searching: true,
     info: true,
@@ -969,6 +970,7 @@ function initBusquedaProveedores() {
   if (!input || !tabla || !window.jQuery || !jQuery.fn.DataTable) return;
   if (jQuery.fn.DataTable.isDataTable(tabla)) jQuery(tabla).DataTable().destroy();
   const dt = jQuery(tabla).DataTable({
+    responsive: true,
     paging: true,
     pageLength: 5,
     lengthChange: false,

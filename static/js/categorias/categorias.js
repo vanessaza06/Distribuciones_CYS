@@ -465,6 +465,44 @@
   $("#cysConfirmCancel").addEventListener("click", function () { cerrarOverlay(confirmOverlay); }, opt);
   $("#cysConfirmClose").addEventListener("click", function () { cerrarOverlay(confirmOverlay); }, opt);
 
+  /* ---------- DATATABLES CATEGORÍAS ---------- */
+  if (window.jQuery && jQuery.fn.DataTable) {
+    const $tablaCat = jQuery("#tablaCategorias");
+    if ($tablaCat.length && !jQuery.fn.DataTable.isDataTable($tablaCat)) {
+      const dtCat = $tablaCat.DataTable({
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        searching: true,
+        info: true,
+        responsive: true,
+        ordering: true,
+        order: [[1, "asc"]],
+        columnDefs: [{ targets: [5], orderable: false, searchable: false }],
+        language: {
+          emptyTable: "No hay categorías registradas.",
+          zeroRecords: "Sin resultados para tu búsqueda.",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ categorías",
+          infoEmpty: "Mostrando 0 a 0 de 0 categorías",
+          infoFiltered: "(filtrado de _MAX_ totales)",
+          lengthMenu: "Mostrar _MENU_ registros",
+          search: "Buscar categoría:",
+          paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        }
+      });
+
+      // Filtros rápidos de estado (Todas, Activas, Inactivas)
+      $$(".cys-filtro-estado-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          $$(".cys-filtro-estado-btn").forEach(function (b) { b.classList.remove("active"); });
+          this.classList.add("active");
+          const estado = this.dataset.estado || "";
+          dtCat.column(4).search(estado).draw();
+        });
+      });
+    }
+  }
+
   /* ---------- Alertas ---------- */
   $$(".cys-alert").forEach(function (a) {
     setTimeout(function () {

@@ -39,15 +39,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
   try {
     dtInstance = $('#tablaProductosCat').DataTable({
-      paging: false,
-      searching: false,
-      info: false,
+      paging: true,
+      pageLength: 10,
+      lengthMenu: [5, 10, 25, 50, 100],
+      searching: true,
+      info: true,
       ordering: true,
       responsive: true,
       language: {
         zeroRecords: "Sin resultados.",
-        emptyTable: "No hay productos en esta categoría."
-      }
+        emptyTable: "No hay productos en esta categoría.",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ productos",
+        infoEmpty: "Mostrando 0 a 0 de 0 productos",
+        infoFiltered: "(filtrado de _MAX_ productos en total)",
+        lengthMenu: "Mostrar _MENU_ productos",
+        search: "Buscar:",
+        paginate: {
+          first: "Primero",
+          previous: "Anterior",
+          next: "Siguiente",
+          last: "Último"
+        }
+      },
+      dom: '<"row align-items-center mb-2"<"col-sm-6"l><"col-sm-6 text-end"f>>rt<"row align-items-center mt-3"<"col-sm-6"i><"col-sm-6 text-end"p>>'
     });
   } catch (e) {
     console.error('No se pudo inicializar DataTable:', e);
@@ -153,11 +167,14 @@ document.addEventListener('click', function (e) {
   e.preventDefault();
 
   const valor = item.dataset.value;
-  const texto = item.textContent.trim();
+  const texto = item.textContent.trim().replace(/^└\s*/, '');
 
   const inputCategoria = document.getElementById('crear-categoria');
   const labelCategoria = document.getElementById('crear-categoria-label');
-  if (inputCategoria) inputCategoria.value = valor;
+  if (inputCategoria) {
+    inputCategoria.value = valor;
+    inputCategoria.dispatchEvent(new Event('change', { bubbles: true }));
+  }
   if (labelCategoria) labelCategoria.textContent = texto;
 });
 

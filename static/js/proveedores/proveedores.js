@@ -160,6 +160,7 @@ $(document).ready(function() {
   }
 
   var table = $('#tablaProveedores').DataTable({
+    responsive: true,
     paging: true,
     searching: true,
     info: true,

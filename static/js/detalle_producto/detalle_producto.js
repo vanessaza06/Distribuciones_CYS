@@ -251,11 +251,11 @@ window.addEventListener('load', function () {
 // ── DATATABLE DE "REGISTRAR CÓDIGOS" (paginación + buscador + filtros) ──
 $(document).ready(function () {
   const dt = $('#tabla-codigos').DataTable({
-    paging: false,
+    paging: true,
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50],
     searching: true,
-    info: false,
+    info: true,
     ordering: true,
     order: [[1, 'asc']],                       // por Producto (la columna 0 es solo el #)
     autoWidth: false,

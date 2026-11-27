@@ -7,6 +7,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/bodega/bodega.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -97,12 +98,53 @@
       <div class="collapse show" id="presSinLoteBody" data-bs-parent="#accordionBodega">
         <div class="card-body">
           {% if presentaciones_sin_lote %}
-          <div class="d-flex align-items-center mb-3 inv-search-grupo" id="buscarPresSinLote-grupo">
-            <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
-            <input type="text" id="buscarPresSinLote" class="form-control inv-input" placeholder="Buscar producto o presentación…" autocomplete="off">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center inv-search-grupo" id="buscarPresSinLote-grupo" style="max-width: 380px; flex: 1;">
+              <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
+              <input type="text" id="buscarPresSinLote" class="form-control inv-input" placeholder="Buscar producto o presentación…" autocomplete="off">
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-info active" id="btnVerTablaPresSinLote" title="Vista Tabla con DataTables">
+                <i class="bi bi-table me-1"></i>Tabla
+              </button>
+              <button type="button" class="btn btn-outline-info" id="btnVerTarjetasPresSinLote" title="Vista Tarjetas">
+                <i class="bi bi-grid-3x3-gap me-1"></i>Tarjetas
+              </button>
+            </div>
+          </div>
+
+          <!-- Vista Tabla con DataTables -->
+          <div class="table-responsive mb-3" id="wrap-tabla-pres-sin-lote">
+            <table id="tablaPresSinLote" class="cys-inv-table table align-middle inv-table w-100">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Presentación</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-end">Precio Venta</th>
+                  <th class="text-center" style="width: 140px;">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pres in presentaciones_sin_lote %}
+                <tr>
+                  <td class="fw-bold">{{ pres.producto.nombre }}</td>
+                  <td>{{ pres.nombre }}</td>
+                  <td class="text-center"><span class="badge bg-secondary">{{ pres.cantidad }}</span></td>
+                  <td class="text-end fw-semibold text-info">${{ pres.precio_venta|floatformat:0 }}</td>
+                  <td class="text-center">
+                    <a href="{% url 'lote_list' %}?presentacion={{ pres.pk }}" class="btn btn-sm rounded-pill fw-semibold btn-solido-azul px-3">
+                      <i class="bi bi-plus-circle me-1"></i>Crear Lote
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
           {% endif %}
-          <div class="row g-3" id="grid-pres-sin-lote">
+
+          <div class="row g-3 d-none" id="grid-pres-sin-lote">
             {% for pres in presentaciones_sin_lote %}
             <div class="col-md-6 col-xl-4 pres-card-col"
                  data-nombre="{{ pres.producto.nombre|lower }}"
@@ -154,11 +196,86 @@
       </div>
       <div class="collapse show" id="lotesBody" data-bs-parent="#accordionBodega">
         <div class="card-body">
-          <div class="d-flex align-items-center mb-3 inv-search-grupo" id="buscarLoteBodega-grupo">
-            <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
-            <input type="text" id="buscarLoteBodega" class="form-control inv-input" placeholder="Buscar producto, lote, bodega…" autocomplete="off">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <div class="d-flex align-items-center inv-search-grupo" id="buscarLoteBodega-grupo" style="max-width: 340px;">
+                <span class="inv-search-prefix"><i class="bi bi-search"></i></span>
+                <input type="text" id="buscarLoteBodega" class="form-control inv-input" placeholder="Buscar producto, lote, bodega…" autocomplete="off">
+              </div>
+
+              <!-- Filtros de Estado de Vencimiento -->
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-info active cys-lote-filter-btn" data-estado="">
+                  Todos
+                </button>
+                <button type="button" class="btn btn-outline-success cys-lote-filter-btn" data-estado="OK">
+                  OK
+                </button>
+                <button type="button" class="btn btn-outline-warning cys-lote-filter-btn" data-estado="Por vencer">
+                  Por Vencer
+                </button>
+                <button type="button" class="btn btn-outline-danger cys-lote-filter-btn" data-estado="Vencido">
+                  Vencidos
+                </button>
+              </div>
+            </div>
+
+            <!-- Switcher de Vistas -->
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-info active" id="btnVerTablaLotes" title="Vista Tabla con DataTables">
+                <i class="bi bi-table me-1"></i>Tabla
+              </button>
+              <button type="button" class="btn btn-outline-info" id="btnVerTarjetasLotes" title="Vista Tarjetas">
+                <i class="bi bi-grid-3x3-gap me-1"></i>Tarjetas
+              </button>
+            </div>
           </div>
-          <div class="row g-3" id="grid-lotes-bodega">
+
+          <!-- Vista Tabla con DataTables -->
+          <div class="table-responsive mb-3" id="wrap-tabla-lotes-bodega">
+            <table id="tablaLotesBodega" class="cys-inv-table table align-middle inv-table w-100">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Lote</th>
+                  <th>Producto</th>
+                  <th>Presentación</th>
+                  <th>Bodega</th>
+                  <th class="text-center">Stock</th>
+                  <th class="text-end">Costo Unit.</th>
+                  <th class="text-center" style="width: 110px;">Estado</th>
+                  <th class="text-center" style="width: 90px;">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for lote in lotes %}
+                <tr>
+                  <td class="fw-bold font-monospace text-info">#{{ lote.numero_lote }}</td>
+                  <td class="fw-semibold">{{ lote.presentacion.producto.nombre }}</td>
+                  <td>{{ lote.presentacion.nombre }}</td>
+                  <td>{{ lote.bodega.nombre|default:"—" }}</td>
+                  <td class="text-center">
+                    <span class="badge {% if lote.stock_actual <= 5 %}bg-danger{% else %}bg-secondary{% endif %}">
+                      {{ lote.stock_actual }} uds
+                    </span>
+                  </td>
+                  <td class="text-end fw-semibold">${{ lote.costo_unitario|floatformat:0 }}</td>
+                  <td class="text-center" data-filter="{% if lote.esta_vencido %}Vencido{% elif lote.proximo_a_vencer %}Por vencer{% else %}OK{% endif %}">
+                    <span class="badge {% if lote.esta_vencido %}bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50{% elif lote.proximo_a_vencer %}bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50{% else %}bg-success bg-opacity-25 text-success border border-success border-opacity-50{% endif %} px-2.5 py-1 rounded-pill">
+                      {% if lote.esta_vencido %}Vencido{% elif lote.proximo_a_vencer %}Por vencer{% else %}OK{% endif %}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <a href="{% url 'lote_list' %}?presentacion={{ lote.presentacion.pk }}" class="btn btn-sm btn-outline-info rounded-circle" title="Ver en Lotes">
+                      <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="row g-3 d-none" id="grid-lotes-bodega">
             {% for lote in lotes %}
             <div class="col-md-6 col-xl-4 lote-card-col"
                  data-nombre="{{ lote.presentacion.producto.nombre|lower }}"
@@ -568,5 +685,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/bodega/bodega.js' %}"></script>
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/bodega/bodega.js' %}?v=6"></script>
 {% endblock %}

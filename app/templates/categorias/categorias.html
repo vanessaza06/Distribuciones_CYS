@@ -5,6 +5,7 @@
 {% block nav_categorias %}active{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=5" />
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}" />
 {% endblock %}
 {% block content %}
 
@@ -49,12 +50,25 @@
       </form>
     </section>
 
-    <!-- ===== Listado ===== -->
+    <!-- ===== Listado con DataTables ===== -->
     <section class="cys-cat-panel" id="seccionListaCategorias">
-      <div class="cys-cat-panel__head">
-        <h2 class="cys-cat-panel__title"><i class="bi bi-tags"></i> Categorías</h2>
+      <div class="cys-cat-panel__head flex-wrap gap-2">
+        <div>
+          <h2 class="cys-cat-panel__title mb-1"><i class="bi bi-tags"></i> Categorías</h2>
+          <div class="d-flex align-items-center gap-2 mt-1">
+            <button type="button" class="btn btn-sm rounded-pill cys-filtro-estado-btn active" data-estado="">
+              Todas <span class="badge bg-secondary ms-1">{{ categorias|length }}</span>
+            </button>
+            <button type="button" class="btn btn-sm rounded-pill cys-filtro-estado-btn" data-estado="Activa">
+              Activas <span class="badge bg-success ms-1">{{ total_activas }}</span>
+            </button>
+            <button type="button" class="btn btn-sm rounded-pill cys-filtro-estado-btn" data-estado="Inactiva">
+              Inactivas <span class="badge bg-danger ms-1">{{ total_inactivas }}</span>
+            </button>
+          </div>
+        </div>
 
-        <div class="cys-cat-panel__tools cys-no-print">
+        <div class="cys-cat-panel__tools cys-no-print d-flex align-items-center gap-2">
           <div class="cys-export" id="cysExport">
             <button class="cys-btn cys-btn--export" id="cysExportTrigger" type="button" aria-haspopup="true">
               <i class="bi bi-box-arrow-up"></i>
@@ -74,102 +88,80 @@
         </div>
       </div>
 
-      <ul class="cys-cat-list">
-        {% for cat in categorias %}
-        <li class="cys-cat-item {% if not cat.activo %}cys-cat-item--off{% endif %}" data-id="{{ cat.pk }}">
-          <i class="bi bi-tag-fill cys-cat-item__icon"></i>
-
-          <div class="cys-cat-item__info">
-            <div class="cys-cat-item__name">
-              {{ cat.nombre }}
-              <span class="cys-cat-badge">{{ cat.codigo }}</span>
-              {% if not cat.activo %}<span class="cys-cat-badge cys-cat-badge--off">Inactiva</span>{% endif %}
-            </div>
-            <div class="cys-cat-item__count"><i class="bi bi-box-seam"></i> {{ cat.total_productos }} productos</div>
-          </div>
-
-          <!-- Menú de acciones (⋯) -->
-          <div class="cys-cat-item__actions cys-no-print">
-            <div class="cys-cat-menu">
-              <button
-                class="cys-cat-menu__trigger"
-                type="button"
-                title="Acciones"
-                aria-haspopup="true"
-                aria-expanded="false"
-                aria-label="Acciones de {{ cat.nombre }}"
-              >
-                <i class="bi bi-three-dots"></i>
-              </button>
-
-              <ul class="cys-cat-menu__list" role="menu">
-                <li role="none">
-                  <button
-                    class="cys-cat-menu__item cys-action-btn--edit"
-                    type="button"
-                    role="menuitem"
-                    data-url="{% url 'categoria_editar' cat.pk %}"
-                    data-nombre="{{ cat.nombre }}"
-                    data-codigo="{{ cat.codigo }}"
-                    data-descripcion="{{ cat.descripcion|default_if_none:'' }}"
-                  >
-                    <i class="bi bi-pencil"></i> Editar
+      <div class="table-responsive mt-3">
+        <table id="tablaCategorias" class="cys-inv-table table align-middle cys-table w-100">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Código</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th class="text-center">Productos</th>
+              <th class="text-center" style="width: 110px;">Estado</th>
+              <th class="text-center" style="width: 90px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat in categorias %}
+            <tr class="{% if not cat.activo %}opacity-75{% endif %}">
+              <td>
+                <span class="cys-cat-badge font-monospace fw-bold">{{ cat.codigo }}</span>
+              </td>
+              <td class="fw-bold">{{ cat.nombre }}</td>
+              <td class="text-muted small">{{ cat.descripcion|default:"—"|truncatechars:55 }}</td>
+              <td class="text-center">
+                <span class="badge bg-info bg-opacity-25 text-info px-2.5 py-1">
+                  <i class="bi bi-box-seam me-1"></i>{{ cat.total_productos|default:cat.productos.count }}
+                </span>
+              </td>
+              <td class="text-center" data-filter="{% if cat.activo %}Activa{% else %}Inactiva{% endif %}">
+                {% if cat.activo %}
+                  <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2.5 py-1 rounded-pill">Activa</span>
+                {% else %}
+                  <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary border-opacity-50 px-2.5 py-1 rounded-pill">Inactiva</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                    <i class="bi bi-three-dots"></i>
                   </button>
-                </li>
-
-                <li class="cys-cat-menu__sep" role="separator"></li>
-
-                <li role="none">
-                  <form method="post" action="{% url 'categoria_toggle_activo' cat.pk %}" class="cys-form-toggle" data-nombre="{{ cat.nombre }}">
-                    {% csrf_token %}
-                    {% if cat.activo %}
-                    <button class="cys-cat-menu__item cys-cat-menu__item--danger cys-btn-confirmar-toggle" type="button" role="menuitem">
-                      <i class="bi bi-pause-circle"></i> Desactivar
-                    </button>
-                    {% else %}
-                    <button class="cys-cat-menu__item cys-cat-menu__item--success" type="submit" role="menuitem">
-                      <i class="bi bi-play-circle"></i> Activar
-                    </button>
-                    {% endif %}
-                  </form>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </li>
-        {% empty %}
-        <li class="cys-cat-empty">No hay categorías registradas.</li>
-        {% endfor %}
-      </ul>
-
-      {% if paginator.num_pages > 1 %}
-      <div class="cys-cat-footer cys-no-print">
-        <p class="cys-table-count">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ paginator.count }} categorías</p>
-        <div class="cys-pagination">
-          {% if page_obj.has_previous %}
-          <a class="cys-page-btn" aria-label="Página anterior" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
-          {% else %}
-          <button class="cys-page-btn" disabled aria-label="Página anterior" type="button"><i class="bi bi-chevron-left"></i></button>
-          {% endif %}
-
-          <div class="cys-page-numbers">
-            {% for num in page_range %}
-            {% if num == paginator.ELLIPSIS %}
-            <span class="cys-page-ellipsis">…</span>
-            {% else %}
-            <a class="{% if num == page_obj.number %}cys-page-numbers__active{% endif %}" href="?page={{ num }}">{{ num }}</a>
-            {% endif %}
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                      <button class="dropdown-item cys-action-btn--edit" type="button"
+                              data-url="{% url 'categoria_editar' cat.pk %}"
+                              data-nombre="{{ cat.nombre }}"
+                              data-codigo="{{ cat.codigo }}"
+                              data-descripcion="{{ cat.descripcion|default_if_none:'' }}">
+                        <i class="bi bi-pencil me-2 text-primary"></i> Editar
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form method="post" action="{% url 'categoria_toggle_activo' cat.pk %}" class="cys-form-toggle d-inline" data-nombre="{{ cat.nombre }}">
+                        {% csrf_token %}
+                        {% if cat.activo %}
+                        <button class="dropdown-item text-danger cys-btn-confirmar-toggle" type="button">
+                          <i class="bi bi-pause-circle me-2"></i> Desactivar
+                        </button>
+                        {% else %}
+                        <button class="dropdown-item text-success" type="submit">
+                          <i class="bi bi-play-circle me-2"></i> Activar
+                        </button>
+                        {% endif %}
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No hay categorías registradas.</td>
+            </tr>
             {% endfor %}
-          </div>
-
-          {% if page_obj.has_next %}
-          <a class="cys-page-btn" aria-label="Página siguiente" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
-          {% else %}
-          <button class="cys-page-btn" disabled aria-label="Página siguiente" type="button"><i class="bi bi-chevron-right"></i></button>
-          {% endif %}
-        </div>
+          </tbody>
+        </table>
       </div>
-      {% endif %}
     </section>
   </div>
 </div>
@@ -243,7 +235,9 @@
   </div>
 </div>
 
-<script src="{% static 'js/categorias/categorias.js' %}?v=3"></script>
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/categorias/categorias.js' %}?v=6"></script>
 
 <!-- Menú de acciones (⋯): abrir / cerrar / posicionar -->
 <script>

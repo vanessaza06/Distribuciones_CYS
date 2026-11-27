@@ -126,6 +126,7 @@ def presentacion_lista(request):
     presentaciones = (
         PresentacionProducto.objects
         .select_related('producto', 'producto__categoria')
+        .prefetch_related('lotes')
         .order_by('producto__nombre', 'nombre')
     )
     productos = Producto.objects.filter(activo=True).order_by('nombre')

@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 
 from app.models import (
-    Venta, DetalleVenta, Caja, Devolucion, DetalleDevolucion, Usuario,
+    Venta, DetalleVenta, Caja, AperturaCaja, CierreCaja, Devolucion, DetalleDevolucion, Usuario,
     Producto, Categoria, PresentacionProducto, Lote
 )
 
@@ -974,6 +974,7 @@ def obtener_usuario_caja(request):
 
 
 @csrf_exempt
+@session_required
 def apertura_caja(request):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
@@ -1045,12 +1046,28 @@ def apertura_caja(request):
                 usuario=usuario_operador,
             )
             codigo_caja = nueva_caja.codigo_caja
+
+        # Sincronización relacional con AperturaCaja para hoy
+        try:
+            ap_hoy = AperturaCaja.objects.filter(fecha=timezone.localdate()).first()
+            if not ap_hoy:
+                AperturaCaja.objects.create(
+                    fecha=timezone.localdate(),
+                    monto_base=Decimal(str(monto_base)),
+                    usuario=vendedor if (vendedor and hasattr(vendedor, 'pk')) else None,
+                    observacion=observacion_clean,
+                    denominaciones=denoms,
+                )
+        except Exception:
+            pass
+
         return JsonResponse({'ok': True, 'monto_base': monto_base, 'codigo_caja': codigo_caja})
     except Exception as e:
         return JsonResponse({'ok': False, 'error': f'Error al guardar apertura: {str(e)}'}, status=500)
 
 
 @csrf_exempt
+@session_required
 def cierre_caja(request):
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
@@ -1062,10 +1079,7 @@ def cierre_caja(request):
 
     caja_reg = obtener_caja_abierta()
     if not caja_reg:
-        caja_reg = Caja.objects.order_by('-fecha_hora').first()
-
-    if not caja_reg:
-        return JsonResponse({'ok': False, 'error': 'No hay registro de caja disponible para cerrar.'}, status=400)
+        return JsonResponse({'ok': False, 'error': 'No hay un turno de caja abierto para cerrar.'}, status=400)
 
     # Validar denominaciones de cierre si vienen
     denoms = data.get('denominaciones', {}) or {}
@@ -1092,13 +1106,24 @@ def cierre_caja(request):
         return JsonResponse({'ok': False, 'error': 'Los montos de cierre contienen datos erróneos.'}, status=400)
 
     try:
+        # Calcular total de transferencias / electrónico del turno
+        ventas_turno = Venta.objects.filter(caja=caja_reg)
+        tot_trans = Decimal('0')
+        for v in ventas_turno:
+            pe = Decimal(str(v.pago_efectivo or 0))
+            tot_v = Decimal(str(v.total_con_descuento or v.total_venta or 0))
+            if v.pago_transferencia or v.pago_nequi or v.pago_daviplata or v.pago_tarjeta:
+                tot_trans += Decimal(str((v.pago_transferencia or 0) + (v.pago_nequi or 0) + (v.pago_daviplata or 0) + (v.pago_tarjeta or 0)))
+            elif pe < tot_v:
+                tot_trans += (tot_v - pe)
+
+        caja_reg.total_transferencias = tot_trans
         caja_reg.total_efectivo = Decimal(str(total_contado))
         caja_reg.total_retirado = Decimal(str(total_retirado))
         obs = (caja_reg.observacion or '').strip()
         if '[CERRADO]' not in obs:
             caja_reg.observacion = (obs + ' [CERRADO]').strip()
 
-        denoms = data.get('denominaciones', {}) or {}
         denoms['monto_base_siguiente'] = base_sig
         denoms['total_retirado'] = total_retirado
         denoms['total_contado'] = total_contado
@@ -1107,7 +1132,29 @@ def cierre_caja(request):
             caja_reg.usuario = obtener_usuario_caja(request)
         caja_reg.save()
 
-        return JsonResponse({'ok': True})
+        # Sincronización relacional con CierreCaja si existe AperturaCaja para hoy
+        try:
+            ap_hoy = AperturaCaja.objects.filter(fecha=caja_reg.fecha_hora.date()).first()
+            if ap_hoy and not hasattr(ap_hoy, 'cierre'):
+                CierreCaja.objects.get_or_create(
+                    fecha=caja_reg.fecha_hora.date(),
+                    defaults={
+                        'apertura': ap_hoy,
+                        'total_contado': Decimal(str(total_contado)),
+                        'monto_base_siguiente': Decimal(str(base_sig)),
+                        'total_retirado': Decimal(str(total_retirado)),
+                        'denominaciones': denoms,
+                    }
+                )
+        except Exception:
+            pass
+
+        return JsonResponse({
+            'ok': True,
+            'total_efectivo': total_contado,
+            'total_retirado': total_retirado,
+            'total_transferencias': float(tot_trans),
+        })
     except Exception as e:
         return JsonResponse({'ok': False, 'error': f'Error al guardar cierre: {str(e)}'}, status=500)
 

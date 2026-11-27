@@ -285,7 +285,7 @@
         </div>
 
         <div class="table-responsive dev-table-wrap dev-table-wrap--menu">
-          <table class="table dev-table align-middle mb-0" id="tablaDevolucionesProveedor">
+          <table class="cys-inv-table table dev-table align-middle mb-0 w-100" id="tablaDevolucionesProveedor">
             <thead>
               <tr>
                 <th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Consecutivo de la devolución al proveedor">Número</th>
@@ -545,7 +545,7 @@
           </div>
 
           <div class="table-responsive dev-history-table-wrap">
-            <table id="tablaDevoluciones" class="table dev-history-table align-middle mb-0">
+            <table id="tablaDevoluciones" class="cys-inv-table table dev-history-table align-middle mb-0 w-100">
               <thead><tr><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Consecutivo de la devolución">Número</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cliente de la venta original">Cliente</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Razón de la devolución">Motivo</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cambio, nota crédito o reembolso">Solución</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Valor total devuelto">Total</th><th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Fecha y hora del registro">Fecha</th><th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Acciones disponibles">Acción</th></tr></thead>
               <tbody>{% for dev in devoluciones %}<tr data-fecha="{{ dev.fecha|date:'Y-m-d' }}" data-solucion="{{ dev.tipo_devolucion }}"><td data-order="{{ dev.pk }}"><strong>{{ dev.numero }}</strong></td><td>{% if dev.venta.cliente %}{{ dev.venta.cliente.nombre }}{% else %}Consumidor final{% endif %}</td><td>{{ dev.get_motivo_display }}</td><td>{{ dev.get_tipo_devolucion_display }}</td><td class="dev-money">${{ dev.total_devuelto|floatformat:0 }}</td><td data-order="{{ dev.fecha|date:'Y-m-d H:i:s' }}">{{ dev.fecha|date:'d/m/Y, H:i' }}</td><td class="text-center"><div class="dd-wrap"><button type="button" class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Acciones de {{ dev.numero }}" title="Acciones"><i class="bi bi-three-dots"></i></button><div class="dd-menu" role="menu"><a class="dd-item" href="{% url 'detalle_devolucion' dev.pk %}"><i class="bi bi-eye"></i> Ver detalle</a><div class="dd-sep"></div><a class="dd-item" href="{% url 'comprobante_devolucion' dev.pk %}"><i class="bi bi-receipt"></i> Comprobante</a></div></div></td></tr>{% endfor %}</tbody>
             </table>

@@ -483,8 +483,9 @@
       responsive: true,
       paging: true,
       pageLength: 10,
+      lengthMenu: [5, 10, 25, 50, 100],
       searching: true,
-      lengthChange: false,
+      lengthChange: true,
       info: true,
       ordering: true,
       order: [[5, 'desc']],
@@ -492,13 +493,15 @@
       language: {
         info: 'Mostrando _START_ a _END_ de _TOTAL_ devoluciones',
         infoEmpty: 'Mostrando 0 a 0 de 0 devoluciones',
-        infoFiltered: '(filtrado de _MAX_)',
+        infoFiltered: '(filtrado de _MAX_ totales)',
+        lengthMenu: 'Mostrar _MENU_ registros',
+        search: 'Buscar devolución:',
         emptyTable: 'No hay devoluciones registradas.',
         zeroRecords: 'Sin resultados para tu búsqueda.',
         paginate: { first: '«', previous: '‹', next: '›', last: '»' }
       },
       layout: {
-        topStart: null,
+        topStart: 'pageLength',
         topEnd: null,
         bottomStart: 'info',
         bottomEnd: 'paging'
@@ -586,8 +589,9 @@
       responsive: true,
       paging: true,
       pageLength: 10,
+      lengthMenu: [5, 10, 25, 50, 100],
       searching: true,
-      lengthChange: false,
+      lengthChange: true,
       info: true,
       ordering: true,
       order: [[0, 'desc']],
@@ -595,13 +599,15 @@
       language: {
         info: 'Mostrando _START_ a _END_ de _TOTAL_ devoluciones',
         infoEmpty: 'Mostrando 0 a 0 de 0 devoluciones',
-        infoFiltered: '(filtrado de _MAX_)',
+        infoFiltered: '(filtrado de _MAX_ totales)',
+        lengthMenu: 'Mostrar _MENU_ registros',
+        search: 'Buscar devolución proveedor:',
         emptyTable: 'No hay devoluciones a proveedores registradas.',
         zeroRecords: 'Sin resultados para tu búsqueda.',
         paginate: { first: '«', previous: '‹', next: '›', last: '»' }
       },
       layout: {
-        topStart: null,
+        topStart: 'pageLength',
         topEnd: null,
         bottomStart: 'info',
         bottomEnd: 'paging'

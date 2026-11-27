@@ -3,11 +3,11 @@
 
 {% block title %}Detalles de Productos — CYS Ltda{% endblock %}
 {% block page_title %}Detalles de Productos{% endblock %}
-{% block nav_proveedores %}active{% endblock %}
+{% block nav_detalle_prod %}active{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto.css' %}">
 {% endblock %}
 
@@ -494,7 +494,7 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table align-middle mb-0 inv-table" id="tabla-codigos">
+          <table class="cys-inv-table table align-middle mb-0 inv-table w-100" id="tabla-codigos">
             <thead>
               <tr>
                 <th>#</th>

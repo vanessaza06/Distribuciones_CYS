@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}?v=2">
 <link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=2">
 <link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <style>
   /* ── Estilos limpios y adaptables al tema (Oscuro / Claro) ── */
   .mp-header-bar {
@@ -439,9 +440,9 @@
       </div>
     </form>
 
-    <!-- Tabla Simplificada y Limpia -->
+    <!-- Tabla Simplificada y Limpia con DataTables -->
     <div class="table-responsive">
-      <table class="table mb-0 align-middle mp-table">
+      <table id="tablaVentasMetodosPago" class="cys-inv-table table mb-0 align-middle mp-table w-100">
         <thead>
           <tr>
             <th class="text-center" style="width: 90px;"># Venta</th>
@@ -616,7 +617,7 @@
     </form>
 
     <div class="table-responsive">
-      <table class="table mb-0 align-middle mp-table">
+      <table id="tablaPagosCompras" class="cys-inv-table table mb-0 align-middle mp-table w-100">
         <thead>
           <tr>
             <th class="text-center" style="width: 90px;"># Pago</th>
@@ -770,17 +771,65 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const buscador = document.getElementById('buscadorTablaMetodosPago');
-  if (buscador) {
-    buscador.addEventListener('input', function() {
-      const term = this.value.toLowerCase().trim();
-      document.querySelectorAll('.fila-metodo-pago').forEach(tr => {
-        const text = tr.textContent.toLowerCase();
-        tr.style.display = text.includes(term) ? '' : 'none';
+  // Inicialización de DataTables para Tablas de Métodos de Pago
+  if (window.jQuery && jQuery.fn.DataTable) {
+    if (jQuery('#tablaVentasMetodosPago').length && !jQuery.fn.DataTable.isDataTable('#tablaVentasMetodosPago')) {
+      const dtVentas = jQuery('#tablaVentasMetodosPago').DataTable({
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        searching: true,
+        info: true,
+        responsive: true,
+        ordering: true,
+        order: [[0, 'desc']],
+        language: {
+          zeroRecords: "Sin resultados para tu búsqueda.",
+          emptyTable: "No hay ventas registradas con métodos de pago.",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ ventas",
+          infoEmpty: "Mostrando 0 a 0 de 0 ventas",
+          infoFiltered: "(filtrado de _MAX_ totales)",
+          lengthMenu: "Mostrar _MENU_ registros",
+          search: "Buscar en tabla:",
+          paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        }
       });
-    });
+
+      const buscador = document.getElementById('buscadorTablaMetodosPago');
+      if (buscador) {
+        buscador.addEventListener('input', function() {
+          dtVentas.search(this.value.trim()).draw();
+        });
+      }
+    }
+
+    if (jQuery('#tablaPagosCompras').length && !jQuery.fn.DataTable.isDataTable('#tablaPagosCompras')) {
+      jQuery('#tablaPagosCompras').DataTable({
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        searching: true,
+        info: true,
+        responsive: true,
+        ordering: true,
+        order: [[0, 'desc']],
+        columnDefs: [{ targets: [6], orderable: false, searchable: false }],
+        language: {
+          zeroRecords: "Sin resultados para tu búsqueda.",
+          emptyTable: "No hay pagos de compras registrados.",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ pagos",
+          infoEmpty: "Mostrando 0 a 0 de 0 pagos",
+          infoFiltered: "(filtrado de _MAX_ totales)",
+          lengthMenu: "Mostrar _MENU_ registros",
+          search: "Buscar en tabla:",
+          paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        }
+      });
+    }
   }
 
   const fIniMP = document.getElementById('filtroFechaIniMP');

@@ -27,9 +27,9 @@
   // Ajústalos a tus rutas reales.
   const RUTAS_SUBMENU = {
     submenuVentas:       ['/ventas', '/caja', '/metodos-pago'],
-    submenuDevoluciones: ['/devolucion'],
-    submenuInventario:   ['/producto', '/presentacion', '/stock', '/categoria', '/marca', '/bodega', '/lote'],
-    submenuCompras:      ['/compra']
+    submenuDevoluciones: ['/devoluciones', '/devolucion'],
+    submenuInventario:   ['/productos', '/producto', '/presentaciones', '/presentacion', '/lotes', '/stock', '/categorias', '/categoria', '/marcas', '/marca', '/bodega', '/detalle-producto'],
+    submenuCompras:      ['/compras', '/compra']
   };
 
   let sidebar      = null;
@@ -378,18 +378,27 @@
   }
 
   // ══════════════════════════════════════════
-  // LINKS "#" (Inventario, Ayuda)
+  // LINKS (Inventario, Ayuda y navegación móvil)
   // ══════════════════════════════════════════
   function configurarLinks() {
     sidebar.addEventListener('click', function (e) {
-      const a = e.target.closest('a[href="#"]');
-      if (!a) return;
-      e.preventDefault();
-      // En modo normal, clic en la etiqueta = abrir/cerrar su submenú
-      if (!miniActivo) {
-        const wrap = a.closest('.cys-sb-inventario-wrap');
-        const toggle = wrap ? wrap.querySelector('.sb-submenu-toggle') : null;
-        if (toggle) toggle.click();
+      const aHash = e.target.closest('a[href="#"]');
+      if (aHash) {
+        e.preventDefault();
+        // En modo normal, clic en la etiqueta = abrir/cerrar su submenú
+        if (!miniActivo) {
+          const wrap = aHash.closest('.cys-sb-inventario-wrap');
+          const toggle = wrap ? wrap.querySelector('.sb-submenu-toggle') : null;
+          if (toggle) toggle.click();
+        }
+        return;
+      }
+
+      // En móviles, al hacer clic en un link de navegación real, cerrar el offcanvas
+      const aNav = e.target.closest('a[href]:not([href="#"])');
+      if (aNav && window.innerWidth <= 768 && window.bootstrap && bootstrap.Offcanvas) {
+        const inst = bootstrap.Offcanvas.getInstance(sidebar);
+        if (inst) inst.hide();
       }
     });
   }

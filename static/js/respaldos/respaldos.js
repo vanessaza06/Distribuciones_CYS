@@ -35,6 +35,7 @@
     }
 
     var dt = jQuery(tabla).DataTable({
+      responsive: true,
       paging: true,
       pageLength: 10,
       searching: true,

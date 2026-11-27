@@ -92,7 +92,7 @@ def _destino_post_login(request):
     pagina = request.COOKIES.get('cys_pagina_inicio', 'tablero')
     mapa_urls = {
         'tablero':   'principal',
-        'ventas':    'ventas:ventas_lista',
+        'ventas':    'ventas_lista',
         'productos': 'lista_productos',
     }
     nombre_url = mapa_urls.get(pagina, 'principal')
@@ -127,32 +127,40 @@ def login_view(request):
         usuario = None
 
         try:
-            candidato = Usuario.objects.get(identificacion=identificacion, activo=True)
-            if candidato.username == candidato.identificacion:
-                usuario = candidato
-        except Usuario.DoesNotExist:
-            pass
-
-        if usuario is None:
             try:
-                usuario = Usuario.objects.get(username__iexact=identificacion, activo=True)
+                candidato = Usuario.objects.get(identificacion=identificacion, activo=True)
+                if candidato.username == candidato.identificacion:
+                    usuario = candidato
             except Usuario.DoesNotExist:
                 pass
 
-        if usuario:
-            user = authenticate(request, username=usuario.username, password=clave)
-            if user:
-                login(request, user)
-                _set_session(request, usuario)
-                destino = _destino_post_login(request)
-                if es_ajax:
-                    return JsonResponse({'ok': True, 'redirect': destino})
-                return redirect(destino)
+            if usuario is None:
+                try:
+                    usuario = Usuario.objects.get(username__iexact=identificacion, activo=True)
+                except Usuario.DoesNotExist:
+                    pass
 
-        err = 'Usuario o contraseña incorrectos.'
-        if es_ajax:
-            return JsonResponse({'ok': False, 'error': err})
-        messages.error(request, err)
+            if usuario:
+                user = authenticate(request, username=usuario.username, password=clave)
+                if user:
+                    login(request, user)
+                    _set_session(request, usuario)
+                    destino = _destino_post_login(request)
+                    if es_ajax:
+                        return JsonResponse({'ok': True, 'redirect': destino})
+                    return redirect(destino)
+
+            err = 'Usuario o contraseña incorrectos.'
+            if es_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+        except Exception as e:
+            logger.exception("Error durante el inicio de sesión: %s", e)
+            err = 'No fue posible conectar con el servicio de base de datos. Por favor intenta de nuevo.'
+            if es_ajax:
+                return JsonResponse({'ok': False, 'error': err}, status=503)
+            messages.error(request, err)
+
         seccion = 'login'
 
     ctx = {
