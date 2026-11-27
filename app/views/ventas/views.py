@@ -4,10 +4,11 @@ import math
 import os
 from decimal import Decimal, InvalidOperation
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.db import transaction
@@ -53,6 +54,21 @@ def session_required(view_func):
 # VENTAS
 # ════════════════════════════════════════
 
+def _parse_fecha(txt):
+    try:
+        return datetime.strptime(txt, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _inicio_dia(d):
+    return timezone.make_aware(datetime.combine(d, datetime.min.time()))
+
+
+def _fin_dia(d):
+    return timezone.make_aware(datetime.combine(d, datetime.max.time()))
+
+
 def obtener_caja_abierta(hoy=None):
     caja_ultima = Caja.objects.order_by('-codigo_caja').first()
     if caja_ultima and '[CERRADO]' not in (caja_ultima.observacion or ''):
@@ -62,12 +78,44 @@ def obtener_caja_abierta(hoy=None):
 
 @session_required
 def ventas_lista(request):
-    ventas = (
+    fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
+    fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+    q = request.GET.get('q', '').strip()
+
+    ventas_qs = (
         Venta.objects.all()
         .order_by('-fecha')
         .select_related('vendedor')
-        .prefetch_related('detalles__producto', 'detalles__presentacion', 'detalles__lote')[:50]
+        .prefetch_related('detalles__producto', 'detalles__presentacion', 'detalles__lote')
     )
+
+    fi = _parse_fecha(fecha_inicio_str)
+    ff = _parse_fecha(fecha_fin_str)
+    if fi and ff and fi > ff:
+        ff = fi
+
+    if fi:
+        ventas_qs = ventas_qs.filter(fecha__gte=_inicio_dia(fi))
+    if ff:
+        ventas_qs = ventas_qs.filter(fecha__lte=_fin_dia(ff))
+
+    if q:
+        filtro_q = (
+            Q(cliente_nombre__icontains=q) |
+            Q(vendedor__first_name__icontains=q) |
+            Q(vendedor__username__icontains=q) |
+            Q(metodo_pago__icontains=q) |
+            Q(detalles__producto__nombre__icontains=q)
+        )
+        if q.isdigit():
+            filtro_q |= Q(pk=int(q))
+        ventas_qs = ventas_qs.filter(filtro_q).distinct()
+
+    if fecha_inicio_str or fecha_fin_str or q:
+        ventas = list(ventas_qs[:100])
+    else:
+        ventas = list(ventas_qs[:50])
+
     categorias = (
         Categoria.objects.filter(activo=True)
         .prefetch_related('productos__presentaciones__lotes')
@@ -91,13 +139,21 @@ def ventas_lista(request):
     total_pendiente_dia = int(sum(v.saldo_pendiente or 0 for v in ventas_turno))
     total_cobrado_dia = max(0, total_dia - total_pendiente_dia)
     ventas_pendientes_count = sum(1 for v in ventas_turno if (v.saldo_pendiente or 0) > 0)
+    total_en_caja = (int(caja_abierta.monto_base or 0) + total_cobrado_dia) if caja_abierta else total_cobrado_dia
 
     return render(request, 'ventas/ventas.html', {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+        ],
         'ventas': ventas,
+        'fecha_inicio': fecha_inicio_str,
+        'fecha_fin': fecha_fin_str,
+        'q': q,
         'categorias': categorias,
         'total_dia': total_dia,
         'total_pendiente_dia': total_pendiente_dia,
         'total_cobrado_dia': total_cobrado_dia,
+        'total_en_caja': total_en_caja,
         'ventas_pendientes_count': ventas_pendientes_count,
         'hoy': hoy,
         'caja_abierta': caja_abierta,
@@ -516,6 +572,7 @@ def ventas_dia(request):
     hoy = timezone.localdate()
     fecha_inicio_str = request.GET.get('fecha_inicio', '').strip()
     fecha_fin_str = request.GET.get('fecha_fin', '').strip()
+    q = request.GET.get('q', '').strip()
 
     fecha_inicio = hoy
     fecha_fin = hoy
@@ -548,6 +605,18 @@ def ventas_dia(request):
             ).distinct().order_by('-fecha')
         else:
             ventas_qs = Venta.objects.filter(fecha__range=(start_dt, end_dt)).order_by('-fecha')
+
+    if q:
+        filtro_q = (
+            Q(cliente_nombre__icontains=q) |
+            Q(vendedor__first_name__icontains=q) |
+            Q(vendedor__username__icontains=q) |
+            Q(metodo_pago__icontains=q) |
+            Q(detalles__producto__nombre__icontains=q)
+        )
+        if q.isdigit():
+            filtro_q |= Q(pk=int(q))
+        ventas_qs = ventas_qs.filter(filtro_q).distinct()
 
     ventas_list = list(ventas_qs.select_related('vendedor').prefetch_related('detalles__producto', 'detalles__presentacion'))
     total_dia = float(sum(v.total_venta for v in ventas_list))
@@ -669,6 +738,10 @@ def ventas_dia(request):
         })
 
     return render(request, 'ventas/ventas_dia.html', {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+            {'nombre': 'Ventas del Día', 'url': reverse('ventas_dia')},
+        ],
         'ventas': ventas_list,
         'total_dia': total_dia,
         'total_pendiente_dia': total_pendiente_dia,
@@ -676,8 +749,9 @@ def ventas_dia(request):
         'ventas_pendientes_count': ventas_pendientes_count,
         'total_productos': total_productos,
         'hoy': hoy,
-        'fecha_inicio': fecha_inicio_str,
-        'fecha_fin': fecha_fin_str,
+        'fecha_inicio': fecha_inicio.strftime('%Y-%m-%d'),
+        'fecha_fin': fecha_fin.strftime('%Y-%m-%d'),
+        'q': q,
         'franjas_horarias_resumen': franjas_horarias_resumen,
         'hora_pico_nombre': hora_pico_nombre,
         'productos_top': productos_top,
@@ -901,13 +975,49 @@ def caja(request):
     ventas_totales_historicas = sum(t['total_ventas'] for t in turnos)
     promedio_base = (sum(t['monto_base'] for t in turnos) / total_turnos) if total_turnos > 0 else 0
 
+    base_dejada_anterior = Decimal('0')
+    if ultimo_cierre:
+        if isinstance(ultimo_cierre.denominaciones, dict) and ultimo_cierre.denominaciones.get('monto_base_siguiente') is not None:
+            try:
+                base_dejada_anterior = Decimal(str(ultimo_cierre.denominaciones.get('monto_base_siguiente')))
+            except Exception:
+                base_dejada_anterior = Decimal('0')
+        elif ultimo_cierre.total_efectivo is not None and ultimo_cierre.total_retirado is not None:
+            base_dejada_anterior = max(Decimal('0'), (ultimo_cierre.total_efectivo or Decimal('0')) - (ultimo_cierre.total_retirado or Decimal('0')))
+        else:
+            base_dejada_anterior = ultimo_cierre.monto_base or Decimal('0')
+
+    # Total que hay en caja activo: lo que se dejó de base + lo que se ha vendido
+    total_en_caja_activo = Decimal('0')
+    total_efectivo_caja_activo = Decimal('0')
+    if turno_activo:
+        total_en_caja_activo = Decimal(str(turno_activo['monto_total_acumulado']))
+        total_efectivo_caja_activo = (turno_activo['monto_base'] or Decimal('0')) + (turno_activo['pago_efectivo'] or Decimal('0'))
+
+    # Totales del día para la barra de estado superior unificada
+    hoy = timezone.localdate()
+    ventas_hoy = Venta.objects.filter(fecha__date=hoy)
+    total_dia = sum(Decimal(str(v.total_con_descuento if (v.total_con_descuento and v.total_con_descuento > 0) else (v.total_venta or 0))) for v in ventas_hoy)
+    total_pendiente_dia = sum(Decimal(str(v.saldo_pendiente or 0)) for v in ventas_hoy)
+    total_cobrado_dia = max(Decimal('0'), total_dia - total_pendiente_dia)
+
     return render(request, 'ventas/caja.html', {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+            {'nombre': 'Control de Caja', 'url': reverse('caja')},
+        ],
         'turnos': turnos,
         'turnos_js': json.dumps(turnos_dict_for_js),
         'total_turnos': total_turnos,
         'turno_activo': turno_activo,
         'caja_abierta': caja_abierta,
         'ultimo_cierre': ultimo_cierre,
+        'base_dejada_anterior': base_dejada_anterior,
+        'total_en_caja_activo': total_en_caja_activo,
+        'total_efectivo_caja_activo': total_efectivo_caja_activo,
+        'total_dia': total_dia,
+        'total_pendiente_dia': total_pendiente_dia,
+        'total_cobrado_dia': total_cobrado_dia,
         'ventas_totales_historicas': ventas_totales_historicas,
         'promedio_base': promedio_base,
         'billetes_denom': BILLETES_DENOM,
@@ -1175,7 +1285,13 @@ def registrar_conteo(request):
 @session_required
 def lista_devoluciones(request):
     devoluciones = Devolucion.objects.all().order_by('-fecha')
-    return render(request, 'ventas/devoluciones.html', {'devoluciones': devoluciones})
+    return render(request, 'ventas/devoluciones.html', {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+            {'nombre': 'Devoluciones', 'url': reverse('lista_devoluciones')},
+        ],
+        'devoluciones': devoluciones
+    })
 
 
 @session_required
@@ -1271,7 +1387,14 @@ def registrar_devolucion(request):
 @session_required
 def comprobante_devolucion(request, pk):
     devolucion = get_object_or_404(Devolucion, pk=pk)
-    return render(request, 'ventas/comprobante_devolucion.html', {'devolucion': devolucion})
+    return render(request, 'ventas/comprobante_devolucion.html', {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+            {'nombre': 'Devoluciones', 'url': reverse('lista_devoluciones')},
+            {'nombre': f'Comprobante #{devolucion.codigo_devolucion}', 'url': reverse('comprobante_devolucion', args=[pk])},
+        ],
+        'devolucion': devolucion
+    })
 
 
 # ════════════════════════════════════════════════════════════════
@@ -1403,7 +1526,10 @@ def _sello():
 # Filtros compartidos (lo exportado = lo que se ve en pantalla)
 # ---------------------------------------------------------------
 def _modo_export(request):
-    """'dia' si viene ?origen=dia, de lo contrario 'ventas'."""
+    """'dia' si viene ?origen=dia o la ruta es de ventas_dia, de lo contrario 'ventas'."""
+    url_name = getattr(request.resolver_match, 'url_name', '') if hasattr(request, 'resolver_match') else ''
+    if 'dia' in url_name:
+        return 'dia'
     return 'dia' if request.GET.get('origen', '').strip().lower() == 'dia' else 'ventas'
 
 

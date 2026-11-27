@@ -2,6 +2,7 @@ from decimal import Decimal
 from datetime import datetime
 from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
@@ -237,6 +238,10 @@ def lista_metodos_pago(request):
     compras_disponibles = Compra.objects.filter(estado__in=['pendiente', 'confirmada', 'recibida']).order_by('-fecha')[:30]
 
     context = {
+        'breadcrumb_items': [
+            {'nombre': 'Ventas', 'url': reverse('ventas')},
+            {'nombre': 'Métodos de Pago', 'url': reverse('lista_metodos_pago')},
+        ],
         'tab': tab,
         # Ventas & Caja
         'ventas': ventas_procesadas,

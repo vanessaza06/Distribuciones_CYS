@@ -284,9 +284,9 @@
         </div>
 
         <!-- Dropdown Exportar -->
-        <div class="cys-hv-date-group ms-auto">
+        <div class="cys-hv-date-group ms-auto" hx-boost="false">
           <span class="cys-hv-date-label">&nbsp;</span>
-          <div class="dropdown">
+          <div class="dropdown" hx-boost="false">
             <button class="cys-hv-btn-exportar dropdown-toggle" type="button"
                     id="dropdownExportar" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-box-arrow-up"></i>Exportar
@@ -295,21 +295,21 @@
               <li>
                 <a id="btn-export-excel"
                    href="?export=excel&tipo=ventas&fecha_inicio={{ fecha_inicio|default:'' }}&fecha_fin={{ fecha_fin|default:'' }}"
-                   class="dropdown-item cys-hv-dropdown-item" download="historial_ventas.xlsx" target="_blank">
+                   class="dropdown-item cys-hv-dropdown-item" download="historial_ventas.xlsx" target="_blank" hx-boost="false">
                   <i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel
                 </a>
               </li>
               <li>
                 <a id="btn-export-pdf"
                    href="?export=pdf&tipo=ventas&fecha_inicio={{ fecha_inicio|default:'' }}&fecha_fin={{ fecha_fin|default:'' }}"
-                   class="dropdown-item cys-hv-dropdown-item" download="historial_ventas.pdf" target="_blank">
+                   class="dropdown-item cys-hv-dropdown-item" download="historial_ventas.pdf" target="_blank" hx-boost="false">
                   <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF
                 </a>
               </li>
               <li>
                 <a id="btn-export-print"
-                   href="?export=pdf&tipo=ventas&print=true&fecha_inicio={{ fecha_inicio|default:'' }}&fecha_fin={{ fecha_fin|default:'' }}"
-                   class="dropdown-item cys-hv-dropdown-item" target="_blank">
+                   href="?export=imprimir&tipo=ventas&fecha_inicio={{ fecha_inicio|default:'' }}&fecha_fin={{ fecha_fin|default:'' }}"
+                   class="dropdown-item cys-hv-dropdown-item" target="_blank" hx-boost="false">
                   <i class="bi bi-printer me-2 text-info"></i>Imprimir
                 </a>
               </li>

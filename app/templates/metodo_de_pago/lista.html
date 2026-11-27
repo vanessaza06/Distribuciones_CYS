@@ -288,10 +288,166 @@
     background: #ffffff !important;
     border-color: #e2e8f0 !important;
   }
+
+  /* ── Paginación DataTables estilo Bootstrap « ‹ 1 2 › » ── */
+  div.dataTables_wrapper .dataTables_paginate {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    background-color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 34px !important;
+    padding: 0 11px !important;
+    margin: 0 !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    border: none !important;
+    border-right: 1px solid #dee2e6 !important;
+    border-radius: 0 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    background-color: #ffffff !important;
+    color: #0d6efd !important;
+    user-select: none !important;
+    transition: all 0.15s ease !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button:last-child {
+    border-right: none !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+    background-color: #e9ecef !important;
+    color: #0a58ca !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    cursor: default !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background-color: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    opacity: 0.75 !important;
+    pointer-events: none !important;
+  }
+  div.dataTables_wrapper .dataTables_info {
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: var(--texto-muted, #64748b) !important;
+    padding-top: 0.5rem !important;
+  }
+  div.dataTables_wrapper .dataTables_bottom,
+  div.dataTables_wrapper .row:last-child {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+    margin-top: 0.85rem !important;
+  }
+
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate {
+    border-color: rgba(77, 168, 218, 0.25) !important;
+    background-color: rgba(14, 28, 52, 0.85) !important;
+  }
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: rgba(14, 28, 52, 0.85) !important;
+    border-right-color: rgba(77, 168, 218, 0.25) !important;
+    color: #38bdf8 !important;
+  }
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+    background-color: rgba(56, 189, 248, 0.15) !important;
+    color: #7dd3fc !important;
+  }
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+  }
+  [data-tema-sistema="oscuro"] div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    color: #64748b !important;
+    opacity: 0.6 !important;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<style>
+  div.dataTables_wrapper .dataTables_paginate {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    background-color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 34px !important;
+    padding: 0 11px !important;
+    margin: 0 !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    border: none !important;
+    border-right: 1px solid #dee2e6 !important;
+    border-radius: 0 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    background-color: #ffffff !important;
+    color: #0d6efd !important;
+    user-select: none !important;
+    transition: all 0.15s ease !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button:last-child {
+    border-right: none !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+    background-color: #e9ecef !important;
+    color: #0a58ca !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    cursor: default !important;
+  }
+  div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background-color: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    opacity: 0.75 !important;
+    pointer-events: none !important;
+  }
+  div.dataTables_wrapper .dataTables_info {
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: var(--texto-muted, #64748b) !important;
+    padding-top: 0.5rem !important;
+  }
+</style>
 <div class="container-fluid p-0">
 
   <!-- ── BARRA SUPERIOR UNIFICADA: PESTAÑAS + ACCIONES RÁPIDAS ── -->
@@ -774,7 +930,7 @@
 <script src="{% static 'vendor/jquery/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+function initMetodosPago() {
   // Inicialización de DataTables para Tablas de Métodos de Pago
   if (window.jQuery && jQuery.fn.DataTable) {
     if (jQuery('#tablaVentasMetodosPago').length && !jQuery.fn.DataTable.isDataTable('#tablaVentasMetodosPago')) {
@@ -787,6 +943,7 @@ document.addEventListener('DOMContentLoaded', function () {
         responsive: true,
         ordering: true,
         order: [[0, 'desc']],
+        pagingType: 'full_numbers',
         language: {
           zeroRecords: "Sin resultados para tu búsqueda.",
           emptyTable: "No hay ventas registradas con métodos de pago.",
@@ -817,6 +974,7 @@ document.addEventListener('DOMContentLoaded', function () {
         responsive: true,
         ordering: true,
         order: [[0, 'desc']],
+        pagingType: 'full_numbers',
         columnDefs: [{ targets: [6], orderable: false, searchable: false }],
         language: {
           zeroRecords: "Sin resultados para tu búsqueda.",
@@ -874,6 +1032,14 @@ document.addEventListener('DOMContentLoaded', function () {
   if (window.setupStrictCYSTooltips) {
     window.setupStrictCYSTooltips();
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMetodosPago);
+} else {
+  initMetodosPago();
+}
+document.body.addEventListener('htmx:afterSettle', initMetodosPago);
+document.body.addEventListener('htmx:load', initMetodosPago);
 </script>
 {% endblock %}

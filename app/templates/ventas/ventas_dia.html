@@ -7,30 +7,283 @@
 {% block page_title %}Ventas del Día{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}">
-<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}">
-<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}">
+<link rel="stylesheet" href="{% static 'css/venta/ventas.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/venta/ventas_inline.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/venta/venta_dias.css' %}?v=3">
+<style>
+.cys-pagination-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  padding: 0.85rem 1.15rem !important;
+  border-top: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
+}
+.cys-pagination-info {
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  color: var(--texto-muted, #64748b) !important;
+  margin: 0 !important;
+}
+.cys-pagination-bar,
+.cys-bootstrap-pagination {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+.cys-pagination-bar .cys-page-btn,
+.cys-bootstrap-pagination .page-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  color: #0d6efd !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  border-right: 1px solid #dee2e6 !important;
+  border-radius: 0 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.cys-pagination-bar .cys-page-btn:last-child,
+.cys-bootstrap-pagination .page-item:last-child .page-link {
+  border-right: none !important;
+}
+.cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
+.cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: #e9ecef !important;
+  color: #0a58ca !important;
+}
+.cys-pagination-bar .cys-page-btn.active,
+.cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  cursor: default !important;
+}
+.cys-pagination-bar .cys-page-btn.disabled,
+.cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.75 !important;
+  pointer-events: none !important;
+}
+[data-tema-sistema="oscuro"] .cys-pagination-bar,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination {
+  border-color: rgba(77, 168, 218, 0.25) !important;
+  background-color: rgba(14, 28, 52, 0.85) !important;
+}
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link {
+  background-color: rgba(14, 28, 52, 0.85) !important;
+  border-right-color: rgba(77, 168, 218, 0.25) !important;
+  color: #38bdf8 !important;
+}
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  color: #7dd3fc !important;
+}
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.active,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+[data-tema-sistema="oscuro"] .cys-pagination-bar .cys-page-btn.disabled,
+[data-tema-sistema="oscuro"] .cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #64748b !important;
+  opacity: 0.6 !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}
+<style>
+.cys-pagination-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  padding: 0.85rem 1.15rem !important;
+  border-top: 1px solid var(--azul-borde, rgba(77, 168, 218, 0.15)) !important;
+}
+.cys-pagination-info {
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  color: var(--texto-muted, #64748b) !important;
+  margin: 0 !important;
+}
+.cys-pagination-bar,
+.cys-bootstrap-pagination {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+.cys-pagination-bar .cys-page-btn,
+.cys-bootstrap-pagination .page-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  color: #0d6efd !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  border-right: 1px solid #dee2e6 !important;
+  border-radius: 0 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.cys-pagination-bar .cys-page-btn:last-child,
+.cys-bootstrap-pagination .page-item:last-child .page-link {
+  border-right: none !important;
+}
+.cys-pagination-bar .cys-page-btn:hover:not(.active):not(.disabled),
+.cys-bootstrap-pagination .page-link:hover:not(.disabled) {
+  background-color: #e9ecef !important;
+  color: #0a58ca !important;
+}
+.cys-pagination-bar .cys-page-btn.active,
+.cys-bootstrap-pagination .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  cursor: default !important;
+}
+.cys-pagination-bar .cys-page-btn.disabled,
+.cys-bootstrap-pagination .page-item.disabled .page-link {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.75 !important;
+  pointer-events: none !important;
+}
+</style>
 <div class="cys-module-container p-3">
 
-  <!-- Action Header Banner -->
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 p-3 rounded-3"
-       style="background:var(--fondo-card); border:1px solid var(--azul-borde, rgba(0,0,0,0.08));">
-    <div>
-      <h4 class="fw-bold mb-0" style="color: var(--texto);">Ventas del Día</h4>
-      <p class="small text-muted mb-0" style="font-size:0.8rem;">Resumen consolidado de operaciones y recaudos</p>
+  <!-- ── BARRA ESTADO DE CAJA (Unificada Estilo Image 3) ── -->
+  <div class="cys-pos-header-bar d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-4">
+      {% if caja_abierta %}
+        <div class="cys-status-pill cys-status-pill--abierta">
+          <span class="cys-pulse-dot"></span>
+          CAJA ABIERTA
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Apertura</div>
+            <div class="cys-pos-hora" style="font-size:.92rem; font-weight:800; color:var(--texto);">{{ caja_abierta.fecha_hora|date:"h:i A" }}</div>
+          </div>
+          <div class="cys-pos-divider" style="width:1px; height:24px; background:rgba(255,255,255,0.12);"></div>
+          <div>
+            <div style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Base Inicial</div>
+            <div class="cys-pos-base" style="font-size:.92rem; font-weight:800; color:var(--azul-claro, #38bdf8);">${{ caja_abierta.monto_base|floatformat:0|intcomma }}</div>
+          </div>
+        </div>
+      {% else %}
+        <div class="cys-status-pill cys-status-pill--cerrada">
+          <i class="bi bi-lock-fill me-1" style="font-size:.75rem;"></i> CAJA BLOQUEADA
+        </div>
+      {% endif %}
+
+      <div class="cys-pos-divider d-none d-md-block" style="width:1px; height:28px; background:rgba(255,255,255,0.12);"></div>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle d-flex align-items-center justify-content-center cys-pos-cash-icon" style="width:36px; height:36px; background:rgba(34,197,94,0.12); color:#4ade80;">
+          <i class="bi bi-currency-dollar fs-5"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-1.5">
+            <span style="font-size:.65rem; color:var(--texto-muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;">Cobrado Hoy</span>
+            {% if total_pendiente_dia > 0 %}
+            <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-size:0.6rem; padding:1px 5px; font-weight:700;">
+              -${{ total_pendiente_dia|floatformat:0|intcomma }} pend.
+            </span>
+            {% endif %}
+          </div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--verde, #4ade80);">${{ total_cobrado_dia|floatformat:0|intcomma }}</div>
+        </div>
+      </div>
     </div>
-    <div class="d-flex gap-2">
-      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold" title="Volver al POS"
+
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Ventas"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cart me-1"></i> Ventas
+      </a>
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--active"
+         title="Ventas del Día"
          style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-        <i class="bi bi-arrow-left me-1"></i> Volver al POS
+        <i class="bi bi-bar-chart me-1"></i> Ventas del día
       </a>
-      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold" title="Control de Caja"
-         style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
-        <i class="bi bi-cash-stack me-1"></i> Ir a Caja
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Caja"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cash-stack me-1"></i> Caja
       </a>
+      <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Métodos de Pago"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-wallet2 me-1"></i> Métodos de Pago
+      </a>
+      {% if not caja_abierta %}
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--primary"
+                data-bs-toggle="modal"
+                data-bs-target="#modalConteo"
+                title="Abrir Caja"
+                style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+          <i class="bi bi-unlock me-1"></i> Abrir Caja
+        </button>
+      {% endif %}
+      {% if caja_abierta %}
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--danger-soft"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCierre"
+                title="Cerrar Caja"
+                style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+          <i class="bi bi-lock me-1"></i> Cerrar Caja
+        </button>
+      {% endif %}
     </div>
   </div>
 
@@ -100,7 +353,6 @@
         <div class="cys-mini-list">
           {% if productos_top %}
             {% for p in productos_top|slice:":5" %}
-             HEAD
             <div class="cys-mini-rank-item flex-column align-items-stretch gap-1">
               <div class="d-flex align-items-center justify-content-between" style="min-width:0; width:100%;">
                 <div class="d-flex align-items-center gap-2.5 text-truncate" style="min-width:0; flex:1;">
@@ -114,16 +366,6 @@
               </div>
               <div class="progress mt-1" style="height:4px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
                 <div class="progress-bar" role="progressbar" style="width: {{ p.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ p.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
-
-            <div class="cys-mini-rank-item">
-              <div class="d-flex align-items-center gap-2.5" style="min-width:0; flex:1;">
-                <span class="cys-mini-rank-badge">{{ forloop.counter }}</span>
-                <span class="fw-semibold text-truncate" style="color:var(--texto); font-size:0.86rem;" title="{{ p.nombre }}">{{ p.nombre }}</span>
-              </div>
-              <div class="d-flex align-items-center gap-3 flex-shrink-0">
-                <span class="text-muted" style="font-size:0.78rem; font-weight:600;">{{ p.cantidad }} unid.</span>
-                <span class="fw-bold" style="color:#15803d; font-size:0.88rem;">${{ p.recaudo|floatformat:0|intcomma }}</span>
-               origin/main
               </div>
             </div>
             {% endfor %}
@@ -170,11 +412,7 @@
                 <span class="text-muted" style="font-size:0.72rem; font-weight:600; min-width:32px;">{{ item.porcentaje }}%</span>
               </div>
               <div class="progress mt-1 ms-auto" style="height:4px; width:130px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
-                HEAD
                 <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ item.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
-
-                <div class="progress-bar" style="width: {{ item.porcentaje }}%; background-color: #16a34a;"></div>
-                origin/main
               </div>
             </div>
           </div>
@@ -193,7 +431,7 @@
       </h6>
     </div>
 
-    <form method="GET" class="cys-filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
+    <form method="GET" action="{% url 'ventas_dia' %}" id="formFiltroVentasDia" hx-boost="false" class="cys-filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
       <div class="d-flex flex-wrap align-items-center gap-2">
         <span style="font-size:.75rem; font-weight:700; color:var(--texto); text-transform:uppercase; letter-spacing:0.5px;">
           Rango de fechas:
@@ -213,7 +451,8 @@
           <i class="bi bi-funnel me-1"></i> Filtrar
         </button>
 
-        <a href="?" class="btn btn-sm px-3"
+        <a href="{% url 'ventas_dia' %}" id="btnLimpiarVentasDia" class="btn btn-sm px-3"
+           hx-boost="false"
            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Limpiar Filtros"
            style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700;">
           <i class="bi bi-x-circle me-1"></i> Limpiar
@@ -224,25 +463,27 @@
       <div class="d-flex flex-wrap align-items-center gap-2">
         <div class="cys-search-group" style="min-width:220px;">
           <i class="bi bi-search" style="color:#16a34a;"></i>
-          <input type="text" id="buscadorTablaVentasDia" class="form-control form-control-sm cys-search-input"
+          <input type="text" name="q" id="buscadorTablaVentasDia" value="{{ q }}" class="form-control form-control-sm cys-search-input"
                  placeholder="Buscar cliente, ítem..." style="padding-left:36px !important; border-radius:999px;">
         </div>
 
-        <div class="dropdown">
+        <div class="dropdown" hx-boost="false">
           <button type="button" class="cys-export-btn dropdown-toggle"
                   data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
             <i class="bi bi-box-arrow-up"></i> Exportar <i class="bi bi-chevron-down chev"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end cys-export-menu">
+          <ul class="dropdown-menu dropdown-menu-end cys-export-menu" hx-boost="false">
             <li>
               <a class="dropdown-item" id="btnExportExcel"
-                 href="{% url 'exportar_ventas_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}">
+                 href="{% url 'exportar_ventas_dia_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}{% if q %}&q={{ q }}{% endif %}"
+                 hx-boost="false" download>
                 <i class="bi bi-file-earmark-excel ico-excel"></i> Excel
               </a>
             </li>
             <li>
               <a class="dropdown-item" id="btnExportPdf"
-                 href="{% url 'exportar_ventas_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}">
+                 href="{% url 'exportar_ventas_dia_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}{% if q %}&q={{ q }}{% endif %}"
+                 hx-boost="false" download target="_blank">
                 <i class="bi bi-file-earmark-pdf ico-pdf"></i> PDF
               </a>
             </li>
@@ -297,11 +538,14 @@
           {% for venta in ventas %}
             {% if venta.detalles.all %}
               {% for det in venta.detalles.all %}
-              <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}">
-                <td style="text-align: center; color: var(--texto-muted);">{{ forloop.parentloop.counter }}</td>
-                <td style="font-weight: 600; color: var(--texto);">
+              <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}"
+                  data-venta-id="{{ venta.pk }}"
+                  data-fecha="{{ venta.fecha|date:'Y-m-d' }}">
+                {% if forloop.first %}
+                <td style="text-align: center; color: var(--texto-muted);" rowspan="{{ venta.detalles.all|length }}">{{ forloop.parentloop.counter }}</td>
+                <td style="font-weight: 600; color: var(--texto);" rowspan="{{ venta.detalles.all|length }}">
                   {{ venta.cliente_nombre|default:"Consumidor final" }}
-                  {% if venta.saldo_pendiente > 0 and forloop.first %}
+                  {% if venta.saldo_pendiente > 0 %}
                   <div class="mt-1 d-flex flex-column gap-1">
                     <span class="cys-debt-pill" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; font-weight:700; font-size:0.74rem; padding:2px 8px;">
                       <i class="bi bi-exclamation-circle-fill me-1"></i>Debe: ${{ venta.saldo_pendiente|floatformat:0|intcomma }}
@@ -314,6 +558,7 @@
                   </div>
                   {% endif %}
                 </td>
+                {% endif %}
                 <td style="color: var(--texto);">
                   {% if det.producto %}
                     <span class="fw-semibold" style="color:var(--texto);">{{ det.producto.nombre }}</span>
@@ -326,9 +571,10 @@
                 </td>
                 <td style="text-align: center; color: var(--texto);">{{ det.cantidad }}</td>
                 <td style="text-align: right; color: var(--texto);">${{ det.precio_unitario|floatformat:0|intcomma }}</td>
-                <td style="text-align: right; font-weight: 800; color: #15803d; font-size:1.05rem;">
-                  ${{ det.subtotal_val|floatformat:0|intcomma }}
-                  {% if venta.saldo_pendiente > 0 and forloop.first %}
+                {% if forloop.first %}
+                <td style="text-align: right; font-weight: 800; color: #15803d; font-size:1.05rem;" rowspan="{{ venta.detalles.all|length }}">
+                  ${{ venta.total_venta|floatformat:0|intcomma }}
+                  {% if venta.saldo_pendiente > 0 %}
                   <div style="font-size:0.7rem; color:#dc2626; font-weight:700;">
                     Cobrado: ${{ venta.total_cobrado|floatformat:0|intcomma }}
                   </div>
@@ -337,8 +583,7 @@
                   </span>
                   {% endif %}
                 </td>
-                <td style="text-align: center; color: var(--texto-muted);">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-                {% if forloop.first %}
+                <td style="text-align: center; color: var(--texto-muted);" rowspan="{{ venta.detalles.all|length }}">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
                 <td class="col-accion" style="text-align: center; vertical-align: middle;" rowspan="{{ venta.detalles.all|length }}">
                   <div class="d-flex align-items-center justify-content-center gap-1.5">
                     {% if venta.saldo_pendiente > 0 %}
@@ -366,7 +611,9 @@
               </tr>
               {% endfor %}
             {% else %}
-              <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}">
+              <tr class="fila-venta-dia {% if venta.saldo_pendiente > 0 %}cys-tr-pendiente{% endif %}"
+                  data-venta-id="{{ venta.pk }}"
+                  data-fecha="{{ venta.fecha|date:'Y-m-d' }}">
                 <td style="text-align: center; color: var(--texto-muted);">{{ forloop.counter }}</td>
                 <td style="font-weight: 600; color: var(--texto);">
                   {{ venta.cliente_nombre|default:"Consumidor final" }}
@@ -426,6 +673,20 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <div id="sinResultadosVentasDia" style="display:none;" class="text-center py-4">
+      <i class="bi bi-search fs-2 d-block mb-2" style="color:var(--texto-muted);"></i>
+      <span class="text-muted fw-bold">No se encontraron ventas que coincidan con la búsqueda.</span>
+    </div>
+
+    <!-- ── PAGINACIÓN VENTAS DEL DÍA (Estilo « ‹ 1 2 › ») ── -->
+    <div class="cys-pagination-container" id="contenedorPaginacionVentasDia">
+      <div class="cys-pagination-info" id="infoPaginacionVentasDia">
+        Mostrando 0 a 0 de 0 transacciones
+      </div>
+      <div class="cys-pagination-bar" id="paginacionVentasDia" role="group" aria-label="Paginación de transacciones">
+      </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center p-3 border-top" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
@@ -568,7 +829,7 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initVentasDia() {
   const buscador = document.getElementById('buscadorTablaVentasDia');
   const btnExcel = document.getElementById('btnExportExcel');
   const btnPdf   = document.getElementById('btnExportPdf');
@@ -586,8 +847,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (q) params.set('q', q);
 
     const queryStr = params.toString() ? ('?' + params.toString()) : '';
-    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_excel' %}" + queryStr;
-    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_pdf' %}" + queryStr;
+    if (btnExcel) btnExcel.href = "{% url 'exportar_ventas_dia_excel' %}" + queryStr;
+    if (btnPdf) btnPdf.href     = "{% url 'exportar_ventas_dia_pdf' %}" + queryStr;
   }
 
   function validarYEnlazarFechasDia(origen) {
@@ -614,17 +875,201 @@ document.addEventListener('DOMContentLoaded', function() {
     actualizarUrlsExport();
   }
 
+  let paginaActualVentasDia = 1;
+  const porPaginaVentasDia = 10;
+
+  function renderizarPaginacionBootstrapDia(containerEl, paginaActual, totalPaginas, onCambiar) {
+    if (!containerEl) return;
+    containerEl.innerHTML = '';
+    containerEl.setAttribute('style', 'display:inline-flex !important; flex-direction:row !important; align-items:stretch !important; border:1px solid #dee2e6 !important; border-radius:6px !important; overflow:hidden !important; background-color:#ffffff !important; margin:0 !important; padding:0 !important; box-shadow:0 1px 3px rgba(0,0,0,0.05) !important;');
+
+    const crearBoton = (clase, texto, onClick, deshabilitado, esActivo) => {
+      const el = document.createElement(deshabilitado || esActivo ? 'span' : 'button');
+      if (!deshabilitado && !esActivo) el.type = 'button';
+      el.className = 'cys-page-btn' + (clase ? ' ' + clase : '');
+      el.innerHTML = texto;
+
+      let inlineBg = '#ffffff';
+      let inlineColor = '#0d6efd';
+      let inlineCursor = 'pointer';
+      let inlineOpacity = '1';
+
+      if (esActivo) {
+        inlineBg = '#0d6efd';
+        inlineColor = '#ffffff';
+        inlineCursor = 'default';
+      } else if (deshabilitado) {
+        inlineBg = '#f1f5f9';
+        inlineColor = '#94a3b8';
+        inlineCursor = 'not-allowed';
+        inlineOpacity = '0.7';
+      }
+
+      el.setAttribute('style', 'display:inline-flex !important; align-items:center !important; justify-content:center !important; min-width:36px !important; height:34px !important; padding:0 11px !important; font-size:0.88rem !important; font-weight:' + (esActivo ? '700' : '600') + ' !important; line-height:1 !important; border:none !important; border-right:1px solid #dee2e6 !important; border-radius:0 !important; text-decoration:none !important; cursor:' + inlineCursor + ' !important; background-color:' + inlineBg + ' !important; color:' + inlineColor + ' !important; opacity:' + inlineOpacity + ' !important; user-select:none !important; box-sizing:border-box !important;');
+
+      if (!deshabilitado && !esActivo && onClick) {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          onClick();
+        });
+      }
+      return el;
+    };
+
+    // 1. « (Primera)
+    containerEl.appendChild(crearBoton('first' + (paginaActual <= 1 ? ' disabled' : ''), '&laquo;', () => onCambiar(1), paginaActual <= 1, false));
+
+    // 2. ‹ (Anterior)
+    containerEl.appendChild(crearBoton('prev' + (paginaActual <= 1 ? ' disabled' : ''), '&lsaquo;', () => onCambiar(paginaActual - 1), paginaActual <= 1, false));
+
+    // 3. Páginas
+    let start = Math.max(1, paginaActual - 2);
+    let end = Math.min(totalPaginas, paginaActual + 2);
+
+    if (start > 1) {
+      containerEl.appendChild(crearBoton('', '1', () => onCambiar(1), false, paginaActual === 1));
+      if (start > 2) {
+        containerEl.appendChild(crearBoton('disabled ellipsis', '&hellip;', null, true, false));
+      }
+    }
+
+    for (let p = start; p <= end; p++) {
+      containerEl.appendChild(crearBoton(p === paginaActual ? 'active' : '', String(p), () => onCambiar(p), false, p === paginaActual));
+    }
+
+    if (end < totalPaginas) {
+      if (end < totalPaginas - 1) {
+        containerEl.appendChild(crearBoton('disabled ellipsis', '&hellip;', null, true, false));
+      }
+      containerEl.appendChild(crearBoton('', String(totalPaginas), () => onCambiar(totalPaginas), false, paginaActual === totalPaginas));
+    }
+
+    // 4. › (Siguiente)
+    containerEl.appendChild(crearBoton('next' + (paginaActual >= totalPaginas ? ' disabled' : ''), '&rsaquo;', () => onCambiar(paginaActual + 1), paginaActual >= totalPaginas, false));
+
+    // 5. » (Última)
+    containerEl.appendChild(crearBoton('last' + (paginaActual >= totalPaginas ? ' disabled' : ''), '&raquo;', () => onCambiar(totalPaginas), paginaActual >= totalPaginas, false));
+
+    if (containerEl.lastElementChild) {
+      containerEl.lastElementChild.style.borderRight = 'none';
+    }
+  }
+
+  function aplicarFiltroVentasDia(origen, forzarPagina) {
+    if (typeof forzarPagina === 'number') {
+      paginaActualVentasDia = forzarPagina;
+    } else if (origen) {
+      paginaActualVentasDia = 1;
+    }
+
+    if (typeof origen === 'string') {
+      validarYEnlazarFechasDia(origen);
+    } else if (!forzarPagina) {
+      validarYEnlazarFechasDia();
+    }
+
+    const q = buscador ? buscador.value.toLowerCase().trim() : '';
+    const vIni = fIni ? fIni.value : '';
+    const vFin = fFin ? fFin.value : '';
+
+    actualizarUrlsExport();
+
+    const filas = document.querySelectorAll('.fila-venta-dia');
+    const grupos = {};
+    filas.forEach(f => {
+      const vid = f.dataset.ventaId || ('idx_' + Math.random());
+      if (!grupos[vid]) grupos[vid] = [];
+      grupos[vid].push(f);
+    });
+
+    const gruposVisibles = [];
+    Object.values(grupos).forEach(grupo => {
+      const fecha = grupo[0].dataset.fecha;
+      let match = true;
+      if (vIni && fecha && fecha < vIni) match = false;
+      if (vFin && fecha && fecha > vFin) match = false;
+      if (match && q) {
+        let texto = '';
+        grupo.forEach(f => texto += f.textContent.toLowerCase() + ' ');
+        if (!texto.includes(q)) match = false;
+      }
+      if (match) {
+        gruposVisibles.push(grupo);
+      }
+    });
+
+    const totalVentas = gruposVisibles.length;
+    const totalPaginas = Math.ceil(totalVentas / porPaginaVentasDia) || 1;
+    if (paginaActualVentasDia > totalPaginas) paginaActualVentasDia = totalPaginas;
+    if (paginaActualVentasDia < 1) paginaActualVentasDia = 1;
+
+    const startIdx = (paginaActualVentasDia - 1) * porPaginaVentasDia;
+    const endIdx = startIdx + porPaginaVentasDia;
+    const gruposEnPagina = new Set(gruposVisibles.slice(startIdx, endIdx));
+
+    Object.values(grupos).forEach(grupo => {
+      const mostrarEnTabla = gruposEnPagina.has(grupo);
+      grupo.forEach(f => {
+        f.style.display = mostrarEnTabla ? '' : 'none';
+      });
+    });
+
+    const sinRes = document.getElementById('sinResultadosVentasDia');
+    if (sinRes) sinRes.style.display = (totalVentas === 0 && filas.length > 0) ? 'block' : 'none';
+
+    // Actualizar contenedor y botones de paginación
+    const contPag = document.getElementById('contenedorPaginacionVentasDia');
+    const infoPag = document.getElementById('infoPaginacionVentasDia');
+    const ulPag   = document.getElementById('paginacionVentasDia');
+
+    if (contPag && ulPag) {
+      if (filas.length === 0) {
+        contPag.style.display = 'none';
+      } else {
+        contPag.style.display = 'flex';
+        if (infoPag) {
+          infoPag.textContent = `Mostrando ${totalVentas ? startIdx + 1 : 0} a ${Math.min(endIdx, totalVentas)} de ${totalVentas} transacciones`;
+        }
+        renderizarPaginacionBootstrapDia(ulPag, paginaActualVentasDia, totalPaginas, function(nuevaPagina) {
+          aplicarFiltroVentasDia(null, nuevaPagina);
+        });
+      }
+    }
+  }
+
   if (fIni) {
-    fIni.addEventListener('change', () => validarYEnlazarFechasDia('ini'));
-    fIni.addEventListener('input', () => validarYEnlazarFechasDia('ini'));
+    fIni.addEventListener('change', () => aplicarFiltroVentasDia('ini'));
+    fIni.addEventListener('input', () => aplicarFiltroVentasDia('ini'));
   }
   if (fFin) {
-    fFin.addEventListener('change', () => validarYEnlazarFechasDia('fin'));
-    fFin.addEventListener('input', () => validarYEnlazarFechasDia('fin'));
+    fFin.addEventListener('change', () => aplicarFiltroVentasDia('fin'));
+    fFin.addEventListener('input', () => aplicarFiltroVentasDia('fin'));
+  }
+
+  // Buscador en tiempo real agrupando por venta
+  if (buscador) {
+    buscador.addEventListener('input', () => aplicarFiltroVentasDia('busq'));
+    buscador.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') e.preventDefault();
+    });
+  }
+
+  const btnLimp = document.getElementById('btnLimpiarVentasDia');
+  if (btnLimp) {
+    btnLimp.addEventListener('click', function(e) {
+      const tieneParams = window.location.search && window.location.search.length > 1;
+      if (!tieneParams) {
+        e.preventDefault();
+        if (fIni) { fIni.value = ''; fIni.removeAttribute('max'); }
+        if (fFin) { fFin.value = ''; fFin.removeAttribute('min'); }
+        if (buscador) buscador.value = '';
+        aplicarFiltroVentasDia();
+      }
+    });
   }
 
   // Prevenir envío de formulario con fechas contradictorias
-  const formFechas = fIni ? fIni.closest('form') : null;
+  const formFechas = document.getElementById('formFiltroVentasDia');
   if (formFechas) {
     formFechas.addEventListener('submit', function() {
       if (fIni && fFin && fIni.value && fFin.value && fIni.value > fFin.value) {
@@ -634,22 +1079,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Inicializar restricciones y URLs
-  validarYEnlazarFechasDia();
-
-  // Buscador en tiempo real
-  if (buscador) {
-    buscador.addEventListener('input', function() {
-      const q = this.value.toLowerCase().trim();
-      actualizarUrlsExport();
-      document.querySelectorAll('.fila-venta-dia').forEach(f => {
-        f.style.display = f.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    });
-    // Evitar que Enter envíe el formulario de fechas
-    buscador.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') e.preventDefault();
-    });
-  }
+  aplicarFiltroVentasDia();
 
   // ══ MODAL DE COBRO DE SALDO PENDIENTE (CAMBIAR A PAGADA) ══
   document.querySelectorAll('.btn-abrir-cobro').forEach(btn => {
@@ -712,6 +1142,13 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.setupStrictCYSTooltips) {
     window.setupStrictCYSTooltips();
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVentasDia);
+} else {
+  initVentasDia();
+}
+document.body.addEventListener('htmx:afterSettle', initVentasDia);
 </script>
 {% endblock %}

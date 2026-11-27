@@ -43,6 +43,8 @@ urlpatterns = [
     path("ventas/dia/", ventas_views.ventas_dia, name="ventas_dia"),
     path("ventas/exportar/excel/", ventas_views.exportar_ventas_excel, name="exportar_ventas_excel"),
     path("ventas/exportar/pdf/", ventas_views.exportar_ventas_pdf, name="exportar_ventas_pdf"),
+    path("ventas/dia/exportar/excel/", ventas_views.exportar_ventas_dia_excel, name="exportar_ventas_dia_excel"),
+    path("ventas/dia/exportar/pdf/", ventas_views.exportar_ventas_dia_pdf, name="exportar_ventas_dia_pdf"),
 
     # DEVOLUCIONES
     path("devoluciones/", dev_views.lista_devoluciones, name="lista_devoluciones"),

@@ -58,6 +58,8 @@
           {% include 'partials/breadcrumb.html' %}
           {% block content %}{% endblock %}
         </main>
+
+        {% block extra_js %}{% endblock %}
       </div>
 
       {% include 'partials/aside.html' %}
@@ -197,8 +199,6 @@
     <script src="{% static 'js/cys-a11y-extra.js' %}" defer></script>
     <script src="{% static 'js/cuerpo/botellin.js' %}" defer></script>
 
-    {% block extra_js %}{% endblock %}
-
     <!-- ══════════════════════════════════════════
          SOPORTE GLOBAL Y HTMX: Tooltips estrictos SOLO Hover
          y limpieza automática de mensajes flotantes
@@ -248,6 +248,16 @@
       document.addEventListener('show.bs.modal', window.cysCleanTooltips);
       document.addEventListener('hide.bs.modal', window.cysCleanTooltips);
       document.addEventListener('submit', window.cysCleanTooltips);
+
+      // Prevenir que htmx intercepte descargas de archivos o exportaciones y deje la pantalla en blanco
+      document.addEventListener('htmx:beforeRequest', function(evt) {
+        var elt = evt.detail.elt;
+        var path = (evt.detail.requestConfig && evt.detail.requestConfig.path) || '';
+        if (elt && (elt.hasAttribute('download') || elt.getAttribute('target') === '_blank' || path.indexOf('export=') !== -1 || path.indexOf('exportar') !== -1)) {
+          evt.preventDefault();
+          window.open(path, '_blank');
+        }
+      });
       window.addEventListener('beforeunload', window.cysCleanTooltips);
       window.addEventListener('pagehide', window.cysCleanTooltips);
 
