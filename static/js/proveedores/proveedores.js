@@ -59,7 +59,77 @@ function initializeCharts() {
   }
 }
 
-// Asegurar disponibilidad del helper de exportación unificado
+/* ── Exportación desde el servidor (Excel / PDF / Imprimir) ──────────────────
+   Llama a esta misma URL con ?export=excel|pdf|imprimir y la vista
+   lista_proveedores genera el archivo con el diseño de Marcas, aplicando los
+   mismos filtros que el usuario tiene en pantalla (q, nit, tipo, estado).
+
+   Se usa UN solo listener delegado en document (fase de captura):
+     · sobrevive a los reemplazos de DOM de htmx,
+     · se ejecuta antes que cualquier otro helper que quiera enlazar los botones. */
+(function () {
+  function valorFiltro(id) {
+    var el = document.getElementById(id);
+    return el ? (el.value || '').trim() : '';
+  }
+
+  function urlExportacion(tipo) {
+    var params = new URLSearchParams(window.location.search);
+    params.delete('page');
+
+    var filtros = {
+      q: valorFiltro('buscar-proveedores'),
+      nit: valorFiltro('prov-f-nit'),
+      tipo: valorFiltro('prov-f-tipo'),
+      estado: valorFiltro('prov-f-estado')
+    };
+    Object.keys(filtros).forEach(function (clave) {
+      var v = filtros[clave];
+      if (v && v !== 'todos') {
+        params.set(clave, v);
+      } else {
+        params.delete(clave);
+      }
+    });
+
+    params.set('export', tipo);
+    return window.location.pathname + '?' + params.toString();
+  }
+
+  function manejarClickExportar(e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-cys-export]') : null;
+    if (!btn) return;
+    var contenedor = btn.closest('#cys-dt-export-proveedores');
+    if (!contenedor) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var tipo = btn.getAttribute('data-cys-export');
+    var url = urlExportacion(tipo);
+
+    if (tipo === 'imprimir') {
+      window.open(url, '_blank');          // se abre y lanza el diálogo de impresión
+    } else {
+      window.location.href = url;          // descarga del archivo (no cambia de página)
+    }
+
+    // Cierra el menú desplegable
+    var toggle = contenedor.querySelector('[data-bs-toggle="dropdown"]');
+    if (toggle && window.bootstrap && bootstrap.Dropdown) {
+      var inst = bootstrap.Dropdown.getInstance(toggle);
+      if (inst) inst.hide();
+    }
+  }
+
+  if (!window._cysProveedoresExportDelegado) {
+    window._cysProveedoresExportDelegado = true;
+    document.addEventListener('click', manejarClickExportar, true);
+  }
+})();
+
+// Helper de exportación unificado (otras páginas pueden usarlo).
+// Proveedores ya NO lo usa: exporta desde el servidor (ver bloque de arriba).
 if (typeof window.cysCrearDropdownExportar !== 'function') {
   window.cysCrearDropdownExportar = function(dt, containerOrId) {
     if (!dt) return;
@@ -152,13 +222,19 @@ if (typeof window.cysCrearDropdownExportar !== 'function') {
 }
 
 $(document).ready(function() {
-  // Inicializar gráficas
-  initializeCharts();
+  // Inicializar gráficas (aislado: si falla, la tabla y los botones siguen funcionando)
+  try {
+    initializeCharts();
+  } catch (err) {
+    console.error('[Proveedores] Error en initializeCharts:', err);
+  }
 
   if ($.fn.DataTable.isDataTable('#tablaProveedores')) {
     $('#tablaProveedores').DataTable().destroy();
   }
 
+  // Sin `buttons`: la exportación la hace el servidor. Declarar excelHtml5/pdfHtml5
+  // sin JSZip/pdfmake cargados hacía fallar la tabla completa.
   var table = $('#tablaProveedores').DataTable({
     responsive: true,
     paging: true,
@@ -182,50 +258,8 @@ $(document).ready(function() {
       topEnd: null,
       bottomStart: 'info',
       bottomEnd: 'paging'
-    },
-    buttons: [
-      {
-        extend: 'excelHtml5',
-        text: '<i class="bi bi-file-earmark-excel-fill me-1"></i> Excel',
-        className: 'cys-dt-btn-excel',
-        title: 'Distribuciones CYS Ltda - Reporte de Proveedores',
-        filename: 'Proveedores_CYS',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        }
-      },
-      {
-        extend: 'pdfHtml5',
-        text: '<i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF',
-        className: 'cys-dt-btn-pdf',
-        title: 'Distribuciones CYS Ltda - Reporte de Proveedores',
-        filename: 'Proveedores_CYS',
-        orientation: 'landscape',
-        pageSize: 'A4',
-        exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7]
-        },
-        customize: function (doc) {
-          doc.defaultStyle.fontSize = 9;
-          if (doc.styles && doc.styles.tableHeader) {
-            doc.styles.tableHeader.fontSize = 10;
-            doc.styles.tableHeader.bold = true;
-            doc.styles.tableHeader.fillColor = '#011936';
-            doc.styles.tableHeader.color = '#CF9C48';
-            doc.styles.tableHeader.alignment = 'center';
-          }
-          if (doc.content && doc.content[1] && doc.content[1].table) {
-            doc.content[1].table.widths = ['5%', '24%', '12%', '14%', '12%', '10%', '13%', '10%'];
-          }
-        }
-      }
-    ]
+    }
   });
-
-  // Colocar el dropdown de exportación (PDF y Excel) en la barra de herramientas
-  if (typeof window.cysCrearDropdownExportar === 'function') {
-    window.cysCrearDropdownExportar(table, 'cys-dt-export-proveedores');
-  }
 
   // Conectar input principal de búsqueda y botón lupa
   $('#buscar-proveedores').on('input', function() {
@@ -274,20 +308,7 @@ $(document).ready(function() {
     $('#prov-f-tipo').val('todos');
     $('#prov-f-estado').val('todos');
     table.search('').columns().search('').draw();
-    syncExportProv();
   });
-
-  // Sincronizar export (si se usan filtros)
-  function syncExportProv() {
-    var q = $('#buscar-proveedores').val() || '';
-    var p = q ? ('&q=' + encodeURIComponent(q)) : '';
-    if (typeof $('#btn-export-excel-prov') !== 'undefined') {
-      $('#btn-export-excel-prov').attr('href', '?export=excel&tipo=proveedores' + p);
-      $('#btn-export-pdf-prov').attr('href',   '?export=pdf&tipo=proveedores' + p);
-    }
-  }
-  $('#buscar-proveedores').on('keyup change', syncExportProv);
-  syncExportProv();
 
   // Aplicar ancho dinámico a las barras desde data-width
   document.querySelectorAll('.bar-visual').forEach(bar => {

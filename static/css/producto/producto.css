@@ -1387,3 +1387,27 @@ textarea.cys-cat-input { resize:vertical; min-height:96px; }
   .cys-cat-panel *, .cys-cat-item__name { color:#000 !important; }
   .cys-cat-item { border-bottom:1px solid #999 !important; }
 }
+/* ── Filtros rápidos de estado (Todas / Activas / Inactivas) ── */
+.cys-categorias-page .cys-filtro-estado-btn {
+  background: transparent;
+  color: var(--c-texto);
+  border: 1px solid color-mix(in srgb, var(--c-azul) 40%, transparent);
+  font-weight: 500;
+  opacity: 1;
+  padding: .3rem .8rem;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.cys-categorias-page .cys-filtro-estado-btn:hover {
+  background: color-mix(in srgb, var(--c-azul) 14%, transparent);
+  border-color: var(--c-azul);
+  color: var(--c-texto);
+  transform: translateY(-1px);
+}
+.cys-categorias-page .cys-filtro-estado-btn.active,
+.cys-categorias-page .cys-filtro-estado-btn:active,
+.cys-categorias-page .cys-filtro-estado-btn:focus-visible {
+  background: color-mix(in srgb, var(--c-azul) 22%, transparent);
+  border-color: var(--c-azul);
+  color: #fff;
+  box-shadow: none;
+}
