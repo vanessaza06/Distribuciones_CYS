@@ -594,6 +594,7 @@ def ventas_dia(request):
             'monto': monto_f,
             'cantidad': cant_f,
             'porcentaje': pct_f,
+            'porcentaje_css': f"{pct_f:.1f}".replace(',', '.'),
         })
 
     # Ranking de productos más vendidos
@@ -629,6 +630,8 @@ def ventas_dia(request):
         p['posicion'] = i
         p['porcentaje'] = round((p['cantidad'] / total_productos * 100), 1) if total_productos > 0 else 0
         p['relativo'] = round((p['cantidad'] / max_cant_top * 100), 1) if max_cant_top > 0 else 0
+        p['porcentaje_css'] = f"{p['porcentaje']:.1f}".replace(',', '.')
+        p['relativo_css'] = f"{p['relativo']:.1f}".replace(',', '.')
 
     caja_abierta = obtener_caja_abierta(hoy)
     ultimo_cierre = Caja.objects.order_by('-fecha_hora').first()

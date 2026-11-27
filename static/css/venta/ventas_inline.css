@@ -3418,4 +3418,31 @@ html[data-cys-tema="claro"] {
   }
 }
 
+/* ── Botones de navegación cabecera POS ── */
+.cys-pos-nav-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cys-pos-nav-btn--primary:hover,
+.cys-pos-nav-btn--active:hover {
+  background: #8e1c10 !important;
+  border-color: #8e1c10 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(168, 35, 21, 0.35) !important;
+}
+.cys-pos-nav-btn--danger-soft:hover {
+  background: #fecaca !important;
+  border-color: #f87171 !important;
+  color: #991b1b !important;
+  transform: translateY(-1px);
+}
+.cys-pos-nav-btn--soft:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #020617 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+
 

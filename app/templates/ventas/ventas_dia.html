@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load l10n %}
 
 {% block title %}Ventas del Día — CYS Ltda{% endblock %}
 {% block page_title %}Ventas del Día{% endblock %}
@@ -99,6 +100,21 @@
         <div class="cys-mini-list">
           {% if productos_top %}
             {% for p in productos_top|slice:":5" %}
+             HEAD
+            <div class="cys-mini-rank-item flex-column align-items-stretch gap-1">
+              <div class="d-flex align-items-center justify-content-between" style="min-width:0; width:100%;">
+                <div class="d-flex align-items-center gap-2.5 text-truncate" style="min-width:0; flex:1;">
+                  <span class="cys-mini-rank-badge">{{ forloop.counter }}</span>
+                  <span class="fw-semibold text-truncate" style="color:var(--texto); font-size:0.86rem;" title="{{ p.nombre }}">{{ p.nombre }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-2">
+                  <span class="text-muted" style="font-size:0.78rem; font-weight:600;">{{ p.cantidad }} unid. ({{ p.porcentaje }}%)</span>
+                  <span class="fw-bold" style="color:#15803d; font-size:0.88rem;">${{ p.recaudo|floatformat:0|intcomma }}</span>
+                </div>
+              </div>
+              <div class="progress mt-1" style="height:4px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
+                <div class="progress-bar" role="progressbar" style="width: {{ p.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ p.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
+
             <div class="cys-mini-rank-item">
               <div class="d-flex align-items-center gap-2.5" style="min-width:0; flex:1;">
                 <span class="cys-mini-rank-badge">{{ forloop.counter }}</span>
@@ -107,6 +123,7 @@
               <div class="d-flex align-items-center gap-3 flex-shrink-0">
                 <span class="text-muted" style="font-size:0.78rem; font-weight:600;">{{ p.cantidad }} unid.</span>
                 <span class="fw-bold" style="color:#15803d; font-size:0.88rem;">${{ p.recaudo|floatformat:0|intcomma }}</span>
+               origin/main
               </div>
             </div>
             {% endfor %}
@@ -153,7 +170,11 @@
                 <span class="text-muted" style="font-size:0.72rem; font-weight:600; min-width:32px;">{{ item.porcentaje }}%</span>
               </div>
               <div class="progress mt-1 ms-auto" style="height:4px; width:130px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
+                HEAD
+                <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ item.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
+
                 <div class="progress-bar" style="width: {{ item.porcentaje }}%; background-color: #16a34a;"></div>
+                origin/main
               </div>
             </div>
           </div>

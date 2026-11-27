@@ -62,7 +62,7 @@
 
     <div class="d-flex gap-2 flex-wrap align-items-center">
       {% if not caja_abierta %}
-        <button type="button" class="btn btn-sm fw-bold cys-btn-primary"
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--primary"
                 data-bs-toggle="modal"
                 data-bs-target="#modalConteo"
                 title="Abrir Caja"
@@ -71,7 +71,7 @@
         </button>
       {% endif %}
       {% if caja_abierta %}
-        <button type="button" class="btn btn-sm fw-bold cys-btn-danger-soft"
+        <button type="button" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--danger-soft"
                 data-bs-toggle="modal"
                 data-bs-target="#modalCierre"
                 title="Cerrar Caja"
@@ -79,10 +79,25 @@
           <i class="bi bi-lock me-1"></i> Cerrar Caja
         </button>
       {% endif %}
-      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-btn-primary"
+      <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--active"
+         title="Ventas"
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cart me-1"></i> Ventas
+      </a>
+      <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
          title="Ventas del Día"
          style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-bar-chart me-1"></i> Ventas del día
+      </a>
+      <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Caja"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-cash-stack me-1"></i> Caja
+      </a>
+      <a href="{% url 'lista_metodos_pago' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
+         title="Métodos de Pago"
+         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+        <i class="bi bi-wallet2 me-1"></i> Métodos de Pago
       </a>
     </div>
   </div>
