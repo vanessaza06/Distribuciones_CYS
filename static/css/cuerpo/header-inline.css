@@ -2,6 +2,25 @@
    HEADER — ESTILOS EN LÍNEA EXTRAÍDOS
    ============================================================ */
 
+/* ── Acento de notificaciones: rojo en claro, azul en oscuro ── */
+:root {
+  --notif-acento: #b32a1a;
+  --notif-acento-rgb: 179, 42, 26;
+  --notif-acento-texto: #ffffff;
+}
+
+/* Deja solo el selector que use tu página para el modo oscuro */
+[data-theme="dark"],
+[data-bs-theme="dark"],
+html.dark,
+body.dark,
+body.dark-mode,
+body.modo-oscuro {
+  --notif-acento: #4DA8DA;
+  --notif-acento-rgb: 77, 168, 218;
+  --notif-acento-texto: #0b1d33;
+}
+
 /* Separador vertical */
 .header-divider {
   width: 1px;
@@ -25,8 +44,10 @@
 
 /* Badge de notificaciones */
 .notif-badge {
-  background: #4DA8DA !important;
+  background: var(--notif-acento) !important;
+  color: var(--notif-acento-texto) !important;
   font-size: 10px !important;
+  font-weight: 700 !important;
   min-width: 18px !important;
   padding: 3px 6px !important;
   border: 2px solid var(--azul-oscuro) !important;
@@ -38,7 +59,8 @@
 .notif-dropdown-menu {
   border: 1px solid rgba(207, 156, 72, 0.3) !important;
   border-left: 3px solid #CF9C48 !important;
-  width: 325px !important;
+  width: 380px !important;
+  max-width: calc(100vw - 20px) !important;
   border-radius: 12px !important;
   overflow: hidden !important;
   background: #142b49 !important;
@@ -97,4 +119,243 @@
   font-size: 12px !important;
   color: #4DA8DA !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ============================================================
+   NOTIFICACIONES: IGNORAR ALERTAS
+   ============================================================ */
+
+/* Botón ✕ / Restaurar de cada fila */
+.notif-act {
+  background: transparent;
+  border: 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  line-height: 1.4;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.notif-act:hover { color: var(--notif-acento); }
+.notif-act-x { font-size: 12px; }
+
+/* Tooltip propio (reemplaza el title nativo) */
+.notif-act[data-tip] { position: relative; }
+
+.notif-act[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--notif-acento);
+  color: var(--notif-acento-texto);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 10;
+}
+
+.notif-act[data-tip]:hover::after,
+.notif-act[data-tip]:focus-visible::after {
+  opacity: 1;
+}
+
+/* Opciones de duración (1 día / 7 días / Hasta que se recupere) */
+.notif-ign-opts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 2px 16px;
+  font-size: 11px;
+  color: #64748b;
+}
+.notif-ign-opts button {
+  background: rgba(var(--notif-acento-rgb), .08);
+  border: 1px solid rgba(var(--notif-acento-rgb), .35);
+  color: var(--notif-acento);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.notif-ign-opts button:hover {
+  background: var(--notif-acento);
+  color: var(--notif-acento-texto);
+}
+
+/* Filas ignoradas (atenuadas) */
+.notif-row-ign { opacity: .6; }
+
+/* Botón "Ignoradas (n)" */
+.notif-ign-toggle {
+  width: 100%;
+  background: rgba(0, 0, 0, .03);
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.notif-ign-toggle:hover { color: var(--notif-acento); }
+
+/* Pie del panel Stock: "Ver stock completo" + "Ignorar todas" */
+.notif-footer-row { border-top: 1px solid rgba(0, 0, 0, .08); }
+.notif-footer-row .notif-footer-link { border-top: 0 !important; }
+
+.notif-ignorar-todas {
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 1px solid rgba(0, 0, 0, .08) !important;
+  border-radius: 0 !important;
+  color: var(--notif-acento) !important;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 .9rem;
+}
+.notif-ignorar-todas:hover {
+  background: rgba(var(--notif-acento-rgb), .08) !important;
+}
+
+/* ============================================================
+   BOTONES DE ACCIONES EN NOTIFICACIONES (ARCHIVAR / BORRAR / RESTAURAR)
+   ============================================================ */
+.notif-row {
+  transition: background 0.18s ease, opacity 0.18s ease;
+}
+.notif-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notif-btn-action {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.notif-btn-archivar {
+  color: #4DA8DA;
+  background: rgba(77, 168, 218, 0.1);
+}
+.notif-btn-archivar:hover {
+  background: rgba(77, 168, 218, 0.25);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.notif-btn-borrar {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+}
+.notif-btn-borrar:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.notif-btn-restaurar {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+}
+.notif-btn-restaurar:hover {
+  background: rgba(16, 185, 129, 0.28);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.notif-toolbar-btn {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  line-height: 1.3 !important;
+  border: 1px solid rgba(77, 168, 218, 0.25) !important;
+  background: rgba(77, 168, 218, 0.08) !important;
+  color: #4DA8DA !important;
+  transition: all 0.15s ease !important;
+}
+.notif-toolbar-btn:hover {
+  background: rgba(77, 168, 218, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.notif-toolbar-btn--danger {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #f87171 !important;
+}
+.notif-toolbar-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.notif-vaciar-btn {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #f87171 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: background 0.15s ease !important;
+}
+.notif-vaciar-btn:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #ffffff !important;
+}
+
+.notif-tab-badge {
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  padding: 2px 5px !important;
+  background: rgba(77, 168, 218, 0.2) !important;
+  color: #4DA8DA !important;
+}
+.notif-tab-badge--compra {
+  background: rgba(207, 156, 72, 0.2) !important;
+  color: #CF9C48 !important;
+}
+.notif-tab-badge--hist {
+  background: rgba(148, 163, 184, 0.2) !important;
+  color: #cbd5e1 !important;
+}
+
+/* Animación de timbre / rebote de campana cuando llega notificación */
+@keyframes notifBellRing {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-14deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-10deg); }
+  75% { transform: rotate(4deg); }
+  100% { transform: rotate(0); }
+}
+
+.notif-bell-bounce {
+  display: inline-block;
+  animation: notifBellRing 0.8s ease-in-out;
+}
+
+.notif-bell-active {
+  color: #4DA8DA !important;
 }

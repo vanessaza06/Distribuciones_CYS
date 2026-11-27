@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block page_title %}Configuración{% endblock %}
@@ -319,6 +319,8 @@
     </div>
 
     <div class="row g-3">
+
+      <!-- Fila 1: Página de inicio | Posición de la barra lateral -->
       <div class="col-lg-6">
         <div class="cfg-section">
           <div class="cfg-title"><i class="bi bi-house-door-fill"></i> Página de inicio al entrar</div>
@@ -342,6 +344,34 @@
         </div>
       </div>
 
+      <div class="col-lg-6">
+        <div class="cfg-section">
+          <div class="cfg-title"><i class="bi bi-arrow-left-right"></i> Posición de la barra lateral</div>
+          <div class="cfg-options cfg-options--dos" id="opcionesLado">
+            <div class="cfg-opt" data-lado="izquierda" onclick="seleccionarLado('izquierda', this)">
+              <div class="cfg-lado-preview cfg-lado-preview--izq">
+                <span class="cfg-lado-preview__aside"></span>
+                <span class="cfg-lado-preview__main"></span>
+              </div>
+              <i class="bi bi-layout-sidebar cfg-opt-icon-lg"></i>
+              Izquierda
+              <div class="cfg-opt-desc">Menú pegado al borde izquierdo</div>
+            </div>
+            <div class="cfg-opt" data-lado="derecha" onclick="seleccionarLado('derecha', this)">
+              <div class="cfg-lado-preview cfg-lado-preview--der">
+                <span class="cfg-lado-preview__aside"></span>
+                <span class="cfg-lado-preview__main"></span>
+              </div>
+              <i class="bi bi-layout-sidebar-reverse cfg-opt-icon-lg"></i>
+              Derecha
+              <div class="cfg-opt-desc">Menú pegado al borde derecho</div>
+            </div>
+          </div>
+          <p class="cfg-hint-sm">Se aplica al instante e incluye submenús, tooltips y el espacio del contenido.</p>
+        </div>
+      </div>
+
+      <!-- Fila 2: Barra lateral | Notificaciones y alertas -->
       <div class="col-lg-6">
         <div class="cfg-section">
           <div class="cfg-title"><i class="bi bi-layout-sidebar-reverse"></i> Barra lateral</div>
@@ -376,7 +406,7 @@
         </div>
       </div>
 
-      <div class="col-12">
+      <div class="col-lg-6">
         <div class="cfg-section">
           <div class="cfg-title"><i class="bi bi-bell-fill"></i> Notificaciones y alertas</div>
 

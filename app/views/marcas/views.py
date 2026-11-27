@@ -2,6 +2,7 @@ import base64
 import io
 import os
 import re
+import traceback
 from datetime import datetime  # noqa: F401  (por si lo usas en otros lados)
 
 from django.conf import settings
@@ -121,17 +122,35 @@ def _filtrar_marcas(request):
 
 
 # ---------------------------------------------------------------------------
+# Ejecuta una exportación y, si algo falla, muestra el error en pantalla
+# y en la terminal (para poder corregirlo rápido).
+# ---------------------------------------------------------------------------
+def _exportar_seguro(funcion, request):
+    try:
+        return funcion(request)
+    except Exception as exc:  # noqa: BLE001
+        detalle = traceback.format_exc()
+        print(detalle)  # se ve en la terminal de PowerShell
+        return HttpResponse(
+            "No se pudo generar la exportación.\n\n"
+            f"Error: {type(exc).__name__}: {exc}\n\n{detalle}",
+            content_type="text/plain; charset=utf-8",
+            status=500,
+        )
+
+
+# ---------------------------------------------------------------------------
 # LISTADO (también atiende ?export=excel|pdf|imprimir)
 # ---------------------------------------------------------------------------
 def lista_marcas(request):
     # ---- Exportación: el JS llama a esta misma URL con ?export=... ----
     tipo = request.GET.get('export')
     if tipo == 'excel':
-        return exportar_marcas_excel(request)
+        return _exportar_seguro(exportar_marcas_excel, request)
     if tipo == 'pdf':
-        return exportar_marcas_pdf(request)
+        return _exportar_seguro(exportar_marcas_pdf, request)
     if tipo == 'imprimir':
-        return exportar_marcas_imprimir(request)
+        return _exportar_seguro(exportar_marcas_imprimir, request)
 
     # ---- Listado normal ----
     marcas, filtros = _filtrar_marcas(request)
@@ -667,13 +686,20 @@ def exportar_marcas_pdf(request):
         ("TOPPADDING", (0, 1), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        # Contorno azul marino con esquinas redondeadas
+        # Contorno azul marino
         ("BOX", (0, 0), (-1, -1), 1, c_navy),
-        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
     ]
     if not filas:
         estilo.append(("SPAN", (0, 1), (-1, 1)))
     tabla.setStyle(TableStyle(estilo))
+
+    # Esquinas redondeadas: solo existen en versiones recientes de reportlab.
+    # Si tu versión es vieja, se omiten y el PDF sale igual (con esquinas rectas).
+    try:
+        tabla.setStyle(TableStyle([("ROUNDEDCORNERS", [10, 10, 10, 10])]))
+    except Exception:
+        pass
+
     elementos.append(tabla)
 
     # --- Totales y filtros (discretos, debajo de la tabla) ---

@@ -3,11 +3,11 @@
 
 {% block title %}Detalles de Productos — CYS Ltda{% endblock %}
 {% block page_title %}Detalles de Productos{% endblock %}
-{% block nav_proveedores %}active{% endblock %}
+{% block nav_detalle_prod %}active{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/producto/producto.css' %}">
-<link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 <link rel="stylesheet" href="{% static 'css/detalle_producto/detalle_producto.css' %}">
 {% endblock %}
 
@@ -90,6 +90,13 @@
             <i class="bi bi-search gp-search-icon"></i>
             <input type="text" id="buscadorProductos" class="gp-search-input" placeholder="Buscar por nombre o código..." oninput="gpFiltrarProductos(this.value)">
           </div>
+          <!-- Botón Filtros -->
+    <button type="button" class="btn rounded-pill px-3 btn-outline-azul d-inline-flex align-items-center gap-1 flex-shrink-0"
+            data-bs-toggle="collapse" data-bs-target="#filtrosProductos"
+            aria-expanded="false" aria-controls="filtrosProductos" title="Filtrar">
+      <i class="bi bi-funnel"></i><span>Filtros</span>
+      <i class="bi bi-chevron-down gp-filtro-chevron"></i>
+    </button>
 
           <!-- Menú Exportar (mismo diseño que Marcas) -->
           <div class="dropdown flex-shrink-0">
@@ -117,7 +124,43 @@
             </ul>
           </div>
         </div>
+   
+
+  <!-- Panel desplegable de filtros -->
+  <div class="collapse" id="filtrosProductos">
+    <div class="gp-filtros-panel mt-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="scan-campo-label" for="filtroProdCategoria">Categoría</label>
+          <select id="filtroProdCategoria" class="form-select inv-input">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="scan-campo-label" for="filtroProdEstado">Estado</label>
+          <select id="filtroProdEstado" class="form-select inv-input">
+            <option value="">Todos</option>
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="scan-campo-label" for="filtroProdStock">Stock</label>
+          <select id="filtroProdStock" class="form-select inv-input">
+            <option value="">Todos</option>
+            <option value="1">Crítico</option>
+            <option value="0">Normal</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="button" id="filtroProdLimpiar" class="btn rounded-pill px-3 btn-outline-azul w-100">
+            <i class="bi bi-x-circle me-1"></i>Limpiar
+          </button>
+        </div>
       </div>
+    </div>
+  </div>
+</div>
 
       <div class="gp-md-wrap">
 
@@ -128,7 +171,7 @@
                data-pk="{{ p.pk }}"
                data-nombre="{{ p.nombre|lower }}"
                data-codigo="{{ p.detalle_principal.codigo_barras|default:''|lower }}"
-               onclick="gpSeleccionarProducto({{ p.pk }})">
+              onclick="gpSeleccionarProducto(Number(this.dataset.pk))">
             <div class="gp-cat-icon-box gp-md-icon"></div>
             <div class="gp-md-row-info">
               <div class="fw-semibold text-truncate">{{ p.nombre }}</div>
@@ -187,10 +230,9 @@
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end prod-dropdown-menu">
                     {% if p.activo %}
-                    <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'desactivar')"><i class="bi bi-pause-circle me-2 text-info"></i>Desactivar</a></li>
+                    <li><a class="dropdown-item" href="#" data-url="{% url 'producto_toggle_activo' p.pk %}" data-nombre="{{ p.nombre }}" onclick="confirmarToggle(this.dataset.url, this.dataset.nombre, 'desactivar'); return false;"><i class="bi bi-pause-circle me-2 text-info"></i>Desactivar</a></li>
                     {% else %}
-                    <li><a class="dropdown-item" href="#" onclick="confirmarToggle('{% url 'producto_toggle_activo' p.pk %}', '{{ p.nombre|escapejs }}', 'activar')"><i class="bi bi-play-circle me-2 text-success"></i>Activar</a></li>
-                    {% endif %}
+                  <li><a class="dropdown-item" href="#" data-url="{% url 'producto_toggle_activo' p.pk %}" data-nombre="{{ p.nombre }}" onclick="confirmarToggle(this.dataset.url, this.dataset.nombre, 'activar'); return false;"><i class="bi bi-play-circle me-2 text-success"></i>Activar</a></li>                    {% endif %}
                   </ul>
                 </div>
               </div>
@@ -452,7 +494,7 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table align-middle mb-0 inv-table" id="tabla-codigos">
+          <table class="cys-inv-table table align-middle mb-0 inv-table w-100" id="tabla-codigos">
             <thead>
               <tr>
                 <th>#</th>

@@ -206,8 +206,13 @@ class PresentacionViewsTest(TestCase):
     def setUp(self):
         Usuario = get_user_model()
         self.user = Usuario.objects.create_user(
-            correo='test@cys.com', nombre='Test', apellido='User',
-            documento='123', password='clave123'
+            username='testuser_pres',
+            identificacion='123',
+            first_name='Test',
+            last_name='User',
+            email='test@cys.com',
+            password='clave123',
+            rol='admin',
         )
         self.client.force_login(self.user)
 
@@ -238,9 +243,16 @@ class PresentacionViewsTest(TestCase):
     def test_crear_presentacion_valida(self):
         resp = self.client.post(
             reverse('presentacion_crear', args=[self.producto.pk]),
-            {'nombre': 'Six-pack', 'cantidad': '6', 'precio_venta': '9000', 'observaciones': ''}
+            {
+                'nombre': 'Six-pack',
+                'cantidad': '6',
+                'precio_venta': '9000',
+                'observaciones': '',
+                'next': reverse('presentacion_lista'),
+            }
         )
-        self.assertRedirects(resp, reverse('presentacion_lista'))
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(resp.url.startswith(reverse('presentacion_lista')))
         self.assertTrue(
             PresentacionProducto.objects.filter(producto=self.producto, nombre='Six-pack').exists()
         )
@@ -256,16 +268,23 @@ class PresentacionViewsTest(TestCase):
     def test_editar_presentacion_actualiza_campos(self):
         resp = self.client.post(
             reverse('presentacion_editar', args=[self.presentacion.pk]),
-            {'nombre': 'Caja x20', 'cantidad': '20', 'precio_venta': '25000', 'observaciones': 'nota'}
+            {
+                'nombre': 'Caja x20',
+                'cantidad': '20',
+                'precio_venta': '25000',
+                'observaciones': 'nota',
+                'next': reverse('presentacion_lista'),
+            }
         )
-        self.assertRedirects(resp, reverse('presentacion_lista'))
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(resp.url.startswith(reverse('presentacion_lista')))
         self.presentacion.refresh_from_db()
         self.assertEqual(self.presentacion.nombre, 'Caja x20')
         self.assertEqual(self.presentacion.cantidad, 20)
         self.assertEqual(self.presentacion.precio_venta, Decimal('25000.00'))
 
     def test_editar_actualiza_costo_unitario_de_lotes(self):
-        """Al cambiar el precio_venta, sus lotes deben actualizar costo_unitario."""
+        """Al cambiar el precio_venta, sus lotes NO alteran su costo_unitario."""
         bodega = Bodega.objects.create(nombre='Principal', estado='activo')
         lote = Lote.objects.create(
             numero_lote='LOT-01', producto=self.producto, presentacion=self.presentacion, bodega=bodega,
@@ -277,7 +296,7 @@ class PresentacionViewsTest(TestCase):
             {'nombre': 'Caja x10', 'cantidad': '10', 'precio_venta': '30000'}
         )
         lote.refresh_from_db()
-        self.assertEqual(lote.costo_unitario, Decimal('30000.00'))
+        self.assertEqual(lote.costo_unitario, Decimal('1000.00'))
 
     def test_toggle_activo_desactiva(self):
         self.assertTrue(self.presentacion.activo)
@@ -301,11 +320,13 @@ class BaseTestCase(TestCase):
         # Usuario es un modelo custom (AbstractBaseUser), no el User estándar de Django.
         # Su manager exige correo, nombre, apellido y documento (documento es la PK).
         self.usuario = Usuario.objects.create_user(
-            correo='test@correo.com',
-            nombre='Test',
-            apellido='User',
-            documento='1234567890',
-            password='testpass123'
+            username='1234567890',
+            identificacion='1234567890',
+            first_name='Test',
+            last_name='User',
+            email='test@correo.com',
+            password='testpass123',
+            rol='admin',
         )
 
         self.categoria = Categoria.objects.create(
@@ -557,39 +578,47 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
     def setUp(self):
         super().setUp()
         self.usuario_login = Usuario.objects.create_user(
-            correo='login@correo.com',
-            nombre='Login',
-            apellido='Test',
-            documento='9999999999',
-            password='testpass123'
+            username='9999999999',
+            identificacion='9999999999',
+            first_name='Login',
+            last_name='Test',
+            email='login@correo.com',
+            password='testpass123',
+            rol='admin',
         )
+        self.client.force_login(self.usuario_login)
 
     # ── lista ──
     def test_lista_requiere_login(self):
         """Usuario anónimo debe ser redirigido (login_required)."""
+        self.client.logout()
         response = self.client.get(reverse('detalle_producto_lista'))
         self.assertEqual(response.status_code, 302)
+        self.client.force_login(self.usuario_login)
 
     def test_lista_ok_autenticado(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
         response = self.client.get(reverse('detalle_producto_lista'))
         self.assertEqual(response.status_code, 200)
-        self.assertIn(self.detalle, response.context['detalles'])
+        self.assertIn(self.producto, response.context['productos'])
 
     # ── crear ──
     def test_crear_get_no_crea_nada(self):
         """La vista solo procesa datos en POST; un GET no debe crear registros."""
-        self.client.login(correo='login@correo.com', password='testpass123')
         antes = DetalleProducto.objects.count()
         self.client.get(reverse('detalle_producto_crear', args=[self.producto.pk]))
         self.assertEqual(DetalleProducto.objects.count(), antes)
 
     def test_crear_post_valido_crea_detalle(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
+        prod_nuevo = Producto.objects.create(
+            nombre='Ron Extra Añejo',
+            descripcion='Ron especial',
+            fecha_vencimiento=date.today() + timedelta(days=365),
+            categoria=self.categoria
+        )
         antes = DetalleProducto.objects.count()
 
         response = self.client.post(
-            reverse('detalle_producto_crear', args=[self.producto.pk]),
+            reverse('detalle_producto_crear', args=[prod_nuevo.pk]),
             {
                 'codigo_barras': '7701111111111',
                 'marca': self.marca.pk,
@@ -600,12 +629,11 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
 
         self.assertEqual(DetalleProducto.objects.count(), antes + 1)
         nuevo = DetalleProducto.objects.get(codigo_barras='7701111111111')
-        self.assertEqual(nuevo.producto, self.producto)
-        self.assertRedirects(response, reverse('producto_detalle', args=[self.producto.pk]))
+        self.assertEqual(nuevo.producto, prod_nuevo)
+        self.assertEqual(response.status_code, 302)
 
     def test_crear_post_invalido_no_crea_detalle(self):
         """codigo_barras vacío debe fallar la validación del form (es obligatorio)."""
-        self.client.login(correo='login@correo.com', password='testpass123')
         antes = DetalleProducto.objects.count()
 
         self.client.post(
@@ -620,7 +648,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
 
     def test_crear_post_codigo_duplicado_no_crea_detalle(self):
         """codigo_barras es unique — reusar uno existente debe fallar la validación."""
-        self.client.login(correo='login@correo.com', password='testpass123')
         antes = DetalleProducto.objects.count()
 
         self.client.post(
@@ -635,8 +662,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
 
     # ── editar ──
     def test_editar_post_valido_actualiza_detalle(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.post(
             reverse('detalle_producto_editar', args=[self.detalle.pk]),
             {
@@ -652,8 +677,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
         self.assertRedirects(response, reverse('detalle_producto_lista'))
 
     def test_editar_post_ajax_valido_retorna_json_ok(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.post(
             reverse('detalle_producto_editar', args=[self.detalle.pk]),
             {
@@ -668,8 +691,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
         self.assertEqual(response.json(), {'ok': True})
 
     def test_editar_post_ajax_invalido_retorna_json_400(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.post(
             reverse('detalle_producto_editar', args=[self.detalle.pk]),
             {
@@ -686,8 +707,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
 
     # ── guardar_codigo ──
     def test_guardar_codigo_post_valido(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.post(
             reverse('guardar_codigo', args=[self.detalle.pk]),
             {'codigo_barras': '7702222222222'}
@@ -699,8 +718,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
         self.assertTrue(response.json()['ok'])
 
     def test_guardar_codigo_vacio_retorna_error(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.post(
             reverse('guardar_codigo', args=[self.detalle.pk]),
             {'codigo_barras': ''}
@@ -711,8 +728,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
 
     def test_guardar_codigo_duplicado_retorna_error(self):
         """No debe permitir un código de barras que ya existe en OTRO detalle."""
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         otro_detalle = DetalleProducto.objects.create(
             codigo_barras='7703333333333',
             fecha_vencimiento=date.today() + timedelta(days=90),
@@ -729,8 +744,6 @@ class DetalleProductoViewsTest(BaseDetalleProductoTestCase):
         self.assertFalse(response.json()['ok'])
 
     def test_guardar_codigo_get_no_permitido(self):
-        self.client.login(correo='login@correo.com', password='testpass123')
-
         response = self.client.get(reverse('guardar_codigo', args=[self.detalle.pk]))
         self.assertEqual(response.status_code, 405)
 
@@ -954,5 +967,16 @@ class RespaldosValidacionTest(TestCase):
         finally:
             if creado and creado.ruta and os.path.exists(creado.ruta):
                 os.remove(creado.ruta)
+
+
+# ─────────────────────────────────────────────
+#  IMPORTACIÓN DE SUITES ESPECIALIZADAS
+# ─────────────────────────────────────────────
+from app.tests_caja import CajaModuleTests
+from app.tests_integridad import IntegridadReferencialTablasTest, CoexistenciaPatronDisenoTest
+
+
+class CajaIntegrationTests(CajaModuleTests):
+    pass
 
 

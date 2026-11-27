@@ -9,6 +9,124 @@
 }
 
 /* ============================================================
+   LADO DEL ASIDE (izquierda / derecha)
+   - aside.js alterna offcanvas-end / offcanvas-start y pone
+     data-aside-lado="izquierda|derecha" en <html>
+   - Se reinician left/right para que ningún CSS previo lo desalinee
+   ============================================================ */
+#sidebarRight.offcanvas-end {
+  left: auto !important;
+  right: 0 !important;
+}
+#sidebarRight.offcanvas-start {
+  left: 0 !important;
+  right: auto !important;
+}
+
+/* Animación al cambiar de lado con el aside abierto */
+@keyframes cysSbFlipIzq {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes cysSbFlipDer {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+#sidebarRight.cys-sb-flip.offcanvas-start { animation: cysSbFlipIzq .3s ease; }
+#sidebarRight.cys-sb-flip.offcanvas-end   { animation: cysSbFlipDer .3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  #sidebarRight.cys-sb-flip { animation: none !important; }
+}
+
+/* ============================================================
+   ASIDE A LA IZQUIERDA — espejo del layout de base.css
+   base.css (aside a la derecha) hace esto:
+     body.sidebar-open .cys-header/.cys-subnav { right: offset }
+     body.sidebar-open .cys-main { width: calc(100% - offset) }
+   Aquí se espeja SOLO cuando el aside está a la izquierda.
+   IMPORTANTE: el hueco se descuenta UNA sola vez, en .cys-main
+   (no en #cys-page-wrap; si no, se descuenta dos veces y la
+   página se corta a la derecha).
+   --sidebar-offset lo publica aside.js (290px / 84px).
+   ============================================================ */
+
+/* Borde y sombra del aside del lado del contenido */
+html[data-aside-lado="izquierda"] #sidebarRight {
+  border-left: none !important;
+  border-right: 1px solid var(--azul-borde) !important;
+  box-shadow: none !important;
+}
+html[data-aside-lado="izquierda"] #sidebarRight.show {
+  box-shadow: 8px 0 32px rgba(0,0,0,.6) !important;
+}
+
+/* Header y franja del título: el hueco va a la izquierda */
+html[data-aside-lado="izquierda"] .cys-header,
+html[data-aside-lado="izquierda"] .cys-subnav {
+  transition: left .3s ease, right .3s ease;
+}
+html[data-aside-lado="izquierda"] body.sidebar-open .cys-header,
+html[data-aside-lado="izquierda"] body.sidebar-open .cys-subnav {
+  left: var(--sidebar-offset, 290px);
+  right: 0;
+}
+
+/* Contenido: margen a la izquierda y ancho restante */
+html[data-aside-lado="izquierda"] .cys-main {
+  transition: width .3s ease, margin-left .3s ease;
+  /* La barra de scroll vuelve a la derecha (en base.css va a la izquierda
+     para no chocar con el aside cuando está a la derecha) */
+  direction: ltr;
+}
+html[data-aside-lado="izquierda"] body.sidebar-open .cys-main {
+  width: calc(100% - var(--sidebar-offset, 290px));
+  margin-left: var(--sidebar-offset, 290px);
+  margin-right: 0;
+}
+
+/* Botón de las tres rayas: pegado al lado donde está el aside */
+html[data-aside-lado="izquierda"] .cys-subnav {
+  justify-content: flex-start;
+  gap: 1rem;
+}
+html[data-aside-lado="izquierda"] .cys-subnav > .d-flex {
+  order: -1;
+}
+
+/* Botón flotante de accesibilidad: se corre para no quedar encima
+   del aside cuando está abierto a la izquierda.
+   (Botellín se coloca solo desde botellin.js: con el aside a la
+   izquierda se queda a la derecha, no necesita regla aquí.) */
+@media (min-width: 769px) {
+  html[data-aside-lado="izquierda"] body.sidebar-open .cys-a11y-toggle {
+    left: calc(24px + var(--sidebar-offset, 290px));
+  }
+  html[data-aside-lado="izquierda"] body.sidebar-open .cys-a11y-panel {
+    left: calc(24px + var(--sidebar-offset, 290px));
+  }
+  html[data-aside-lado="izquierda"] .cys-a11y-toggle {
+    transition: left .3s ease, transform .3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .22s ease;
+  }
+  html[data-aside-lado="izquierda"] .cys-a11y-panel {
+    transition: opacity .2s ease, transform .2s ease, left .3s ease;
+  }
+}
+
+/* Móvil: el aside tapa la pantalla, no se deja hueco (igual que base.css) */
+@media (max-width: 768px) {
+  html[data-aside-lado="izquierda"] body.sidebar-open .cys-header,
+  html[data-aside-lado="izquierda"] body.sidebar-open .cys-subnav {
+    left: 0 !important;
+    right: 0 !important;
+  }
+  html[data-aside-lado="izquierda"] body.sidebar-open .cys-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* ============================================================
    USUARIO — WRAPPER Y BOTÓN
    ============================================================ */
 .cys-sb-user-wrap {
@@ -523,8 +641,9 @@
 
 /* ============================================================
    MODO MINI — SOLO ÍCONOS (Prioridad absoluta con .cys-sb-mini)
+   Funciona igual con el aside a la izquierda o a la derecha.
    ============================================================ */
-div.offcanvas.offcanvas-end.cys-sb-mini {
+div.offcanvas.cys-sb-mini {
   width: 84px !important;
 }
 
@@ -534,6 +653,32 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 
 .offcanvas.cys-sb-mini .cys-sb-brand > div {
   display: none !important;
+}
+
+/* Header en modo compacto: en 84px no caben logo + « + × en una fila.
+   El logo ocupa la primera fila y los dos botones van juntos debajo.
+   (Los botones son hijos directos de .cys-sb-header, sin contenedor.) */
+.offcanvas.cys-sb-mini .cys-sb-header {
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: .4rem .15rem !important;
+  padding-left: .25rem !important;
+  padding-right: .25rem !important;
+}
+
+.offcanvas.cys-sb-mini .cys-sb-header .cys-sb-brand {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.offcanvas.cys-sb-mini .cys-sb-header .cys-sb-mini-toggle,
+.offcanvas.cys-sb-mini .cys-sb-header .cys-sb-close {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: .35rem !important;
 }
 
 .offcanvas.cys-sb-mini .cys-sb-label,
@@ -596,7 +741,9 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 }
 
 /* ============================================================
-   INVENTARIO / DESPLEGABLES — MODO MINI (flyout hacia la izquierda)
+   INVENTARIO / DESPLEGABLES — MODO MINI (flyout hacia el lado libre)
+   - Aside a la derecha  → el flyout sale hacia la izquierda.
+   - Aside a la izquierda → el flyout sale hacia la derecha.
    - El flyout SOLO aparece con hover. Que un grupo esté ".abierto"
      (por la URL actual) no lo muestra en modo compacto.
    - Animación: fade + deslizamiento con visibility, sin max-height.
@@ -623,6 +770,10 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   left: 3px;
 }
 
+/* Dirección de entrada del flyout (derecha: viene de la derecha; izquierda: de la izquierda) */
+.offcanvas.cys-sb-mini { --fly-shift: 8px; }
+html[data-aside-lado="izquierda"] .offcanvas.cys-sb-mini { --fly-shift: -8px; }
+
 /* Estado cerrado */
 .offcanvas.cys-sb-mini .cys-sb-submenu {
   position: fixed !important;
@@ -644,7 +795,7 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
   opacity: 0 !important;
   visibility: hidden !important;
-  transform: translateX(8px) !important;
+  transform: translateX(var(--fly-shift, 8px)) !important;
   pointer-events: none !important;
   transition: opacity .1s ease, transform .1s ease, visibility 0s linear .1s !important;
 }
@@ -675,14 +826,21 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
 }
 
 /* Puente invisible entre el flyout y el ícono, para que el hover no se corte
-   al cruzar el hueco (el flyout es hijo del wrap, así que cuenta como hover) */
+   al cruzar el hueco (el flyout es hijo del wrap, así que cuenta como hover).
+   Aside a la derecha → el puente va en el borde derecho del flyout.
+   Aside a la izquierda → el puente va en el borde izquierdo del flyout. */
 .offcanvas.cys-sb-mini .cys-sb-submenu::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
   left: 100%;
+  right: auto;
   width: 14px;
+}
+html[data-aside-lado="izquierda"] .offcanvas.cys-sb-mini .cys-sb-submenu::after {
+  left: auto;
+  right: 100%;
 }
 
 /* ============================================================
@@ -720,11 +878,18 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   border-right-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
-/* Los tooltips del aside salen a la izquierda: la flecha usa border-left */
+/* Aside a la derecha: el tooltip sale a la izquierda y la flecha usa border-left */
 .tooltip.cys-tip-ayuda[data-popper-placement^="left"] .tooltip-arrow::before,
 .tooltip.cys-tip-config[data-popper-placement^="left"] .tooltip-arrow::before,
 .tooltip.cys-tip-logout[data-popper-placement^="left"] .tooltip-arrow::before {
   border-left-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
+}
+
+/* Aside a la izquierda: el tooltip sale a la derecha y la flecha usa border-right */
+.tooltip.cys-tip-ayuda[data-popper-placement^="right"] .tooltip-arrow::before,
+.tooltip.cys-tip-config[data-popper-placement^="right"] .tooltip-arrow::before,
+.tooltip.cys-tip-logout[data-popper-placement^="right"] .tooltip-arrow::before {
+  border-right-color: color-mix(in srgb, var(--azul-oscuro) 94%, transparent) !important;
 }
 
 /* ============================================================
@@ -769,6 +934,7 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   font-weight: 600;
   letter-spacing: .05em;
 }
+
 /* ============================================================
    SCROLL DEL ASIDE (texto agrandado / pantallas bajas)
    ============================================================ */
@@ -808,6 +974,7 @@ div.offcanvas.offcanvas-end.cys-sb-mini {
   background: color-mix(in srgb, var(--azul-claro) 30%, transparent);
   border-radius: 6px;
 }
+
 /* Submenú abierto: altura en rem para que crezca con el tamaño del texto */
 .cys-sb-submenu.abierto,
 .cys-sb-inventario-wrap:hover .cys-sb-submenu {

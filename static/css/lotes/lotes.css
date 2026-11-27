@@ -1,8 +1,31 @@
 /* ══════════════════════════════════════════
    REGISTRAR LOTE — estilos extraídos del inline
+   Los textos pasan por tokens propios (--lt-*).
+   Se derivan de --texto (variable del sistema de temas de base.js),
+   así se adaptan solos a cualquier tema (oscuro, claro, sepia...).
    ══════════════════════════════════════════ */
 
-.precio-hint { font-size: .72rem; color: rgba(220,232,242,0.45); margin-top: 4px; }
+:root {
+  --lt-titulo:      var(--texto, #dce8f2);                                   /* títulos */
+  --lt-label:       color-mix(in srgb, var(--texto, #dce8f2) 65%, transparent); /* etiquetas de tarjetas */
+  --lt-sub:         color-mix(in srgb, var(--texto, #dce8f2) 55%, transparent); /* subtítulos / hints */
+  --lt-hint:        color-mix(in srgb, var(--texto, #dce8f2) 50%, transparent); /* hint dentro de label */
+  --lt-num:         var(--texto, #ffffff);                                   /* cifras de las tarjetas */
+  --lt-input:       var(--texto, #c8d6e5);                                   /* texto de campos y desplegable */
+  --lt-date:        var(--texto, #ffffff);                                   /* texto de inputs de fecha */
+  --lt-placeholder: color-mix(in srgb, var(--texto, #c8d6e5) 50%, transparent);
+  --lt-error:       #E0554F;
+  --lt-date-icon-filter: invert(1);                                          /* ícono del calendario */
+}
+
+/* El ícono del calendario sí necesita saber si el tema es claro */
+html[data-theme="claro"],
+html[data-theme="light"],
+html[data-theme="sepia"] {
+  --lt-date-icon-filter: none;
+}
+
+.precio-hint { font-size: .72rem; color: var(--lt-sub); margin-top: 4px; }
 .section-divider { border: none; border-top: 1px solid rgba(77,168,218,0.14); margin: 1rem 0; }
 .precio-prefix {
   background: rgba(77,168,218,.14);
@@ -17,12 +40,12 @@
 }
 .inv-input-precio { border-radius: 0 8px 8px 0 !important; border-left: none !important; }
 
-.collapse-panel { background: #1e3f5e; border: 1px solid rgba(77,168,218,0.18); border-radius: 10px; }
+.collapse-panel { background: var(--inv-card2, #1e3f5e); border: 1px solid rgba(77,168,218,0.18); border-radius: 10px; }
 
 /* Inputs de fecha (registro de lote) */
-.inv-input[type="date"] { color: #ffffff !important; }
+.inv-input[type="date"] { color: var(--lt-date) !important; }
 .inv-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+  filter: var(--lt-date-icon-filter);
   cursor: pointer;
 }
 input[type="datetime-local"],
@@ -30,7 +53,13 @@ input[type="date"],
 input[type="time"] { color-scheme: light; }
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+input[type="time"]::-webkit-calendar-picker-indicator { filter: var(--lt-date-icon-filter); cursor: pointer; }
+
+/* Placeholders de los campos del formulario de lote */
+.inv-input::placeholder {
+  color: var(--lt-placeholder);
+  opacity: 1;
+}
 
 /* Dropdown "presentación" del formulario de lote */
 .btn#presentacion-lote-btn,
@@ -38,7 +67,7 @@ button#presentacion-lote-btn {
   background-color: var(--inv-card2) !important;
   background-image: none !important;
   border: 1px solid rgba(77, 168, 218, 0.35) !important;
-  color: #c8d6e5 !important;
+  color: var(--lt-input) !important;
   font-size: .9rem !important;
   border-radius: 8px !important;
   padding: .55rem 1rem !important;
@@ -50,7 +79,7 @@ button#presentacion-lote-btn {
 .btn#presentacion-lote-btn.show {
   background-color: var(--inv-card2) !important;
   border-color: var(--inv-azul) !important;
-  color: #c8d6e5 !important;
+  color: var(--lt-input) !important;
   box-shadow: 0 0 0 2px rgba(77, 168, 218, .2) !important;
 }
 #presentacion-lote-btn + .dropdown-menu {
@@ -63,19 +92,19 @@ button#presentacion-lote-btn {
 }
 
 .lote-titulo {
-  color: #dce8f2;
+  color: var(--lt-titulo);
   letter-spacing: .08em;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.1rem;
 }
 
 .lote-subtitulo {
-  color: rgba(220, 232, 242, 0.45);
+  color: var(--lt-sub);
   font-size: .7rem;
 }
 
 .lote-label-hint {
-  color: rgba(220, 232, 242, 0.38);
+  color: var(--lt-hint);
   font-size: .72rem;
   text-transform: none;
   letter-spacing: 0;
@@ -110,9 +139,9 @@ button.lote-btn-crear:active,
 
 /* Dropdown presentación lote — botón */
 .lote-presentacion-btn {
-  background: #0a1e38;
+  background: var(--inv-card2, #0a1e38);
   border: 1px solid rgba(77, 168, 218, .35);
-  color: #c8d6e5;
+  color: var(--lt-input);
   font-size: .9rem;
   border-radius: 8px;
   padding: .55rem 1rem;
@@ -120,7 +149,7 @@ button.lote-btn-crear:active,
 
 /* Dropdown presentación lote — menú */
 .lote-presentacion-menu {
-  background: #0d1b2a;
+  background: var(--inv-card2, #0d1b2a);
   border: 1px solid rgba(0, 54, 83, .46);
   max-height: 320px;
   overflow-y: auto;
@@ -132,23 +161,28 @@ button.lote-btn-crear:active,
   letter-spacing: .05em;
 }
 .lote-presentacion-menu .dropdown-item {
-  color: #c8d6e5;
+  color: var(--lt-input);
   font-size: .85rem;
   padding-left: 1.5rem;
+}
+.lote-presentacion-menu .dropdown-item:hover,
+.lote-presentacion-menu .dropdown-item:focus {
+  background: var(--azul-glow, rgba(77, 168, 218, 0.15));
+  color: var(--lt-input);
 }
 
 /* Stat mini — panel derecho */
 .lote-stat-label {
-  color: rgba(220, 232, 242, 0.5);
+  color: var(--lt-label);
   font-size: .68rem;
   letter-spacing: .05em;
 }
 .lote-stat-value-success {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  color: #ffffff;
+  color: var(--lt-num);
 }
 .lote-stat-value-info {
-  color: #ffffff;
+  color: var(--lt-num);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .lote-stat-mini--info {
@@ -157,7 +191,7 @@ button.lote-btn-crear:active,
 
 /* Panel gráfico proveedores */
 .lote-panel-titulo {
-  color: #dce8f2;
+  color: var(--lt-titulo);
   font-size: .75rem;
   letter-spacing: .05em;
 }
@@ -335,9 +369,9 @@ button.lote-btn-crear:active,
 }
 .lote-buscador-input {
   width: 100%;
-  background: #0a1e38;
+  background: var(--inv-card2, #0a1e38);
   border: 1px solid rgba(77, 168, 218, .35);
-  color: #c8d6e5;
+  color: var(--lt-input);
   border-radius: 6px;
   padding: .45rem .75rem .45rem 2.1rem;
   font-size: .85rem;
@@ -347,15 +381,15 @@ button.lote-btn-crear:active,
   border-color: #4DA8DA;
 }
 .lote-buscador-input::placeholder {
-  color: rgba(200, 214, 229, .45);
+  color: var(--lt-placeholder);
 }
 .lote-sin-resultados {
-  color: rgba(220, 232, 242, .5);
+  color: var(--lt-label);
 }
 
 /* ── Error de validación en rojo, debajo del campo ── */
 .aviso-validacion--inline {
-  color: #F2938F;
+  color: var(--lt-error);
   font-size: .75rem;
   margin-top: .35rem;
 }
@@ -460,4 +494,4 @@ button.lote-btn-crear:active,
 .exp-wrap .exp-menu .dropdown-item i { font-size: 17px; }
 .exp-wrap .exp-ico-excel { color: #22c55e !important; }
 .exp-wrap .exp-ico-pdf   { color: #ef4444 !important; }
-.exp-wrap .exp-ico-print { color: #2f7fd1 !important; }   
+.exp-wrap .exp-ico-print { color: #2f7fd1 !important; }

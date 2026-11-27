@@ -1822,3 +1822,217 @@ body,
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
   border-color: color-mix(in srgb, var(--azul-claro) 60%, transparent) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ESTILO UNIFICADO DE DATATABLES (BASADO EN PROVEEDORES .cys-inv-table)
+   Uniformidad visual en todos los módulos del sistema CYS
+   ══════════════════════════════════════════════════════════════════════ */
+
+.cys-inv-table,
+table.dataTable.cys-inv-table,
+.table.cys-inv-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.86rem !important;
+  background: transparent !important;
+  margin-bottom: 0 !important;
+  color: var(--texto) !important;
+}
+
+/* Encabezados de Tabla Unificados */
+.cys-inv-table thead,
+table.dataTable thead {
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+}
+
+.cys-inv-table thead th,
+table.dataTable thead th,
+table.dataTable thead td {
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  color: var(--azul-claro) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  padding: 0.85rem 0.95rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  border: none !important;
+  border-bottom: 2px solid var(--azul-claro) !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* Cuerpo de Tabla y Filas */
+.cys-inv-table tbody,
+table.dataTable tbody {
+  background: transparent !important;
+}
+
+.cys-inv-table tbody tr,
+table.dataTable tbody tr {
+  background: var(--fondo) !important;
+  border: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 10%, transparent) !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.cys-inv-table tbody tr:nth-child(even),
+table.dataTable tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--texto) 1.5%, var(--fondo)) !important;
+}
+
+.cys-inv-table tbody tr:hover,
+table.dataTable tbody tr:hover,
+.cys-inv-table tbody tr:hover td,
+table.dataTable tbody tr:hover td {
+  background: color-mix(in srgb, var(--azul-claro) 9%, transparent) !important;
+  color: var(--texto) !important;
+}
+
+/* Celdas */
+.cys-inv-table tbody td,
+table.dataTable tbody td {
+  vertical-align: middle !important;
+  color: color-mix(in srgb, var(--texto) 90%, transparent) !important;
+  padding: 0.7rem 0.95rem !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  border: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  background: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* Paginación y Controles DataTables Unificados */
+div.dataTables_wrapper,
+div.dt-container {
+  color: var(--texto) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  padding-top: 0.4rem;
+}
+
+div.dataTables_wrapper .dataTables_info,
+div.dt-container .dt-info {
+  color: var(--texto-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding-top: 0.75rem !important;
+}
+
+/* Buscador nativo DataTables */
+div.dataTables_wrapper .dataTables_filter input,
+div.dt-container .dt-search input {
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid var(--azul-borde) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  font-size: 0.85rem !important;
+  outline: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+div.dataTables_wrapper .dataTables_filter input:focus,
+div.dt-container .dt-search input:focus {
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--azul-claro) 30%, transparent) !important;
+}
+
+div.dataTables_wrapper .dataTables_filter label,
+div.dt-container .dt-search label {
+  color: var(--texto-muted) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+}
+
+/* Selector de longitud (page length) */
+div.dataTables_wrapper .dataTables_length select,
+div.dt-container .dt-length select {
+  background-color: var(--fondo-card2) !important;
+  border: 1px solid var(--azul-borde) !important;
+  color: var(--texto) !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-size: 0.82rem !important;
+  outline: none !important;
+}
+
+div.dataTables_wrapper .dataTables_length label,
+div.dt-container .dt-length label {
+  color: var(--texto-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+}
+
+/* Paginador (Botones de páginas) */
+div.dataTables_wrapper .dataTables_paginate,
+div.dt-container .dt-paging {
+  padding-top: 0.65rem !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 3px !important;
+}
+
+div.dataTables_wrapper .dataTables_paginate .paginate_button,
+div.dt-container .dt-paging button.dt-paging-button,
+div.dt-container .dt-paging .pagination .page-link {
+  background: color-mix(in srgb, var(--azul-claro) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--azul-claro) 20%, transparent) !important;
+  color: var(--azul-claro) !important;
+  border-radius: 7px !important;
+  padding: 5px 11px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  margin: 0 2px !important;
+}
+
+div.dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+div.dt-container .dt-paging button.dt-paging-button:hover,
+div.dt-container .dt-paging .pagination .page-link:hover {
+  background: var(--azul-claro) !important;
+  color: var(--fondo) !important;
+  border-color: var(--azul-claro) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+}
+
+div.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+div.dt-container .dt-paging button.dt-paging-button.current,
+div.dt-container .dt-paging .pagination .page-item.active .page-link {
+  background: var(--azul-claro) !important;
+  border-color: var(--azul-claro) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--azul-claro) 35%, transparent) !important;
+}
+
+div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+div.dt-container .dt-paging button.dt-paging-button.disabled,
+div.dt-container .dt-paging .pagination .page-item.disabled .page-link {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--texto-muted) !important;
+  box-shadow: none !important;
+}
+
+/* Iconos de Ordenamiento (DataTables Header Arrows) */
+table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order:after,
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_desc:after {
+  opacity: 0.5 !important;
+  color: var(--azul-claro) !important;
+}
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_desc:after {
+  opacity: 1 !important;
+  color: var(--azul-claro) !important;
+}

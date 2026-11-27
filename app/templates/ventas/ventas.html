@@ -86,7 +86,7 @@
       </a>
       <a href="{% url 'ventas_dia' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
          title="Ventas del Día"
-         style="background:#ffffff !important; border:1px solid #cbd5e1 !important; color:#0f172a !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-bar-chart me-1"></i> Ventas del día
       </a>
       <a href="{% url 'caja' %}" class="btn btn-sm fw-bold cys-pos-nav-btn cys-pos-nav-btn--soft"
@@ -409,8 +409,9 @@
             </div>
 
             <div class="d-flex gap-2">
-              <button type="submit" class="btn flex-fill fw-bold cys-btn-checkout" id="btnRegistrar" disabled
-                      data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cobrar Venta">
+              <button type="submit" class="btn flex-fill fw-bold" id="btnRegistrar" disabled
+                      data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Cobrar Venta"
+                      style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:10px !important; padding:0.75rem 1.25rem !important; font-weight:700 !important; font-size:0.95rem !important; box-shadow:0 4px 14px rgba(168,35,21,0.28) !important; transition:all 0.2s ease !important;">
                 <i class="bi bi-check-circle-fill me-1"></i> Registrar Venta
               </button>
               <button type="button" class="btn fw-bold" id="btnCancelarVenta"
@@ -1266,21 +1267,33 @@ function crearTarjetaProducto(p) {
     stockBadgeHtml = `<span class="cys-stock-badge cys-stock-badge--ok"><i class="bi bi-check-circle-fill"></i>${stockVal.toLocaleString('es-CO')} en stock</span>`;
   }
 
-  const precioStr = precioVal > 0 
-    ? '$' + Math.round(precioVal).toLocaleString('es-CO') 
+  let presentaciones = [];
+  if (p.dataset.presentaciones) {
+    try {
+      presentaciones = JSON.parse(p.dataset.presentaciones);
+    } catch(e) {}
+  }
+
+  let precioMostrar = precioVal;
+  if (precioMostrar <= 0 && presentaciones.length > 0) {
+    precioMostrar = parseFloat(presentaciones[0].precio) || 0;
+  }
+
+  const precioStr = precioMostrar > 0 
+    ? '$' + Math.round(precioMostrar).toLocaleString('es-CO') 
     : '<span style="font-size:0.75rem; color:var(--texto-muted);">Sin precio</span>';
 
   const bloqueado = (stockVal <= 0 || !CAJA_ABIERTA);
   const btnTitle = !CAJA_ABIERTA
     ? 'Caja bloqueada — Abre caja para vender'
-    : (stockVal <= 0 ? 'Sin stock en bodega' : 'Ver presentaciones y agregar');
+    : (stockVal <= 0 ? 'Sin stock en bodega' : (presentaciones.length > 1 ? 'Ver presentaciones' : 'Agregar a la venta'));
 
   div.innerHTML = `
     <div class="cys-prod-card-item ${bloqueado ? 'cys-prod-card-item--nostock' : ''}"
          style="${bloqueado ? 'cursor:not-allowed;' : ''}"
          data-prod-id="${p.dataset.id}"
          data-prod-nombre="${p.dataset.nombre}"
-         data-prod-precio="${p.dataset.precio}"
+         data-prod-precio="${precioMostrar}"
          data-prod-stock="${p.dataset.stock}"
          data-prod-pres-count="${presCount}">
       <div class="d-flex justify-content-between align-items-center w-100 gap-2 mb-2">
@@ -1291,11 +1304,11 @@ function crearTarjetaProducto(p) {
       </div>
       <div class="text-start w-100 mb-2 flex-grow-1">
         <div class="cys-prod-name" title="${p.dataset.nombre}">${p.dataset.nombre}</div>
-        <div class="cys-prod-sub">${presCount > 0 ? `${presCount} presentación${presCount > 1 ? 'es' : ''}` : 'Presentación única'}</div>
+        <div class="cys-prod-sub">${presentaciones.length > 1 ? `${presentaciones.length} presentaciones` : (presentaciones.length === 1 ? presentaciones[0].nombre : 'Presentación única')}</div>
       </div>
       <div class="cys-prod-card-footer d-flex justify-content-between align-items-center w-100">
         <div>
-          <div class="cys-prod-price-label">Precio base</div>
+          <div class="cys-prod-price-label">${presentaciones.length > 1 ? 'Precio desde' : 'Precio'}</div>
           <div class="cys-prod-price">${precioStr}</div>
         </div>
         <button type="button" class="btn btn-sm cys-prod-action-btn ${bloqueado ? 'disabled' : ''}" ${bloqueado ? 'disabled' : ''} title="${btnTitle}">
@@ -1304,7 +1317,7 @@ function crearTarjetaProducto(p) {
       </div>
     </div>`;
 
-  div.querySelector('.cys-prod-card-item').addEventListener('click', function() {
+  div.querySelector('.cys-prod-card-item').addEventListener('click', function(e) {
     if (!CAJA_ABIERTA) {
       mostrarToast('La caja está bloqueada. Debes abrir caja primero para vender.', 'warning');
       return;
@@ -1313,14 +1326,35 @@ function crearTarjetaProducto(p) {
       mostrarToast('Este producto no tiene stock disponible en bodega.', 'warning');
       return;
     }
-    cargarPresentaciones(
-      this.dataset.prodId,
-      this.dataset.prodNombre,
-      this.dataset.prodPrecio,
-      this.dataset.prodStock,
-      p.dataset.unidad,
-      p.dataset.presentaciones
-    );
+
+    // Si tiene más de una presentación, abrir la vista de presentaciones
+    if (presentaciones.length > 1) {
+      cargarPresentaciones(
+        p.dataset.id,
+        p.dataset.nombre,
+        precioMostrar,
+        stockVal,
+        p.dataset.unidad,
+        p.dataset.presentaciones
+      );
+      return;
+    }
+
+    // Si tiene exactamente 1 presentación, agregar directamente esa presentación al carrito
+    if (presentaciones.length === 1) {
+      const pres = presentaciones[0];
+      const presStock = parseInt(pres.stock, 10) || stockVal;
+      const presPrecio = parseFloat(pres.precio) || precioMostrar;
+      if (presStock <= 0) {
+        mostrarToast('Esta presentación no tiene stock disponible en bodega.', 'warning');
+        return;
+      }
+      agregarAlCarrito(p.dataset.id, pres.id, p.dataset.nombre, pres.nombre, presPrecio, presStock);
+      return;
+    }
+
+    // Si no tiene presentaciones registradas, agregar directamente como unidad
+    agregarAlCarrito(p.dataset.id, '', p.dataset.nombre, 'Unidad', precioMostrar, stockVal);
   });
   return div;
 }
@@ -1400,6 +1434,22 @@ function cargarPresentaciones(prodId, nombre, precio, stock, unidad, presJsonStr
 
   const renderPresList = (presList) => {
     lista.innerHTML = '';
+
+    // Si no hay presentaciones registradas pero hay stock del producto, permitir venta por Unidad
+    if (!presList || presList.length === 0) {
+      const stockNum = parseInt(stock, 10) || 0;
+      const precioNum = parseFloat(precio) || 0;
+      if (stockNum > 0) {
+        presList = [{
+          id: '',
+          nombre: 'Unidad',
+          unidades: 1,
+          stock: stockNum,
+          precio: precioNum
+        }];
+      }
+    }
+
     if (!presList || presList.length === 0) {
       lista.innerHTML = `
         <div class="text-center py-5">
@@ -1453,9 +1503,9 @@ function cargarPresentaciones(prodId, nombre, precio, stock, unidad, presJsonStr
           </button>
         </div>`;
 
-      if (tieneStock) {
+      if (tieneStock && CAJA_ABIERTA) {
         card.addEventListener('click', () => {
-          agregarAlCarrito(prodId, p.id, nombre, p.nombre, pPrecio, pStock);
+          agregarAlCarrito(prodId, p.id || '', nombre, p.nombre, pPrecio, pStock);
         });
       }
       lista.appendChild(card);
@@ -1474,19 +1524,21 @@ function cargarPresentaciones(prodId, nombre, precio, stock, unidad, presJsonStr
       return r.json();
     })
     .then(data => {
-      if (data && data.presentaciones) {
+      if (data && data.presentaciones && data.presentaciones.length > 0) {
         renderPresList(data.presentaciones);
+      } else if (data && data.stock > 0) {
+        renderPresList([{
+          id: '',
+          nombre: 'Unidad',
+          unidades: 1,
+          stock: data.stock,
+          precio: data.precio || precio
+        }]);
       }
     })
     .catch(() => {
       if (!presentacionesLocales || presentacionesLocales.length === 0) {
-        lista.innerHTML = `
-          <div class="col-12 text-center py-4">
-            <div class="cys-empty-box">
-              <i class="bi bi-exclamation-triangle fs-2 d-block mb-2 text-warning"></i>
-              No se pudo sincronizar el stock del servidor.
-            </div>
-          </div>`;
+        renderPresList([]);
       }
     });
 }
@@ -1521,7 +1573,8 @@ function agregarAlCarrito(prodId, presId, nombreProd, nombrePres, precio, stockM
     mostrarToast('Este ítem no tiene stock disponible en bodega.', 'warning');
     return;
   }
-  const key  = `${prodId}-${presId}`;
+  const presKey = (presId !== undefined && presId !== null && presId !== '') ? presId : 'base';
+  const key  = `${prodId}-${presKey}`;
   const exist = carrito.find(i => i.key === key);
   if (exist) {
     if (exist.cantidad < stockMax) {
@@ -1534,10 +1587,10 @@ function agregarAlCarrito(prodId, presId, nombreProd, nombrePres, precio, stockM
     carrito.push({
       key,
       prodId,
-      presId,
+      presId: (presId !== undefined && presId !== null) ? presId : '',
       nombreProd,
       nombrePres,
-      precio: parseFloat(precio),
+      precio: parseFloat(precio) || 0,
       stockMax: parseInt(stockMax, 10),
       cantidad: 1
     });

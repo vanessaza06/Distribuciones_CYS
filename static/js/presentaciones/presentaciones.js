@@ -78,18 +78,20 @@ function inicializarDataTablePresentaciones() {
   }
 
     dtPres = $(tabla).DataTable({
-    paging: false,
+    paging: true,
+    pageLength: 10,
+    lengthMenu: [5, 10, 25, 50, 100],
     searching: true,
-    info: false,
+    info: true,
     ordering: true,
     order: [],                       // respeta el orden con el que llega desde Django
     autoWidth: false,
+    responsive: true,
     columnDefs: [
       { targets: 6, orderable: false, searchable: false }   // columna Acciones
     ],
     language: IDIOMA_PRES,
-    // r=procesando, t=tabla (sin buscador nativo, sin selector, sin info, sin paginación)
-    dom: 'rt'
+    dom: '<"row align-items-center mb-2"<"col-sm-6"l><"col-sm-6 text-end">>rt<"row align-items-center mt-3"<"col-sm-6"i><"col-sm-6 text-end"p>>'
   });
 
   // Los menús "⋯" usan position: fixed: se cierran al cambiar de página u ordenar

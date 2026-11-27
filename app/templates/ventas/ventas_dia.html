@@ -15,78 +15,73 @@
 {% block content %}
 <div class="cys-module-container p-3">
 
-  <!-- Action Header Banner Unificado -->
-  <div class="cys-module-banner">
+  <!-- Action Header Banner -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 p-3 rounded-3"
+       style="background:var(--fondo-card); border:1px solid var(--azul-borde, rgba(0,0,0,0.08));">
     <div>
-      <h3 class="fw-bold mb-1" style="color: var(--texto);">Resumen Diario de Ventas</h3>
-      <p class="small text-muted mb-0">Consolidado de transacciones, recaudos y flujo horario</p>
+      <h4 class="fw-bold mb-0" style="color: var(--texto);">Ventas del Día</h4>
+      <p class="small text-muted mb-0" style="font-size:0.8rem;">Resumen consolidado de operaciones y recaudos</p>
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'ventas' %}" class="btn btn-sm fw-bold" title="Volver al POS"
-         style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:999px; padding:.45rem 1.15rem;">
+         style="background:#a82315 !important; border:1px solid #a82315 !important; color:#ffffff !important; border-radius:999px !important; padding:0.45rem 1.25rem !important; font-weight:700 !important; box-shadow:0 2px 6px rgba(168,35,21,0.25) !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-arrow-left me-1"></i> Volver al POS
       </a>
       <a href="{% url 'caja' %}" class="btn btn-sm fw-bold" title="Control de Caja"
-         style="background:#ecfdf5; border:1px solid #86efac; color:#15803d; border-radius:999px; padding:.45rem 1.15rem;">
+         style="background:#fee2e2 !important; border:1px solid #fca5a5 !important; color:#b91c1c !important; border-radius:999px !important; padding:0.45rem 1.15rem !important; font-weight:600 !important; display:inline-flex !important; align-items:center !important; gap:0.45rem !important;">
         <i class="bi bi-cash-stack me-1"></i> Ir a Caja
       </a>
     </div>
   </div>
 
-  <!-- KPI Cards Grid Unificado con Altura Idéntica (SOLO VERDE Y ROJO) -->
-  <div class="row gx-3 gy-3 mb-4 align-items-stretch">
-
+  <!-- KPI Cards Grid Minimalista -->
+  <div class="row g-3 mb-4 align-items-stretch">
     <div class="col-12 col-md-4">
-      <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Transacciones</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-receipt"></i>
-          </div>
-          <div style="min-width:0; flex:1;">
-            <span class="cys-kpi-label" style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; min-height:1.8em; display:flex; align-items:center;">Transacciones</span>
-            <span style="font-size:1.75rem; font-weight:800; color:var(--texto); line-height:1.1;">{{ ventas|length }}</span>
-            <span style="font-size:.72rem; color:var(--cys-text-muted); display:block;">Ventas registradas hoy</span>
-          </div>
+          </span>
         </div>
+        <div class="cys-kpi-num-mini">{{ ventas|length }}</div>
+        <div class="cys-kpi-sub-mini">Ventas registradas hoy</div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Total Recaudado</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-cash-stack"></i>
-          </div>
-          <div style="min-width:0; flex:1;">
-            <span class="cys-kpi-label" style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; min-height:1.8em; display:flex; align-items:center;">Total Recaudado</span>
-            <span style="font-size:1.75rem; font-weight:800; color:#16a34a; line-height:1.1;">${{ total_cobrado_dia|floatformat:0|intcomma }}</span>
-            {% if total_pendiente_dia > 0 %}
-            <span style="font-size:.72rem; color:#dc2626; font-weight:700; display:block;">
-              Pendiente: ${{ total_pendiente_dia|floatformat:0|intcomma }} &bull; Facturado: ${{ total_dia|floatformat:0|intcomma }}
-            </span>
-            {% else %}
-            <span style="font-size:.72rem; color:#16a34a; font-weight:600; display:block;">100% Recaudado al día</span>
-            {% endif %}
-          </div>
+          </span>
+        </div>
+        <div class="cys-kpi-num-mini" style="color:#16a34a;">${{ total_cobrado_dia|floatformat:0|intcomma }}</div>
+        <div class="cys-kpi-sub-mini">
+          {% if total_pendiente_dia > 0 %}
+          <span style="color:#dc2626; font-weight:700;">
+            Pendiente: ${{ total_pendiente_dia|floatformat:0|intcomma }} &bull; Facturado: ${{ total_dia|floatformat:0|intcomma }}
+          </span>
+          {% else %}
+          <span style="color:#16a34a; font-weight:600;">100% Recaudado al día</span>
+          {% endif %}
         </div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="cys-kpi-card h-100 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-3 w-100">
-          <div class="cys-kpi-icon" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
+      <div class="cys-kpi-card-mini">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="cys-kpi-title-mini">Ítems Vendidos</span>
+          <span class="cys-kpi-icon-mini" style="background:#ecfdf5; color:#15803d; border:1px solid #86efac;">
             <i class="bi bi-box-seam"></i>
-          </div>
-          <div style="min-width:0; flex:1;">
-            <span class="cys-kpi-label" style="font-size:.72rem; color:var(--cys-text-muted); text-transform:uppercase; font-weight:700; min-height:1.8em; display:flex; align-items:center;">Ítems Vendidos</span>
-            <span style="font-size:1.75rem; font-weight:800; color:var(--texto); line-height:1.1;">{{ total_productos }}</span>
-            <span style="font-size:.72rem; color:var(--cys-text-muted); display:block;">Unidades despachadas</span>
-          </div>
+          </span>
         </div>
+        <div class="cys-kpi-num-mini">{{ total_productos }}</div>
+        <div class="cys-kpi-sub-mini">Unidades despachadas</div>
       </div>
     </div>
-
   </div>
 
   <!-- ── SECCIÓN DE ANÁLISIS MINIMALISTA (TOP PRODUCTOS & FLUJO HORARIO) ── -->
@@ -105,6 +100,7 @@
         <div class="cys-mini-list">
           {% if productos_top %}
             {% for p in productos_top|slice:":5" %}
+             HEAD
             <div class="cys-mini-rank-item flex-column align-items-stretch gap-1">
               <div class="d-flex align-items-center justify-content-between" style="min-width:0; width:100%;">
                 <div class="d-flex align-items-center gap-2.5 text-truncate" style="min-width:0; flex:1;">
@@ -118,6 +114,16 @@
               </div>
               <div class="progress mt-1" style="height:4px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
                 <div class="progress-bar" role="progressbar" style="width: {{ p.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ p.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
+
+            <div class="cys-mini-rank-item">
+              <div class="d-flex align-items-center gap-2.5" style="min-width:0; flex:1;">
+                <span class="cys-mini-rank-badge">{{ forloop.counter }}</span>
+                <span class="fw-semibold text-truncate" style="color:var(--texto); font-size:0.86rem;" title="{{ p.nombre }}">{{ p.nombre }}</span>
+              </div>
+              <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                <span class="text-muted" style="font-size:0.78rem; font-weight:600;">{{ p.cantidad }} unid.</span>
+                <span class="fw-bold" style="color:#15803d; font-size:0.88rem;">${{ p.recaudo|floatformat:0|intcomma }}</span>
+               origin/main
               </div>
             </div>
             {% endfor %}
@@ -164,7 +170,11 @@
                 <span class="text-muted" style="font-size:0.72rem; font-weight:600; min-width:32px;">{{ item.porcentaje }}%</span>
               </div>
               <div class="progress mt-1 ms-auto" style="height:4px; width:130px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden;">
+                HEAD
                 <div class="progress-bar" role="progressbar" style="width: {{ item.porcentaje_css }}%; background-color: #16a34a; border-radius:4px;" aria-valuenow="{{ item.porcentaje_css }}" aria-valuemin="0" aria-valuemax="100"></div>
+
+                <div class="progress-bar" style="width: {{ item.porcentaje }}%; background-color: #16a34a;"></div>
+                origin/main
               </div>
             </div>
           </div>
@@ -175,12 +185,12 @@
   </div>
 
   <!-- Historical Sales Table Section -->
-  <section class="cys-pos-card" id="seccionTablaVentasDia">
+  <section class="cys-card-mini p-0 overflow-hidden" id="seccionTablaVentasDia">
 
-    <div class="cys-pos-card-header">
-      <div class="cys-pos-card-title">
-        <i class="bi bi-clock-history me-1" style="color:#16a34a;"></i>Detalle de Transacciones del Día
-      </div>
+    <div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-color: color-mix(in srgb, var(--texto) 6%, transparent) !important;">
+      <h6 class="fw-bold mb-0 text-uppercase d-flex align-items-center gap-2" style="color:var(--texto); font-size:0.88rem; letter-spacing:0.5px;">
+        <i class="bi bi-receipt-cutoff" style="color:#16a34a;"></i> Detalle de Transacciones del Día
+      </h6>
     </div>
 
     <form method="GET" class="cys-filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border-bottom" style="border-color: color-mix(in srgb, var(--texto) 8%, transparent) !important;">
@@ -306,9 +316,12 @@
                 </td>
                 <td style="color: var(--texto);">
                   {% if det.producto %}
-                    <span class="cys-stock-badge cys-stock-badge--ok" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:999px;">{{ det.producto.nombre }}</span>
+                    <span class="fw-semibold" style="color:var(--texto);">{{ det.producto.nombre }}</span>
+                    {% if det.presentacion %}
+                    <span class="text-muted small ms-1">({{ det.presentacion.nombre }})</span>
+                    {% endif %}
                   {% else %}
-                    <span class="cys-stock-badge cys-stock-badge--ok" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:999px;">Ítem General</span>
+                    <span class="fw-semibold" style="color:var(--texto);">Ítem General</span>
                   {% endif %}
                 </td>
                 <td style="text-align: center; color: var(--texto);">{{ det.cantidad }}</td>

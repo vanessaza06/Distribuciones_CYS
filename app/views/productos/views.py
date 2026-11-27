@@ -94,31 +94,30 @@ def _decimal_positivo(valor):
 @login_required
 def lista_productos(request):
     productos_qs = (
-        Producto.objects.select_related('categoria')
-        .prefetch_related('presentaciones__lotes', 'detalles')
+        Producto.objects.select_related('categoria', 'categoria__subcategoria')
+        .prefetch_related('presentaciones__lotes', 'detalles__marca', 'lotes')
         .all()
     )
 
-    categorias = Categoria.objects.filter(subcategoria__isnull=True).prefetch_related(
-        Prefetch(
-            'productos',
-            queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria'),
-        ),
-        Prefetch(
-            'subcategorias',
-            queryset=Categoria.objects.prefetch_related(
-                Prefetch(
-                    'productos',
-                    queryset=Producto.objects.prefetch_related('presentaciones__lotes').select_related('categoria'),
-                )
+    producto_prefetch_qs = Producto.objects.prefetch_related('presentaciones__lotes', 'lotes').select_related(
+        'categoria', 'categoria__subcategoria'
+    )
+
+    categorias = list(
+        Categoria.objects.filter(subcategoria__isnull=True).prefetch_related(
+            Prefetch('productos', queryset=producto_prefetch_qs),
+            Prefetch(
+                'subcategorias',
+                queryset=Categoria.objects.prefetch_related(
+                    Prefetch('productos', queryset=producto_prefetch_qs)
+                ),
             ),
-        ),
+        )
     )
 
     resumen_categorias = []
-    for cat in Categoria.objects.filter(subcategoria__isnull=True):
-        total = Producto.objects.filter(categoria=cat).count()
-        total += Producto.objects.filter(categoria__subcategoria=cat).count()
+    for cat in categorias:
+        total = len(cat.productos.all()) + sum(len(sub.productos.all()) for sub in cat.subcategorias.all())
         resumen_categorias.append({'pk': cat.pk, 'nombre': cat.nombre, 'total': total})
 
     context = {

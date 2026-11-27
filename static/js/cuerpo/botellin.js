@@ -90,7 +90,8 @@
     burbuja.classList.add('visible');
     timerBurbuja = setTimeout(function () { burbuja.classList.remove('visible'); }, ms);
   }
-    /* ── tapa de la cerveza: sale volando al abrir el chat ── */
+
+  /* ── tapa de la cerveza: sale volando al abrir el chat ── */
   const imgReposo  = mascota.querySelector('.bot-img-reposo');
   const reducirMov = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const IMG_W = 481, IMG_H = 640;   // tamaño real de botellin_reposo.png
@@ -187,7 +188,8 @@
       ], { duration: 1100, fill: 'forwards' }).onfinish = function () { tapa.remove(); };
     }, 250);
   }
-    /* ── que el chat nunca se salga por arriba de la pantalla ── */
+
+  /* ── que el chat nunca se salga por arriba de la pantalla ── */
   function ajustarAlto() {
     chat.style.maxHeight = '';                 // mide con su alto natural
     const pa = chat.offsetParent;
@@ -196,12 +198,19 @@
     const borde = pa.getBoundingClientRect().top + chat.offsetTop + chat.offsetHeight;
     chat.style.maxHeight = Math.max(240, borde - 12) + 'px';
   }
-    /* ── que Botellín se corra según el aside (normal / compacto / cerrado) ── */
+
+  /* ── que Botellín se corra según el aside (normal / compacto / cerrado) ──
+     - Aside a la DERECHA: Botellín se corre hacia la izquierda el ancho del aside.
+     - Aside a la IZQUIERDA: Botellín no se mueve, el lado derecho ya está libre. */
   const aside = document.getElementById('sidebarRight');
+
+  function asideALaIzquierda() {
+    return document.documentElement.getAttribute('data-aside-lado') === 'izquierda';
+  }
 
   function ajustarPosicion() {
     let ancho = 0;
-    if (aside) {
+    if (aside && !asideALaIzquierda()) {
       const r = aside.getBoundingClientRect();
       ancho = Math.max(0, window.innerWidth - r.left);   // 0 si el aside está cerrado
     }
@@ -220,12 +229,25 @@
   window.addEventListener('resize', ajustarPosicion);
   document.body.addEventListener('htmx:afterSettle', ajustarPosicion);
 
+  // Cambio de lado del aside (desde Configuración o desde otra pestaña)
+  window.addEventListener('cys-config-changed', function () {
+    setTimeout(ajustarPosicion, 50);
+    setTimeout(ajustarPosicion, 450);
+  });
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'cys_aside_lado' || e.key === 'cys_config') {
+      setTimeout(ajustarPosicion, 50);
+      setTimeout(ajustarPosicion, 450);
+    }
+  });
+
   const btnMini = document.getElementById('btnMiniSidebar');
   if (btnMini) btnMini.addEventListener('click', function () {
     setTimeout(ajustarPosicion, 60);
     setTimeout(ajustarPosicion, 450);
   });
-    /* ── flecha: ocultar / mostrar a Botellín (se recuerda entre páginas) ── */
+
+  /* ── flecha: ocultar / mostrar a Botellín (se recuerda entre páginas) ── */
   const flecha = document.getElementById('bot-flecha');
   let oculto = false;
   try { oculto = localStorage.getItem('botellin_oculto') === '1'; } catch (e) {}
@@ -249,17 +271,17 @@
   aplicarOculto(oculto, false);
 
   /* ── abrir / cerrar ── */
-    function abrir() {
+  function abrir() {
     if (abierto) return;
-    if (oculto) aplicarOculto(false, false);   // NUEVO: si estaba oculta, la muestra
+    if (oculto) aplicarOculto(false, false);   // si estaba oculta, la muestra
     abierto = true;
     clearTimeout(timerBurbuja);
     burbuja.classList.remove('visible');
     setEstado(null);
     wrap.classList.add('bot-abierto');          // pose 2 (guiño)
-    quitarTapa();                               // NUEVO: la tapa sale volando
+    quitarTapa();                               // la tapa sale volando
     chat.hidden = false;
-    ajustarAlto();                              // NUEVO: que el chat no se corte arriba
+    ajustarAlto();                              // que el chat no se corte arriba
     mascota.setAttribute('aria-expanded', 'true');
     mascota.setAttribute('aria-label', 'Cerrar chat con Botellín');
     if (!saludoInicial) {
@@ -277,7 +299,7 @@
     abierto = false;
     chat.hidden = true;
     wrap.classList.remove('bot-abierto');       // vuelve a pose 1 (saludando)
-    ponerTapa();                                // NUEVO: la tapa vuelve a su lugar
+    ponerTapa();                                // la tapa vuelve a su lugar
     setEstado('bot-regreso');
     mascota.setAttribute('aria-expanded', 'false');
     mascota.setAttribute('aria-label', 'Abrir chat con Botellín');
@@ -337,16 +359,16 @@
   };
 
   /* ── al cargar la página: aparece saludando ── */
-  ajustarPosicion();                                                       
-  requestAnimationFrame(function () { wrap.classList.add('bot-anim'); });   
-    if (!oculto) {                                 // si la ocultaste, no saluda
+  ajustarPosicion();
+  requestAnimationFrame(function () { wrap.classList.add('bot-anim'); });
+  if (!oculto) {                                 // si la ocultaste, no saluda
     setEstado('bot-intro');
     setTimeout(function () { mostrarBurbuja(6000); }, 1000);
   }
 
   /* ── al entrar al módulo de Ayuda (navegación htmx): saluda de nuevo ── */
   document.body.addEventListener('htmx:afterSettle', function () {
-      if (!abierto && !oculto && document.getElementById('ayd-buscador')) {
+    if (!abierto && !oculto && document.getElementById('ayd-buscador')) {
       setEstado(null);
       void wrap.offsetWidth;          // reinicia la animación
       setEstado('bot-regreso');

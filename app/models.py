@@ -178,6 +178,25 @@ class Producto(models.Model):
                 valor = self.stock_total_anotado or 0
             elif "lotes" in getattr(self, "_prefetched_objects_cache", {}):
                 valor = sum(l.stock_actual for l in self.lotes.all())
+            elif "presentaciones" in getattr(self, "_prefetched_objects_cache", {}):
+                # Si las presentaciones están precargadas, reutilizar sus lotes en memoria
+                total = 0
+                tiene_lotes = True
+                for p in self.presentaciones.all():
+                    if "lotes" in getattr(p, "_prefetched_objects_cache", {}):
+                        total += sum(l.stock_actual for l in p.lotes.all())
+                    else:
+                        tiene_lotes = False
+                        break
+                if tiene_lotes:
+                    valor = total
+                else:
+                    valor = (
+                        Lote.objects.filter(producto=self).aggregate(total=Sum("stock_actual"))[
+                            "total"
+                        ]
+                        or 0
+                    )
             else:
                 valor = (
                     Lote.objects.filter(producto=self).aggregate(total=Sum("stock_actual"))[
@@ -254,7 +273,15 @@ class PresentacionProducto(models.Model):
     @property
     def stock_real(self):
         """Suma del stock_actual de todos los lotes asociados a esta presentación."""
-        return self.lotes.aggregate(total=Sum("stock_actual"))["total"] or 0
+        if not hasattr(self, "_stock_real_cache"):
+            if hasattr(self, "stock_real_anotado"):
+                valor = self.stock_real_anotado or 0
+            elif "lotes" in getattr(self, "_prefetched_objects_cache", {}):
+                valor = sum(l.stock_actual for l in self.lotes.all())
+            else:
+                valor = self.lotes.aggregate(total=Sum("stock_actual"))["total"] or 0
+            self._stock_real_cache = valor
+        return self._stock_real_cache
 
 
 # ── 6. LOTE ──
@@ -305,7 +332,9 @@ class Lote(models.Model):
     @property
     def _fecha_vencimiento_real(self):
         detalle = self.producto.detalles.first() if self.producto_id else None
-        return detalle.fecha_vencimiento if detalle else None
+        if detalle and detalle.fecha_vencimiento:
+            return detalle.fecha_vencimiento
+        return getattr(self.producto, "fecha_vencimiento", None)
 
     @property
     def dias_para_vencer(self):
@@ -844,16 +873,16 @@ class Caja(models.Model):
         default=dict, blank=True, db_column="denominaciones"
     )
     monto_base = models.DecimalField(
-        max_digits=12, decimal_places=2, db_column="monto_base"
+        max_digits=12, decimal_places=2, default=Decimal('0'), db_column="monto_base"
     )
     total_efectivo = models.DecimalField(
-        max_digits=12, decimal_places=2, db_column="total_efectivo"
+        max_digits=12, decimal_places=2, default=Decimal('0'), db_column="total_efectivo"
     )
     total_transferencias = models.DecimalField(
-        max_digits=12, decimal_places=2, db_column="total_transferencias"
+        max_digits=12, decimal_places=2, default=Decimal('0'), db_column="total_transferencias"
     )
     total_retirado = models.DecimalField(
-        max_digits=12, decimal_places=2, db_column="total_retirado"
+        max_digits=12, decimal_places=2, default=Decimal('0'), db_column="total_retirado"
     )
     observacion = models.TextField(blank=True, null=True, db_column="observacion")
     usuario = models.ForeignKey(

@@ -29,6 +29,9 @@ const NOMBRES_TEMA = {
   'sepia': 'Sepia',
 };
 
+// Clave dedicada del lado del aside (la misma que lee aside.js)
+const KEY_ASIDE_LADO = 'cys_aside_lado';
+
 // Escapa texto antes de meterlo con innerHTML
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -62,7 +65,7 @@ const CSRF_TOKEN = getCookie('csrftoken') ||
   document.querySelector('input[name=csrfmiddlewaretoken]')?.value;
 
 // ══════════════════════════════════════════
-// ESTADO VISUAL (tema/pagina de inicio/brillo/fuente/zoom/toggles)
+// ESTADO VISUAL (tema/pagina de inicio/brillo/fuente/zoom/toggles/lado del aside)
 // localStorage.cys_config
 //
 // IMPORTANTE: el "tema" solo cuenta como propio si lleva la marca
@@ -72,6 +75,7 @@ const CFG_DEFAULT = {
   tema: TEMA_SISTEMA, paginaInicio: 'tablero', brillo: 100, fuente: 14, zoom: 100,
   sidebarAuto: false, resumenSidebar: true,
   alertaStock: true, widgetRotacion: true, silencioso: false,
+  asideLado: 'derecha',
 };
 
 let temaPersonal = false; // true si el usuario eligió un tema propio
@@ -435,6 +439,43 @@ async function cargarActividad() {
 }
 
 // ══════════════════════════════════════════
+// LADO DEL ASIDE (izquierda / derecha)
+// aside.js escucha 'cys-config-changed' y la clave dedicada.
+// ══════════════════════════════════════════
+function ladoGuardado() {
+  try {
+    const v = localStorage.getItem(KEY_ASIDE_LADO);
+    if (v === 'izquierda' || v === 'derecha') return v;
+  } catch (e) {}
+  return cfgActual.asideLado === 'izquierda' ? 'izquierda' : 'derecha';
+}
+
+function actualizarLadoUI() {
+  const lado = ladoGuardado();
+  document.querySelectorAll('#opcionesLado .cfg-opt').forEach(o =>
+    o.classList.toggle('activo', o.dataset.lado === lado));
+}
+
+function seleccionarLado(lado, el) {
+  if (lado !== 'izquierda' && lado !== 'derecha') return;
+  if (lado === ladoGuardado()) { actualizarLadoUI(); return; }
+
+  cfgActual.asideLado = lado;
+  try { localStorage.setItem(KEY_ASIDE_LADO, lado); } catch (e) {}
+  guardarCfg(cfgActual);
+  actualizarLadoUI();
+
+  // Aviso al aside (sin sidebarMini: lo gestiona el propio aside)
+  const detalle = { ...cfgActual, asideLado: lado };
+  delete detalle.sidebarMini;
+  window.dispatchEvent(new CustomEvent('cys-config-changed', { detail: detalle }));
+
+  mostrarToast(lado === 'izquierda'
+    ? 'Barra lateral a la izquierda'
+    : 'Barra lateral a la derecha', 'info');
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function init() {
@@ -466,6 +507,7 @@ function init() {
   document.querySelectorAll('#opcionesInicio .cfg-opt').forEach(el =>
     el.classList.toggle('activo', el.dataset.inicio === cfgActual.paginaInicio));
 
+  actualizarLadoUI();
   actualizarEtiquetaTemaSistema();
 
   $('toggleSidebarAuto').checked    = cfgActual.sidebarAuto;
@@ -952,6 +994,7 @@ function mostrarToastPreferencia() {
 Object.assign(window, {
   seleccionarTema,
   seleccionarInicio,
+  seleccionarLado,
   confirmarTemaSistema,
   previewLogoEmpresa,
   verificarClaveEmpresa,

@@ -340,3 +340,126 @@ document.querySelectorAll('.conteo-prod-item').forEach(function (item) {
     el.classList.add('text-success');
   }
 })();
+
+// ═══════ DATATABLES BODEGA ═══════
+$(document).ready(function () {
+  if (window.jQuery && jQuery.fn.DataTable) {
+    // 1. Tabla Presentaciones sin Lote
+    if ($('#tablaPresSinLote').length && !$.fn.DataTable.isDataTable('#tablaPresSinLote')) {
+      const dtPres = $('#tablaPresSinLote').DataTable({
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50],
+        searching: true,
+        info: true,
+        responsive: true,
+        ordering: true,
+        order: [[0, 'asc']],
+        columnDefs: [{ targets: [4], orderable: false, searchable: false }],
+        language: {
+          emptyTable: "Todas las presentaciones activas tienen lote registrado.",
+          zeroRecords: "Sin resultados para tu búsqueda.",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ presentaciones",
+          infoEmpty: "Mostrando 0 a 0 de 0 presentaciones",
+          infoFiltered: "(filtrado de _MAX_ totales)",
+          lengthMenu: "Mostrar _MENU_ registros",
+          search: "Buscar:",
+          paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        }
+      });
+
+      const inputPres = document.getElementById('buscarPresSinLote');
+      if (inputPres) {
+        inputPres.addEventListener('input', function() {
+          dtPres.search(this.value.trim()).draw();
+        });
+      }
+
+      // Switcher Vista Tabla / Tarjetas
+      const btnTblPres = document.getElementById('btnVerTablaPresSinLote');
+      const btnCardPres = document.getElementById('btnVerTarjetasPresSinLote');
+      const wrapTblPres = document.getElementById('wrap-tabla-pres-sin-lote');
+      const gridPres = document.getElementById('grid-pres-sin-lote');
+
+      if (btnTblPres && btnCardPres && wrapTblPres && gridPres) {
+        btnTblPres.addEventListener('click', function () {
+          btnTblPres.classList.add('active');
+          btnCardPres.classList.remove('active');
+          wrapTblPres.classList.remove('d-none');
+          gridPres.classList.add('d-none');
+          dtPres.columns.adjust().responsive.recalc();
+        });
+        btnCardPres.addEventListener('click', function () {
+          btnCardPres.classList.add('active');
+          btnTblPres.classList.remove('active');
+          gridPres.classList.remove('d-none');
+          wrapTblPres.classList.add('d-none');
+        });
+      }
+    }
+
+    // 2. Tabla Lotes en Bodega
+    if ($('#tablaLotesBodega').length && !$.fn.DataTable.isDataTable('#tablaLotesBodega')) {
+      const dtLotes = $('#tablaLotesBodega').DataTable({
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        searching: true,
+        info: true,
+        responsive: true,
+        ordering: true,
+        order: [[0, 'desc']],
+        columnDefs: [{ targets: [7], orderable: false, searchable: false }],
+        language: {
+          emptyTable: "No hay lotes registrados en bodega.",
+          zeroRecords: "Sin resultados para tu búsqueda.",
+          info: "Mostrando _START_ a _END_ de _TOTAL_ lotes",
+          infoEmpty: "Mostrando 0 a 0 de 0 lotes",
+          infoFiltered: "(filtrado de _MAX_ totales)",
+          lengthMenu: "Mostrar _MENU_ registros",
+          search: "Buscar lote:",
+          paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+        }
+      });
+
+      const inputLote = document.getElementById('buscarLoteBodega');
+      if (inputLote) {
+        inputLote.addEventListener('input', function() {
+          dtLotes.search(this.value.trim()).draw();
+        });
+      }
+
+      // Filtros rápidos de estado de lote
+      document.querySelectorAll('.cys-lote-filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.cys-lote-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          const est = this.dataset.estado || '';
+          dtLotes.column(6).search(est).draw();
+        });
+      });
+
+      // Switcher Vista Tabla / Tarjetas
+      const btnTblLotes = document.getElementById('btnVerTablaLotes');
+      const btnCardLotes = document.getElementById('btnVerTarjetasLotes');
+      const wrapTblLotes = document.getElementById('wrap-tabla-lotes-bodega');
+      const gridLotes = document.getElementById('grid-lotes-bodega');
+
+      if (btnTblLotes && btnCardLotes && wrapTblLotes && gridLotes) {
+        btnTblLotes.addEventListener('click', function () {
+          btnTblLotes.classList.add('active');
+          btnCardLotes.classList.remove('active');
+          wrapTblLotes.classList.remove('d-none');
+          gridLotes.classList.add('d-none');
+          dtLotes.columns.adjust().responsive.recalc();
+        });
+        btnCardLotes.addEventListener('click', function () {
+          btnCardLotes.classList.add('active');
+          btnTblLotes.classList.remove('active');
+          gridLotes.classList.remove('d-none');
+          wrapTblLotes.classList.add('d-none');
+        });
+      }
+    }
+  }
+});
